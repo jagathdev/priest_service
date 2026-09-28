@@ -66,7 +66,12 @@ module.exports = {
           800: '#933913',
           900: '#783114',
         }
-      }
+      },
+      fontFamily: {
+        sans: ['"Plus Jakarta Sans"', 'Inter', 'system-ui', 'sans-serif'],
+        serif: ['"Playfair Display"', 'Georgia', 'serif'],
+        display: ['Outfit', '"Plus Jakarta Sans"', 'sans-serif'],
+      },
     },
   },
   plugins: [],
