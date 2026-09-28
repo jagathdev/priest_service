@@ -1,57 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
-@import "tailwindcss";
 
-@theme {
-  --color-brand-violet: #1f1f1f;
-  --color-brand-orange: #F47820;
-  --color-brand-orange-dark: #d95f13;
-  --color-brand-ink: #241a46;
-  --color-brand-surface: #fff8f0;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-  --color-primary-violet-50: #f3f0ff;
-  --color-primary-violet-100: #e8e2ff;
-  --color-primary-violet-200: #d8ceff;
-  --color-primary-violet-300: #b9abff;
-  --color-primary-violet-400: #9189ff;
-  --color-primary-violet-500: #1f1f1f;
-  --color-primary-violet-600: #000000;
-  --color-primary-violet-700: #4647c4;
-  --color-primary-violet-800: #373895;
-  --color-primary-violet-900: #2b2d70;
-
-  --color-blue-50: #f3f0ff;
-  --color-blue-100: #e8e2ff;
-  --color-blue-200: #d8ceff;
-  --color-blue-300: #b9abff;
-  --color-blue-400: #9189ff;
-  --color-blue-500: #1f1f1f;
-  --color-blue-600: #000000;
-  --color-blue-700: #4647c4;
-  --color-blue-800: #373895;
-  --color-blue-900: #2b2d70;
-
-  --color-violet-50: #f3f0ff;
-  --color-violet-100: #e8e2ff;
-  --color-violet-200: #d8ceff;
-  --color-violet-300: #b9abff;
-  --color-violet-400: #9189ff;
-  --color-violet-500: #1f1f1f;
-  --color-violet-600: #000000;
-  --color-violet-700: #4647c4;
-  --color-violet-800: #373895;
-  --color-violet-900: #2b2d70;
-
-  --color-purple-50: #fff3eb;
-  --color-purple-100: #ffe3cf;
-  --color-purple-200: #ffc79f;
-  --color-purple-300: #ffa66a;
-  --color-purple-400: #ff883d;
-  --color-purple-500: #F47820;
-  --color-purple-600: #d95f13;
-  --color-purple-700: #b6480f;
-  --color-purple-800: #933913;
-  --color-purple-900: #783114;
-}
 
 :root {
   --brand-violet: #1f1f1f;

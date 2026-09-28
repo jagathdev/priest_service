@@ -4,6 +4,17 @@ import Image from "next/image";
 import Link from "next/link";
 import React, { useState, useEffect, useRef } from "react";
 import Navbar from "@/components/layout/Navbar";
+
+// Imported assets
+import step1Img from "@/assets/images/common/steo_1.png";
+import step2Img from "@/assets/images/common/step_2.png";
+import step3Img from "@/assets/images/common/step_3.png";
+import step4Img from "@/assets/images/common/step_4.png";
+import navagrahaImg from "@/assets/images/puja/Navagraha-Shanti-Puja.jpg";
+import ganeshImg from "@/assets/images/puja/Ganesh-Chaturthi-Mahapuja.jpg";
+import maaKaliImg from "@/assets/images/puja/maa-kali.jpg";
+import maaSaraswathiImg from "@/assets/images/puja/Maa-saraswathi.jpg";
+import lakshmiHomamImg from "@/assets/images/homa/Lakshmi-Homam.jpg";
 import HeroSection from "@/components/home/HeroSection";
 import ReviewsSection from "@/components/common/ReviewsSection";
 
@@ -11,14 +22,14 @@ export default function DashboardPage() {
   return (
     <main className="min-h-screen bg-white text-[#1f1f1f] font-sans">
       <Navbar />
-      
+
       {/* ── 1. Hero Section ── */}
       <HeroSection />
 
       {/* ── 2. Steps Section ── "Your Journey to Divine Blessings" ── */}
       <section className="py-5 sm:py-6 md:py-7 bg-[#fdfbf7] border-y border-[#f0e4d0] relative overflow-hidden">
         {/* Background Mandala Watermarks */}
-        <div 
+        <div
           className="absolute inset-0 pointer-events-none opacity-[0.035] bg-center bg-no-repeat bg-contain z-0"
           style={{
             backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 500'%3E%3Ccircle cx='250' cy='250' r='240' fill='none' stroke='%3C%238b1e10' stroke-width='1.5'/%3E%3Ccircle cx='250' cy='250' r='200' fill='none' stroke='%3C%238b1e10' stroke-width='1' stroke-dasharray='4 4'/%3E%3Ccircle cx='250' cy='250' r='160' fill='none' stroke='%3C%238b1e10' stroke-width='1.5'/%3E%3C/svg%3E")`
@@ -26,13 +37,13 @@ export default function DashboardPage() {
         />
 
         <div className="max-w-[1000px] mx-auto px-4 sm:px-6 relative z-10">
-          
+
           {/* Section Header */}
           <div className="text-center mb-4 sm:mb-5">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-serif font-bold text-[#221f20] tracking-tight">
               Your Journey to <span className="text-[#8b1e10]">Divine Blessings</span>
             </h2>
-            
+
             {/* Gold Lotus Filigree Divider */}
             <div className="flex items-center justify-center gap-2 my-1">
               <div className="w-12 sm:w-20 h-[1px] bg-gradient-to-r from-transparent to-[#c68a36]" />
@@ -50,12 +61,12 @@ export default function DashboardPage() {
 
           {/* Process Container */}
           <div className="flex flex-col md:flex-row items-center justify-center gap-3 md:gap-1.5 lg:gap-3 relative z-10">
-            
+
             {/* Step 1 */}
             <div className="flex flex-col items-center group text-center flex-1 w-full max-w-[190px]">
               <div className="w-20 h-20 sm:w-24 sm:h-24 relative mb-1 group-hover:scale-105 transition-all">
                 <Image
-                  src="/images/steo_1.png"
+                  src={step1Img}
                   alt="Choose Your Puja"
                   fill
                   className="object-contain"
@@ -77,7 +88,7 @@ export default function DashboardPage() {
             <div className="flex flex-col items-center group text-center flex-1 w-full max-w-[190px]">
               <div className="w-20 h-20 sm:w-24 sm:h-24 relative mb-1 group-hover:scale-105 transition-all">
                 <Image
-                  src="/images/step_2.png"
+                  src={step2Img}
                   alt="Share Your Details"
                   fill
                   className="object-contain"
@@ -99,7 +110,7 @@ export default function DashboardPage() {
             <div className="flex flex-col items-center group text-center flex-1 w-full max-w-[190px]">
               <div className="w-20 h-20 sm:w-24 sm:h-24 relative mb-1 group-hover:scale-105 transition-all">
                 <Image
-                  src="/images/step_3.png"
+                  src={step3Img}
                   alt="Puja Is Performed"
                   fill
                   className="object-contain"
@@ -121,7 +132,7 @@ export default function DashboardPage() {
             <div className="flex flex-col items-center group text-center flex-1 w-full max-w-[190px]">
               <div className="w-20 h-20 sm:w-24 sm:h-24 relative mb-1 group-hover:scale-105 transition-all">
                 <Image
-                  src="/images/step_4.png"
+                  src={step4Img}
                   alt="Receive Divine Blessings"
                   fill
                   className="object-contain"
@@ -140,40 +151,40 @@ export default function DashboardPage() {
       {/* ── 3. Our Pujas Section ── */}
       <section className="py-12 bg-white">
         <div className="max-w-[1440px] mx-auto px-6 sm:px-10 lg:px-12">
-          
+
           {/* Header Row & Category Filters */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
             <h2 className="text-3xl sm:text-4xl font-bold text-[#221f20] font-serif">
               Our Pujas
             </h2>
-            
+
             {/* Filter Pills */}
             <div className="flex items-center gap-2.5 flex-wrap">
               <button className="bg-[#00b050] text-white font-bold px-5 py-2 rounded-full text-xs sm:text-sm shadow-sm hover:bg-[#009b46] transition-colors">
                 All
               </button>
-              
-              <button className="bg-white border border-stone-200 text-stone-700 hover:border-stone-400 font-semibold px-4.5 py-2 rounded-full text-xs sm:text-sm transition-colors">
+
+              <button className="bg-white border border-stone-200 text-stone-700 hover:border-stone-400 font-semibold px-4 py-2 rounded-full text-xs sm:text-sm transition-colors">
                 Diety
               </button>
 
-              <button className="bg-white border border-stone-200 text-stone-700 hover:border-stone-400 font-semibold px-4.5 py-2 rounded-full text-xs sm:text-sm transition-colors">
+              <button className="bg-white border border-stone-200 text-stone-700 hover:border-stone-400 font-semibold px-4 py-2 rounded-full text-xs sm:text-sm transition-colors">
                 Dosha
               </button>
 
-              <button className="bg-white border border-stone-200 text-stone-700 hover:border-stone-400 font-semibold px-4.5 py-2 rounded-full text-xs sm:text-sm transition-colors">
+              <button className="bg-white border border-stone-200 text-stone-700 hover:border-stone-400 font-semibold px-4 py-2 rounded-full text-xs sm:text-sm transition-colors">
                 Benefit
               </button>
             </div>
           </div>
-          
+
           {/* 3 Puja Cards Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">
-            
+
             {/* Card 1 */}
-            <PujaCard 
-              imageSrc="/subrahmanya_swamy_hero.png"
-              topTag="SPECIAL TUESDAY SANKALPAM" 
+            <PujaCard
+              imageSrc={ganeshImg}
+              topTag="SPECIAL TUESDAY SANKALPAM"
               title="Subrahmanya Swamy Abhishekam at Madurai..."
               subtitle="A special Tuesday Abhishekam for devotees seeking the courage to overcome obstacles, fulfillment of efforts, and success"
               location="Aadi Meenakshi Sameta Sundareshwarar Temple"
@@ -183,9 +194,9 @@ export default function DashboardPage() {
             />
 
             {/* Card 2 */}
-            <PujaCard 
-              imageSrc="/shani_statue_hero_banner.png"
-              topTag="SPEICAL SHANI POOJA" 
+            <PujaCard
+              imageSrc={lakshmiHomamImg}
+              topTag="SPEICAL SHANI POOJA"
               title="Sade Sati Shanti Puja & Oil Abhishekam ..."
               subtitle="Shani Shanti Puja & Oil Abhishekam for Relief from the Harsh Effects of Sade Sati"
               location="Bannanje Shani kshetram"
@@ -195,9 +206,9 @@ export default function DashboardPage() {
             />
 
             {/* Card 3 */}
-            <PujaCard 
-              imageSrc="/images/Navagraha-Shanti-Puja.jpg"
-              topTag="SHANI PURNIMA SPECIAL" 
+            <PujaCard
+              imageSrc={navagrahaImg}
+              topTag="SHANI PURNIMA SPECIAL"
               title="Shani Shanti Puja for Prosperity, Career..."
               subtitle="Perform Shani Shanti Puja for relief from hardships, prosperity, career growth, peace and lasting stability."
               location="Mangala Shaneeshwara Devalayam"
@@ -207,7 +218,7 @@ export default function DashboardPage() {
             />
 
           </div>
-          
+
           <div className="text-center mt-10">
             <button className="text-[#00b050] font-extrabold px-8 py-3 rounded-full border-2 border-[#00b050] hover:bg-green-50 active:scale-95 transition-all text-base shadow-sm">
               View All Pujas
@@ -228,8 +239,8 @@ export default function DashboardPage() {
           <div className="flex animate-marquee gap-4 sm:gap-6 items-end">
             {/* Repeat list twice for continuous infinite marquee */}
             {[...galleryImages, ...galleryImages].map((img, idx) => (
-              <div 
-                key={idx} 
+              <div
+                key={idx}
                 className={`relative shrink-0 rounded-2xl sm:rounded-3xl overflow-hidden shadow-sm border border-stone-200/80 group cursor-pointer transition-transform duration-300 hover:scale-[1.02] ${img.aspect}`}
               >
                 <Image
@@ -259,7 +270,7 @@ export default function DashboardPage() {
           {/* Left: Doubts */}
           <div className="md:w-1/3">
             <h3 className="text-red-500 font-bold text-sm tracking-wider uppercase mb-2">— FAQ</h3>
-            <h2 className="text-4xl md:text-5xl font-bold text-[#4a2e21] font-serif mb-4 leading-tight">Doubts?<br/>We're Here.</h2>
+            <h2 className="text-4xl md:text-5xl font-bold text-[#4a2e21] font-serif mb-4 leading-tight">Doubts?<br />We're Here.</h2>
             <p className="text-gray-600 mb-8 text-sm max-w-[250px]">
               Our devotee care team is available in 11 languages, 12 hours a day. Reach them on WhatsApp, phone, or email.
             </p>
@@ -267,7 +278,7 @@ export default function DashboardPage() {
               Speak to Devotee Care
             </button>
           </div>
-          
+
           {/* Right: Accordion */}
           <div className="md:w-2/3 flex flex-col gap-3">
             <AccordionItem question="What is an online puja and how does it work?" active />
@@ -287,7 +298,7 @@ export default function DashboardPage() {
       {/* ── 7. Footer ── */}
       <footer className="bg-[#1f0e08] text-[#d4c5b9] pt-16 pb-8">
         <div className="max-w-[1200px] mx-auto px-4 text-center border-b border-white/10 pb-12 mb-8">
-          <h2 className="text-2xl md:text-3xl font-serif text-white mb-6">A Sacred Path to Divine Blessings Book Your<br/>Sacred Puja</h2>
+          <h2 className="text-2xl md:text-3xl font-serif text-white mb-6">A Sacred Path to Divine Blessings Book Your<br />Sacred Puja</h2>
           <p className="text-sm mb-8">Connect with divine blessings through authentic Vedic rituals.</p>
           <div className="flex items-center justify-center gap-4 mb-6">
             <span className="text-white font-bold text-lg mr-2">Follow us -</span>
@@ -297,10 +308,10 @@ export default function DashboardPage() {
             <SocialIcon bg="bg-red-600" text="yt" />
           </div>
           <button className="bg-white text-[#009e5b] font-bold px-6 py-2 rounded-full text-sm hover:bg-gray-100 transition-colors inline-flex items-center gap-2 shadow-lg">
-            Find the Right Puja <div className="bg-[#009e5b] text-white rounded-full w-5 h-5 flex items-center justify-center"><svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7"/></svg></div>
+            Find the Right Puja <div className="bg-[#009e5b] text-white rounded-full w-5 h-5 flex items-center justify-center"><svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7" /></svg></div>
           </button>
         </div>
-        
+
         <div className="max-w-[1200px] mx-auto px-4 flex flex-col md:flex-row justify-between gap-8 mb-12">
           {/* Logo Col */}
           <div className="md:w-1/3">
@@ -313,7 +324,7 @@ export default function DashboardPage() {
               Vedamandir is a spiritual platform that enables devotees to book authentic Vedic pujas at sacred temples across India.
             </p>
           </div>
-          
+
           {/* Quick Links */}
           <div>
             <h4 className="text-white font-bold mb-4">Quick Links</h4>
@@ -323,7 +334,7 @@ export default function DashboardPage() {
               <li><Link href="#" className="hover:text-white transition-colors">Our Brands</Link></li>
             </ul>
           </div>
-          
+
           {/* Legal */}
           <div>
             <h4 className="text-white font-bold mb-4">Legal</h4>
@@ -334,7 +345,7 @@ export default function DashboardPage() {
               <li><Link href="#" className="hover:text-white transition-colors">Contact Us</Link></li>
             </ul>
           </div>
-          
+
           {/* Contact */}
           <div>
             <h4 className="text-white font-bold mb-4">Contact</h4>
@@ -345,7 +356,7 @@ export default function DashboardPage() {
             </ul>
           </div>
         </div>
-        
+
         <div className="text-center text-[10px] text-white/40">
           © 2024 Vedamandir. All rights reserved.
         </div>
@@ -358,42 +369,42 @@ export default function DashboardPage() {
 
 const galleryImages = [
   {
-    src: "/images/Service images/Mangal Dosha Nivaran Puja/Mangal-Dosha-Nivaran-Puja.jpg",
-    alt: "Deity Flower Garland Ritual",
+    src: ganeshImg,
+    alt: "Ganesh Chaturthi Mahapuja",
     aspect: "w-[160px] sm:w-[190px] h-[270px] sm:h-[310px]", // Tall
   },
   {
-    src: "/images/Service images/Satyanarayan Katha Puja/Satyanarayan-Katha-Puja.jpg",
-    alt: "Temple Pandits Homam",
+    src: navagrahaImg,
+    alt: "Navagraha Shanti Puja",
     aspect: "w-[210px] sm:w-[250px] h-[160px] sm:h-[180px]", // Small
   },
   {
-    src: "/images/Service images/Maha Ganapati Homam/Maha-Ganapati-Homam.jpg",
-    alt: "Pandit Lamp Offering",
+    src: maaKaliImg,
+    alt: "Maa Kali Puja",
     aspect: "w-[200px] sm:w-[240px] h-[170px] sm:h-[190px]", // Medium-small
   },
   {
-    src: "/images/Service images/Mahalakshmi Kubera Homam/Mahalakshmi-Kubera-Homam1.jpg",
-    alt: "Sacred Fire Ceremony",
+    src: lakshmiHomamImg,
+    alt: "Lakshmi Homam",
     aspect: "w-[210px] sm:w-[250px] h-[150px] sm:h-[165px]", // Small
   },
   {
-    src: "/images/Service images/rudrabhishekam-puja/rudrabhishekam-puja.jpg",
-    alt: "Purohit Sacred Thread Ritual",
+    src: maaSaraswathiImg,
+    alt: "Maa Saraswathi Puja",
     aspect: "w-[160px] sm:w-[190px] h-[310px] sm:h-[350px]", // Very Tall
   },
   {
-    src: "/images/Service images/rudrabhishekam-puja/rudrabhishekam-puja2.jpg",
+    src: ganeshImg,
     alt: "Sacred Homam Fire",
     aspect: "w-[210px] sm:w-[250px] h-[160px] sm:h-[180px]", // Medium-small
   },
   {
-    src: "/images/Service images/Mahalakshmi Kubera Homam/Mahalakshmi-Kubera-Homam.jpg",
+    src: lakshmiHomamImg,
     alt: "Vedic Priest at Kolam Altar",
     aspect: "w-[160px] sm:w-[190px] h-[310px] sm:h-[350px]", // Very Tall
   },
   {
-    src: "/images/Service images/rudrabhishekam-puja/rudrabhishekam-puja1.jpg",
+    src: navagrahaImg,
     alt: "Shiva Lingam Abhishekam",
     aspect: "w-[160px] sm:w-[190px] h-[310px] sm:h-[350px]", // Very Tall
   },
@@ -415,7 +426,7 @@ function Step({ icon, title, subtitle, active }: { icon: string; title: string; 
         {icon}
       </div>
       <p className="text-[10px] md:text-xs text-gray-500 text-center font-medium leading-tight">
-        {title}<br/><span className="text-[#4a2e21] font-bold">{subtitle}</span>
+        {title}<br /><span className="text-[#4a2e21] font-bold">{subtitle}</span>
       </p>
     </div>
   );
@@ -432,7 +443,7 @@ function FilterBtn({ text, active }: { text: string; active?: boolean }) {
 function PujaCard({ imageSrc, topTag, title, subtitle, location, date, price, slug }: any) {
   return (
     <div className="bg-white rounded-3xl border border-stone-200/80 p-2.5 sm:p-3 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col group text-left">
-      
+
       {/* Top Banner Image Container with Subtle Space */}
       <div className="relative w-full h-[220px] sm:h-[235px] rounded-2xl overflow-hidden mb-2.5 bg-stone-100 shrink-0">
         <Image
@@ -446,7 +457,7 @@ function PujaCard({ imageSrc, topTag, title, subtitle, location, date, price, sl
         {/* Top Right Floating Action Buttons (Wishlist & Share) */}
         <div className="absolute top-3 right-3 flex flex-col gap-2 z-10">
           {/* Wishlist Heart Button */}
-          <button 
+          <button
             aria-label="Add to wishlist"
             className="w-8 h-8 rounded-full bg-white/95 text-stone-700 hover:text-red-500 flex items-center justify-center shadow-md backdrop-blur-sm transition-transform active:scale-95"
           >
@@ -456,7 +467,7 @@ function PujaCard({ imageSrc, topTag, title, subtitle, location, date, price, sl
           </button>
 
           {/* Share Button */}
-          <button 
+          <button
             aria-label="Share puja"
             className="w-8 h-8 rounded-full bg-white/95 text-stone-700 hover:text-[#00b050] flex items-center justify-center shadow-md backdrop-blur-sm transition-transform active:scale-95"
           >
@@ -493,10 +504,10 @@ function PujaCard({ imageSrc, topTag, title, subtitle, location, date, price, sl
         </p>
 
         {/* Location & Date Details Box with Vector SVG Icons */}
-        <div className="bg-stone-50 border border-stone-200/90 rounded-2xl p-3 sm:p-3.5 mb-4.5 space-y-2.5 text-xs sm:text-[13px] font-bold text-stone-800 mt-auto">
+        <div className="bg-stone-50 border border-stone-200/90 rounded-2xl p-3 sm:p-3.5 mb-4 space-y-2.5 text-xs sm:text-[13px] font-bold text-stone-800 mt-auto">
           {/* Location */}
           <div className="flex items-start gap-2.5">
-            <svg className="w-4.5 h-4.5 text-[#8b1e10] shrink-0 mt-0.5" viewBox="0 0 24 24" fill="currentColor">
+            <svg className="w-5 h-5 text-[#8b1e10] shrink-0 mt-0.5" viewBox="0 0 24 24" fill="currentColor">
               <path d="M12 2L9 6H15L12 2ZM8 7L6 11H18L16 7H8ZM5 12L3 17H21L19 12H5ZM2 18V21H22V18H2Z" />
             </svg>
             <span className="leading-snug">{location}</span>
@@ -506,7 +517,7 @@ function PujaCard({ imageSrc, topTag, title, subtitle, location, date, price, sl
 
           {/* Date */}
           <div className="flex items-center gap-2.5">
-            <svg className="w-4.5 h-4.5 text-[#8b1e10] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <svg className="w-5 h-5 text-[#8b1e10] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
               <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
               <line x1="16" y1="2" x2="16" y2="6" />
               <line x1="8" y1="2" x2="8" y2="6" />
