@@ -101,7 +101,7 @@ export default function MyPujaBookings() {
           <div className="flex flex-col md:flex-row gap-8 items-start">
 
             {/* ── Left Sidebar Navigation ── */}
-            <aside className="w-full md:w-64 lg:w-72 shrink-0 bg-white rounded-2xl border border-gray-200 shadow-xs p-4 flex flex-col gap-1.5">
+            <aside className="w-full md:w-64 lg:w-72 shrink-0 bg-white rounded-2xl border border-[#fce4e0] shadow-xs p-4 flex flex-col gap-1.5">
 
               <Link
                 href="/account"
@@ -118,46 +118,46 @@ export default function MyPujaBookings() {
                 className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm font-bold bg-[#069e5d] text-white shadow-xs transition"
               >
                 <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m0 0h4m-4 0V9a2 2 0 012-2h2a2 2 0 012 2v12" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" />
                 </svg>
                 <span>My Bookings</span>
               </button>
 
-              <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm font-semibold text-gray-700 hover:bg-gray-50 transition">
+              <Link href="/account#subscriptions" className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm font-semibold text-gray-700 hover:bg-gray-50 transition">
                 <svg className="w-4 h-4 text-gray-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
                 <span>My Subscriptions</span>
-              </button>
+              </Link>
 
-              <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm font-semibold text-gray-700 hover:bg-gray-50 transition">
+              <Link href="/account#wallet" className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm font-semibold text-gray-700 hover:bg-gray-50 transition">
                 <svg className="w-4 h-4 text-gray-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
                 <span>Wallet</span>
-              </button>
+              </Link>
 
-              <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm font-semibold text-gray-700 hover:bg-gray-50 transition">
+              <Link href="/account#wishlist" className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm font-semibold text-gray-700 hover:bg-gray-50 transition">
                 <svg className="w-4 h-4 text-gray-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                 </svg>
                 <span>Wishlist</span>
-              </button>
+              </Link>
 
-              <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm font-semibold text-gray-700 hover:bg-gray-50 transition">
+              <Link href="/account#address" className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm font-semibold text-gray-700 hover:bg-gray-50 transition">
                 <svg className="w-4 h-4 text-gray-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
                 <span>Saved Address</span>
-              </button>
+              </Link>
 
-              <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm font-semibold text-gray-700 hover:bg-gray-50 transition">
+              <Link href="/account#language" className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm font-semibold text-gray-700 hover:bg-gray-50 transition">
                 <svg className="w-4 h-4 text-gray-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <span>Language</span>
-              </button>
+              </Link>
 
               <button
                 type="button"
@@ -176,9 +176,9 @@ export default function MyPujaBookings() {
               {/* Header section with Title and Filters */}
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-[#701a28] text-white flex items-center justify-center shrink-0 shadow-sm">
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m0 0h4m-4 0V9a2 2 0 012-2h2a2 2 0 012 2v12" />
+                  <div className="w-10 h-10 rounded-[10px] bg-[#701a28] text-white flex items-center justify-center shrink-0 shadow-sm">
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" />
                     </svg>
                   </div>
                   <h1 className="text-xl sm:text-2xl font-bold font-serif text-[#333]">
@@ -186,13 +186,13 @@ export default function MyPujaBookings() {
                   </h1>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
                   <button
                     onClick={() => setFilter("All")}
-                    className={`px-4 py-1.5 rounded-full text-sm font-bold flex items-center gap-1.5 border ${filter === "All"
+                    className={`px-5 py-2 rounded-full text-sm font-bold flex items-center gap-2 border ${filter === "All"
                       ? "border-[#069e5d] text-[#069e5d] bg-white"
-                      : "border-transparent text-gray-600 bg-gray-100 hover:bg-gray-200"
-                      } transition shadow-sm`}
+                      : "border-transparent text-gray-700 bg-[#ebebeb] hover:bg-[#e0e0e0]"
+                      } transition`}
                   >
                     All
                     {filter === "All" && (
@@ -205,19 +205,19 @@ export default function MyPujaBookings() {
                   </button>
                   <button
                     onClick={() => setFilter("Ongoing")}
-                    className={`px-4 py-1.5 rounded-full text-sm font-bold flex items-center gap-1.5 border ${filter === "Ongoing"
+                    className={`px-5 py-2 rounded-full text-sm font-bold flex items-center gap-2 border ${filter === "Ongoing"
                       ? "border-[#069e5d] text-[#069e5d] bg-white"
-                      : "border-transparent text-gray-600 bg-gray-100 hover:bg-gray-200"
-                      } transition shadow-sm`}
+                      : "border-transparent text-gray-700 bg-[#ebebeb] hover:bg-[#e0e0e0]"
+                      } transition`}
                   >
                     Ongoing
                   </button>
                   <button
                     onClick={() => setFilter("Complete")}
-                    className={`px-4 py-1.5 rounded-full text-sm font-bold flex items-center gap-1.5 border ${filter === "Complete"
+                    className={`px-5 py-2 rounded-full text-sm font-bold flex items-center gap-2 border ${filter === "Complete"
                       ? "border-[#069e5d] text-[#069e5d] bg-white"
-                      : "border-transparent text-gray-600 bg-gray-100 hover:bg-gray-200"
-                      } transition shadow-sm`}
+                      : "border-transparent text-gray-700 bg-[#ebebeb] hover:bg-[#e0e0e0]"
+                      } transition`}
                   >
                     Complete
                   </button>
@@ -249,7 +249,7 @@ export default function MyPujaBookings() {
                 </div>
               ) : (
                 <>
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className="flex flex-col gap-6 w-full">
                     {filteredBookings.map((booking) => {
                       const items: BookingItem[] =
                         booking.items && booking.items.length > 0
@@ -266,103 +266,98 @@ export default function MyPujaBookings() {
                       return (
                         <div
                           key={booking._id}
-                          className="bg-white rounded-2xl border border-[#a7f3d0] shadow-sm hover:shadow-md transition-all p-5 flex flex-col relative"
+                          className="bg-white rounded-[20px] border border-[#a8d5c0] p-5 hover:shadow-sm transition mb-4 relative w-full"
                         >
-                          {/* Top: Date and Booking ID */}
-                          <div className="flex justify-between items-center mb-5 pb-4 border-b border-gray-100">
-                            <div className="flex items-center gap-2 text-gray-900 font-bold text-sm">
-                              <svg className="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          {/* Card Header */}
+                          <div className="flex justify-between items-center mb-3">
+                            <div className="flex items-center gap-2 font-bold text-gray-800 text-[13px] sm:text-[15px]">
+                              <svg className="w-4 h-4 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                               </svg>
-                              {formatDate(booking.bookingDate)}
+                              <span>{formatDate(booking.bookingDate)}</span>
                             </div>
-                            <div className="text-sm font-semibold text-gray-600">
-                              Booking: <span className="text-[#3498db]">#{booking.orderId}</span>
+                            <div className="font-bold text-gray-800 text-[13px] sm:text-[15px]">
+                              Booking: <span className="text-[#3b82f6]">#{booking.orderId}</span>
                             </div>
                           </div>
 
-                          {items.map((item, idx) => (
-                            <div key={idx} className="mb-6 flex-1">
-                              <div className="flex gap-4 items-center">
-                                {/* Image */}
-                                <div className="w-24 h-16 sm:w-28 sm:h-20 rounded-lg overflow-hidden shrink-0 relative bg-gray-100 border border-gray-100">
-                                  {item.imageUrl ? (
-                                    <Image src={item.imageUrl} alt={item.title} className="w-full h-full object-cover" />
-                                  ) : (
-                                    <div className="w-full h-full bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center">
-                                      <i className="fa-solid fa-om text-white text-2xl"></i>
-                                    </div>
-                                  )}
-                                  {/* Optional small overlay tag */}
-                                  <div className="absolute top-1 left-1 bg-white rounded flex flex-col items-center px-1 py-0.5 border border-amber-200">
-                                    <span className="text-[7px] font-bold text-amber-600 leading-none">Rahu Shanti</span>
-                                    <span className="text-[7px] font-bold text-gray-800 leading-none">Rudrabhishek</span>
-                                  </div>
-                                </div>
+                          <hr className="border-gray-100 mb-5" />
 
-                                {/* Info */}
-                                <div className="flex-1 min-w-0">
-                                  <h3 className="text-[#069e5d] font-bold text-[15px] sm:text-[17px] mb-1.5 truncate">{item.title}</h3>
-                                  <div className="flex items-center gap-1.5 text-gray-700 text-xs sm:text-sm font-semibold">
-                                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m0 0h4m-4 0V9a2 2 0 012-2h2a2 2 0 012 2v12" />
-                                    </svg>
-                                    <span className="truncate">Shri Rahu Temple, Paithani,</span>
+                          {/* Card Body */}
+                          {items.map((item, idx) => (
+                            <div key={idx} className="flex items-start gap-4 mb-6">
+                              <div className="w-24 h-16 sm:w-28 sm:h-18 bg-gray-200 rounded-lg overflow-hidden shrink-0 relative border border-gray-100">
+                                {item.imageUrl ? (
+                                  <Image src={item.imageUrl} alt={item.title} fill className="object-cover" />
+                                ) : (
+                                  <div className="w-full h-full bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center">
+                                    <i className="fa-solid fa-om text-white text-2xl"></i>
                                   </div>
+                                )}
+                              </div>
+                              <div>
+                                <h3 className="text-[16px] sm:text-[18px] font-bold text-[#069e5d] mb-1">{item.title}</h3>
+                                <div className="flex items-center gap-1.5 text-gray-700 font-bold text-[13px] sm:text-[15px]">
+                                  <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
+                                  </svg>
+                                  <span>Shri Rahu Temple, Paithani,</span>
                                 </div>
                               </div>
                             </div>
                           ))}
 
-                          {/* Progress Tracker Bottom */}
-                          <div className="flex items-start justify-between relative mt-4 pt-4 border-t border-gray-50 border-dashed pb-2">
-                            {/* Horizontal connecting line */}
-                            <div className="absolute top-9 left-[15%] right-[25%] h-[2px] bg-[#f0e6e1] z-0"></div>
-
-                            {/* Step 1: Booked */}
-                            <div className="relative z-10 flex flex-col items-center gap-1.5 flex-1">
-                              <div className="w-10 h-10 rounded-full bg-white border-[2.5px] border-[#069e5d] flex items-center justify-center text-[#069e5d] bg-[#f0fdf4]">
-                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                </svg>
-                              </div>
-                              <div className="text-center">
-                                <p className="text-[13px] font-extrabold text-gray-900 leading-tight">Booked</p>
+                          {/* Progress Tracker */}
+                          <div className="relative max-w-[380px] mt-8 pb-2">
+                            {/* Background lines */}
+                            <div className="absolute top-6 left-12 right-1/2 h-[3px] bg-[#eadecd] -z-10"></div>
+                            <div className="absolute top-6 left-1/2 right-14 h-[3px] bg-[#eadecd] -z-10"></div>
+                            
+                            <div className="flex justify-between items-start text-center">
+                              {/* Step 1 */}
+                              <div className="flex flex-col items-center w-24">
+                                <div className="w-12 h-12 rounded-full border-[2px] border-[#069e5d] bg-white flex items-center justify-center mb-2 z-10 shadow-sm relative">
+                                  {/* calendar icon */}
+                                  <svg className="w-5 h-5 text-[#069e5d]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 12l2 2 4-4" />
+                                  </svg>
+                                </div>
+                                <p className="text-[12px] font-extrabold text-gray-900 leading-tight">Booked</p>
                                 <div className="flex items-center justify-center gap-1 mt-0.5">
-                                  <span className="text-[11px] text-gray-600 font-bold">{formatDate(booking.bookingDate)}</span>
+                                  <span className="text-[11px] font-bold text-gray-600">{formatDate(booking.bookingDate)}</span>
                                   <div className="w-3.5 h-3.5 rounded-full bg-[#069e5d] text-white flex items-center justify-center shrink-0">
-                                    <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
+                                    <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="4">
                                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                                     </svg>
                                   </div>
                                 </div>
                               </div>
-                            </div>
 
-                            {/* Step 2: Scheduled */}
-                            <div className="relative z-10 flex flex-col items-center gap-1.5 flex-1">
-                              <div className="w-10 h-10 rounded-full bg-[#fcf9f8] border-[2.5px] border-[#f0e6e1] flex items-center justify-center text-gray-400">
-                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-                                </svg>
+                              {/* Step 2 */}
+                              <div className="flex flex-col items-center w-24">
+                                <div className="w-12 h-12 rounded-full bg-[#fae8e3] flex items-center justify-center mb-2 z-10 shadow-[0_0_0_4px_white]">
+                                  {/* diya icon */}
+                                  <svg className="w-6 h-6 text-[#a3948e]" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 2C8 2 8 8 8 8s-4 0-4 4c0 3 4 5 8 8 4-3 8-5 8-8 0-4-4-4-4-4s0-6-4-6zm0 13c-2 0-4-1-5-2 1 1 3 2 5 2s4-1 5-2c-1 1-3 2-5 2z" />
+                                  </svg>
+                                </div>
+                                <p className="text-[12px] font-bold text-[#a8a19d] leading-tight">Puja Scheduled</p>
+                                <p className="text-[11px] font-bold text-[#a8a19d] mt-0.5">on {getScheduledDate(booking.bookingDate)}</p>
                               </div>
-                              <div className="text-center">
-                                <p className="text-[13px] font-bold text-gray-400 leading-tight">Puja Scheduled</p>
-                                <p className="text-[11px] text-gray-400 font-bold mt-0.5">on {getScheduledDate(booking.bookingDate)}</p>
-                              </div>
-                            </div>
 
-                            {/* Step 3: Video */}
-                            <div className="relative z-10 flex flex-col items-center gap-1.5 flex-1">
-                              <button className="bg-[#f0e6e1] text-[#9c9189] text-[11px] font-bold px-3 py-1.5 rounded-full flex items-center gap-1 cursor-not-allowed mt-1.5">
-                                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                                  <path d="M4 4l12 6-12 6V4z" />
-                                </svg>
-                                Puja Video
-                              </button>
-                              <p className="text-[9px] text-[#9c9189] font-bold text-center leading-tight mt-1 px-2">
-                                Available only after<br />puja performed
-                              </p>
+                              {/* Step 3 */}
+                              <div className="flex flex-col items-center w-28">
+                                <div className="h-12 flex items-center justify-center mb-2 z-10 shadow-[0_0_0_4px_white]">
+                                  <div className="px-4 py-1.5 rounded-full bg-[#edeae8] text-[#a09691] font-bold text-[12px] flex items-center gap-1.5">
+                                    <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 24 24">
+                                      <path d="M8 5v14l11-7z" />
+                                    </svg>
+                                    Puja Video
+                                  </div>
+                                </div>
+                                <p className="text-[10px] font-bold text-[#a8a19d] leading-tight px-1">Available only after puja performed</p>
+                              </div>
                             </div>
                           </div>
                         </div>
