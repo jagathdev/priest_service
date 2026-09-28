@@ -59,9 +59,8 @@ const AccountPanel = ({ accountOpen, setAccountOpen, user, setLoginModalOpen, ha
           <div className="px-3 py-2 border-b border-gray-100">
             <p className="px-2 py-2 text-[11px] font-bold uppercase tracking-widest text-gray-400">Account Details</p>
             {[
-              { href: user ? "/profile" : "#", label: "My profile", icon: <PersonIcon /> },
+              { href: user ? "/account" : "#", label: "My profile", icon: <PersonIcon /> },
               { href: user ? "/bookings/puja" : "#", label: "My Puja Bookings", icon: <BookingIcon /> },
-              { href: user ? "/bookings/chadhava" : "#", label: "My Chadhava Bookings", icon: <BookingIcon /> },
               { href: user ? "/puja" : "#", label: "Book a Puja", icon: <FlameIcon />, badge: "New" },
             ].map((item) => (
               <Link
@@ -87,44 +86,22 @@ const AccountPanel = ({ accountOpen, setAccountOpen, user, setLoginModalOpen, ha
             </p>
             {[
               { href: "/dashboard", label: "Home", icon: <HomeIcon /> },
-              { href: "/panchang", label: "Panchang", icon: <CalendarIcon /> },
               { href: "/puja", label: "Puja Seva", icon: <FlameIcon />, badge: "New" },
-              { href: "/chadhava", label: "Chadhava Seva", icon: <BowlIcon />, badge: "New" },
-              { href: "/library", label: "Library", icon: <BookIcon /> },
-              { href: "/temples", label: "Temples of India", icon: <TempleIcon /> },
-              { href: "/astro-tools", label: "Astro Tools", icon: <StarIcon /> },
-              { href: "https://AstroVed-tau.vercel.app/", label: "Store", icon: <StoreIcon />, badge: "New", external: true },
+              { href: "/homa", label: "Homa Seva", icon: <FlameIcon />, badge: "New" },
             ].map((item) => (
-              item.external ? (
-                <a
-                  key={item.label}
-                  href={item.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-between px-3 py-3.5 rounded-xl hover:bg-gray-50 transition-colors group"
-                >
-                  <div className="flex items-center gap-4">
-                    <span className="text-gray-400 w-5 flex justify-center">{item.icon}</span>
-                    <span className="text-[14px] font-semibold text-gray-700">{item.label}</span>
-                    {item.badge && <span className="bg-green-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">{item.badge}</span>}
-                  </div>
-                  <ChevronRight />
-                </a>
-              ) : (
-                <Link
-                  key={item.label}
-                  href={item.href}
-                  onClick={() => setAccountOpen(false)}
-                  className="flex items-center justify-between px-3 py-3.5 rounded-xl hover:bg-gray-50 transition-colors group"
-                >
-                  <div className="flex items-center gap-4">
-                    <span className="text-gray-400 w-5 flex justify-center">{item.icon}</span>
-                    <span className="text-[14px] font-semibold text-gray-700">{item.label}</span>
-                    {item.badge && <span className="bg-green-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">{item.badge}</span>}
-                  </div>
-                  <ChevronRight />
-                </Link>
-              )
+              <Link
+                key={item.label}
+                href={item.href}
+                onClick={() => setAccountOpen(false)}
+                className="flex items-center justify-between px-3 py-3.5 rounded-xl hover:bg-gray-50 transition-colors group"
+              >
+                <div className="flex items-center gap-4">
+                  <span className="text-gray-400 w-5 flex justify-center">{item.icon}</span>
+                  <span className="text-[14px] font-semibold text-gray-700">{item.label}</span>
+                  {item.badge && <span className="bg-green-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">{item.badge}</span>}
+                </div>
+                <ChevronRight />
+              </Link>
             ))}
           </div>
 
@@ -173,12 +150,7 @@ type SupportedLanguage = "en" | "hi" | "ta" | "te" | "kn";
 const navKeys = [
   { key: "home", path: "/dashboard" },
   { key: "puja", path: "/puja" },
-  { key: "chadhava", path: "/chadhava" },
-  { key: "panchang", path: "/panchang" },
-  { key: "temples", path: "/temples" },
-  { key: "library", path: "/library" },
-  { key: "astroTools", path: "/astro-tools" },
-  { key: "store", path: "https://AstroVed-tau.vercel.app/", external: true },
+  { key: "homa", path: "/homa" },
 ];
 
 const languageFullNames: Record<string, string> = {
@@ -281,14 +253,14 @@ export default function Navbar() {
                 </Link>
               </li>
               <li>
-                <Link href="/chadhava" className={isActivePath("/chadhava") ? "text-[#069e5d] font-extrabold border-b-2 border-[#069e5d] pb-1" : "transition-colors hover:text-[#069e5d] uppercase"}>
-                  SEVAS
+                <Link href="/homa" className={isActivePath("/homa") ? "text-[#069e5d] font-extrabold border-b-2 border-[#069e5d] pb-1" : "transition-colors hover:text-[#069e5d] uppercase"}>
+                  HOMAS
                 </Link>
               </li>
               <li>
-                <button onClick={() => setAccountOpen(true)} className="uppercase transition-colors hover:text-[#069e5d]">
+                <Link href="/account" className={isActivePath("/account") || isActivePath("/profile") ? "text-[#069e5d] font-extrabold border-b-2 border-[#069e5d] pb-1" : "transition-colors hover:text-[#069e5d] uppercase"}>
                   ACCOUNT
-                </button>
+                </Link>
               </li>
             </ul>
           </nav>

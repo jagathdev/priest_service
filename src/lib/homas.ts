@@ -443,25 +443,6 @@ export const defaultDetails: PujaDetails = {
   ],
 };
 
-export const fallbackPujas: PujaRecord[] = [
-  {
-    title: '11,00,000 Lakshmi Beej Mantra Jaap | 19th April 26',
-    shortTitle: 'Akshaya Tritiya Special',
-    subtitle: 'MAHAMANTRA ANUSH TTHI DEEP homa',
-    badge: 'Special Event',
-    description:
-      'Become part of this rare grand mahapuja and receive divine blessings for wealth and prosperity.',
-    imageUrl:
-      'https://images.unsplash.com/photo-1542909168-82c3e7fdca5c?auto=format&fit=crop&w=1600&q=80',
-    location: 'Shri Gajalakshmi Temple, Ujjain, Madhya Pradesh',
-    date: '19-04-2026',
-    eventDateTime: '2026-04-19T18:30',
-    buttonText: 'Participate',
-    slug: '1100000-lakshmi-beej-mantra-jaap-19th-april-26',
-    details: defaultDetails,
-    packages: defaultPackages,
-  },
-];
 
 export const normalizePuja = (homa: any, offeringsMap: Record<string, any> = {}) => {
   const record = homa as PujaRecord;
@@ -553,15 +534,15 @@ export async function getAllHomas() {
   const offeringsMap = Object.fromEntries(offeringsData.map(o => [String(o._id), o]));
 
   const normalized = (items as any[]).map(p => normalizePuja(p, offeringsMap));
-  const allHomas = normalized.length > 0 ? normalized : fallbackPujas.map(p => normalizePuja(p, offeringsMap));
 
-  return allHomas.filter(
+  return normalized.filter(
     (item: any) => String(item.status || "active").toLowerCase() !== "inactive"
   );
 }
 
 export async function getHomaBySlug(slug: string) {
   const allHomas = await getAllHomas();
-  const found = allHomas.find((p) => p.slug === slug);
+  const targetSlug = slugify(slug);
+  const found = allHomas.find((p) => p.slug === slug || slugify(p.slug || p.title) === targetSlug);
   return found || null;
 }

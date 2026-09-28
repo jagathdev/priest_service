@@ -1,36 +1,29 @@
 "use client";
-import React, { useEffect, useState, useCallback } from "react";
+
+import React, { useEffect, useState, useMemo } from "react";
 import Navbar from "@/components/layout/Navbar";
-import { SparklesIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { useTranslation } from "@/contexts/LanguageContext";
-import ReviewsSection from "@/components/common/ReviewsSection";
-import HowItWorksCarousel from "@/components/common/HowItWorksCarousel";
+import Footer from "@/components/layout/Footer";
 
-interface homa {
+interface Homa {
   _id: string;
   title: string;
   subtitle?: string;
+  shortTitle?: string;
   description?: string;
   imageUrl: string;
   badge?: string;
-  shortTitle?: string;
-  buttonText: string;
+  buttonText?: string;
   location?: string;
   date?: string;
   slug?: string;
-  details?: {
-    benefits?: { title: string; description: string }[];
-    templeLocation?: string;
-  };
   deity?: string;
-  tithis?: string;
   dosha?: string;
-  benefit?: string;
-  filterLocation?: string;
-  productId?: number;
+  homaType?: string;
+  price?: number;
+  packages?: { price?: number }[];
 }
-
 
 const slugify = (value: string) =>
   value
@@ -40,772 +33,504 @@ const slugify = (value: string) =>
     .replace(/\s+/g, "-")
     .replace(/-+/g, "-");
 
-// --- filter config ------------------------------------------------------------
-// Each option has a `value` (what we store) and `keywords` (matched against homa text)
-const filterGroups = [
-  {
-    label: "Deity",
-    options: [
-      { value: "All", keywords: [] },
-      { value: "Ganapathi", keywords: ["ganapathi", "ganesh", "ganesha", "vinayaka"] },
-      { value: "Lakshmi", keywords: ["lakshmi", "laxmi"] },
-      { value: "Shiva", keywords: ["shiva", "shiv", "mahadev", "shankar"] },
-      { value: "Vishnu", keywords: ["vishnu", "narayan", "narayana"] },
-      { value: "Hanuman", keywords: ["hanuman", "anjaneya", "maruti"] },
-      { value: "Durga", keywords: ["durga", "devi", "kali", "ambika"] },
-      { value: "Saraswati", keywords: ["saraswati", "saraswathi"] },
-    ],
-  },
-  {
-    label: "Tithis",
-    options: [
-      { value: "All", keywords: [] },
-      { value: "Ekadashi", keywords: ["ekadashi"] },
-      { value: "Purnima", keywords: ["purnima", "poornima", "full moon"] },
-      { value: "Amavasya", keywords: ["amavasya", "new moon"] },
-      { value: "Pradosh", keywords: ["pradosh", "pradosham"] },
-      { value: "Navami", keywords: ["navami"] },
-    ],
-  },
-  {
-    label: "Dosha",
-    options: [
-      { value: "All", keywords: [] },
-      { value: "Mangal Dosha", keywords: ["mangal", "manglik"] },
-      { value: "Kala Sarpa", keywords: ["kala sarpa", "kalasarpa", "kalsarpa"] },
-      { value: "Pitru Dosha", keywords: ["pitru", "pitra", "ancestor"] },
-      { value: "Shani Dosha", keywords: ["shani", "saturn", "sade sati"] },
-    ],
-  },
-  {
-    label: "Benefits",
-    options: [
-      { value: "All", keywords: [] },
-      { value: "Prosperity", keywords: ["prosperity", "wealth", "financial", "money", "abundance", "lakshmi"] },
-      { value: "Protection", keywords: ["protection", "shield", "guard", "safety"] },
-      { value: "Peace", keywords: ["peace", "shanti", "calm", "harmony"] },
-      { value: "Health", keywords: ["health", "healing", "disease", "wellness"] },
-      { value: "Career", keywords: ["career", "job", "business", "success", "growth"] },
-      { value: "Marriage", keywords: ["marriage", "wedding", "vivah", "spouse"] },
-    ],
-  },
-  {
-    label: "Location",
-    options: [
-      { value: "All", keywords: [] },
-      { value: "Tamil Nadu", keywords: ["tamil nadu", "tamilnadu"] },
-      { value: "Karnataka", keywords: ["karnataka", "bangalore", "bengaluru", "mysore"] },
-      { value: "Kerala", keywords: ["kerala"] },
-      { value: "Uttar Pradesh", keywords: ["uttar pradesh", "varanasi", "kashi", "mathura", "vrindavan", "ujjain"] },
-      { value: "Andhra Pradesh", keywords: ["andhra", "tirupati", "hyderabad"] },
-      { value: "Rajasthan", keywords: ["rajasthan", "jaipur", "pushkar"] },
-    ],
-  },
-];
-
-type FilterState = Record<string, string[]>; // label -> array of selected values
-
-const defaultFilters: FilterState = {
-  Deity: [],
-  Tithis: [],
-  Dosha: [],
-  Benefits: [],
-  Location: [],
-};
-
-const filterOptionImages: Record<string, string> = {
-  Ganapathi: "/images/Ganesh-Chaturthi-Mahapuja.jpg",
-  Lakshmi: "/images/Lakshmi-Homam.jpg",
-  Shiva: "/images/Navagraha-Shanti-homa.jpg",
-  Vishnu: "/images/Lakshmi-Beej-Mantra.jpg",
-  Hanuman: "/images/Navagraha-Shanti-homa.jpg",
-  Durga: "/images/maa-kali.jpg",
-  Saraswati: "/images/Maa-saraswathi.jpg",
-  Ekadashi: "/images/Lakshmi-Beej-Mantra.jpg",
-  Purnima: "/images/Maa-saraswathi.jpg",
-  Amavasya: "/images/maa-kali.jpg",
-  Pradosh: "/images/Navagraha-Shanti-homa.jpg",
-  Navami: "/images/Ganesh-Chaturthi-Mahapuja.jpg",
-  "Mangal Dosha": "/images/Navagraha-Shanti-homa.jpg",
-  "Kala Sarpa": "/images/maa-kali.jpg",
-  "Pitru Dosha": "/images/Lakshmi-Homam.jpg",
-  "Shani Dosha": "/images/Navagraha-Shanti-homa.jpg",
-  Prosperity: "/images/Lakshmi-Homam.jpg",
-  Protection: "/images/maa-kali.jpg",
-  Peace: "/images/Maa-saraswathi.jpg",
-  Health: "/images/Lakshmi-Beej-Mantra.jpg",
-  Career: "/images/Ganesh-Chaturthi-Mahapuja.jpg",
-  Marriage: "/images/Lakshmi-Homam.jpg",
-  "Tamil Nadu": "/images/Maa-saraswathi.jpg",
-  Karnataka: "/images/Ganesh-Chaturthi-Mahapuja.jpg",
-  Kerala: "/images/Lakshmi-Beej-Mantra.jpg",
-  "Uttar Pradesh": "/images/Navagraha-Shanti-homa.jpg",
-  "Andhra Pradesh": "/images/Lakshmi-Homam.jpg",
-  Rajasthan: "/images/maa-kali.jpg",
-};
-
-/** Returns true if the homa matches ALL active filters */
-function pujaMatchesFilters(homa: homa, filters: FilterState): boolean {
-  const fieldMapping: Record<string, keyof homa> = {
-    Deity: "deity",
-    Tithis: "tithis",
-    Dosha: "dosha",
-    Benefits: "benefit",
-    Location: "filterLocation",
-  };
-
-  const searchText = [
-    homa.title,
-    homa.subtitle,
-    homa.description,
-    homa.location,
-    homa.badge,
-    ...(homa.details?.benefits?.map((b) => `${b.title} ${b.description}`) ?? []),
-    homa.details?.templeLocation,
-  ]
-    .filter(Boolean)
-    .join(" ")
-    .toLowerCase();
-
-  for (const group of filterGroups) {
-    const selectedValues = filters[group.label];
-    if (!selectedValues || selectedValues.length === 0) continue;
-
-    const groupMatches = selectedValues.some((selectedValue) => {
-      const fieldName = fieldMapping[group.label];
-      const savedValue = fieldName ? homa[fieldName] : undefined;
-
-      if (typeof savedValue === "string" && savedValue.trim()) {
-        return savedValue.trim().toLowerCase() === selectedValue.toLowerCase();
-      }
-
-      const optionConfig = group.options.find((o) => o.value === selectedValue);
-      if (!optionConfig || optionConfig.keywords.length === 0) return false;
-      return optionConfig.keywords.some((kw) => searchText.includes(kw));
-    });
-
-    if (!groupMatches) return false;
-  }
-  return true;
-}
-
-
-function PujaFilterModal({
-  filters,
-  onClose,
-  onApply,
-  onClear,
-}: {
-  filters: FilterState;
-  onClose: () => void;
-  onApply: (filters: FilterState) => void;
-  onClear: () => void;
-}) {
-  const [draftFilters, setDraftFilters] = useState<FilterState>(filters);
-
-  const selectFilter = (label: string, value: string) => {
-    setDraftFilters((prev) => {
-      const current = prev[label] || [];
-      if (current.includes(value)) {
-        return { ...prev, [label]: current.filter((v) => v !== value) };
-      } else {
-        return { ...prev, [label]: [...current, value] };
-      }
-    });
-  };
-
-  const renderCheckboxOption = (groupLabel: string, value: string) => {
-    const selected = (draftFilters[groupLabel] || []).includes(value);
-
-    return (
-      <button
-        key={value}
-        type="button"
-        onClick={() => selectFilter(groupLabel, value)}
-        className="flex w-full items-start gap-3 text-left"
-        aria-pressed={selected}
-      >
-        <span className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border transition ${selected ? "border-[#2563eb] bg-[#2563eb] text-white" : "border-gray-200 bg-white text-transparent"
-          }`}>
-          <svg viewBox="0 0 12 12" fill="none" className="h-3 w-3">
-            <path d="M2.2 6.2 4.8 8.7 9.8 3.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </span>
-        <span className="text-base font-bold leading-6 text-[#1f2937]">{value}</span>
-      </button>
-    );
-  };
-
-  const deityGroup = filterGroups.find((group) => group.label === "Deity");
-  const compactGroups = filterGroups.filter((group) => ["Tithis", "Dosha", "Benefits"].includes(group.label));
-  const locationGroup = filterGroups.find((group) => group.label === "Location");
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-[#111827]/55 px-0 sm:px-4 py-0 sm:py-6 backdrop-blur-[1px]">
-      <div className="flex max-h-[92vh] sm:max-h-[92vh] w-full max-w-[920px] flex-col overflow-hidden rounded-t-2xl sm:rounded-2xl bg-white shadow-[0_24px_80px_rgba(15,23,42,0.28)]">
-        <div className="flex items-center justify-between border-b border-gray-100 px-6 py-5">
-          <h3 className="text-xl font-black text-[#1f1f1f]">homa Filters</h3>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close homa filters"
-            className="flex h-10 w-10 items-center justify-center rounded-full text-gray-700 transition hover:bg-gray-100"
-          >
-            <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6">
-              <path d="M6 6l12 12M18 6 6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-            </svg>
-          </button>
-        </div>
-
-        <div className="overflow-y-auto px-6 py-7">
-          <div className="space-y-9">
-            {deityGroup && (
-              <section>
-                <h4 className="mb-5 text-xl font-black text-[#1f1f1f]">{deityGroup.label}</h4>
-                <div className="grid grid-cols-3 gap-x-4 gap-y-5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-                  {deityGroup.options
-                    .filter((option) => option.value !== "All")
-                    .map((option) => {
-                      const selected = (draftFilters[deityGroup.label] || []).includes(option.value);
-
-                      return (
-                        <button
-                          key={option.value}
-                          type="button"
-                          onClick={() => selectFilter(deityGroup.label, option.value)}
-                          className="text-center"
-                          aria-pressed={selected}
-                        >
-                          <span className={`relative mx-auto block h-24 w-24 overflow-hidden rounded-lg border-2 transition ${selected ? "border-[#5B5BF6] shadow-[0_0_0_3px_rgba(91,91,246,0.2)]" : "border-transparent hover:border-gray-200"
-                            }`}>
-                            <img
-                              src={filterOptionImages[option.value] || "/images/Lakshmi-Homam.jpg"}
-                              alt={option.value}
-                              className="h-full w-full object-cover"
-                            />
-                            {/* Selected overlay with big centered checkmark */}
-                            {selected && (
-                              <span className="absolute inset-0 flex items-center justify-center bg-[#5B5BF6]/50">
-                                <svg viewBox="0 0 24 24" fill="none" className="h-10 w-10 drop-shadow-lg">
-                                  <circle cx="12" cy="12" r="11" fill="white" />
-                                  <path d="M6.5 12.5 10.5 16.5 17.5 8" stroke="#5B5BF6" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-                                </svg>
-                              </span>
-                            )}
-                          </span>
-                          <span className={`mt-2 block text-sm font-bold leading-5 ${selected ? "text-[#5B5BF6]" : "text-[#1f2937]"
-                            }`}>
-                            {option.value}
-                          </span>
-                        </button>
-                      );
-                    })}
-                </div>
-              </section>
-            )}
-
-            <div className="grid gap-8 md:grid-cols-3">
-              {compactGroups.map((group) => (
-                <section key={group.label}>
-                  <h4 className="mb-5 text-xl font-black text-[#1f1f1f]">{group.label}</h4>
-                  <div className="space-y-4">
-                    {group.options
-                      .filter((option) => option.value !== "All")
-                      .map((option) => renderCheckboxOption(group.label, option.value))}
-                  </div>
-                </section>
-              ))}
-            </div>
-
-            {locationGroup && (
-              <section>
-                <h4 className="mb-5 text-xl font-black text-[#1f1f1f]">{locationGroup.label}</h4>
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  {locationGroup.options
-                    .filter((option) => option.value !== "All")
-                    .map((option) => renderCheckboxOption(locationGroup.label, option.value))}
-                </div>
-              </section>
-            )}
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-4 border-t border-gray-100 px-6 py-5 sm:flex-row">
-          <button
-            type="button"
-            onClick={() => {
-              setDraftFilters(defaultFilters);
-              onClear();
-            }}
-            className="h-14 rounded border border-gray-200 bg-white px-12 text-base font-bold text-[#1f1f1f] transition hover:bg-gray-50"
-          >
-            Clear Filter
-          </button>
-          <button
-            type="button"
-            onClick={() => onApply(draftFilters)}
-            className="h-14 rounded bg-[#2563eb] px-14 text-base font-bold text-white shadow-sm transition hover:bg-[#1d4ed8]"
-          >
-            Apply Filter
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// --- Main Page ----------------------------------------------------------------
-export default function PujaPage() {
+export default function HomaPage() {
   const { t } = useTranslation();
-  const [allPujas, setAllPujas] = useState<homa[]>([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [allHomas, setAllHomas] = useState<Homa[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [filters, setFilters] = useState<FilterState>(defaultFilters);
-  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedType, setSelectedType] = useState("All Homas");
+  const [selectedDeities, setSelectedDeities] = useState<string[]>([]);
+  const [selectedDoshas, setSelectedDoshas] = useState<string[]>([]);
+  const [favorites, setFavorites] = useState<Record<string, boolean>>({});
 
-  // Fetch all homas once
+  // Fetch homas from API endpoint
   useEffect(() => {
     fetch("/api/homa")
       .then((r) => (r.ok ? r.json() : []))
-      .then((data: homa[]) => setAllPujas(Array.isArray(data) ? data : []))
-      .catch(() => setAllPujas([]))
+      .then((data: Homa[]) => {
+        setAllHomas(Array.isArray(data) && data.length > 0 ? data : []);
+      })
+      .catch(() => setAllHomas([]))
       .finally(() => setIsLoading(false));
   }, []);
 
-  const defaultBanners: homa[] = [
-    {
-      _id: "default-1",
-      title: "Ganesh Chaturthi Mahapuja",
-      location: "Maharashtra",
-      date: "Available Daily",
-      imageUrl: "/images/Ganesh-Chaturthi-Mahapuja.jpg",
-      buttonText: "Participate Now",
-      slug: "ganesh-chaturthi-mahapuja",
-    },
-    {
-      _id: "default-2",
-      title: "Navagraha Shanti homa",
-      location: "Tamil Nadu",
-      date: "Available Daily",
-      imageUrl: "/images/Navagraha-Shanti-homa.jpg",
-      buttonText: "Participate Now",
-      slug: "navagraha-shanti-homa",
-    },
-    {
-      _id: "default-3",
-      title: "Lakshmi Homam",
-      location: "Karnataka",
-      date: "Available Daily",
-      imageUrl: "/images/Lakshmi-Homam.jpg",
-      buttonText: "Participate Now",
-      slug: "lakshmi-homam",
-    }
+  const toggleFavorite = (id: string) => {
+    setFavorites((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const toggleDeity = (deity: string) => {
+    setSelectedDeities((prev) =>
+      prev.includes(deity) ? prev.filter((d) => d !== deity) : [...prev, deity]
+    );
+  };
+
+  const toggleDosha = (dosha: string) => {
+    setSelectedDoshas((prev) =>
+      prev.includes(dosha) ? prev.filter((d) => d !== dosha) : [...prev, dosha]
+    );
+  };
+
+  // Filter homas
+  const displayedHomas = useMemo(() => {
+    return allHomas.filter((homa) => {
+      // Search filter
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        const textMatch =
+          homa.title.toLowerCase().includes(q) ||
+          (homa.description && homa.description.toLowerCase().includes(q)) ||
+          (homa.location && homa.location.toLowerCase().includes(q)) ||
+          (homa.subtitle && homa.subtitle.toLowerCase().includes(q));
+        if (!textMatch) return false;
+      }
+
+      // Type filter
+      if (selectedType !== "All Homas") {
+        if (homa.homaType && homa.homaType !== selectedType) {
+          const keyword = selectedType.toLowerCase().replace(" homa", "");
+          const matchesKeyword = homa.title.toLowerCase().includes(keyword);
+          if (!matchesKeyword) return false;
+        }
+      }
+
+      // Deity filter
+      if (selectedDeities.length > 0) {
+        const matchedDeity = selectedDeities.some(
+          (d) =>
+            (homa.deity && homa.deity.toLowerCase() === d.toLowerCase()) ||
+            homa.title.toLowerCase().includes(d.toLowerCase()) ||
+            (homa.description && homa.description.toLowerCase().includes(d.toLowerCase()))
+        );
+        if (!matchedDeity) return false;
+      }
+
+      // Dosha filter
+      if (selectedDoshas.length > 0) {
+        const matchedDosha = selectedDoshas.some(
+          (d) =>
+            (homa.dosha && homa.dosha.toLowerCase() === d.toLowerCase()) ||
+            homa.title.toLowerCase().includes(d.toLowerCase()) ||
+            (homa.subtitle && homa.subtitle.toLowerCase().includes(d.toLowerCase())) ||
+            (homa.description && homa.description.toLowerCase().includes(d.toLowerCase()))
+        );
+        if (!matchedDosha) return false;
+      }
+
+      return true;
+    });
+  }, [allHomas, searchQuery, selectedType, selectedDeities, selectedDoshas]);
+
+  const homaTypeOptions = [
+    { label: "All Homas", count: allHomas.length },
+    { label: "Daily Homa", count: allHomas.filter((h) => h.homaType === "Daily Homa").length },
+    { label: "Weekly Homa", count: allHomas.filter((h) => h.homaType === "Weekly Homa").length },
+    { label: "Monthly Homa", count: allHomas.filter((h) => h.homaType === "Monthly Homa").length },
+    { label: "Special Homa", count: allHomas.filter((h) => h.homaType === "Special Homa").length },
   ];
 
-  // Limit carousel to first 5 homas, or use default static banners if not loaded
-  const carouselPujas = allPujas.length > 0 ? allPujas.slice(0, 5) : defaultBanners;
+  const deityOptions = ["Shiva", "Hanuman", "Subramanya", "Venkateswara", "Navagraha", "Lakshmi"];
+  const doshaOptions = ["Rahu Dosham", "Pitru Dosha", "Mangal Dosha", "Shani Dosha"];
 
-  // Banner auto-rotate
-  useEffect(() => {
-    if (carouselPujas.length <= 1) return;
-    const id = setInterval(() => {
-      setCurrentIndex((prev) => (prev === carouselPujas.length - 1 ? 0 : prev + 1));
-    }, 4000);
-    return () => clearInterval(id);
-  }, [carouselPujas.length]);
-
-  const activeIndex = carouselPujas.length === 0 ? 0 : Math.min(currentIndex, carouselPujas.length - 1);
-
-  const clearFilters = () => setFilters(defaultFilters);
-  const applyFilters = useCallback((nextFilters: FilterState) => {
-    setFilters(nextFilters);
-    setIsFilterModalOpen(false);
-  }, []);
-
-  const hasActiveFilters = Object.values(filters).some((arr) => arr && arr.length > 0);
-
-  // -- Apply filters to get displayed homas --
-  const displayedPujas = allPujas.filter((p) => pujaMatchesFilters(p, filters));
   const howItWorksSteps = [
     {
-      title: t.puja.step1Title,
-      description: t.puja.step1Desc,
+      title: "Select your Homa",
+      description: "Choose your desired Homa & Yagya ritual from the listed offerings.",
       imageSrc: "/images/app-banner1.jpg",
-      imageAlt: "Choose a homa from the list",
-      tag: "Book homa",
-      cta: t.puja.bookNow,
+      imageAlt: "Select your Homa",
+      tag: "Book Homa",
+      cta: "Book Now",
     },
     {
-      title: t.puja.step2Title,
-      description: t.puja.step2Desc,
+      title: "Provide Sankalp Details",
+      description: "Enter Name, Gotram & Nakshatram for sacred prayer dedication.",
       imageSrc: "/images/app-banner2.jpg",
-      imageAlt: "Fill devotee information for the homa",
+      imageAlt: "Provide Devotee Details",
       tag: "Sankalp Details",
-      cta: t.puja.bookNow,
+      cta: "Book Now",
     },
     {
-      title: t.puja.step3Title,
-      description: t.puja.step3Desc,
+      title: "Vedic Ritual Performance",
+      description: "Learned Vedic Priests perform the homa with authentic procedures.",
       imageSrc: "/images/app-banner3.jpg",
-      imageAlt: "Receive homa video on WhatsApp",
-      tag: "homa Video",
-      cta: t.puja.bookNow,
+      imageAlt: "Vedic Ritual Performance",
+      tag: "Homa Performance",
+      cta: "Book Now",
     },
     {
-      title: t.puja.step4Title,
-      description: t.puja.step4Desc,
+      title: "Receive Video & Prasadam",
+      description: "Get full video recording on WhatsApp & sacred prasadam at home.",
       imageSrc: "/images/app-banner1.jpg",
-      imageAlt: "Receive aashirwad box at the registered address",
-      tag: "Aashirwad Box",
-      cta: t.puja.bookNow,
+      imageAlt: "Receive Video",
+      tag: "Video & Prasadam",
+      cta: "Book Now",
     },
   ];
 
   return (
     <>
       <Navbar />
-      <main className="min-h-screen bg-[#f9f9ff] py-10">
-        <div className="mx-auto max-w-[1440px] px-4 md:px-8">
+      <main className="min-h-screen bg-[#fafafc] pb-16 font-sans">
 
-          {/* Page Heading */}
-          <h1 className="mb-8 text-center text-[18px] font-bold leading-tight text-[#3b0764] md:text-[36px]">
-            {t.puja.heading}
-          </h1>
-
-          {/* Banner Carousel — instant render */}
-          <div className="relative overflow-hidden rounded-2xl border border-[#e3d9f8] shadow-[0_18px_48px_rgba(80,44,150,0.12)]">
-            <div className="overflow-hidden">
-              <div
-                className="flex transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]"
-                style={{ transform: `translateX(-${activeIndex * 100}%)` }}
-              >
-                {carouselPujas.map((homa, idx) => (
-                  <div
-                    key={homa._id}
-                    className="relative h-[460px] sm:h-[480px] w-full shrink-0 md:h-[400px] flex flex-col md:block bg-linear-to-br from-[#2e1065] via-[#3b0764] to-[#1e1b4b] overflow-hidden"
-                  >
-                    {/* Image Area: Top on mobile, Right on desktop */}
-                    <div className="relative w-full h-[220px] sm:h-[240px] md:absolute md:inset-y-0 md:right-0 md:w-[45%] md:h-full overflow-hidden flex items-center justify-center bg-black/10 select-none shrink-0">
-                      {/* Ambient background glow of the image (desktop only) */}
-                      <div
-                        className="absolute inset-0 opacity-20 blur-xl scale-125 hidden md:block"
-                        style={{
-                          backgroundImage: `url(${homa.imageUrl})`,
-                          backgroundSize: 'cover',
-                          backgroundPosition: 'center',
-                        }}
-                      />
-
-                      {/* Main Image */}
-                      <img
-                        src={homa.imageUrl}
-                        alt={homa.title}
-                        className={`w-full h-full object-cover object-top transition-all duration-[1400ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${idx === activeIndex ? 'scale-100 opacity-90 md:opacity-100' : 'scale-108 opacity-40'}`}
-                      />
-
-                      {/* Mobile bottom fade to blend top image into bottom purple area */}
-                      <div className="absolute inset-0 md:hidden bg-gradient-to-t from-[#3b0764] via-[#3b0764]/30 to-transparent" />
-
-                      {/* Premium Vignette Fade transition on desktop */}
-                      <div className="absolute inset-y-0 left-0 w-24 bg-linear-to-r from-[#3b0764] to-transparent hidden md:block z-20" />
-                    </div>
-
-                    {/* Content Area: Bottom on mobile, Left on desktop */}
-                    <div className="relative md:absolute md:inset-0 z-10 flex flex-col justify-center items-center md:items-start text-center md:text-left md:w-[60%] p-6 md:p-10 text-white flex-1">
-                      <div className="space-y-4 md:space-y-6 w-full flex flex-col items-center md:items-start">
-                        <h2
-                          className={`max-w-xl text-xl font-extrabold leading-tight sm:text-2xl md:text-3xl lg:text-4xl text-white md:text-transparent md:bg-clip-text md:bg-linear-to-r md:from-white md:via-slate-100 md:to-amber-100 drop-shadow-md transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${idx === activeIndex ? 'opacity-100 translate-y-0 delay-150' : 'opacity-0 translate-y-6 duration-300 delay-0'}`}
-                        >
-                          {homa.title}
-                        </h2>
-
-                        <div
-                          className={`flex flex-col sm:flex-row items-center justify-center md:justify-start gap-4 sm:gap-6 w-full transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${idx === activeIndex ? 'opacity-100 translate-y-0 delay-300' : 'opacity-0 translate-y-6 duration-300 delay-0'}`}
-                        >
-                          {/* Location */}
-                          {homa.location && (
-                            <div className="flex items-center gap-1.5 text-xs md:text-sm text-gray-200 md:text-purple-200">
-                              <svg className="w-4 h-4 text-amber-400 shrink-0 animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                              </svg>
-                              <span className="line-clamp-1">{homa.location}</span>
-                            </div>
-                          )}
-
-                          {/* CTA Button visible on mobile and desktop */}
-                          <Link
-                            href={`/homa/${homa.slug || slugify(homa.title)}`}
-                            className="inline-flex items-center gap-2 rounded-xl bg-amber-500 px-6 py-3 text-sm font-black text-[#3b0764] hover:bg-amber-400 transition-all hover:scale-105 shadow-lg shadow-amber-500/20 shrink-0"
-                          >
-                            {homa.buttonText || t.puja.bookNow}
-                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                            </svg>
-                          </Link>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Navigation Dots */}
-            <div className="absolute bottom-4 md:bottom-6 left-0 right-0 flex justify-center gap-2 z-20">
-              {carouselPujas.map((_, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => setCurrentIndex(i)}
-                  className={`h-2 rounded-full transition-all duration-300 ${i === activeIndex ? "w-8 bg-white" : "w-2 bg-white/50"}`}
-                />
-              ))}
-            </div>
-
-            <button
-              type="button"
-              onClick={() => setCurrentIndex((p) => (p === 0 ? carouselPujas.length - 1 : p - 1))}
-              aria-label="Previous slide"
-              className="absolute left-4 top-1/2 z-10 -translate-y-1/2 rounded-full bg-black/30 p-2.5 text-white backdrop-blur-sm transition hover:bg-black/50"
-            >
-              <svg viewBox="0 0 20 20" fill="none" className="h-5 w-5">
-                <path d="m12.5 4.5-5 5 5 5" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </button>
-            <button
-              type="button"
-              onClick={() => setCurrentIndex((p) => (p === carouselPujas.length - 1 ? 0 : p + 1))}
-              aria-label="Next slide"
-              className="absolute right-4 top-1/2 z-10 -translate-y-1/2 rounded-full bg-black/30 p-2.5 text-white backdrop-blur-sm transition hover:bg-black/50"
-            >
-              <svg viewBox="0 0 20 20" fill="none" className="h-5 w-5">
-                <path d="m7.5 4.5 5 5-5 5" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </button>
-          </div>
-
-
-          {/* Section */}
-          <section className="mt-12">
-            <h2 className="text-2xl font-bold text-[#3b0764] md:text-3xl">
-              {t.puja.sectionTitle}
-            </h2>
-            <p className="mt-2 max-w-3xl text-sm leading-6 text-[#1f1f1f] md:text-base">
-              {t.puja.sectionSubtitle}
+        {/* ── Top Header Hero Banner ── */}
+        <section className="bg-gradient-to-b from-[#fff7f8] via-[#ffffff] to-[#fafafc] pt-12 pb-10 text-center border-b border-gray-150">
+          <div className="mx-auto max-w-4xl px-4">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-[#5b1422] tracking-tight leading-tight font-serif">
+              Discover Sacred Pujas &amp; Divine Blessings
+            </h1>
+            <p className="mt-3 text-xs sm:text-sm text-gray-500 max-w-2xl mx-auto leading-relaxed font-medium">
+              Receive continued divine blessings through temple offerings performed with your Name, Gotram and Nakshatram.
             </p>
 
-            {/* -- Filter bar -- */}
-            <div className="mt-6">
-              <div className="flex items-center gap-3 overflow-x-auto no-scrollbar pb-1">
+            {/* Large Search & Filter Input Bar */}
+            <div className="mt-8 max-w-2xl mx-auto relative">
+              <div className="flex items-center bg-white rounded-full border border-gray-250 shadow-sm px-5 py-3 hover:border-gray-400 transition-all">
+                <svg className="w-5 h-5 text-gray-400 shrink-0 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="What homa are you looking for?"
+                  className="w-full bg-transparent border-none text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-0 px-2 font-medium"
+                />
                 <button
                   type="button"
-                  onClick={() => setIsFilterModalOpen(true)}
-                  className="flex shrink-0 items-center gap-2 rounded-full border border-gray-200 bg-white px-5 py-3 text-sm font-bold text-[#6869F9] shadow-sm transition hover:border-[#6869F9]/40 hover:bg-[#f5f3ff]"
+                  aria-label="Filter options"
+                  className="p-1.5 rounded-full hover:bg-gray-100 transition text-gray-600 shrink-0 border-l border-gray-200 pl-3"
                 >
-                  <svg viewBox="0 0 20 20" fill="none" className="h-4 w-4">
-                    <path d="M3 5h14M6 10h8M9 15h2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+                  <svg className="w-4 h-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
                   </svg>
-                  {t.puja.filter}
                 </button>
+              </div>
+            </div>
+          </div>
+        </section>
 
-                <div className="h-6 w-px shrink-0 bg-gray-200" />
+        {/* ── Main Layout: Left Sidebar + Right Card Grid ── */}
+        <div className="mx-auto max-w-[1360px] px-4 sm:px-6 lg:px-8 pt-10">
+          <div className="flex flex-col lg:flex-row gap-8 items-start">
 
-                {filterGroups.map((group) => {
-                  const activeCount = filters[group.label]?.length || 0;
-                  const isActive = activeCount > 0;
-                  return (
-                    <button
-                      key={group.label}
-                      type="button"
-                      onClick={() => setIsFilterModalOpen(true)}
-                      className={`flex shrink-0 items-center gap-1.5 rounded-full px-4 py-3 text-sm font-semibold transition ${isActive
-                        ? "bg-[#6869F9] text-white shadow-sm"
-                        : "bg-white text-gray-600 ring-1 ring-gray-200 hover:bg-gray-50"
-                        }`}
-                    >
-                      <span>{isActive ? (activeCount === 1 ? filters[group.label][0] : `${group.label} (${activeCount})`) : group.label}</span>
-                      <svg
-                        viewBox="0 0 16 16"
-                        fill="none"
-                        className="h-3.5 w-3.5"
+            {/* ── Left Sidebar Filter Card ── */}
+            <aside className="w-full lg:w-[270px] shrink-0 bg-white rounded-2xl border border-gray-200 shadow-xs p-5 space-y-6">
+
+              {/* Section 1: Homa Type */}
+              <div>
+                <h3 className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">Homa type</h3>
+                <div className="space-y-1">
+                  {homaTypeOptions.map((item) => {
+                    const isSelected = selectedType === item.label;
+                    return (
+                      <button
+                        key={item.label}
+                        type="button"
+                        onClick={() => setSelectedType(item.label)}
+                        className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all ${isSelected
+                          ? "bg-[#e8f5e9] text-[#069e5d] font-bold"
+                          : "text-gray-700 hover:bg-gray-50"
+                          }`}
                       >
-                        <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    </button>
-                  )
-                })}
-
-                {/* Clear all */}
-                {hasActiveFilters && (
-                  <button
-                    type="button"
-                    onClick={clearFilters}
-                    className="flex shrink-0 items-center gap-1.5 rounded-full border border-red-200 bg-red-50 px-4 py-2 text-sm font-medium text-red-500 transition hover:bg-red-100"
-                  >
-                    <svg viewBox="0 0 16 16" fill="none" className="h-3.5 w-3.5">
-                      <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                    </svg>
-                    {t.puja.clearAll}
-                  </button>
-                )}
+                        <span className="flex items-center gap-2">
+                          {isSelected && (
+                            <svg className="w-4 h-4 text-[#069e5d]" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          )}
+                          <span>{item.label}</span>
+                        </span>
+                        <span className={`text-xs px-2 py-0.5 rounded-full ${isSelected ? "bg-[#069e5d]/10 text-[#069e5d] font-bold" : "text-gray-400 font-mono"}`}>
+                          {item.count}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
-              {/* Active filter tags */}
-              {hasActiveFilters && (
-                <div className="mt-3 flex flex-wrap items-center gap-2">
-                  <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide">{t.puja.active}</span>
-                  {Object.entries(filters)
-                    .filter(([, v]) => v && v.length > 0)
-                    .flatMap(([key, values]) => values.map((val) => (
-                      <span
-                        key={`${key}-${val}`}
-                        className="inline-flex items-center gap-1.5 rounded-full bg-[#6869F9]/10 px-3 py-1 text-xs font-semibold text-[#6869F9]"
+              <hr className="border-gray-100" />
+
+              {/* Section 2: Deity */}
+              <div>
+                <h3 className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">Deity</h3>
+                <div className="space-y-2.5">
+                  {deityOptions.map((deity) => {
+                    const isChecked = selectedDeities.includes(deity);
+                    return (
+                      <label key={deity} className="flex items-center gap-3 text-xs sm:text-sm text-gray-700 font-medium cursor-pointer hover:text-gray-900 select-none">
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() => toggleDeity(deity)}
+                          className="w-4 h-4 rounded text-[#069e5d] focus:ring-[#069e5d] border-gray-300"
+                        />
+                        <span>{deity}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <hr className="border-gray-100" />
+
+              {/* Section 3: Dosha */}
+              <div>
+                <h3 className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">Dosha</h3>
+                <div className="space-y-2.5">
+                  {doshaOptions.map((dosha) => {
+                    const isChecked = selectedDoshas.includes(dosha);
+                    return (
+                      <label key={dosha} className="flex items-center gap-3 text-xs sm:text-sm text-gray-700 font-medium cursor-pointer hover:text-gray-900 select-none">
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() => toggleDosha(dosha)}
+                          className="w-4 h-4 rounded text-[#069e5d] focus:ring-[#069e5d] border-gray-300"
+                        />
+                        <span>{dosha}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {(selectedDeities.length > 0 || selectedDoshas.length > 0 || selectedType !== "All Homas" || searchQuery) && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedType("All Homas");
+                    setSelectedDeities([]);
+                    setSelectedDoshas([]);
+                    setSearchQuery("");
+                  }}
+                  className="w-full py-2.5 text-xs font-bold text-red-500 hover:bg-red-50 rounded-xl transition border border-red-100 mt-2"
+                >
+                  Clear All Filters
+                </button>
+              )}
+            </aside>
+
+            {/* ── Right Content Area ── */}
+            <div className="flex-1 w-full">
+
+              {/* Title Header Bar */}
+              <div className="flex items-center justify-between mb-6 pb-2 border-b border-gray-150">
+                <div>
+                  <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
+                    {selectedType === "All Homas" ? "All Homas" : selectedType}
+                  </h2>
+                  <p className="text-xs text-gray-500 mt-1 font-medium">
+                    Daily, Weekly and Monthly Homas for peace, prosperity and divine blessings.
+                  </p>
+                </div>
+                <span className="text-xs font-semibold text-gray-400 font-mono">
+                  {displayedHomas.length} {displayedHomas.length === 1 ? "Homa" : "Homas"}
+                </span>
+              </div>
+
+              {/* Homa Cards Grid (3 Columns) */}
+              {isLoading ? (
+                <div className="py-24 text-center text-gray-400 font-medium">Loading sacred homas...</div>
+              ) : displayedHomas.length === 0 ? (
+                <div className="bg-white rounded-2xl border border-dashed border-gray-250 p-12 text-center shadow-xs">
+                  <p className="text-base font-bold text-gray-700">No homas found matching your filters</p>
+                  <p className="text-xs text-gray-400 mt-1">Try searching with another deity, dosha or clear filters.</p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedType("All Homas");
+                      setSelectedDeities([]);
+                      setSelectedDoshas([]);
+                      setSearchQuery("");
+                    }}
+                    className="mt-4 px-6 py-2.5 rounded-full bg-[#069e5d] text-white text-xs font-bold hover:bg-[#058a51] transition"
+                  >
+                    Clear Filters
+                  </button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                  {displayedHomas.map((homa) => {
+                    const priceVal = homa.price || homa.packages?.[0]?.price || 516;
+                    const isFav = !!favorites[homa._id];
+
+                    return (
+                      <div
+                        key={homa._id}
+                        className="bg-white rounded-2xl border border-gray-200 shadow-xs hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col group relative"
                       >
-                        {key}: {val}
-                        <button
-                          type="button"
-                          onClick={() => setFilters((p) => ({ ...p, [key]: p[key].filter(v => v !== val) }))}
-                          aria-label={`Remove ${key} filter`}
-                          className="ml-0.5 rounded-full hover:opacity-70 transition-opacity"
-                        >
-                          <svg viewBox="0 0 12 12" fill="none" className="h-3 w-3">
-                            <path d="M3 3l6 6M9 3l-6 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                          </svg>
-                        </button>
-                      </span>
-                    )))}
+                        {/* ── Top Image Container ── */}
+                        <div className="relative h-[210px] w-full overflow-hidden bg-gray-100 shrink-0">
+                          <img
+                            src={homa.imageUrl}
+                            alt={homa.title}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          />
+
+                          {/* Top Left Maroon Badge Pill */}
+                          <div className="absolute top-3 left-3 bg-[#701a28] text-white text-[11px] font-extrabold px-3.5 py-1.5 rounded-full shadow-md z-10 backdrop-blur-xs max-w-[80%] truncate">
+                            {homa.badge || homa.subtitle || "Special Homa"}
+                          </div>
+
+                          {/* Top Right Action Buttons (Heart & Share) */}
+                          <div className="absolute top-3 right-3 flex items-center gap-1.5 z-10">
+                            <button
+                              type="button"
+                              onClick={() => toggleFavorite(homa._id)}
+                              aria-label="Favorite homa"
+                              className="w-8 h-8 rounded-full bg-white/95 hover:bg-white text-gray-700 hover:text-red-500 flex items-center justify-center shadow-sm transition"
+                            >
+                              <svg className={`w-4 h-4 ${isFav ? "fill-red-500 text-red-500" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                              </svg>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (navigator.share) {
+                                  navigator.share({ title: homa.title, url: window.location.href });
+                                }
+                              }}
+                              aria-label="Share homa"
+                              className="w-8 h-8 rounded-full bg-white/95 hover:bg-white text-gray-700 hover:text-blue-500 flex items-center justify-center shadow-sm transition"
+                            >
+                              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 100-5.367 3 3 0 000 5.367zm0 8.005a3 3 0 100-5.367 3 3 0 000 5.367z" />
+                              </svg>
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* ── Maroon Decorative Subtitle Line Below Image ── */}
+                        <div className="pt-3 px-4 text-center">
+                          <p className="text-[10px] font-bold text-[#800000] uppercase tracking-widest flex items-center justify-center gap-1.5">
+                            <span className="w-3.5 h-px bg-[#800000]/40 inline-block"></span>
+                            <span className="truncate">{homa.subtitle || homa.shortTitle || "VEDIC HOMA RITUAL"}</span>
+                            <span className="w-3.5 h-px bg-[#800000]/40 inline-block"></span>
+                          </p>
+                        </div>
+
+                        {/* ── Card Content Body ── */}
+                        <div className="p-4 flex flex-col flex-1">
+                          <h3 className="text-[16px] font-bold text-gray-900 leading-snug line-clamp-2 min-h-[46px]">
+                            {homa.title}
+                          </h3>
+
+                          <p className="text-xs text-gray-500 line-clamp-2 mt-1.5 mb-4 leading-relaxed min-h-[36px]">
+                            {homa.description || "A sacred ritual for divine blessings, removing difficulties and bringing peace and health."}
+                          </p>
+
+                          {/* Info Box 1: Date & Frequency */}
+                          <div className="bg-[#f8f9fa] border border-gray-100 rounded-xl px-3.5 py-2.5 mb-2 flex items-center gap-3 text-xs text-gray-700">
+                            <svg className="w-4 h-4 text-amber-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            <span className="font-medium truncate">{homa.date || "Everyday • Dedicated Priest"}</span>
+                          </div>
+
+                          {/* Info Box 2: Temple Location */}
+                          <div className="bg-[#f8f9fa] border border-gray-100 rounded-xl px-3.5 py-2.5 mb-4 flex items-center gap-3 text-xs text-gray-700">
+                            <svg className="w-4 h-4 text-red-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            <span className="font-medium truncate">{homa.location || "Renowned Temple, India"}</span>
+                          </div>
+
+                          {/* ── Card Footer ── */}
+                          <div className="mt-auto pt-3.5 border-t border-gray-100 flex items-center justify-between bg-white">
+                            <div>
+                              <span className="text-xl font-extrabold text-gray-900">₹{priceVal}</span>
+                              <span className="text-[11px] text-gray-400 font-medium block -mt-1">Per Booking</span>
+                            </div>
+
+                            <Link
+                              href={`/homa/${homa.slug || slugify(homa.title)}`}
+                              className="bg-[#069e5d] hover:bg-[#058a51] text-white text-xs font-black px-4.5 py-2.5 rounded-full transition-all shadow-xs flex items-center gap-2 group-hover:shadow-md"
+                            >
+                              <span>BOOK NOW</span>
+                              <div className="w-4 h-4 rounded-full bg-white/20 flex items-center justify-center">
+                                <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7" />
+                                </svg>
+                              </div>
+                            </Link>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* End of results notice */}
+              {!isLoading && displayedHomas.length > 0 && (
+                <div className="mt-12 text-center py-6 border-t border-gray-100">
+                  <p className="text-xs font-semibold text-gray-400">
+                    You've reached the end of available services ({displayedHomas.length} of {allHomas.length} Homas)
+                  </p>
                 </div>
               )}
             </div>
-
-            {isFilterModalOpen && (
-              <PujaFilterModal
-                filters={filters}
-                onClose={() => setIsFilterModalOpen(false)}
-                onApply={applyFilters}
-                onClear={clearFilters}
-              />
-            )}
-
-            {/* Result count */}
-            {!isLoading && (
-              <p className="mt-4 text-sm text-[#1f1f1f]">
-                {hasActiveFilters
-                  ? `${t.puja.showingPujas} ${displayedPujas.length} ${t.puja.of} ${allPujas.length} ${t.puja.homas}`
-                  : `${allPujas.length} ${t.puja.allPujas}`}
-              </p>
-            )}
-
-            {/* -- homa Cards -- */}
-            {isLoading ? null : displayedPujas.length === 0 ? (
-              <div className="mt-16 flex flex-col items-center justify-center gap-4 rounded-2xl border border-dashed border-[#c4b8ef] bg-white py-16 text-center">
-                <SparklesIcon className="h-10 w-10 text-[#1f1f1f]" />
-                <p className="text-lg font-semibold text-[#3b0764]">{t.puja.noMatch}</p>
-                <p className="text-sm text-[#1f1f1f]">{t.puja.noMatchSub}</p>
-                <button
-                  type="button"
-                  onClick={clearFilters}
-                  className="mt-2 rounded-full bg-[#6869F9] px-6 py-2.5 text-sm font-bold text-white shadow-md hover:bg-[#5657e8] transition"
-                >
-                  {t.puja.clearFilters}
-                </button>
-              </div>
-            ) : (
-              <div className="mt-8 grid grid-cols-1 gap-6 sm:gap-8 sm:grid-cols-2 lg:gap-10 lg:grid-cols-3">
-                {displayedPujas.map((homa) => (
-                  <div
-                    key={homa._id}
-                    className="bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col p-5"
-                  >
-                    {/* Image Section */}
-                    <div className="relative h-[220px] w-full rounded-xl overflow-hidden shrink-0">
-                      <img
-                        src={homa.imageUrl || "https://images.unsplash.com/photo-1601024445121-e5b82f020549?auto=format&fit=crop&w=800&q=80"}
-                        alt={homa.title}
-                        className="w-full h-full object-fit"
-                      />
-                      {/* Top Left Badge */}
-                      {homa.badge && (
-                        <div className="absolute top-3 left-3 bg-[#ffc107] text-[#1f1f1f] text-[11px] font-bold px-3 py-1 rounded-full shadow-sm">
-                          {homa.badge}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Content Section */}
-                    <div className="pt-5 pb-1 px-1 flex flex-col flex-1 text-left">
-                      <p className="text-[#6869F9] text-[11px] font-bold uppercase tracking-widest mb-3 text-center w-full">
-                        {homa.subtitle || "SPECIAL homa & YAGYA"}
-                      </p>
-                      <h3 className="text-[18px] font-bold text-[#1f1f1f] mb-3 leading-snug">
-                        {homa.title}
-                      </h3>
-                      <p className="text-gray-500 text-[14px] leading-relaxed line-clamp-2 mb-6 flex-1">
-                        {homa.description || "Join us for this sacred ritual to seek divine blessings."}
-                      </p>
-
-                      {/* Location & Date */}
-                      <div className="flex items-start gap-2.5 mb-3 text-[13px] text-gray-500">
-                        <svg className="w-[16px] h-[16px] text-[#a78bfa] mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                        <span className="line-clamp-2 leading-tight">{homa.location || "Sacred Temple, India"}</span>
-                      </div>
-                      <div className="flex items-start gap-2.5 mb-6 text-[13px] text-gray-500">
-                        <svg className="w-[16px] h-[16px] text-[#a78bfa] mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                        <span className="leading-tight">{homa.date || t.puja.announcedSoon}</span>
-                      </div>
-
-                      <Link href={`/homa/${homa.slug || slugify(homa.title)}`} className="w-full bg-[#6869F9] text-white text-[15px] font-bold tracking-wide py-3.5 rounded-lg hover:bg-[#5657e8] transition-colors flex items-center justify-center gap-1.5">
-                        {homa.buttonText || t.puja.bookNow}
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
-                      </Link>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </section>
-
-          {/* -- Reviews -- */}
-          <section className="mt-20 border-t border-gray-100 pt-16 pb-16">
-            <div className="text-center mb-10">
-              <h2 className="text-2xl font-bold text-[#1f1f1f] md:text-3xl">{t.puja.devoteesTitle}</h2>
-              <p className="mt-2 text-sm text-gray-600 md:text-base">{t.puja.devoteesSubtitle}</p>
-            </div>
-            <ReviewsSection />
-          </section>
-
-          {/* -- Stats Section -- */}
-          <section className="mt-20">
-            <h2 className="mb-2 text-2xl font-bold text-[#1f1f1f] md:text-3xl">
-              {t.puja.sacredJourney}
-            </h2>
-            <p className="mb-8 text-sm text-gray-600">{t.puja.whyBook}</p>
-            <div className="grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-4">
-              <div className="rounded-2xl bg-linear-to-br from-[#eff6ff] to-[#dbeafe] p-8 text-center shadow-sm border border-[#bfdbfe]/50 flex flex-col items-center justify-center">
-                <h3 className="text-2xl font-black text-[#2563eb] whitespace-nowrap">10,00,000+</h3>
-                <p className="mt-1 text-sm font-semibold text-[#3b82f6]">{t.puja.pujasDone}</p>
-              </div>
-              <div className="rounded-2xl bg-linear-to-br from-[#f5f3ff] to-[#ede8ff] p-8 text-center shadow-sm border border-[#e0d9ff]/50 flex flex-col items-center justify-center">
-                <h3 className="text-2xl font-black text-[#7c3aed] whitespace-nowrap">300,000+</h3>
-                <p className="mt-1 text-sm font-semibold text-[#8b5cf6]">{t.puja.happyDevotees}</p>
-              </div>
-              <div className="rounded-2xl bg-linear-to-br from-[#fdf2f8] to-[#fce7f3] p-8 text-center shadow-sm border border-[#fbcfe8]/50 flex flex-col items-center justify-center">
-                <h3 className="text-2xl font-black text-[#db2777] whitespace-nowrap">100+</h3>
-                <p className="mt-1 text-sm font-semibold text-[#ec4899]">{t.puja.famousTemples}</p>
-              </div>
-              <div className="rounded-2xl bg-linear-to-br from-[#fff7ed] to-[#ffedd5] p-8 text-center shadow-sm border border-[#fed7aa]/50 flex flex-col items-center justify-center">
-                <h3 className="text-2xl font-black text-[#d97706] whitespace-nowrap">{t.puja.sankalp}</h3>
-                <p className="mt-1 text-sm font-semibold text-[#f59e0b]">{t.puja.sankalpDesc}</p>
-              </div>
-            </div>
-          </section>
-
-          <HowItWorksCarousel title={t.puja.howItWorks} steps={howItWorksSteps} />
+          </div>
         </div>
+
+        {/* ── Bottom Dark Banner (Exact Match from Reference Image) ── */}
+        <section className="mt-16 bg-gradient-to-r from-[#20050b] via-[#3b0914] to-[#1a0308] text-white py-14 px-4 text-center">
+          <div className="mx-auto max-w-3xl">
+            <h2 className="text-2xl sm:text-3xl font-bold font-serif leading-tight">
+              A Sacred Path to Divine Blessings Book Your Sacred Homa
+            </h2>
+            <p className="mt-2 text-xs sm:text-sm text-gray-300 font-medium">
+              Connect with divine blessings through authentic Vedic rituals.
+            </p>
+
+            {/* Social Follow Buttons */}
+            <div className="mt-5 flex items-center justify-center gap-3">
+              <span className="text-sm font-semibold text-gray-300 mr-1">Follow us -</span>
+              <a href="#" className="w-8 h-8 rounded-full bg-[#1877f2] flex items-center justify-center text-white hover:opacity-90 transition">
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" /></svg>
+              </a>
+              <a href="#" className="w-8 h-8 rounded-full bg-gradient-to-tr from-amber-500 via-pink-500 to-purple-600 flex items-center justify-center text-white hover:opacity-90 transition">
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" /></svg>
+              </a>
+              <a href="#" className="w-8 h-8 rounded-full bg-black flex items-center justify-center text-white hover:opacity-90 transition">
+                <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
+              </a>
+              <a href="#" className="w-8 h-8 rounded-full bg-[#ff0000] flex items-center justify-center text-white hover:opacity-90 transition">
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" /></svg>
+              </a>
+            </div>
+
+            {/* Find the Right Homa CTA Button */}
+            <div className="mt-6">
+              <Link
+                href="#top"
+                onClick={(e) => {
+                  e.preventDefault();
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white text-[#5b1422] text-xs sm:text-sm font-extrabold hover:bg-gray-100 transition shadow-lg"
+              >
+                <span>Find the Right Homa</span>
+                <div className="w-5 h-5 rounded-full bg-[#069e5d] flex items-center justify-center">
+                  <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                  </svg>
+                </div>
+              </Link>
+            </div>
+
+            {/* Trust Features Row */}
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-6 text-xs text-gray-300 font-medium">
+              <span className="flex items-center gap-1.5"><span className="text-[#069e5d] font-bold text-sm">✓</span> 100% Secure</span>
+              <span className="flex items-center gap-1.5"><span className="text-[#069e5d] font-bold text-sm">✓</span> Video Recording Sent</span>
+              <span className="flex items-center gap-1.5"><span className="text-[#069e5d] font-bold text-sm">✓</span> Vedic Priests</span>
+            </div>
+          </div>
+        </section>
       </main>
+      <Footer />
     </>
   );
 }
-
-

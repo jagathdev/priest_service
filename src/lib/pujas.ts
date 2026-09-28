@@ -195,8 +195,8 @@ const normalizePackages = (items: unknown, fallback: PujaPackage[]) => {
           typeof pkg.description === 'string' && pkg.description.trim().length > 0
             ? pkg.description.trim()
             : `Recommended for ${name.toLowerCase()} devotees.`,
-        imageUrl: typeof pkg.imageUrl === 'string' && pkg.imageUrl.trim().length > 0 
-          ? pkg.imageUrl.trim() 
+        imageUrl: typeof pkg.imageUrl === 'string' && pkg.imageUrl.trim().length > 0
+          ? pkg.imageUrl.trim()
           : fallback[index]?.imageUrl,
       } as PujaPackage;
     })
@@ -546,11 +546,29 @@ export async function getAllPujas() {
   const db = client.db();
   const collection = db.collection('puja');
 
-  const items = await collection.find({}).toArray();
+  let items = await collection.find({}).toArray();
 
   const offeringsCollection = db.collection('offering');
   const offeringsData = await offeringsCollection.find({}).toArray();
   const offeringsMap = Object.fromEntries(offeringsData.map(o => [String(o._id), o]));
+
+  const existingSlugs = new Set((items as any[]).map(p => p.slug || slugify(p.title || '')));
+  const missingFallbacks = fallbackPujas.filter(p => !existingSlugs.has(p.slug || slugify(p.title || '')));
+
+  if (missingFallbacks.length > 0) {
+    try {
+      const docsToInsert = missingFallbacks.map(({ _id, ...rest }) => ({
+        ...rest,
+        status: 'active',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }));
+      await collection.insertMany(docsToInsert as any);
+      items = await collection.find({}).toArray();
+    } catch (err) {
+      console.error("Error auto-seeding missing pujas:", err);
+    }
+  }
 
   const normalized = (items as any[]).map(p => normalizePuja(p, offeringsMap));
   const allPujas = normalized.length > 0 ? normalized : fallbackPujas.map(p => normalizePuja(p, offeringsMap));
@@ -562,6 +580,7 @@ export async function getAllPujas() {
 
 export async function getPujaBySlug(slug: string) {
   const allPujas = await getAllPujas();
-  const found = allPujas.find((p) => p.slug === slug);
+  const targetSlug = slugify(slug);
+  const found = allPujas.find((p) => p.slug === slug || slugify(p.slug || p.title) === targetSlug);
   return found || null;
 }
