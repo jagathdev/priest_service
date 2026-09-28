@@ -16,52 +16,52 @@ export async function GET(req: NextRequest) {
     let items = await db.collection(type).find({}).toArray();
 
     if (type !== 'currency') {
-       const currencyRatesArr = await db.collection('currency').find({}).toArray();
-       if (currencyRatesArr.length > 0) {
-          const rates = currencyRatesArr[0];
-          const usdRate = Number(rates.usdConversionRate) || 0;
-          const myrRate = Number(rates.myrConversionRate) || 0;
-          
-          if (usdRate > 0 && myrRate > 0) {
-             items = items.map(item => {
-                 // For standard prices
-                 if (item.priceINR !== undefined) {
-                     if (item.priceUSD === undefined || item.priceUSD === null) {
-                         item.priceUSD = Number((item.priceINR * usdRate).toFixed(2));
-                     }
-                     if (item.priceMYR === undefined || item.priceMYR === null) {
-                         item.priceMYR = Number((item.priceINR * myrRate).toFixed(2));
-                     }
-                 }
-                 // For chadhava offerings
-                 for (let i = 1; i <= 5; i++) {
-                     if (item[`offering${i}PriceINR`] !== undefined) {
-                         if (item[`offering${i}PriceUSD`] === undefined || item[`offering${i}PriceUSD`] === null) {
-                             item[`offering${i}PriceUSD`] = Number((item[`offering${i}PriceINR`] * usdRate).toFixed(2));
-                         }
-                         if (item[`offering${i}PriceMYR`] === undefined || item[`offering${i}PriceMYR`] === null) {
-                             item[`offering${i}PriceMYR`] = Number((item[`offering${i}PriceINR`] * myrRate).toFixed(2));
-                         }
-                     }
-                 }
-                 // For packages
-                 if (Array.isArray(item.packages)) {
-                     item.packages = item.packages.map((pkg: any) => {
-                         if (pkg.priceINR !== undefined) {
-                             if (pkg.priceUSD === undefined || pkg.priceUSD === null) {
-                                 pkg.priceUSD = Number((pkg.priceINR * usdRate).toFixed(2));
-                             }
-                             if (pkg.priceMYR === undefined || pkg.priceMYR === null) {
-                                 pkg.priceMYR = Number((pkg.priceINR * myrRate).toFixed(2));
-                             }
-                         }
-                         return pkg;
-                     });
-                 }
-                 return item;
-             });
-          }
-       }
+      const currencyRatesArr = await db.collection('currency').find({}).toArray();
+      if (currencyRatesArr.length > 0) {
+        const rates = currencyRatesArr[0];
+        const usdRate = Number(rates.usdConversionRate) || 0;
+        const myrRate = Number(rates.myrConversionRate) || 0;
+
+        if (usdRate > 0 && myrRate > 0) {
+          items = items.map(item => {
+            // For standard prices
+            if (item.priceINR !== undefined) {
+              if (item.priceUSD === undefined || item.priceUSD === null) {
+                item.priceUSD = Number((item.priceINR * usdRate).toFixed(2));
+              }
+              if (item.priceMYR === undefined || item.priceMYR === null) {
+                item.priceMYR = Number((item.priceINR * myrRate).toFixed(2));
+              }
+            }
+            // For chadhava offerings
+            for (let i = 1; i <= 5; i++) {
+              if (item[`offering${i}PriceINR`] !== undefined) {
+                if (item[`offering${i}PriceUSD`] === undefined || item[`offering${i}PriceUSD`] === null) {
+                  item[`offering${i}PriceUSD`] = Number((item[`offering${i}PriceINR`] * usdRate).toFixed(2));
+                }
+                if (item[`offering${i}PriceMYR`] === undefined || item[`offering${i}PriceMYR`] === null) {
+                  item[`offering${i}PriceMYR`] = Number((item[`offering${i}PriceINR`] * myrRate).toFixed(2));
+                }
+              }
+            }
+            // For packages
+            if (Array.isArray(item.packages)) {
+              item.packages = item.packages.map((pkg: any) => {
+                if (pkg.priceINR !== undefined) {
+                  if (pkg.priceUSD === undefined || pkg.priceUSD === null) {
+                    pkg.priceUSD = Number((pkg.priceINR * usdRate).toFixed(2));
+                  }
+                  if (pkg.priceMYR === undefined || pkg.priceMYR === null) {
+                    pkg.priceMYR = Number((pkg.priceINR * myrRate).toFixed(2));
+                  }
+                }
+                return pkg;
+              });
+            }
+            return item;
+          });
+        }
+      }
     }
 
     return NextResponse.json(items);
@@ -82,7 +82,7 @@ export async function POST(req: NextRequest) {
 
     const client = await clientPromise;
     const db = client.db();
-    
+
     // Add timestamp
     data.createdAt = new Date();
     data.updatedAt = new Date();
@@ -107,7 +107,7 @@ export async function DELETE(req: NextRequest) {
 
     const client = await clientPromise;
     const db = client.db();
-    
+
     const result = await db.collection(type).deleteOne({ _id: new ObjectId(id) });
 
     if (result.deletedCount === 0) {
