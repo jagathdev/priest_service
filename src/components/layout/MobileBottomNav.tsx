@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 
 // Hide on these paths completely
-const HIDDEN_ON_PATHS = ["/puja", "/chadhava", "/sankalp", "/payment"];
+const HIDDEN_ON_PATHS = ["/puja", "/chadhava", "/homa", "/sankalp", "/payment"];
 
 function ExploreIcon() {
   return (
@@ -28,13 +28,12 @@ function PujaIcon() {
   );
 }
 
-function ChadhavaIcon() {
+function HomaIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" className="h-[24px] w-[24px] mb-1 text-gray-800">
-      <path d="M5 12v6a2 2 0 002 2h8l4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-      <path d="M5 12l5 2h5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-      <circle cx="15" cy="8" r="5" stroke="currentColor" strokeWidth="1.8" />
-      <path d="M13 8h4M15 6v4" stroke="currentColor" strokeWidth="1.2" />
+      <path d="M12 3C12 3 8 7 8 10.5a4 4 0 008 0C16 7 12 3 12 3z" fill="currentColor" opacity="0.8" />
+      <path d="M12 8c0 0-2 2-2 3.5a2 2 0 004 0C14 10 12 8 12 8z" fill="#f97316" />
+      <path d="M4 17h16M6 20h12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
     </svg>
   );
 }
@@ -71,9 +70,9 @@ export default function MobileBottomNav() {
         <PujaIcon />
         <span className="text-[11px] font-medium tracking-wide">Puja</span>
       </Link>
-      <Link href="/chadhava" className="flex flex-col items-center justify-center flex-1 h-full text-gray-800 active:bg-gray-50">
-        <ChadhavaIcon />
-        <span className="text-[11px] font-medium tracking-wide">Chadhava</span>
+      <Link href="/homa" className="flex flex-col items-center justify-center flex-1 h-full text-gray-800 active:bg-gray-50">
+        <HomaIcon />
+        <span className="text-[11px] font-medium tracking-wide">Homa</span>
       </Link>
     </nav>
   );
