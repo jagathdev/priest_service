@@ -165,24 +165,31 @@ export default function ContentManager({
     
     // Fetch currency settings
     fetch("/api/admin/content?type=currency")
-      .then(res => res.json())
-      .then(data => {
+      .then(async (res) => {
+        if (!res.ok) return null;
+        const text = await res.text();
+        return text ? JSON.parse(text) : null;
+      })
+      .then((data) => {
         if (Array.isArray(data) && data.length > 0) {
           const rates = data[0];
           setCurrencyRates({
             usd: Number(rates.usdConversionRate) || 0,
-            myr: Number(rates.myrConversionRate) || 0
+            myr: Number(rates.myrConversionRate) || 0,
           });
         }
       })
       .catch(console.error);
-    
+
     // Fetch any reference data
     fields.forEach(async (f) => {
       if (f.type === "reference-array" && f.referenceEndpoint) {
         try {
           const res = await fetch(f.referenceEndpoint);
-          const data = await res.json();
+          if (!res.ok) return;
+          const text = await res.text();
+          if (!text) return;
+          const data = JSON.parse(text);
           if (Array.isArray(data)) {
             setReferenceData((prev) => ({ ...prev, [f.name]: data }));
           }
@@ -197,7 +204,13 @@ export default function ContentManager({
     setLoading(true);
     try {
       const res = await fetch(`/api/admin/content?type=${type}`);
-      const data = await res.json();
+      if (!res.ok) {
+        console.error(`Failed to fetch items for ${type}: HTTP ${res.status}`);
+        return;
+      }
+      const text = await res.text();
+      if (!text) return;
+      const data = JSON.parse(text);
       if (Array.isArray(data)) {
         setItems(data);
       }

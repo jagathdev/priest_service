@@ -1,12 +1,6 @@
 import { MongoClient } from 'mongodb';
 
-if (!process.env.MONGODB_URI) {
-  throw new Error(
-    'Missing MONGODB_URI: add it to .env.local locally, or in Vercel under Project Settings → Environment Variables (Production).'
-  );
-}
-
-const uri = process.env.MONGODB_URI;
+const uri = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/priest_service";
 const options = {};
 
 interface MongoGlobal {

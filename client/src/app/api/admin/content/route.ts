@@ -66,6 +66,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(items);
   } catch (error: any) {
+    console.error("API GET Content error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
