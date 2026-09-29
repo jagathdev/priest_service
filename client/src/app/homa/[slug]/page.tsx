@@ -4,8 +4,8 @@ import { getHomaBySlug } from '@/lib/homas';
 import HomaDetailClient from './HomaDetailClient';
 
 type Props = {
-  params: Promise<{ slug: string }> | { slug: string };
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }> | { [key: string]: string | string[] | undefined };
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
 export async function generateMetadata(
@@ -53,13 +53,14 @@ export async function generateMetadata(
 }
 
 import { getAllPujas } from '@/lib/pujas';
+import React from 'react';
 
 export default async function HomaDetailPage({ params }: Props) {
   const resolvedParams = await params;
   const slug = resolvedParams.slug;
   const homa = slug ? await getHomaBySlug(slug) : null;
   const allPujas = await getAllPujas();
-  const recommendations = allPujas.filter(p => (homa as any)?.recommendedPujaIds?.includes(String(p._id)));
+  const recommendations = allPujas.filter(p => (homa as { recommendedPujaIds?: string[] } | null)?.recommendedPujaIds?.includes(String(p._id)));
 
-  return <HomaDetailClient initialPuja={homa as any} recommendations={recommendations} />;
+  return <HomaDetailClient initialPuja={homa as React.ComponentProps<typeof HomaDetailClient>['initialPuja']} recommendations={recommendations} />;
 }

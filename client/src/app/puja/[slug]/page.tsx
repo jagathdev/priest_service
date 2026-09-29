@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 import { getPujaBySlug } from '@/lib/pujas';
-import PujaDetailClient from './PujaDetailClient';
+import NewPujaDetailClient from './NewPujaDetailClient';
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -58,7 +58,10 @@ export default async function PujaDetailPage({ params }: Props) {
   const slug = resolvedParams.slug;
   const puja = slug ? await getPujaBySlug(slug) : null;
   const allHomas = await getAllHomas();
-  const recommendations = allHomas.filter(h => (puja as any)?.recommendedHomaIds?.includes(String(h._id)));
+  const recommendations = allHomas.filter(h => {
+    const recommendedIds = (puja as { recommendedHomaIds?: string[] } | null)?.recommendedHomaIds;
+    return recommendedIds?.includes(String(h._id));
+  });
 
-  return <PujaDetailClient initialPuja={puja as any} recommendations={recommendations} />;
+  return <NewPujaDetailClient initialPuja={puja as Parameters<typeof NewPujaDetailClient>[0]['initialPuja']} recommendations={recommendations} />;
 }

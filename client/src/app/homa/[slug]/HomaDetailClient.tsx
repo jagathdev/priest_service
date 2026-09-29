@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useRef } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
 import { useCurrency } from "@/contexts/CurrencyContext";
@@ -168,6 +168,7 @@ const buildCountdown = (target: Date): Countdown => {
 const Marquee = 'marquee' as any;
 export default function PujaDetailClient({ initialPuja, recommendations = [] }: { initialPuja: homa | null; recommendations?: any[] }) {
   const params = useParams<{ slug: string }>();
+  const router = useRouter();
   const slugParam = params?.slug;
   const slug = Array.isArray(slugParam) ? slugParam[0] : slugParam;
   const { currency, currencySymbol } = useCurrency();
@@ -1910,12 +1911,7 @@ export default function PujaDetailClient({ initialPuja, recommendations = [] }: 
               <button
                 onClick={() => {
                   if (selectedPackageId) {
-                    if (isIndian) {
-                      setShowPackageModal(false);
-                      setShowDetailsModal(true);
-                    } else {
-                      handleAddPujaToCart();
-                    }
+                    router.push(`/homa/${homa?.slug}/checkout?packageId=${selectedPackageId}`);
                   }
                 }}
                 className="flex w-full items-center justify-between bg-[#0f7a50] hover:bg-[#0c6843] active:bg-[#0a5c3a] transition-colors px-6 py-4 rounded-xl shadow-md"
