@@ -25,7 +25,7 @@ export const getPujaByIdService = async (id) => {
 // 4. Update an existing Puja by _id
 export const updatePujaService = async (id, updateData) => {
   const updatedPuja = await Puja.findByIdAndUpdate(id, updateData, {
-    new: true,
+    returnDocument: "after",
     runValidators: true,
   });
   return updatedPuja;

@@ -1,8 +1,8 @@
 import axios from "axios";
 import Otp from "../models/otp.js";
 
-const OTP_EXPIRY_TIME = 1 * 60 * 1000; // 1 minutes
-const RESEND_COOLDOWN = 30 * 1000; // 30 seconds
+const OTP_EXPIRY_TIME = 2 * 60 * 1000; // 2 minutes
+const RESEND_COOLDOWN = 60 * 1000; // 60 seconds
 
 export const generateOTP = () => {
     return Math.floor(100000 + Math.random() * 900000).toString();
@@ -57,7 +57,7 @@ export const sendOTP = async (mobileNumber) => {
         },
         {
             upsert: true,
-            new: true,
+            returnDocument: "after",
         }
     );
 
