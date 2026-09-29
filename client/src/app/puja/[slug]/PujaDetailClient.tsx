@@ -405,15 +405,28 @@ export default function PujaDetailClient({ initialPuja, recommendations = [] }: 
           return;
         }
 
-        const res = await fetch(`/api/puja?slug=${slug}`);
+        const res = await fetch(`http://localhost:5000/api/pujas`);
         if (!res.ok) {
           setPuja(null);
           return;
         }
 
-        const data: Puja = await res.json();
-        setPuja(data);
-        setSelectedPackageId(data.packages?.[0]?.id ?? null);
+        const resData = await res.json();
+        const list: Puja[] = resData?.data && Array.isArray(resData.data)
+          ? resData.data
+          : Array.isArray(resData)
+          ? resData
+          : [];
+
+        const slugifyStr = (val: string) => val.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-");
+        const match = list.find((p: Puja) => p.slug === slug || slugifyStr(p.title) === slug || p._id === slug);
+
+        if (match) {
+          setPuja(match);
+          setSelectedPackageId(match.packages?.[0]?.id ?? null);
+        } else {
+          setPuja(null);
+        }
       } catch {
         setPuja(null);
       } finally {

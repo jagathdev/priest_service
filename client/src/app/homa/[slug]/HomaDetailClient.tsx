@@ -406,15 +406,28 @@ export default function PujaDetailClient({ initialPuja, recommendations = [] }: 
           return;
         }
 
-        const res = await fetch(`/api/homa?slug=${slug}`);
+        const res = await fetch(`http://localhost:5000/api/homas`);
         if (!res.ok) {
           setPuja(null);
           return;
         }
 
-        const data: homa = await res.json();
-        setPuja(data);
-        setSelectedPackageId(data.packages?.[0]?.id ?? null);
+        const resData = await res.json();
+        const list: homa[] = resData?.data && Array.isArray(resData.data)
+          ? resData.data
+          : Array.isArray(resData)
+          ? resData
+          : [];
+
+        const slugifyStr = (val: string) => val.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-");
+        const match = list.find((h: homa) => h.slug === slug || slugifyStr(h.title) === slug || h._id === slug);
+
+        if (match) {
+          setPuja(match);
+          setSelectedPackageId(match.packages?.[0]?.id ?? null);
+        } else {
+          setPuja(null);
+        }
       } catch {
         setPuja(null);
       } finally {

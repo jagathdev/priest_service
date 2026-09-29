@@ -464,12 +464,24 @@ export default function PujaPage() {
     setShareModalOpen(true);
   };
 
-  // Fetch all pujas once
+  // Fetch all pujas from Express API
   useEffect(() => {
-    fetch("/api/puja")
-      .then((r) => (r.ok ? r.json() : []))
-      .then((data: Puja[]) => setAllPujas(Array.isArray(data) ? data : []))
-      .catch(() => setAllPujas([]))
+    setIsLoading(true);
+    fetch("http://localhost:5000/api/pujas")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((resData) => {
+        const rawList = resData?.data && Array.isArray(resData.data)
+          ? resData.data
+          : Array.isArray(resData)
+          ? resData
+          : [];
+        const activeList = rawList.filter((item: any) => !item.status || item.status === "active");
+        setAllPujas(activeList);
+      })
+      .catch((err) => {
+        console.error("Error fetching pujas from Express API:", err);
+        setAllPujas([]);
+      })
       .finally(() => setIsLoading(false));
   }, []);
 

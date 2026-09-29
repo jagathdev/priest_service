@@ -20,6 +20,28 @@ import ReviewsSection from "@/components/common/ReviewsSection";
 
 export default function DashboardPage() {
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
+  const [pujas, setPujas] = useState<any[]>([]);
+  const [loadingPujas, setLoadingPujas] = useState(true);
+
+  useEffect(() => {
+    fetch("http://localhost:5000/api/pujas")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((resData) => {
+        const rawList = resData?.data && Array.isArray(resData.data)
+          ? resData.data
+          : Array.isArray(resData)
+          ? resData
+          : [];
+        const activeList = rawList.filter((item: any) => !item.status || item.status === "active");
+        setPujas(activeList.slice(0, 6));
+      })
+      .catch((err) => {
+        console.error("Error fetching home pujas:", err);
+        setPujas([]);
+      })
+      .finally(() => setLoadingPujas(false));
+  }, []);
+
   return (
     <main className="min-h-screen bg-white text-[#1f1f1f] font-sans">
       <Navbar />
@@ -148,69 +170,64 @@ export default function DashboardPage() {
 
             {/* Filter Pills */}
             <div className="flex items-center gap-2.5 flex-wrap">
-              <button className="bg-[#00b050] text-white font-bold px-5 py-2 rounded-full text-xs sm:text-sm shadow-sm hover:bg-[#009b46] transition-colors">
+              <Link href="/puja" className="bg-[#00b050] text-white font-bold px-5 py-2 rounded-full text-xs sm:text-sm shadow-sm hover:bg-[#009b46] transition-colors">
                 All
-              </button>
+              </Link>
 
-              <button className="bg-white border border-stone-200 text-stone-700 hover:border-stone-400 font-semibold px-4 py-2 rounded-full text-xs sm:text-sm transition-colors">
+              <Link href="/puja" className="bg-white border border-stone-200 text-stone-700 hover:border-stone-400 font-semibold px-4 py-2 rounded-full text-xs sm:text-sm transition-colors">
                 Diety
-              </button>
+              </Link>
 
-              <button className="bg-white border border-stone-200 text-stone-700 hover:border-stone-400 font-semibold px-4 py-2 rounded-full text-xs sm:text-sm transition-colors">
+              <Link href="/puja" className="bg-white border border-stone-200 text-stone-700 hover:border-stone-400 font-semibold px-4 py-2 rounded-full text-xs sm:text-sm transition-colors">
                 Dosha
-              </button>
+              </Link>
 
-              <button className="bg-white border border-stone-200 text-stone-700 hover:border-stone-400 font-semibold px-4 py-2 rounded-full text-xs sm:text-sm transition-colors">
+              <Link href="/puja" className="bg-white border border-stone-200 text-stone-700 hover:border-stone-400 font-semibold px-4 py-2 rounded-full text-xs sm:text-sm transition-colors">
                 Benefit
-              </button>
+              </Link>
             </div>
           </div>
 
-          {/* Puja Cards Grid (1 Puja Card 100% Full-Width on 1024px & Tablet, 3-Columns on XL Desktop) */}
+          {/* Puja Cards Grid (Maximum 6 active Pujas loaded from Express API) */}
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 sm:gap-8 w-full max-w-full xl:max-w-none mx-auto">
-
-            {/* Card 1 */}
-            <PujaCard
-              imageSrc={ganeshImg}
-              topTag="SPECIAL TUESDAY SANKALPAM"
-              title="Subrahmanya Swamy Abhishekam at Madurai..."
-              subtitle="A special Tuesday Abhishekam for devotees seeking the courage to overcome obstacles, fulfillment of efforts, and success"
-              location="Aadi Meenakshi Sameta Sundareshwarar Temple"
-              date="Saturday, 26 September"
-              price="₹516"
-              slug="subrahmanya-swamy-abhishekam"
-            />
-
-            {/* Card 2 */}
-            <PujaCard
-              imageSrc={lakshmiHomamImg}
-              topTag="SPEICAL SHANI POOJA"
-              title="Sade Sati Shanti Puja & Oil Abhishekam ..."
-              subtitle="Shani Shanti Puja & Oil Abhishekam for Relief from the Harsh Effects of Sade Sati"
-              location="Bannanje Shani kshetram"
-              date="Saturday, 26 September"
-              price="₹816"
-              slug="sade-sati-shani-shanti-puja"
-            />
-
-            {/* Card 3 */}
-            <PujaCard
-              imageSrc={navagrahaImg}
-              topTag="SHANI PURNIMA SPECIAL"
-              title="Shani Shanti Puja for Prosperity, Career..."
-              subtitle="Perform Shani Shanti Puja for relief from hardships, prosperity, career growth, peace and lasting stability."
-              location="Mangala Shaneeshwara Devalayam"
-              date="Saturday, 26 September"
-              price="₹816"
-              slug="shani-shanti-puja-prosperity"
-            />
-
+            {loadingPujas ? (
+              <div className="col-span-full py-12 text-center text-stone-400 font-medium">Loading Pujas...</div>
+            ) : pujas.length === 0 ? (
+              <div className="col-span-full py-12 text-center text-stone-400 font-medium">No active Pujas found.</div>
+            ) : (
+              pujas.map((p) => {
+                const priceVal = p.price
+                  ? `₹${p.price}`
+                  : p.packages?.[0]?.priceINR
+                  ? `₹${p.packages[0].priceINR}`
+                  : p.packages?.[0]?.price
+                  ? `₹${p.packages[0].price}`
+                  : "₹516";
+                const slugVal = p.slug || (p.title ? p.title.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-") : "");
+                return (
+                  <PujaCard
+                    key={p._id}
+                    imageSrc={p.imageUrl || ganeshImg}
+                    topTag={p.badge || p.subtitle || p.shortTitle || "SPECIAL PUJA"}
+                    title={p.title}
+                    subtitle={p.subtitle || p.description || ""}
+                    location={p.location || p.filterLocation || p.templeVenue || "Sacred Temple, India"}
+                    date={p.date || "Available Daily"}
+                    price={priceVal}
+                    slug={slugVal}
+                  />
+                );
+              })
+            )}
           </div>
 
           <div className="text-center mt-10">
-            <button className="text-[#00b050] font-extrabold px-8 py-3 rounded-full border-2 border-[#00b050] hover:bg-green-50 active:scale-95 transition-all text-base shadow-sm">
+            <Link
+              href="/puja"
+              className="inline-block text-[#00b050] font-extrabold px-8 py-3 rounded-full border-2 border-[#00b050] hover:bg-green-50 active:scale-95 transition-all text-base shadow-sm"
+            >
               View All Pujas
-            </button>
+            </Link>
           </div>
         </div>
       </section>
@@ -458,12 +475,10 @@ function PujaCard({ imageSrc, topTag, title, subtitle, location, date, price, sl
 
       {/* Top Banner Image Container with Subtle Space */}
       <div className="relative w-full h-[260px] sm:h-[340px] md:h-[400px] lg:h-[450px] xl:h-[235px] rounded-2xl overflow-hidden mb-2 sm:mb-2.5 bg-stone-100 shrink-0">
-        <Image
-          src={imageSrc}
+        <img
+          src={typeof imageSrc === "string" ? imageSrc : imageSrc?.src}
           alt={title}
-          fill
-          className="object-cover object-center"
-          priority
+          className="w-full h-full object-cover object-center"
         />
 
         {/* Top Right Floating Action Buttons (Wishlist & Share) */}

@@ -8,7 +8,7 @@ import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 export default function CheckoutClient({ homa }: { homa: any }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const packageId = searchParams.get("packageId");
+  const packageId = searchParams ? searchParams.get("packageId") : null;
 
   const selectedPackage = homa?.packages?.find((p: any) => p.id === packageId) || homa?.packages?.[0];
 

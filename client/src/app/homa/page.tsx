@@ -43,14 +43,24 @@ export default function HomaPage() {
   const [selectedDoshas, setSelectedDoshas] = useState<string[]>([]);
   const [favorites, setFavorites] = useState<Record<string, boolean>>({});
 
-  // Fetch homas from API endpoint
+  // Fetch homas from Express API endpoint
   useEffect(() => {
-    fetch("/api/homa")
-      .then((r) => (r.ok ? r.json() : []))
-      .then((data: Homa[]) => {
-        setAllHomas(Array.isArray(data) && data.length > 0 ? data : []);
+    setIsLoading(true);
+    fetch("http://localhost:5000/api/homas")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((resData) => {
+        const rawList = resData?.data && Array.isArray(resData.data)
+          ? resData.data
+          : Array.isArray(resData)
+          ? resData
+          : [];
+        const activeList = rawList.filter((item: any) => !item.status || item.status === "active");
+        setAllHomas(activeList);
       })
-      .catch(() => setAllHomas([]))
+      .catch((err) => {
+        console.error("Error fetching homas from Express API:", err);
+        setAllHomas([]);
+      })
       .finally(() => setIsLoading(false));
   }, []);
 

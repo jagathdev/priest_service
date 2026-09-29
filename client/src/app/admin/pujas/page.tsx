@@ -170,7 +170,7 @@ export default function AdminPujasPage() {
       name: "recommendedHomaIds",
       label: "Select Recommended Homas",
       type: "reference-array",
-      referenceEndpoint: "/api/admin/content?type=homa",
+      referenceEndpoint: "http://localhost:5000/api/homas",
       referenceLabelField: "title"
     },
     {

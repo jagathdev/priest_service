@@ -190,8 +190,9 @@ export default function ContentManager({
           const text = await res.text();
           if (!text) return;
           const data = JSON.parse(text);
-          if (Array.isArray(data)) {
-            setReferenceData((prev) => ({ ...prev, [f.name]: data }));
+          const list = Array.isArray(data) ? data : (data && Array.isArray(data.data) ? data.data : []);
+          if (Array.isArray(list)) {
+            setReferenceData((prev) => ({ ...prev, [f.name]: list }));
           }
         } catch (error) {
           console.error(`Failed to fetch reference data for ${f.name}:`, error);
@@ -200,10 +201,22 @@ export default function ContentManager({
     });
   }, [type]);
 
+  const getEndpoint = (itemType: string, id?: string | null): string => {
+    const expressBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+    if (itemType === "puja") {
+      return id ? `${expressBase}/pujas/${id}` : `${expressBase}/pujas`;
+    }
+    if (itemType === "homa") {
+      return id ? `${expressBase}/homas/${id}` : `${expressBase}/homas`;
+    }
+    return id ? `/api/admin/content?type=${itemType}&id=${id}` : `/api/admin/content?type=${itemType}`;
+  };
+
   const fetchItems = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/admin/content?type=${type}`);
+      const endpoint = getEndpoint(type);
+      const res = await fetch(endpoint);
       if (!res.ok) {
         console.error(`Failed to fetch items for ${type}: HTTP ${res.status}`);
         return;
@@ -211,8 +224,9 @@ export default function ContentManager({
       const text = await res.text();
       if (!text) return;
       const data = JSON.parse(text);
-      if (Array.isArray(data)) {
-        setItems(data);
+      const list = Array.isArray(data) ? data : (data && Array.isArray(data.data) ? data.data : []);
+      if (Array.isArray(list)) {
+        setItems(list);
       }
     } catch (error) {
       console.error("Failed to fetch items:", error);
@@ -395,9 +409,7 @@ export default function ContentManager({
 
     setSubmitting(true);
     try {
-      const endpoint = editingId
-        ? `/api/admin/content?type=${type}&id=${editingId}`
-        : `/api/admin/content?type=${type}`;
+      const endpoint = getEndpoint(type, editingId);
 
       const res = await fetch(endpoint, {
         method: editingId ? "PUT" : "POST",
@@ -419,7 +431,8 @@ export default function ContentManager({
     if (!confirm("Are you sure you want to delete this item?")) return;
     
     try {
-      const res = await fetch(`/api/admin/content?type=${type}&id=${id}`, {
+      const endpoint = getEndpoint(type, id);
+      const res = await fetch(endpoint, {
         method: "DELETE",
       });
       if (res.ok) {
