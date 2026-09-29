@@ -1,8 +1,6 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
-
-import productRoutes from './routes/productRoutes.js';
 import pujaRoutes from './routes/pujaRoutes.js';
 import homaRoutes from './routes/homaRoutes.js';
 import otpRoutes from './routes/otp.routes.js';
@@ -23,7 +21,6 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
-app.use('/api/products', productRoutes);
 app.use('/api/pujas', pujaRoutes);
 app.use('/api/homas', homaRoutes);
 app.use('/api/otp', otpRoutes);

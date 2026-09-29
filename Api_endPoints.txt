@@ -1,0 +1,39 @@
+OTP Routes (/api/otp)
+
+1. POST http://localhost:5000/api/otp/sendOtp 
+(Body: { "mobileNumber": "1234567890" })
+2. POST http://localhost:5000/api/otp/verifyOtp 
+(Body: { "mobileNumber": "1234567890", "otp": "123456" })
+
+🛒 Order Routes (/api/orders)
+
+3. POST http://localhost:5000/api/orders/preview 
+(Body: { "poojaId": "...", "participants": [...], ... })
+
+{
+  "poojaId": "65b2a2b7f3a8c90012345678", 
+  "whatsappNumber": "9876543210",
+  "participants": [
+    {
+      "name": "Jagathratchagan"
+    },
+    {
+      "name": "Participant Two"
+    }
+  ],
+  "gotra": "Kashyapa",
+  "doesNotKnowGotra": false,
+  "wish": "For family well-being and prosperity",
+  "bookingDate": "2026-10-06T00:00:00.000Z"
+}
+
+
+🙏 Pooja Details Routes (/api/pooja-details)
+
+4. GET http://localhost:5000/api/pooja-details/:poojaId
+Other Registered Base Routes
+
+(Endpoints depend on the contents of these specific route files)
+
+Pujas: http://localhost:5000/api/pujas
+Homas: http://localhost:5000/api/homas
