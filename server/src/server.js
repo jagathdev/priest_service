@@ -3,6 +3,8 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import userRoute from './routes/userRoutes.js';
 import productRoutes from './routes/productRoutes.js';
+import pujaRoutes from './routes/pujaRoutes.js';
+import homaRoutes from './routes/homaRoutes.js';
 import connectDB from './config/db.js';
 
 dotenv.config();
@@ -15,6 +17,8 @@ app.use(express.json());
 
 app.use("/api/users", userRoute);
 app.use("/api/products", productRoutes);
+app.use("/api/pujas", pujaRoutes);
+app.use("/api/homas", homaRoutes);
 
 const PORT = process.env.PORT || 5000;
 
