@@ -12,7 +12,7 @@ export async function generateMetadata(
 ): Promise<Metadata> {
   const resolvedParams = await params;
   const slug = resolvedParams.slug;
-  
+
   if (!slug) {
     return {
       title: 'AstroVed Puja Seva',
