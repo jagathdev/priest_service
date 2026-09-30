@@ -25,7 +25,7 @@ export const getHomaByIdService = async (id) => {
 // 4. Update an existing Homa by _id
 export const updateHomaService = async (id, updateData) => {
   const updatedHoma = await Homa.findByIdAndUpdate(id, updateData, {
-    new: true,
+    returnDocument: "after",
     runValidators: true,
   });
   return updatedHoma;

@@ -11,6 +11,7 @@ interface User {
   name?: string;
   email?: string;
   phone?: string;
+  mobileNumber?: string;
   gender?: string;
   dob?: string;
   placeOfBirth?: string;
@@ -58,8 +59,73 @@ export default function AccountPage() {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [loginStep, setLoginStep] = useState<'phone' | 'otp'>('phone');
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [otp, setOtp] = useState(['', '', '', '']);
+  const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [otpError, setOtpError] = useState('');
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
+  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
+
+  const handleSendOtp = async () => {
+    if (!phoneNumber || phoneNumber.length !== 10) {
+      alert("Please enter a valid 10-digit mobile number");
+      return;
+    }
+    setIsSendingOtp(true);
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:5000";
+      const sendUrl = process.env.NEXT_PUBLIC_API_OTP_SEND || "/api/otp/sendOtp";
+
+      const res = await fetch(`${baseUrl}${sendUrl}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mobileNumber: phoneNumber }),
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        setLoginStep('otp');
+        setTimer(60);
+        setOtp(['', '', '', '', '', '']);
+      } else {
+        alert(data.message || "Failed to send OTP");
+      }
+    } catch (error) {
+      alert("Error sending OTP");
+    } finally {
+      setIsSendingOtp(false);
+    }
+  };
+
+  const handleVerifyOtp = async (otpString?: string) => {
+    const finalOtp = otpString || otp.join('');
+    if (finalOtp.length !== 6) return;
+
+    setIsVerifyingOtp(true);
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:5000";
+      const verifyUrl = process.env.NEXT_PUBLIC_API_OTP_VERIFY || "/api/otp/verifyOtp";
+
+      const res = await fetch(`${baseUrl}${verifyUrl}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mobileNumber: phoneNumber, otp: finalOtp }),
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        const userData = data.data.user;
+        setUser(userData);
+        localStorage.setItem('mockUser', JSON.stringify(userData));
+        setShowLoginModal(false);
+        setOtp(['', '', '', '', '', '']);
+      } else {
+        setOtpError(data.message || "Invalid OTP");
+      }
+    } catch (error) {
+      setOtpError("Error verifying OTP");
+    } finally {
+      setIsVerifyingOtp(false);
+    }
+  };
   const [timer, setTimer] = useState(60);
 
   useEffect(() => {
@@ -134,15 +200,40 @@ export default function AccountPage() {
 
 
 
-  const handleSave = () => {
+  const handleSave = async () => {
     setSaving(true);
-    setTimeout(() => {
-      const updatedUser = { ...user, ...formData };
-      setUser(updatedUser);
-      localStorage.setItem('mockUser', JSON.stringify(updatedUser));
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.PUBLIC_BASE_URL || "http://localhost:5000";
+      const updateUrl = process.env.API_USER_UPDATE || "/api/users/updateProfile";
+
+      const res = await fetch(`${baseUrl}${updateUrl}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: user?.id,
+          name: (formData.name || '').trim(),
+          email: (formData.email || '').trim(),
+          mobileNumber: (formData.mobileNumber || formData.phone || '').trim(),
+        }),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        const updatedUser = { ...user, ...data.data };
+        setUser(updatedUser);
+        localStorage.setItem('mockUser', JSON.stringify(updatedUser));
+        setShowEditModal(false);
+      } else {
+        alert(data.message || "Failed to update profile");
+      }
+    } catch (error) {
+      alert("Error updating profile");
+      console.error('Error updating profile:', error);
+    } finally {
       setSaving(false);
-      setShowEditModal(false);
-    }, 500);
+    }
   };
 
   if (loading) {
@@ -215,7 +306,13 @@ export default function AccountPage() {
               <h2 className="text-xl font-bold text-gray-800 mb-2">Authentication Required</h2>
               <p className="text-gray-500 max-w-sm mb-6">You must be logged in to access your account settings and history.</p>
               <button
-                onClick={() => setShowLoginModal(true)}
+                onClick={() => {
+                  setLoginStep('phone');
+                  setPhoneNumber('');
+                  setOtp(['', '', '', '', '', '']);
+                  setOtpError('');
+                  setShowLoginModal(true);
+                }}
                 className="bg-[#069e5d] text-white font-bold py-2.5 px-8 rounded-full hover:bg-[#058a51] transition"
               >
                 Login Now
@@ -444,7 +541,7 @@ export default function AccountPage() {
                                 type="text"
                                 value={formData.name || ''}
                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                placeholder="Your name"
+                                placeholder=""
                                 className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-[14px] focus:outline-none focus:border-[#069e5d] transition"
                               />
                             </div>
@@ -454,7 +551,7 @@ export default function AccountPage() {
                                 type="email"
                                 value={formData.email || ''}
                                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                placeholder="your.email@example.com"
+                                placeholder=""
                                 className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-[14px] focus:outline-none focus:border-[#069e5d] transition"
                               />
                             </div>
@@ -493,8 +590,8 @@ export default function AccountPage() {
                         ) : (
                           <div className="flex flex-col sm:flex-row items-start justify-between gap-6">
                             <div>
-                              <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
-                                {user?.name || "Jagath"}
+                              <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight h-8 capitalize">
+                                {user?.name || ""}
                               </h2>
                               <span className="bg-gray-100 text-gray-600 text-xs px-3 py-1 rounded-full font-semibold inline-block mt-1">
                                 Devotee
@@ -505,13 +602,13 @@ export default function AccountPage() {
                                   <svg className="w-4 h-4 text-amber-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                                   </svg>
-                                  <span>{user?.phone || "+91 9360270984"}</span>
+                                  <span>{user?.mobileNumber || user?.phone || "+91 XXXXXXXXXX"}</span>
                                 </div>
                                 <div className="flex items-center gap-2.5">
                                   <svg className="w-4 h-4 text-red-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                                   </svg>
-                                  <span>{user?.email || "sundari62005@gmail.com"}</span>
+                                  <span className="h-5 flex items-center">{user?.email || ""}</span>
                                 </div>
                               </div>
                             </div>
@@ -1774,13 +1871,11 @@ export default function AccountPage() {
                     </div>
 
                     <button
-                      onClick={() => {
-                        setLoginStep('otp');
-                        setTimer(60);
-                      }}
-                      className="w-full bg-[#069e5d] text-white font-bold py-3.5 px-6 rounded-full flex items-center justify-center gap-2 hover:bg-[#058a51] transition relative group mb-4"
+                      onClick={handleSendOtp}
+                      disabled={isSendingOtp}
+                      className={`w-full bg-[#069e5d] text-white font-bold py-3.5 px-6 rounded-full flex items-center justify-center gap-2 transition relative group mb-4 ${isSendingOtp ? 'opacity-70 cursor-not-allowed' : 'hover:bg-[#058a51]'}`}
                     >
-                      <span className="text-[15px]">Continue</span>
+                      <span className="text-[15px]">{isSendingOtp ? 'Sending...' : 'Continue'}</span>
                       <div className="absolute right-2 w-8 h-8 rounded-full bg-white text-[#069e5d] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
@@ -1799,8 +1894,8 @@ export default function AccountPage() {
                       OTP has been sent to +91 {phoneNumber || '93602 70984'}
                     </p>
 
-                    <div className="flex justify-center gap-3 sm:gap-4 mb-2">
-                      {[0, 1, 2, 3].map((index) => (
+                    <div className="flex justify-center gap-2 sm:gap-3 mb-2">
+                      {[0, 1, 2, 3, 4, 5].map((index) => (
                         <input
                           key={index}
                           id={`otp-${index}`}
@@ -1809,32 +1904,23 @@ export default function AccountPage() {
                           maxLength={1}
                           value={otp[index]}
                           onChange={(e) => {
-                            const val = e.target.value;
+                            const val = e.target.value.replace(/\D/g, '');
+                            if (val.length > 1) return; // Prevent pasting multiple chars here
+
                             const newOtp = [...otp];
                             newOtp[index] = val;
                             setOtp(newOtp);
                             setOtpError('');
 
                             // Auto focus next
-                            if (val && index < 3) {
+                            if (val && index < 5) {
                               const nextInput = document.getElementById(`otp-${index + 1}`);
                               if (nextInput) nextInput.focus();
                             }
 
                             // Auto submit if full
                             if (newOtp.every(d => d !== '')) {
-                              if (newOtp.join('') === '1234') {
-                                // Mock login success
-                                setTimeout(() => {
-                                  const mockData = { id: "1", name: "Add Your Name", email: "Add Your Email", phone: phoneNumber || "+91 93602 70984" };
-                                  setUser(mockData);
-                                  localStorage.setItem('mockUser', JSON.stringify(mockData));
-                                  setShowLoginModal(false);
-                                  setOtp(['', '', '', '']);
-                                }, 300);
-                              } else {
-                                setOtpError('Invalid OTP. Please enter 1234.');
-                              }
+                              handleVerifyOtp(newOtp.join(''));
                             }
                           }}
                           onKeyDown={(e) => {
@@ -1843,7 +1929,7 @@ export default function AccountPage() {
                               if (prevInput) prevInput.focus();
                             }
                           }}
-                          className={`w-12 h-12 text-center text-xl font-bold text-gray-800 border-b-2 bg-transparent focus:outline-none ${otpError ? 'border-red-500 text-red-500' : otp[index] ? 'border-gray-800' : 'border-gray-300 focus:border-[#069e5d]'}`}
+                          className={`w-10 h-10 sm:w-12 sm:h-12 text-center text-xl font-bold text-gray-800 border-b-2 bg-transparent focus:outline-none ${otpError ? 'border-red-500 text-red-500' : otp[index] ? 'border-gray-800' : 'border-gray-300 focus:border-[#069e5d]'}`}
                         />
                       ))}
                     </div>
@@ -1858,26 +1944,16 @@ export default function AccountPage() {
                       {timer > 0 ? (
                         <>Resend code in <strong className="text-gray-800 font-bold">00:{timer < 10 ? `0${timer}` : timer}</strong></>
                       ) : (
-                        <button onClick={() => setTimer(60)} className="text-[#069e5d] font-bold hover:underline">Resend code now</button>
+                        <button onClick={handleSendOtp} disabled={isSendingOtp} className="text-[#069e5d] font-bold hover:underline">Resend code now</button>
                       )}
                     </p>
 
                     <button
-                      onClick={() => {
-                        // Mock login success
-                        const mockData = {
-                          id: "1",
-                          name: "Add Your Name",
-                          email: "Add Your Email",
-                          phone: phoneNumber || "+91 93602 70984"
-                        };
-                        setUser(mockData);
-                        localStorage.setItem('mockUser', JSON.stringify(mockData));
-                        setShowLoginModal(false);
-                      }}
-                      className="w-full bg-[#069e5d] text-white font-bold py-3.5 px-6 rounded-full flex items-center justify-center gap-2 hover:bg-[#058a51] transition relative group"
+                      onClick={() => handleVerifyOtp()}
+                      disabled={isVerifyingOtp || otp.join('').length !== 6}
+                      className={`w-full bg-[#069e5d] text-white font-bold py-3.5 px-6 rounded-full flex items-center justify-center gap-2 transition relative group ${(isVerifyingOtp || otp.join('').length !== 6) ? 'opacity-70 cursor-not-allowed' : 'hover:bg-[#058a51]'}`}
                     >
-                      <span className="text-[15px]">Continue</span>
+                      <span className="text-[15px]">{isVerifyingOtp ? 'Verifying...' : 'Continue'}</span>
                       <div className="absolute right-2 w-8 h-8 rounded-full bg-white text-[#069e5d] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />

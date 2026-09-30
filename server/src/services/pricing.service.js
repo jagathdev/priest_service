@@ -1,24 +1,50 @@
-export const calculatePoojaPrice = ({
-    pooja,
+const DEFAULT_EXTRA_PARTICIPANT_PRICE = 300;
+const DEFAULT_BASE_PRICE = 1251;
+
+export const calculateServicePrice = ({
+    service,
     participantCount,
 }) => {
+    // Base price
+    const basePrice =
+        service.basePrice ||
+        service.packages?.[0]?.priceINR ||
+        service.packages?.[0]?.price ||
+        service.price ||
+        DEFAULT_BASE_PRICE;
+
+    // Extra participants
     const extraParticipantCount = Math.max(
         participantCount - 1,
         0
     );
 
+    const extraParticipantPrice =
+        service.pricing?.extraParticipant ||
+        service.extraParticipantPrice ||
+        DEFAULT_EXTRA_PARTICIPANT_PRICE;
+
     const extraParticipantAmount =
-        extraParticipantCount *
-        pooja.pricing.extraParticipant;
+        extraParticipantCount * extraParticipantPrice;
 
-    const basePrice = pooja.basePrice;
+    // Additional fees
+    const convenienceFee =
+        service.pricing?.convenienceFee ||
+        service.fees?.convenienceFee ||
+        0;
 
-    const convenienceFee = pooja.pricing.convenienceFee;
+    const panditFee =
+        service.pricing?.panditFee ||
+        service.fees?.panditFee ||
+        0;
 
-    const panditFee = pooja.pricing.panditFee;
+    const recordingFee =
+        service.pricing?.recordingFee ||
+        service.fees?.recordingFee ||
+        0;
 
-    const recordingFee = pooja.pricing.recordingFee;
-
+    // Final payable amount
+    // Additional fees are not added because they are currently FREE.
     const total =
         basePrice +
         extraParticipantAmount;
@@ -27,6 +53,8 @@ export const calculatePoojaPrice = ({
         basePrice,
 
         extraParticipantCount,
+
+        extraParticipantPrice,
 
         extraParticipantAmount,
 
@@ -37,5 +65,7 @@ export const calculatePoojaPrice = ({
         recordingFee,
 
         total,
+
+        currency: service.currency || "INR",
     };
 };

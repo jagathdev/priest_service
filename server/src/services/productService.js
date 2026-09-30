@@ -26,7 +26,7 @@ export const getProductByIdService = async (id) => {
 // 4. Update an existing product by _id
 export const updateProductService = async (id, updateData) => {
   const updatedProduct = await Product.findByIdAndUpdate(id, updateData, {
-    new: true, // Return the updated document instead of the original
+    returnDocument: "after", // Return the updated document instead of the original
     runValidators: true, // Run schema validations on the updated fields
   });
   return updatedProduct;
