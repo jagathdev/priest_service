@@ -2,7 +2,7 @@ import User from "../models/user.js";
 
 export const updateProfile = async (req, res) => {
     try {
-        const { userId, name, email, mobileNumber } = req.body;
+        const { userId, name, email, mobileNumber, addresses } = req.body;
 
         if (!userId) {
             return res.status(400).json({
@@ -34,6 +34,10 @@ export const updateProfile = async (req, res) => {
             updateData.mobileNumber = mobileNumber.trim();
         }
 
+        if (addresses) {
+            updateData.addresses = addresses;
+        }
+
         const user = await User.findByIdAndUpdate(
             userId,
             updateData,
@@ -58,6 +62,7 @@ export const updateProfile = async (req, res) => {
                 name: user.name,
                 email: user.email,
                 mobileNumber: user.mobileNumber,
+                addresses: user.addresses,
             },
         });
     } catch (error) {
@@ -69,3 +74,6 @@ export const updateProfile = async (req, res) => {
         });
     }
 };
+
+
+
