@@ -452,7 +452,7 @@ export default function PujaPage() {
   const { t } = useTranslation();
   const [allPujas, setAllPujas] = useState<Puja[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
+  const [fetched, setFetched] = useState(false);
   const [filters, setFilters] = useState<FilterState>(defaultFilters);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -466,7 +466,6 @@ export default function PujaPage() {
 
   // Fetch all pujas from Express API
   useEffect(() => {
-    setIsLoading(true);
     fetch("http://localhost:5000/api/pujas")
       .then((r) => (r.ok ? r.json() : null))
       .then((resData) => {
@@ -482,7 +481,7 @@ export default function PujaPage() {
         console.error("Error fetching pujas from Express API:", err);
         setAllPujas([]);
       })
-      .finally(() => setIsLoading(false));
+      .finally(() => setFetched(true));
   }, []);
 
   const defaultBanners: Puja[] = [
@@ -661,9 +660,11 @@ export default function PujaPage() {
           )}
 
           {/* Grid of Cards */}
-          {isLoading ? (
-            <div className="mt-16 flex justify-center py-16">
-              <div className="w-8 h-8 border-4 border-[#d95a2b] border-t-transparent rounded-full animate-spin"></div>
+          {!fetched ? (
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:gap-8 lg:grid-cols-3 w-full mt-12">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={`skeleton-${i}`} className="bg-gray-100/80 rounded-[32px] h-[450px] animate-pulse border border-stone-100"></div>
+              ))}
             </div>
           ) : displayedPujas.length === 0 ? (
             <div className="mt-16 flex flex-col items-center justify-center gap-4 rounded-2xl border border-dashed border-[#e3d1c2] bg-white py-16 text-center">
@@ -754,7 +755,7 @@ export default function PujaPage() {
               })}
             </div>
           )}
-          {displayedPujas.length > 0 && !isLoading && (
+          {displayedPujas.length > 0 && fetched && (
             <div className="mt-12 text-center pb-10">
               <p className="text-[16px] sm:text-[18px] mb-2 font-medium text-gray-600">You've reached the end of available pujas</p>
               <p className="text-[14px] text-gray-500">{displayedPujas.length} of {displayedPujas.length} pujas shown</p>

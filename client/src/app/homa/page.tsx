@@ -36,7 +36,7 @@ const slugify = (value: string) =>
 export default function HomaPage() {
   const { t } = useTranslation();
   const [allHomas, setAllHomas] = useState<Homa[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [fetched, setFetched] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedType, setSelectedType] = useState("All Homas");
   const [selectedDeities, setSelectedDeities] = useState<string[]>([]);
@@ -45,7 +45,6 @@ export default function HomaPage() {
 
   // Fetch homas from Express API endpoint
   useEffect(() => {
-    setIsLoading(true);
     fetch("http://localhost:5000/api/homas")
       .then((r) => (r.ok ? r.json() : null))
       .then((resData) => {
@@ -61,7 +60,7 @@ export default function HomaPage() {
         console.error("Error fetching homas from Express API:", err);
         setAllHomas([]);
       })
-      .finally(() => setIsLoading(false));
+      .finally(() => setFetched(true));
   }, []);
 
   const toggleFavorite = (id: string) => {
@@ -339,8 +338,12 @@ export default function HomaPage() {
               </div>
 
               {/* Homa Cards Grid (3 Columns) */}
-              {isLoading ? (
-                <div className="py-24 text-center text-gray-400 font-medium">Loading sacred homas...</div>
+              {!fetched ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 w-full">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <div key={`skeleton-${i}`} className="bg-gray-100/80 rounded-[32px] h-[450px] animate-pulse border border-stone-100"></div>
+                  ))}
+                </div>
               ) : displayedHomas.length === 0 ? (
                 <div className="bg-white rounded-2xl border border-dashed border-gray-250 p-12 text-center shadow-xs">
                   <p className="text-base font-bold text-gray-700">No homas found matching your filters</p>
@@ -474,7 +477,7 @@ export default function HomaPage() {
               )}
 
               {/* End of results notice */}
-              {!isLoading && displayedHomas.length > 0 && (
+              {fetched && displayedHomas.length > 0 && (
                 <div className="mt-12 text-center py-6 border-t border-gray-100">
                   <p className="text-xs font-semibold text-gray-400">
                     You've reached the end of available services ({displayedHomas.length} of {allHomas.length} Homas)

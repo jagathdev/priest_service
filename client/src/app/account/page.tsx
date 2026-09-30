@@ -39,12 +39,28 @@ export interface Address {
 
 export default function AccountPage() {
   const router = useRouter();
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<User | null>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('mockUser');
+      if (stored) {
+        try { return JSON.parse(stored); } catch (e) {}
+      }
+    }
+    return null;
+  });
+  const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("profile");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [formData, setFormData] = useState<User>({});
+  const [formData, setFormData] = useState<User>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('mockUser');
+      if (stored) {
+        try { return JSON.parse(stored); } catch (e) {}
+      }
+    }
+    return {};
+  });
   const [saving, setSaving] = useState(false);
 
   const addresses = user?.addresses || [];
@@ -64,6 +80,58 @@ export default function AccountPage() {
   });
   const [selectedLanguage, setSelectedLanguage] = useState("English");
   const [openFaq, setOpenFaq] = useState<number | null>(1);
+
+  // Still Need Help States
+  const [helpFormData, setHelpFormData] = useState({
+    name: "",
+    mobileNumber: "",
+    email: "",
+    bookingId: "",
+    subject: "",
+    message: "",
+    consent: false
+  });
+  const [isSubmittingHelp, setIsSubmittingHelp] = useState(false);
+
+  const handleHelpSubmit = async () => {
+    if (!helpFormData.name || !helpFormData.mobileNumber || !helpFormData.subject || !helpFormData.message || !helpFormData.consent) {
+      alert("Please fill all required fields and accept the consent.");
+      return;
+    }
+    setIsSubmittingHelp(true);
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:5000";
+      const apiUrl = process.env.NEXT_PUBLIC_API_CUSTOMERQUERIES || "/api/customerQueries";
+
+      const res = await fetch(`${baseUrl}${apiUrl}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...helpFormData,
+          userId: user?.id || user?._id || undefined
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert("Your request has been submitted successfully!");
+        setHelpFormData({
+          name: "",
+          mobileNumber: "",
+          email: "",
+          bookingId: "",
+          subject: "",
+          message: "",
+          consent: false
+        });
+      } else {
+        alert(data.message || "Failed to submit request.");
+      }
+    } catch (error) {
+      alert("Error submitting request.");
+    } finally {
+      setIsSubmittingHelp(false);
+    }
+  };
 
   // Login Modal States
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -149,23 +217,6 @@ export default function AccountPage() {
   }, [showLoginModal, loginStep, timer]);
 
   useEffect(() => {
-    // Check localStorage first for our mock login state
-    const mockUser = localStorage.getItem('mockUser');
-    if (mockUser) {
-      try {
-        const parsedUser: User = JSON.parse(mockUser);
-        // Defer state update to avoid synchronous cascading renders
-        setTimeout(() => {
-          setUser(parsedUser);
-          setFormData(parsedUser);
-          setLoading(false);
-        }, 0);
-        return;
-      } catch (e) {
-
-      }
-    }
-
     fetch("/api/auth/me")
       .then((res) => res.json())
       .then((data) => {
@@ -177,12 +228,10 @@ export default function AccountPage() {
           setUser(null);
           localStorage.removeItem('mockUser');
         }
-        setLoading(false);
       })
       .catch(() => {
         setUser(null);
         localStorage.removeItem('mockUser');
-        setLoading(false);
       });
   }, []);
 
@@ -190,10 +239,7 @@ export default function AccountPage() {
     if (typeof window !== "undefined" && window.location.hash) {
       const hashTab = window.location.hash.replace("#", "");
       if (["profile", "bookings", "subscriptions", "wallet", "wishlist", "address", "language"].includes(hashTab)) {
-        // Defer state update to avoid synchronous cascading renders
-        setTimeout(() => {
-          setActiveTab(hashTab);
-        }, 0);
+        setActiveTab(hashTab);
       }
     }
   }, []);
@@ -1613,7 +1659,7 @@ export default function AccountPage() {
                         <h4 className="text-[14px] font-bold text-gray-900 mb-1">WhatsApp Support</h4>
                         <p className="text-[11px] text-gray-500 mb-4">Reply within minutes</p>
                         <button className="text-[#069e5d] text-[12px] font-bold flex items-center gap-1 hover:text-[#047a47]">
-                          Chat now <span>&rarr;</span>
+                          +91 9677391108 <span>&rarr;</span>
                         </button>
                       </div>
 
@@ -1627,7 +1673,7 @@ export default function AccountPage() {
                         <h4 className="text-[14px] font-bold text-gray-900 mb-1">Call Support</h4>
                         <p className="text-[11px] text-gray-500 mb-4">10 AM - 7 PM, all days</p>
                         <button className="text-[#069e5d] text-[12px] font-bold flex items-center gap-1 hover:text-[#047a47]">
-                          +91 7337592828 <span>&rarr;</span>
+                          +91 9677391108 <span>&rarr;</span>
                         </button>
                       </div>
 
@@ -1641,7 +1687,7 @@ export default function AccountPage() {
                         <h4 className="text-[14px] font-bold text-gray-900 mb-1">Email Support</h4>
                         <p className="text-[11px] text-gray-500 mb-4">Response within 24 hours</p>
                         <button className="text-[#069e5d] text-[12px] font-bold flex items-center gap-1 hover:text-[#047a47]">
-                          support@vedamandir.com <span>&rarr;</span>
+                          support@astroved.com <span>&rarr;</span>
                         </button>
                       </div>
                     </div>
@@ -1717,6 +1763,8 @@ export default function AccountPage() {
                           <input
                             type="text"
                             placeholder="Enter your full name"
+                            value={helpFormData.name}
+                            onChange={(e) => setHelpFormData({ ...helpFormData, name: e.target.value })}
                             className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-[13px] text-gray-800 focus:outline-none focus:border-[#069e5d]"
                           />
                         </div>
@@ -1729,6 +1777,9 @@ export default function AccountPage() {
                             <input
                               type="text"
                               placeholder="10-digit mobile number"
+                              value={helpFormData.mobileNumber}
+                              onChange={(e) => setHelpFormData({ ...helpFormData, mobileNumber: e.target.value.replace(/\D/g, '') })}
+                              maxLength={10}
                               className="w-full px-3 py-2.5 text-[13px] text-gray-800 focus:outline-none"
                             />
                           </div>
@@ -1741,6 +1792,8 @@ export default function AccountPage() {
                           <input
                             type="email"
                             placeholder="your.email@example.com"
+                            value={helpFormData.email}
+                            onChange={(e) => setHelpFormData({ ...helpFormData, email: e.target.value })}
                             className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-[13px] text-gray-800 focus:outline-none focus:border-[#069e5d]"
                           />
                         </div>
@@ -1749,6 +1802,8 @@ export default function AccountPage() {
                           <input
                             type="text"
                             placeholder="e.g. VM123456789"
+                            value={helpFormData.bookingId}
+                            onChange={(e) => setHelpFormData({ ...helpFormData, bookingId: e.target.value })}
                             className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-[13px] text-gray-800 focus:outline-none focus:border-[#069e5d]"
                           />
                         </div>
@@ -1756,12 +1811,16 @@ export default function AccountPage() {
 
                       <div className="mb-4">
                         <label className="text-[12px] font-bold text-gray-800 block mb-1.5">Subject <span className="text-red-500">*</span></label>
-                        <select defaultValue="" className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-[13px] text-gray-800 focus:outline-none focus:border-[#069e5d] bg-white appearance-none">
+                        <select
+                          value={helpFormData.subject}
+                          onChange={(e) => setHelpFormData({ ...helpFormData, subject: e.target.value })}
+                          className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-[13px] text-gray-800 focus:outline-none focus:border-[#069e5d] bg-white appearance-none"
+                        >
                           <option value="" disabled>Select a subject</option>
-                          <option value="booking">Booking Issue</option>
-                          <option value="video">Puja Video Query</option>
-                          <option value="refund">Refund/Cancellation</option>
-                          <option value="other">Other</option>
+                          <option value="Booking Issue">Booking Issue</option>
+                          <option value="Puja Video Query">Puja Video Query</option>
+                          <option value="Refund/Cancellation">Refund/Cancellation</option>
+                          <option value="Other">Other</option>
                         </select>
                       </div>
 
@@ -1770,23 +1829,32 @@ export default function AccountPage() {
                         <textarea
                           placeholder="Describe your issue..."
                           rows={4}
+                          value={helpFormData.message}
+                          onChange={(e) => setHelpFormData({ ...helpFormData, message: e.target.value })}
+                          maxLength={1000}
                           className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-[13px] text-gray-800 focus:outline-none focus:border-[#069e5d] resize-none"
                         ></textarea>
                         <div className="text-right text-[10px] text-gray-400 mt-1">
-                          0 / 1000
+                          {helpFormData.message.length} / 1000
                         </div>
                       </div>
 
                       <label className="flex items-start gap-2 cursor-pointer mb-6">
                         <input
                           type="checkbox"
+                          checked={helpFormData.consent}
+                          onChange={(e) => setHelpFormData({ ...helpFormData, consent: e.target.checked })}
                           className="mt-0.5 w-3.5 h-3.5 rounded border-gray-300 text-[#069e5d] focus:ring-[#069e5d]"
                         />
                         <span className="text-[11px] font-medium text-gray-600">I authorize VedaMandir to send notifications via SMS / WhatsApp / email. <span className="text-red-500">*</span></span>
                       </label>
 
-                      <button className="bg-[#069e5d] text-white text-[13px] font-bold px-6 py-2.5 rounded-full flex items-center gap-1.5 hover:bg-[#058a51] transition w-max">
-                        Submit Request <span>&rarr;</span>
+                      <button
+                        onClick={handleHelpSubmit}
+                        disabled={isSubmittingHelp}
+                        className={`bg-[#069e5d] text-white text-[13px] font-bold px-6 py-2.5 rounded-full flex items-center gap-1.5 transition w-max ${isSubmittingHelp ? 'opacity-70 cursor-not-allowed' : 'hover:bg-[#058a51]'}`}
+                      >
+                        {isSubmittingHelp ? 'Submitting...' : 'Submit Request'} {!isSubmittingHelp && <span>&rarr;</span>}
                       </button>
                     </div>
                   </div>

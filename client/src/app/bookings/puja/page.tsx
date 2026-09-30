@@ -30,7 +30,7 @@ interface Booking {
 export default function MyPujaBookings() {
   const router = useRouter();
   const [bookings, setBookings] = useState<Booking[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [fetched, setFetched] = useState(false);
   const [filter, setFilter] = useState("All");
 
   useEffect(() => {
@@ -40,9 +40,8 @@ export default function MyPujaBookings() {
         if (data.success) {
           setBookings(data.bookings);
         }
-        setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .finally(() => setFetched(true));
   }, []);
 
   const formatDate = (dateStr: string) => {
@@ -225,12 +224,8 @@ export default function MyPujaBookings() {
               </div>
 
               {/* Bookings List */}
-              {loading ? (
-                <div className="space-y-4">
-                  {[1, 2].map((i) => (
-                    <div key={i} className="h-48 bg-gray-100 animate-pulse rounded-2xl border border-gray-200" />
-                  ))}
-                </div>
+              {!fetched ? (
+                <div className="space-y-4 min-h-[400px]"></div>
               ) : filteredBookings.length === 0 ? (
                 <div className="border border-gray-200 rounded-2xl p-16 text-center bg-white shadow-sm">
                   <div className="text-5xl text-gray-200 mb-4">

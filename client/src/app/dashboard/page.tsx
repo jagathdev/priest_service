@@ -21,7 +21,7 @@ import ReviewsSection from "@/components/common/ReviewsSection";
 export default function DashboardPage() {
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
   const [pujas, setPujas] = useState<any[]>([]);
-  const [loadingPujas, setLoadingPujas] = useState(true);
+  const [fetchedPujas, setFetchedPujas] = useState(false);
 
   useEffect(() => {
     fetch("http://localhost:5000/api/pujas")
@@ -32,14 +32,14 @@ export default function DashboardPage() {
           : Array.isArray(resData)
           ? resData
           : [];
-        const activeList = rawList.filter((item: any) => !item.status || item.status === "active");
+        const activeList = rawList.filter((item: { status?: string }) => !item.status || item.status === "active");
         setPujas(activeList.slice(0, 6));
       })
       .catch((err) => {
         console.error("Error fetching home pujas:", err);
         setPujas([]);
       })
-      .finally(() => setLoadingPujas(false));
+      .finally(() => setFetchedPujas(true));
   }, []);
 
   return (
@@ -190,8 +190,10 @@ export default function DashboardPage() {
 
           {/* Puja Cards Grid (Maximum 6 active Pujas loaded from Express API) */}
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 sm:gap-8 w-full max-w-full xl:max-w-none mx-auto">
-            {loadingPujas ? (
-              <div className="col-span-full py-12 text-center text-stone-400 font-medium">Loading Pujas...</div>
+            {!fetchedPujas ? (
+              Array.from({ length: 3 }).map((_, i) => (
+                <div key={`skeleton-${i}`} className="bg-gray-100/80 rounded-[32px] h-[450px] animate-pulse border border-stone-100"></div>
+              ))
             ) : pujas.length === 0 ? (
               <div className="col-span-full py-12 text-center text-stone-400 font-medium">No active Pujas found.</div>
             ) : (
@@ -298,7 +300,7 @@ export default function DashboardPage() {
           {/* Left: Doubts */}
           <div className="md:w-1/3">
 
-            <h2 className="text-4xl md:text-5xl font-bold text-[#4a2e21] font-serif mb-4 leading-tight">Doubts?<br />We're Here.</h2>
+            <h2 className="text-4xl md:text-5xl font-bold text-[#4a2e21] font-serif mb-4 leading-tight">Doubts?<br />We re Here.</h2>
             <p className="text-gray-600 mb-8 text-sm max-w-[250px]">
               Our devotee care team is available in 11 languages, 12 hours a day. Reach them on WhatsApp, phone, or email.
             </p>
@@ -469,7 +471,18 @@ function FilterBtn({ text, active }: { text: string; active?: boolean }) {
   );
 }
 
-function PujaCard({ imageSrc, topTag, title, subtitle, location, date, price, slug }: any) {
+interface PujaCardProps {
+  imageSrc: string | { src: string };
+  topTag: string;
+  title: string;
+  subtitle: string;
+  location: string;
+  date: string;
+  price: string | number;
+  slug?: string;
+}
+
+function PujaCard({ imageSrc, topTag, title, subtitle, location, date, price, slug }: PujaCardProps) {
   return (
     <div className="bg-white rounded-3xl border border-stone-200/80 p-2.5 sm:p-3 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col group text-left">
 
