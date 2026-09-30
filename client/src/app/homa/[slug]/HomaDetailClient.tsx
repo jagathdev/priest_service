@@ -228,8 +228,14 @@ export default function HomaDetailClient({
     setAddingToCart(true);
     setCartError("");
     try {
-      const meRes = await fetch("/api/auth/me");
-      const authData = meRes.ok ? await meRes.json() : { authenticated: false };
+      const mockUser = typeof window !== "undefined" ? localStorage.getItem("mockUser") : null;
+      let isAuthenticated = !!mockUser;
+
+      if (!isAuthenticated) {
+        const meRes = await fetch("/api/auth/me");
+        const authData = meRes.ok ? await meRes.json() : { authenticated: false };
+        isAuthenticated = !!authData.authenticated;
+      }
 
       const totalAmount = priceVal;
       const sankalpUrl = `/sankalp?amount=${totalAmount}&type=homa&pkg=${selectedPackageId || ""}&name=${encodeURIComponent(
@@ -238,7 +244,7 @@ export default function HomaDetailClient({
         slug || ""
       )}`;
 
-      if (!authData.authenticated) {
+      if (!isAuthenticated) {
         setPendingSankalpUrl(sankalpUrl);
         setShowLoginModal(true);
         return;

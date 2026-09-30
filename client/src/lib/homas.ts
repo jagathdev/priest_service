@@ -523,26 +523,45 @@ export const normalizePuja = (homa: any, offeringsMap: Record<string, any> = {})
 };
 
 export async function getAllHomas() {
-  const client = await clientPromise;
-  const db = client.db();
-  const collection = db.collection('homa');
+  try {
+    const res = await fetch('http://localhost:5000/api/homas', { cache: 'no-store' });
+    if (res.ok) {
+      const resData = await res.json();
+      const list = resData?.data && Array.isArray(resData.data) ? resData.data : Array.isArray(resData) ? resData : [];
+      if (list.length > 0) {
+        return list
+          .filter((item: any) => String(item.status || "active").toLowerCase() !== "inactive")
+          .map((p: any) => normalizePuja(p, {}));
+      }
+    }
+  } catch (err) {
+    // Fallback if API fetch fails
+  }
 
-  const items = await collection.find({}).toArray();
+  try {
+    const client = await clientPromise;
+    const db = client.db();
+    const collection = db.collection('homa');
 
-  const offeringsCollection = db.collection('offering');
-  const offeringsData = await offeringsCollection.find({}).toArray();
-  const offeringsMap = Object.fromEntries(offeringsData.map(o => [String(o._id), o]));
+    const items = await collection.find({}).toArray();
 
-  const normalized = (items as any[]).map(p => normalizePuja(p, offeringsMap));
+    const offeringsCollection = db.collection('offering');
+    const offeringsData = await offeringsCollection.find({}).toArray();
+    const offeringsMap = Object.fromEntries(offeringsData.map(o => [String(o._id), o]));
 
-  return normalized.filter(
-    (item: any) => String(item.status || "active").toLowerCase() !== "inactive"
-  );
+    const normalized = (items as any[]).map(p => normalizePuja(p, offeringsMap));
+
+    return normalized.filter(
+      (item: any) => String(item.status || "active").toLowerCase() !== "inactive"
+    );
+  } catch (err) {
+    return [];
+  }
 }
 
 export async function getHomaBySlug(slug: string) {
   const allHomas = await getAllHomas();
   const targetSlug = slugify(slug);
-  const found = allHomas.find((p) => p.slug === slug || slugify(p.slug || p.title) === targetSlug);
+  const found = allHomas.find((p: any) => p.slug === slug || slugify(p.slug || p.title) === targetSlug || p._id === slug);
   return found || null;
 }

@@ -16,29 +16,22 @@ export async function generateMetadata(
 
   if (!slug) {
     return {
-      title: 'AstroVed Puja Seva',
-      description: 'Book sacred pujas and ritual offerings online.',
+      title: 'AstroVed Homa Seva',
+      description: 'Book sacred homas and fire ritual offerings online.',
     };
   }
 
   const homa = await getHomaBySlug(slug);
-
-  if (!homa) {
-    return {
-      title: 'Homa Not Found | AstroVed Homa Seva',
-      description: 'The requested homa could not be found.',
-    };
-  }
-
-  const title = homa.metaTitle || `${homa.title} | AstroVed Homa Seva`;
+  const formattedSlugTitle = slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  const title = homa?.metaTitle || (homa?.title ? `${homa.title} | AstroVed Homa Seva` : `${formattedSlugTitle} | AstroVed Homa Seva`);
   const description =
-    homa.metaDescription ||
-    homa.description ||
-    homa.details?.heroSubtitle ||
-    'Join us for this sacred ritual to seek divine blessings.';
-  const keywords = homa.metaKeywords
+    homa?.metaDescription ||
+    homa?.description ||
+    homa?.details?.heroSubtitle ||
+    'Join us for this sacred fire ritual to seek divine blessings.';
+  const keywords = homa?.metaKeywords
     ? homa.metaKeywords.split(',').map((k: string) => k.trim())
-    : ['homa', 'seva', homa.title, 'AstroVed', 'rituals'];
+    : ['homa', 'seva', homa?.title || formattedSlugTitle, 'AstroVed', 'rituals'];
 
   return {
     title,
@@ -47,7 +40,7 @@ export async function generateMetadata(
     openGraph: {
       title,
       description,
-      images: homa.imageUrl ? [{ url: homa.imageUrl }] : [],
+      images: homa?.imageUrl ? [{ url: homa.imageUrl }] : [],
     },
   };
 }
@@ -60,7 +53,7 @@ export default async function HomaDetailPage({ params }: Props) {
   const slug = resolvedParams.slug;
   const homa = slug ? await getHomaBySlug(slug) : null;
   const allPujas = await getAllPujas();
-  const recommendations = allPujas.filter(p => (homa as { recommendedPujaIds?: string[] } | null)?.recommendedPujaIds?.includes(String(p._id)));
+  const recommendations = allPujas.filter((p: any) => (homa as { recommendedPujaIds?: string[] } | null)?.recommendedPujaIds?.includes(String(p._id)));
 
   return <HomaDetailClient initialHoma={homa as React.ComponentProps<typeof HomaDetailClient>['initialHoma']} recommendations={recommendations} />;
 }

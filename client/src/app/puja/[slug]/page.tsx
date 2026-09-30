@@ -21,23 +21,16 @@ export async function generateMetadata(
   }
 
   const puja = await getPujaBySlug(slug);
-
-  if (!puja) {
-    return {
-      title: 'Puja Not Found | AstroVed Puja Seva',
-      description: 'The requested puja could not be found.',
-    };
-  }
-
-  const title = puja.metaTitle || `${puja.title} | AstroVed Puja Seva`;
+  const formattedSlugTitle = slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  const title = puja?.metaTitle || (puja?.title ? `${puja.title} | AstroVed Puja Seva` : `${formattedSlugTitle} | AstroVed Puja Seva`);
   const description =
-    puja.metaDescription ||
-    puja.description ||
-    puja.details?.heroSubtitle ||
+    puja?.metaDescription ||
+    puja?.description ||
+    puja?.details?.heroSubtitle ||
     'Join us for this sacred ritual to seek divine blessings.';
-  const keywords = puja.metaKeywords
+  const keywords = puja?.metaKeywords
     ? puja.metaKeywords.split(',').map((k: string) => k.trim())
-    : ['puja', 'seva', puja.title, 'AstroVed', 'rituals'];
+    : ['puja', 'seva', puja?.title || formattedSlugTitle, 'AstroVed', 'rituals'];
 
   return {
     title,
@@ -46,7 +39,7 @@ export async function generateMetadata(
     openGraph: {
       title,
       description,
-      images: puja.imageUrl ? [{ url: puja.imageUrl }] : [],
+      images: puja?.imageUrl ? [{ url: puja.imageUrl }] : [],
     },
   };
 }
@@ -58,7 +51,7 @@ export default async function PujaDetailPage({ params }: Props) {
   const slug = resolvedParams.slug;
   const puja = slug ? await getPujaBySlug(slug) : null;
   const allHomas = await getAllHomas();
-  const recommendations = allHomas.filter(h => {
+  const recommendations = allHomas.filter((h: any) => {
     const recommendedIds = (puja as { recommendedHomaIds?: string[] } | null)?.recommendedHomaIds;
     return recommendedIds?.includes(String(h._id));
   });

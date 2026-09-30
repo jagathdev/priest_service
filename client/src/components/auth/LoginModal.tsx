@@ -1,554 +1,376 @@
 "use client";
 
-import { useEffect, useRef, useState, useMemo } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { DEFAULT_COUNTRY } from "@/lib/auth/countries";
 import { authService } from "@/services/authService";
 
-/* ─────────────────────────────────────────────
-   Types
-───────────────────────────────────────────── */
-type Step = "input" | "otp";
-type Method = "whatsapp" | "email";
-
-const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const phoneRegex = /^[0-9]{10,15}$/;
-const RESEND_SECS = 60;
-
-/* ─────────────────────────────────────────────
-   AstroVed Logo — uses the real navbar logo
-───────────────────────────────────────────── */
-function AstroVedLogo() {
-  return (
-    <div style={{ display: "flex", justifyContent: "center", marginBottom: 2 }}>
-      <img
-        src="/icons/Fav-Icon.png"
-        alt="AstroVed"
-        className="w-13 p-2 h-13 rounded-full flex items-center justify-center shadow-lg"
-
-      />
-    </div>
-  );
-}
-
-/* ─────────────────────────────────────────────
-   Props
-───────────────────────────────────────────── */
 interface LoginModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: () => void;
 }
 
-/* ─────────────────────────────────────────────
-   Main Modal Component
-───────────────────────────────────────────── */
 export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
-  /* ── Location detection ── */
-  const [method, setMethod] = useState<Method>("whatsapp");
-  const [detecting, setDetecting] = useState(true);
-  const [isIndian, setIsIndian] = useState(true);
-
-  /* ── Input step ── */
-  const [inputValue, setInputValue] = useState("");
-  const [inputError, setInputError] = useState("");
-  const [inputLoading, setInputLoading] = useState(false);
-
-  /* ── OTP step ── */
-  const [step, setStep] = useState<Step>("input");
+  const [step, setStep] = useState<"input" | "otp">("input");
+  const [mobileNumber, setMobileNumber] = useState("");
   const [otp, setOtp] = useState("");
-  const [otpError, setOtpError] = useState("");
-  const [otpLoading, setOtpLoading] = useState(false);
-  const [resendSecs, setResendSecs] = useState(RESEND_SECS);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [resendTimer, setResendTimer] = useState(60);
 
+  const phoneInputRef = useRef<HTMLInputElement>(null);
   const otpInputRef = useRef<HTMLInputElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
 
-  /* ── GeoIP detect on mount ── */
+  // Focus input on mount / step change
   useEffect(() => {
-    if (!isOpen) return;
-    async function detect() {
-      try {
-        const res = await fetch("/api/auth/geoip");
-        const data = await res.json();
-        const country = data?.country ?? "IN";
-        setIsIndian(country === "IN");
-        setMethod(country === "IN" ? "whatsapp" : "email");
-      } catch {
-        setIsIndian(true);
-        setMethod("whatsapp");
-      } finally {
-        setDetecting(false);
+    if (isOpen) {
+      if (step === "input") {
+        setTimeout(() => phoneInputRef.current?.focus(), 100);
+      } else if (step === "otp") {
+        setTimeout(() => otpInputRef.current?.focus(), 100);
       }
     }
-    detect();
-  }, [isOpen]);
+  }, [isOpen, step]);
 
-  /* ── Focus input when modal opens ── */
+  // Resend OTP countdown timer
   useEffect(() => {
-    if (isOpen && !detecting && step === "input") {
-      setTimeout(() => inputRef.current?.focus(), 80);
+    let interval: NodeJS.Timeout;
+    if (isOpen && step === "otp" && resendTimer > 0) {
+      interval = setInterval(() => {
+        setResendTimer((prev) => prev - 1);
+      }, 1000);
     }
-  }, [isOpen, detecting, step]);
+    return () => clearInterval(interval);
+  }, [isOpen, step, resendTimer]);
 
-  /* ── Focus first OTP box when step changes ── */
-  useEffect(() => {
-    if (step === "otp") {
-      setTimeout(() => otpInputRef.current?.focus(), 80);
-    }
-  }, [step]);
-
-  /* ── Resend countdown ── */
-  useEffect(() => {
-    if (step !== "otp" || resendSecs <= 0) return;
-    const t = setTimeout(() => setResendSecs((s) => s - 1), 1000);
-    return () => clearTimeout(t);
-  }, [step, resendSecs]);
-
-  /* ── Prevent body scroll ── */
+  // Prevent background body scrolling when modal is open
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "";
     }
-    return () => { document.body.style.overflow = ""; };
+    return () => {
+      document.body.style.overflow = "";
+    };
   }, [isOpen]);
 
-  /* ── Reset on close ── */
-  function handleClose() {
+  // Reset modal state on close
+  const handleClose = () => {
     setStep("input");
-    setInputValue("");
-    setInputError("");
+    setMobileNumber("");
     setOtp("");
-    setOtpError("");
-    setResendSecs(RESEND_SECS);
+    setError("");
+    setLoading(false);
+    setResendTimer(60);
     onClose();
-  }
+  };
 
-  const isInputValid = useMemo(() => {
-    if (method === "email") return emailRegex.test(inputValue);
-    return phoneRegex.test(inputValue.replace(/\D/g, ""));
-  }, [method, inputValue]);
-
-  /* ─── Step 1: send OTP ─── */
-  async function handleSendOtp(e: React.FormEvent) {
+  // ── Step 1: Send OTP handler ──
+  const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    setInputError("");
-    setInputLoading(true);
+    const cleanNumber = mobileNumber.replace(/\D/g, "");
+    if (cleanNumber.length !== 10) {
+      setError("Please enter a valid 10-digit mobile number");
+      return;
+    }
+
+    setError("");
+    setLoading(true);
+
     try {
-      if (method === "email") {
-        await authService.sendOtp({ method: "email", email: inputValue } as any);
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
+      const sendOtpUrl = process.env.NEXT_PUBLIC_API_OTP_SEND || "/api/otp/sendOtp";
+
+      const res = await fetch(`${baseUrl}${sendOtpUrl}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mobileNumber: cleanNumber }),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        setStep("otp");
+        setResendTimer(60);
       } else {
-        const digits = inputValue.replace(/\D/g, "");
+        // Fallback to Next.js API route /api/auth/otp/send if Express server fails or returns error
+        try {
+          await authService.sendOtp({
+            method: "whatsapp",
+            country: { isoCode: "IN", dialCode: "+91", name: "India" } as any,
+            number: cleanNumber,
+          });
+          setStep("otp");
+          setResendTimer(60);
+        } catch (fallbackErr: any) {
+          setError(data.message || fallbackErr.message || "Failed to send OTP. Please try again.");
+        }
+      }
+    } catch (err) {
+      // Direct call fallback
+      try {
         await authService.sendOtp({
           method: "whatsapp",
-          country: DEFAULT_COUNTRY,
-          number: digits,
+          country: { isoCode: "IN", dialCode: "+91", name: "India" } as any,
+          number: cleanNumber,
         });
+        setStep("otp");
+        setResendTimer(60);
+      } catch (fallbackErr: any) {
+        setError("Network error. Could not connect to authentication server.");
       }
-      setOtp("");
-      setOtpError("");
-      setResendSecs(RESEND_SECS);
-      setStep("otp");
-    } catch (err) {
-      setInputError(err instanceof Error ? err.message : "Failed to send OTP");
     } finally {
-      setInputLoading(false);
+      setLoading(false);
     }
-  }
+  };
 
-  /* ─── OTP state uses single string, no change handlers needed here ─── */
-
-  /* ─── Step 2: verify OTP ─── */
-  async function handleVerifyOtp(e: React.FormEvent) {
+  // ── Step 2: Verify OTP handler ──
+  const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    const code = otp.trim();
-    if (code.length < 4) { setOtpError("Enter the OTP sent to your number"); return; }
-    setOtpError("");
-    setOtpLoading(true);
-    try {
-      const payload =
-        method === "email"
-          ? { method: "email" as const, email: inputValue, otp: code }
-          : {
-            method: "whatsapp" as const,
-            country: DEFAULT_COUNTRY,
-            number: inputValue.replace(/\D/g, ""),
-            otp: code,
-          };
-      await authService.verifyOtp(payload as any);
-      handleClose();
-      if (onSuccess) onSuccess();
-      else window.location.reload();
-    } catch (err) {
-      setOtpError(err instanceof Error ? err.message : "Invalid OTP");
-    } finally {
-      setOtpLoading(false);
+    const cleanOtp = otp.trim();
+    if (cleanOtp.length < 4) {
+      setError("Please enter the verification OTP");
+      return;
     }
-  }
 
-  /* ─── Resend OTP ─── */
-  async function handleResend() {
-    if (resendSecs > 0) return;
-    setOtpError("");
-    setOtpLoading(true);
+    setError("");
+    setLoading(true);
+
     try {
-      if (method === "email") {
-        await authService.resendOtp({ method: "email", email: inputValue } as any);
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
+      const verifyOtpUrl = process.env.NEXT_PUBLIC_API_OTP_VERIFY || "/api/otp/verifyOtp";
+
+      const res = await fetch(`${baseUrl}${verifyOtpUrl}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mobileNumber: mobileNumber.replace(/\D/g, ""), otp: cleanOtp }),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        const userObj = data.data?.user || data.user || { mobileNumber, name: `Devotee ${mobileNumber.slice(-4)}` };
+        localStorage.setItem("mockUser", JSON.stringify(userObj));
+        handleClose();
+        if (onSuccess) onSuccess();
       } else {
-        await authService.resendOtp({
-          method: "whatsapp",
-          country: DEFAULT_COUNTRY,
-          number: inputValue.replace(/\D/g, ""),
-        });
+        // Fallback to Next.js API route
+        try {
+          const verifyRes = await authService.verifyOtp({
+            method: "whatsapp",
+            country: { isoCode: "IN", dialCode: "+91", name: "India" } as any,
+            number: mobileNumber.replace(/\D/g, ""),
+            otp: cleanOtp,
+          } as any);
+          const userObj = (verifyRes as any).user || { mobileNumber, name: `Devotee ${mobileNumber.slice(-4)}` };
+          localStorage.setItem("mockUser", JSON.stringify(userObj));
+          handleClose();
+          if (onSuccess) onSuccess();
+        } catch (fallbackErr: any) {
+          setError(data.message || fallbackErr.message || "Invalid OTP. Please try again.");
+        }
       }
-      setOtp("");
-      setResendSecs(RESEND_SECS);
-      setTimeout(() => otpInputRef.current?.focus(), 80);
     } catch (err) {
-      setOtpError(err instanceof Error ? err.message : "Could not resend OTP");
+      try {
+        const verifyRes = await authService.verifyOtp({
+          method: "whatsapp",
+          country: { isoCode: "IN", dialCode: "+91", name: "India" } as any,
+          number: mobileNumber.replace(/\D/g, ""),
+          otp: cleanOtp,
+        } as any);
+        const userObj = (verifyRes as any).user || { mobileNumber, name: `Devotee ${mobileNumber.slice(-4)}` };
+        localStorage.setItem("mockUser", JSON.stringify(userObj));
+        handleClose();
+        if (onSuccess) onSuccess();
+      } catch (fallbackErr: any) {
+        setError("Error verifying OTP. Please try again.");
+      }
     } finally {
-      setOtpLoading(false);
+      setLoading(false);
     }
-  }
+  };
+
+  // ── Resend OTP handler ──
+  const handleResendOtp = async () => {
+    if (resendTimer > 0) return;
+    setError("");
+    setLoading(true);
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
+      const sendOtpUrl = process.env.NEXT_PUBLIC_API_OTP_SEND || "/api/otp/sendOtp";
+
+      await fetch(`${baseUrl}${sendOtpUrl}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mobileNumber: mobileNumber.replace(/\D/g, "") }),
+      });
+      setResendTimer(60);
+      setOtp("");
+      setError("OTP resent successfully!");
+    } catch {
+      setError("Failed to resend OTP.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (!isOpen) return null;
 
-  /* ─────────── RENDER ─────────── */
-  const BLUE = "#6869F9";
-  const BLUE_DARK = "#4546d4";
-
   return (
-    /* Backdrop */
     <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 9999,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: "rgba(0,0,0,0.55)",
-        backdropFilter: "blur(3px)",
-        padding: "16px",
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs transition-opacity duration-300"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) handleClose();
       }}
-      onClick={(e) => { if (e.target === e.currentTarget) handleClose(); }}
     >
-      {/* Modal card — clean single-column layout */}
-      <div className="relative flex flex-col items-center w-full max-w-[440px] min-h-[380px] rounded-2xl overflow-hidden bg-white shadow-[0_24px_80px_rgba(0,0,0,0.35)] animate-[modalIn_0.22s_ease] p-6 sm:p-8">
+      {/* Modal Dialog Box matching exact screenshot mockup */}
+      <div className="relative w-full max-w-[420px] bg-white rounded-3xl p-6 sm:p-8 shadow-[0_20px_60px_rgba(0,0,0,0.2)] transform transition-all duration-300 animate-[fadeIn_0.2s_ease-out]">
+        {/* Close Button (X) */}
+        <button
+          onClick={handleClose}
+          aria-label="Close login modal"
+          className="absolute top-5 right-5 text-gray-400 hover:text-gray-700 w-8 h-8 rounded-full flex items-center justify-center bg-gray-100/70 hover:bg-gray-100 transition-colors"
+        >
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
 
-        {/* ── Main white content ── */}
-        <div className="flex flex-col items-center w-full relative">
-          {/* Close button */}
-          <button
-            onClick={handleClose}
-            aria-label="Close login"
-            style={{
-              position: "absolute",
-              top: 14,
-              right: 14,
-              width: 30,
-              height: 30,
-              borderRadius: "50%",
-              border: "none",
-              background: "#f0f0f0",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 16,
-              color: "#555",
-              fontWeight: 700,
-              lineHeight: 1,
-            }}
-          >
-            ✕
-          </button>
+        {step === "input" ? (
+          <div>
+            {/* Modal Title */}
+            <h2 className="text-2xl font-serif font-semibold text-center text-[#232323] mb-6 tracking-tight">
+              Login or signup
+            </h2>
 
-          {/* Logo */}
-          <AstroVedLogo />
-
-          {/* ══ STEP 1 — Input ══ */}
-          {step === "input" && (
-            <>
-              <h1
-                style={{
-                  fontSize: 17,
-                  fontWeight: 700,
-                  color: "#1a1a2e",
-                  margin: "16px 0 4px",
-                  textAlign: "center",
-                  lineHeight: 1.35,
-                }}
-              >
-                {detecting
-                  ? "Loading..."
-                  : isIndian
-                    ? "Login to check your booking"
-                    : "Login to continue your booking"}
-              </h1>
-              <p style={{ fontSize: 13, color: "#666", textAlign: "center", margin: "0 0 18px", lineHeight: 1.5 }}>
-                {detecting
-                  ? ""
-                  : isIndian
-                    ? "Please login with the same number that you have used for booking."
-                    : "All booking updates will be sent on the logged-in email"}
-              </p>
-
-              {detecting ? (
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
-                  <div
-                    style={{
-                      width: 28,
-                      height: 28,
-                      borderRadius: "50%",
-                      border: `3px solid ${BLUE}`,
-                      borderTopColor: "transparent",
-                      animation: "spin 0.7s linear infinite",
-                    }}
-                  />
+            <form onSubmit={handleSendOtp} className="space-y-4">
+              {/* Phone Input Box matching screenshot */}
+              <div className="border border-stone-300 focus-within:border-emerald-600 rounded-2xl flex items-center px-4 py-3.5 bg-white transition-all shadow-2xs">
+                {/* Flag + Country Code badge */}
+                <div className="flex items-center gap-1.5 shrink-0 pr-3 border-r border-stone-200 mr-3">
+                  <span className="text-lg leading-none select-none">🇮🇳</span>
+                  <span className="text-sm font-bold text-gray-800">+91</span>
+                  <svg className="w-3 h-3 text-gray-500 ml-0.5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
                 </div>
-              ) : (
-                <form onSubmit={handleSendOtp} style={{ width: "100%" }}>
-                  {/* Input field */}
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      border: "1.5px solid #ddd",
-                      borderRadius: 8,
-                      padding: "10px 14px",
-                      background: "#fff",
-                      marginBottom: 6,
-                      gap: 8,
-                    }}
-                  >
-                    {isIndian && (
-                      <>
-                        {/* Indian flag image */}
-                        <img
-                          src="/images/flag.png"
-                          alt="India Flag"
-                          style={{ width: 24, height: 16, objectFit: "cover", borderRadius: 2 }}
-                        />
-                        <span style={{ color: "#444", fontWeight: 500, fontSize: 15, userSelect: "none" }}>+91</span>
-                        <div style={{ width: 1, height: 20, background: "#ddd" }} />
-                      </>
-                    )}
-                    <input
-                      ref={inputRef}
-                      id="login-modal-input"
-                      type={isIndian ? "tel" : "email"}
-                      inputMode={isIndian ? "numeric" : "email"}
-                      value={inputValue}
-                      onChange={(e) => {
-                        if (!isIndian) {
-                          setInputValue(e.target.value);
-                          return;
-                        }
-                        let digits = e.target.value.replace(/\D/g, "");
-                        if ((digits.startsWith("91") && digits.length > 10) || digits.length === 12) {
-                          digits = digits.slice(2);
-                        }
-                        setInputValue(digits.slice(0, 10));
-                      }}
-                      placeholder={isIndian ? "" : "Enter your email"}
-                      maxLength={isIndian ? 16 : undefined}
-                      style={{
-                        flex: 1,
-                        border: "none",
-                        outline: "none",
-                        fontSize: 15,
-                        color: "#222",
-                        background: "transparent",
-                        fontFamily: "inherit",
-                      }}
-                      autoComplete={isIndian ? "tel" : "email"}
-                    />
-                  </div>
 
-                  {inputError && (
-                    <p style={{ color: "#e53935", fontSize: 12, margin: "4px 0 8px", textAlign: "center" }}>
-                      {inputError}
-                    </p>
-                  )}
+                {/* Mobile Number Input */}
+                <input
+                  ref={phoneInputRef}
+                  type="tel"
+                  inputMode="numeric"
+                  placeholder="Mobile number"
+                  maxLength={10}
+                  value={mobileNumber}
+                  onChange={(e) => {
+                    const digits = e.target.value.replace(/\D/g, "");
+                    setMobileNumber(digits.slice(0, 10));
+                  }}
+                  className="w-full text-base font-medium text-gray-900 outline-none bg-transparent placeholder:text-stone-400 font-sans"
+                  autoComplete="tel"
+                />
+              </div>
 
-                  {/* Terms */}
-                  <p style={{ fontSize: 12, color: "#888", margin: "10px 0 16px", lineHeight: 1.5 }}>
-                    By proceeding you agree to the{" "}
-                    <Link href="/terms" style={{ color: BLUE }} onClick={handleClose}>
-                      Terms &amp; Conditions
-                    </Link>{" "}
-                    and{" "}
-                    <Link href="/privacy" style={{ color: BLUE }} onClick={handleClose}>
-                      Privacy Policy
-                    </Link>{" "}
-                    of AstroVed
-                  </p>
-
-                  {/* Login button */}
-                  <button
-                    id="login-modal-submit"
-                    type="submit"
-                    disabled={!isInputValid || inputLoading}
-                    style={{
-                      width: "100%",
-                      padding: "13px",
-                      borderRadius: 8,
-                      border: "none",
-                      background: isInputValid && !inputLoading ? "#6772eaff" : "#91a2eeff",
-                      color: "#fff",
-                      fontWeight: 700,
-                      fontSize: 16,
-                      cursor: isInputValid && !inputLoading ? "pointer" : "not-allowed",
-                      fontFamily: "inherit",
-                      transition: "background 0.2s",
-                    }}
-                  >
-                    {inputLoading ? "Sending OTP..." : "login"}
-                  </button>
-                </form>
+              {error && (
+                <p className="text-xs text-red-500 font-semibold text-center mt-1">
+                  {error}
+                </p>
               )}
-            </>
-          )}
 
-          {/* ══ STEP 2 — OTP ══ */}
-          {step === "otp" && (
-            <>
-              <h1
-                style={{
-                  fontSize: 17,
-                  fontWeight: 700,
-                  color: "#1a1a2e",
-                  margin: "16px 0 4px",
-                  textAlign: "center",
-                }}
+              {/* Continue Button with Right Arrow */}
+              <button
+                type="submit"
+                disabled={mobileNumber.length !== 10 || loading}
+                className="w-full bg-[#00b050] hover:bg-[#009644] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed text-white font-extrabold text-base py-3.5 px-6 rounded-full flex items-center justify-center relative shadow-md transition-all mt-6"
               >
-                Enter the OTP
-              </h1>
-              <p style={{ fontSize: 13, color: "#666", textAlign: "center", margin: "0 0 4px" }}>
-                {isIndian
-                  ? `OTP sent to +91 ${inputValue}`
-                  : `OTP sent to ${inputValue}`}
+                <span>{loading ? "Sending..." : "Continue"}</span>
+                <div className="absolute right-3.5 w-8 h-8 rounded-full bg-white text-[#00b050] flex items-center justify-center shadow-xs">
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.8">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                  </svg>
+                </div>
+              </button>
+
+              {/* Footer Terms text matching screenshot */}
+              <p className="text-[12px] text-stone-500 text-center leading-relaxed pt-2">
+                By tapping &quot;Continue&quot;, you agree to receive notifications, and our{" "}
+                <Link href="/terms" onClick={handleClose} className="text-blue-600 underline font-medium hover:text-blue-700">
+                  terms and conditions
+                </Link>
+                .
               </p>
+            </form>
+          </div>
+        ) : (
+          <div>
+            {/* OTP Verification Header */}
+            <h2 className="text-2xl font-serif font-semibold text-center text-[#232323] mb-2 tracking-tight">
+              Enter OTP
+            </h2>
+            <p className="text-xs text-stone-600 text-center mb-6">
+              OTP sent to <span className="font-bold text-gray-900">+91 {mobileNumber}</span>{" "}
               <button
                 type="button"
                 onClick={() => setStep("input")}
-                style={{ background: "none", border: "none", color: BLUE, fontSize: 13, cursor: "pointer", marginBottom: 16, fontWeight: 600 }}
+                className="text-[#00b050] font-bold underline ml-1 hover:text-emerald-700"
               >
-                Change {isIndian ? "number" : "email"}
+                Change
               </button>
+            </p>
 
-              <form onSubmit={handleVerifyOtp} style={{ width: "100%" }}>
-                {/* Single OTP box */}
-                <div style={{ display: "flex", justifyContent: "center", marginBottom: 16 }}>
-                  <input
-                    ref={otpInputRef}
-                    id="otp-box-single"
-                    type="text"
-                    inputMode="numeric"
-                    autoComplete="one-time-code"
-                    maxLength={8}
-                    value={otp}
-                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
-                    placeholder="Enter OTP"
-                    style={{
-                      width: "100%",
-                      maxWidth: 240,
-                      height: 48,
-                      textAlign: "center",
-                      fontSize: 20,
-                      fontWeight: 700,
-                      border: `1.5px solid ${BLUE}`,
-                      borderRadius: 8,
-                      outline: "none",
-                      color: "#1a1a2e",
-                      background: "#f0efff",
-                      fontFamily: "inherit",
-                      transition: "border-color 0.15s, background 0.15s",
-                      padding: "0 16px",
-                      letterSpacing: "4px",
-                    }}
-                  />
-                </div>
+            <form onSubmit={handleVerifyOtp} className="space-y-4">
+              <input
+                ref={otpInputRef}
+                type="text"
+                inputMode="numeric"
+                maxLength={6}
+                value={otp}
+                onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
+                placeholder="Enter 6-digit OTP"
+                className="w-full text-center text-xl font-bold tracking-[0.4em] py-3.5 border border-emerald-500 rounded-2xl outline-none bg-green-50/50 text-gray-900 font-mono"
+              />
 
-                {/* Resend */}
-                <div style={{ textAlign: "center", marginBottom: 12 }}>
-                  {resendSecs > 0 ? (
-                    <span style={{ fontSize: 13, color: "#888" }}>
-                      Resend OTP in{" "}
-                      <span style={{ color: BLUE, fontWeight: 700 }}>
-                        {String(Math.floor(resendSecs / 60)).padStart(2, "0")}:{String(resendSecs % 60).padStart(2, "0")}
-                      </span>
-                    </span>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={handleResend}
-                      disabled={otpLoading}
-                      style={{ background: "none", border: "none", color: BLUE, fontWeight: 700, fontSize: 13, cursor: "pointer" }}
-                    >
-                      Resend OTP
-                    </button>
-                  )}
-                </div>
-
-                {otpError && (
-                  <p style={{ color: "#e53935", fontSize: 12, textAlign: "center", marginBottom: 8 }}>{otpError}</p>
+              <div className="text-center">
+                {resendTimer > 0 ? (
+                  <span className="text-xs text-stone-500 font-medium">
+                    Resend OTP in <span className="text-[#00b050] font-bold">{resendTimer}s</span>
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleResendOtp}
+                    disabled={loading}
+                    className="text-xs text-[#00b050] font-bold underline hover:text-emerald-700"
+                  >
+                    Resend OTP
+                  </button>
                 )}
+              </div>
 
-                {/* Submit button */}
-                <button
-                  id="otp-modal-submit"
-                  type="submit"
-                  disabled={otp.length < 4 || otpLoading}
-                  style={{
-                    width: "100%",
-                    padding: "13px",
-                    borderRadius: 8,
-                    border: "none",
-                    background:
-                      otp.length >= 4 && !otpLoading
-                        ? `linear-gradient(135deg,${BLUE},${BLUE_DARK})`
-                        : "#c4c3f8",
-                    color: "#fff",
-                    fontWeight: 700,
-                    fontSize: 16,
-                    cursor: otp.length >= 4 && !otpLoading ? "pointer" : "not-allowed",
-                    fontFamily: "inherit",
-                    transition: "background 0.2s",
-                  }}
-                >
-                  {otpLoading ? "Verifying..." : "Submit"}
-                </button>
-
-                {/* Terms */}
-                <p style={{ fontSize: 11, color: "#aaa", textAlign: "center", marginTop: 12, lineHeight: 1.5 }}>
-                  By proceeding, you agree to AstroVed&apos;s{" "}
-                  <Link href="/terms" style={{ color: BLUE }} onClick={handleClose}>Terms and Conditions</Link>
-                  {" "}And{" "}
-                  <Link href="/privacy" style={{ color: BLUE }} onClick={handleClose}>Privacy Policy</Link>
+              {error && (
+                <p className="text-xs text-red-500 font-semibold text-center mt-1">
+                  {error}
                 </p>
-              </form>
-            </>
-          )}
-        </div>
-      </div>
+              )}
 
-      {/* Keyframes */}
-      <style>{`
-        @keyframes modalIn {
-          from { opacity: 0; transform: scale(0.94) translateY(12px); }
-          to   { opacity: 1; transform: scale(1)    translateY(0);    }
-        }
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
-        @media (max-width: 520px) {
-          .hidden-mobile-left-panel { display: none !important; }
-        }
-      `}</style>
+              <button
+                type="submit"
+                disabled={otp.length < 4 || loading}
+                className="w-full bg-[#00b050] hover:bg-[#009644] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed text-white font-extrabold text-base py-3.5 px-6 rounded-full flex items-center justify-center relative shadow-md transition-all mt-4"
+              >
+                <span>{loading ? "Verifying..." : "Verify & Continue"}</span>
+                <div className="absolute right-3.5 w-8 h-8 rounded-full bg-white text-[#00b050] flex items-center justify-center shadow-xs">
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.8">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                  </svg>
+                </div>
+              </button>
+            </form>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -542,45 +542,44 @@ export const normalizePuja = (puja: any, offeringsMap: Record<string, any> = {})
 };
 
 export async function getAllPujas() {
-  const client = await clientPromise;
-  const db = client.db();
-  const collection = db.collection('puja');
-
-  let items = await collection.find({}).toArray();
-
-  const offeringsCollection = db.collection('offering');
-  const offeringsData = await offeringsCollection.find({}).toArray();
-  const offeringsMap = Object.fromEntries(offeringsData.map(o => [String(o._id), o]));
-
-  const existingSlugs = new Set((items as any[]).map(p => p.slug || slugify(p.title || '')));
-  const missingFallbacks = fallbackPujas.filter(p => !existingSlugs.has(p.slug || slugify(p.title || '')));
-
-  if (missingFallbacks.length > 0) {
-    try {
-      const docsToInsert = missingFallbacks.map(({ _id, ...rest }) => ({
-        ...rest,
-        status: 'active',
-        createdAt: new Date(),
-        updatedAt: new Date()
-      }));
-      await collection.insertMany(docsToInsert as any);
-      items = await collection.find({}).toArray();
-    } catch (err) {
-      console.error("Error auto-seeding missing pujas:", err);
+  try {
+    const res = await fetch('http://localhost:5000/api/pujas', { cache: 'no-store' });
+    if (res.ok) {
+      const resData = await res.json();
+      const list = resData?.data && Array.isArray(resData.data) ? resData.data : Array.isArray(resData) ? resData : [];
+      if (list.length > 0) {
+        return list
+          .filter((item: any) => String(item.status || "active").toLowerCase() !== "inactive")
+          .map((p: any) => normalizePuja(p, {}));
+      }
     }
+  } catch (err) {
+    // Fallback to direct DB query if API fetch fails
   }
 
-  const normalized = (items as any[]).map(p => normalizePuja(p, offeringsMap));
-  const allPujas = normalized.length > 0 ? normalized : fallbackPujas.map(p => normalizePuja(p, offeringsMap));
+  try {
+    const client = await clientPromise;
+    const db = client.db();
+    const collection = db.collection('puja');
 
-  return allPujas.filter(
-    (item: any) => String(item.status || "active").toLowerCase() !== "inactive"
-  );
+    let items = await collection.find({}).toArray();
+
+    const offeringsCollection = db.collection('offering');
+    const offeringsData = await offeringsCollection.find({}).toArray();
+    const offeringsMap = Object.fromEntries(offeringsData.map(o => [String(o._id), o]));
+
+    const normalized = (items as any[]).map(p => normalizePuja(p, offeringsMap));
+    return normalized.filter(
+      (item: any) => String(item.status || "active").toLowerCase() !== "inactive"
+    );
+  } catch (err) {
+    return fallbackPujas.map(p => normalizePuja(p, {}));
+  }
 }
 
 export async function getPujaBySlug(slug: string) {
   const allPujas = await getAllPujas();
   const targetSlug = slugify(slug);
-  const found = allPujas.find((p) => p.slug === slug || slugify(p.slug || p.title) === targetSlug);
+  const found = allPujas.find((p: any) => p.slug === slug || slugify(p.slug || p.title) === targetSlug || p._id === slug);
   return found || null;
 }
