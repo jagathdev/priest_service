@@ -68,11 +68,26 @@ export const sendOTP = async (mobileNumber) => {
         throw new Error("OTP_URL is not configured in .env");
     }
 
-    url = url.replace("{usermobilenumber}", `91${mobileNumber}`);
-    url = url.replace("{randomotp}", otp);
+    // Standardize phone number with 91 country code prefix for 24x7sms
+    const formattedPhone = mobileNumber.startsWith("91") && mobileNumber.length === 12
+        ? mobileNumber
+        : `91${mobileNumber.replace(/\D/g, "")}`;
 
-    // Send SMS
+    if (url.includes("{usermobilenumber}")) {
+        url = url.replace("{usermobilenumber}", formattedPhone);
+    } else {
+        url = url.replace("MobileNo={}", `MobileNo=${formattedPhone}`);
+    }
+
+    if (url.includes("{randomotp}")) {
+        url = url.replace("{randomotp}", otp);
+    } else {
+        url = url.replace("is+{}.", `is+${otp}.`);
+    }
+
+    // Send SMS request to 24x7sms gateway
     const response = await axios.get(url);
+    console.log(`[sendOTP] Sent to ${formattedPhone}, SMS Gateway Response:`, response.data);
 
     return {
         otpSent: true,

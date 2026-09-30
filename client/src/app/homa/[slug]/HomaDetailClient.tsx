@@ -6,6 +6,7 @@ import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import LoginModal from "@/components/auth/LoginModal";
+import { checkAuthStatus } from "@/lib/authCheck";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { CheckIcon, XMarkIcon } from "@heroicons/react/24/solid";
 
@@ -228,23 +229,17 @@ export default function HomaDetailClient({
     setAddingToCart(true);
     setCartError("");
     try {
-      const mockUser = typeof window !== "undefined" ? localStorage.getItem("mockUser") : null;
-      let isAuthenticated = !!mockUser;
-
-      if (!isAuthenticated) {
-        const meRes = await fetch("/api/auth/me");
-        const authData = meRes.ok ? await meRes.json() : { authenticated: false };
-        isAuthenticated = !!authData.authenticated;
-      }
-
+      const { is_user } = await checkAuthStatus();
+      const actualHomaId = homa?._id || (homa as any)?.id || slug;
       const totalAmount = priceVal;
-      const sankalpUrl = `/sankalp?amount=${totalAmount}&type=homa&pkg=${selectedPackageId || ""}&name=${encodeURIComponent(
+
+      const sankalpUrl = `/sankalp?pujaId=${encodeURIComponent(actualHomaId)}&amount=${totalAmount}&type=homa&pkg=${selectedPackageId || ""}&name=${encodeURIComponent(
         userDetails.name
       )}&wa=${userDetails.whatsapp}&title=${encodeURIComponent(homa?.title || "")}&slug=${encodeURIComponent(
         slug || ""
       )}`;
 
-      if (!isAuthenticated) {
+      if (!is_user) {
         setPendingSankalpUrl(sankalpUrl);
         setShowLoginModal(true);
         return;

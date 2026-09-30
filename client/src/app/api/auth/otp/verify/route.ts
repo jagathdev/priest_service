@@ -42,9 +42,10 @@ export async function POST(request: Request) {
 
     const response = NextResponse.json({
       success: true,
+      is_user: true,
       message: "OTP verified successfully",
-      user: authUser,
-      data: authUser,
+      user: { ...authUser, is_user: true },
+      data: { ...authUser, is_user: true },
     });
 
     await attachUserSession(response, authUser);

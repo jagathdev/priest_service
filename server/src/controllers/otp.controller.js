@@ -191,9 +191,11 @@ export const verifyOtp = async (req, res) => {
 
         return res.status(200).json({
             success: true,
+            is_user: true,
             message: "Login successful",
 
             data: {
+                is_user: true,
                 user: {
                     id: user._id,
                     mobileNumber: user.mobileNumber,

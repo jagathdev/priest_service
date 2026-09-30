@@ -9,11 +9,12 @@ export async function GET() {
     const token = cookieStore.get('userToken')?.value;
 
     if (!token) {
-      return NextResponse.json({ authenticated: false }, { status: 401 });
+      return NextResponse.json({ is_user: false, authenticated: false }, { status: 401 });
     }
 
     const { payload } = await jwtVerify(token, getJwtSecret());
     return NextResponse.json({
+      is_user: true,
       authenticated: true,
       user: {
         id: payload.userId,
@@ -28,6 +29,6 @@ export async function GET() {
       }
     });
   } catch {
-    return NextResponse.json({ authenticated: false }, { status: 401 });
+    return NextResponse.json({ is_user: false, authenticated: false }, { status: 401 });
   }
 }
