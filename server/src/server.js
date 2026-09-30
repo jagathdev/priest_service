@@ -9,6 +9,7 @@ import poojaDetailsRoutes from './routes/pooja.routes.js';
 import wishlistRoutes from './routes/wishlist.routes.js';
 import connectDB from './config/db.js';
 import userRoutes from './routes/user.routes.js';
+import customerQueryRoutes from './routes/customerQuery.routes.js';
 
 dotenv.config();
 
@@ -29,6 +30,7 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/pooja-details', poojaDetailsRoutes);
 app.use("/api/wishlist", wishlistRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/customerQueries", customerQueryRoutes);
 
 const PORT = process.env.PORT || 5000;
 

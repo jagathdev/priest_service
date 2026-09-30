@@ -68,7 +68,7 @@ export const sendOTP = async (mobileNumber) => {
         throw new Error("OTP_URL is not configured in .env");
     }
 
-    url = url.replace("{usermobilenumber}", mobileNumber);
+    url = url.replace("{usermobilenumber}", `91${mobileNumber}`);
     url = url.replace("{randomotp}", otp);
 
     // Send SMS
