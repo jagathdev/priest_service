@@ -203,12 +203,12 @@ export default function Navbar() {
   }, [pathname]);
 
   const isActivePath = (path: string) =>
-    pathname === path || (path !== "/dashboard" && pathname?.startsWith(path + "/"));
+    pathname === path || (path === "/" && pathname === "/dashboard") || (path === "/dashboard" && pathname === "/") || (path !== "/" && path !== "/dashboard" && pathname?.startsWith(path + "/"));
 
   const handleLogout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
     setUser(null);
-    window.location.href = "/dashboard";
+    window.location.href = "/";
   };
 
   const handleLoginSuccess = () => {
@@ -235,7 +235,7 @@ export default function Navbar() {
         <div className="mx-auto flex max-w-[1350px] items-center justify-between px-4 py-3 sm:py-3.5 sm:px-6 lg:px-10 xl:py-5.5">
 
           {/* ── Logo ── */}
-          <Link href="/dashboard" className="flex items-center gap-2 shrink-0" aria-label="AstroVed Home">
+          <Link href="/" className="flex items-center gap-2 shrink-0" aria-label="AstroVed Home">
             <img src="https://cdn.astroved.com/images/priestservice/priest-services.jpg" alt="AstroVed" className="h-9 sm:h-10 lg:h-11 w-auto object-contain" />
           </Link>
 
@@ -243,7 +243,7 @@ export default function Navbar() {
           <nav aria-label="Main navigation" className="hidden lg:flex flex-1 justify-center">
             <ul className="flex items-center gap-10 xl:gap-12 text-base xl:text-[17px] font-bold text-[#1a1a1a] tracking-wider">
               <li>
-                <Link href="/dashboard" className={isActivePath("/dashboard") ? "text-[#F47820] font-extrabold border-b-2 border-[#F47820] pb-1" : "transition-colors hover:text-[#F47820] uppercase"}>
+                <Link href="/" className={isActivePath("/") ? "text-[#F47820] font-extrabold border-b-2 border-[#F47820] pb-1" : "transition-colors hover:text-[#F47820] uppercase"}>
                   HOME
                 </Link>
               </li>

@@ -62,5 +62,5 @@ export default async function HomaDetailPage({ params }: Props) {
   const allPujas = await getAllPujas();
   const recommendations = allPujas.filter(p => (homa as { recommendedPujaIds?: string[] } | null)?.recommendedPujaIds?.includes(String(p._id)));
 
-  return <HomaDetailClient initialPuja={homa as React.ComponentProps<typeof HomaDetailClient>['initialPuja']} recommendations={recommendations} />;
+  return <HomaDetailClient initialHoma={homa as React.ComponentProps<typeof HomaDetailClient>['initialHoma']} recommendations={recommendations} />;
 }

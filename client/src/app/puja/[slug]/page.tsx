@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 import { getPujaBySlug } from '@/lib/pujas';
-import NewPujaDetailClient from './NewPujaDetailClient';
+import PujaDetailClient from './PujaDetailClient';
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -63,5 +63,5 @@ export default async function PujaDetailPage({ params }: Props) {
     return recommendedIds?.includes(String(h._id));
   });
 
-  return <NewPujaDetailClient initialPuja={puja as Parameters<typeof NewPujaDetailClient>[0]['initialPuja']} recommendations={recommendations} />;
+  return <PujaDetailClient initialPuja={puja as React.ComponentProps<typeof PujaDetailClient>['initialPuja']} recommendations={recommendations} />;
 }
