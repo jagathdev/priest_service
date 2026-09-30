@@ -63,6 +63,7 @@ interface Puja {
   packages?: PujaPackage[];
   offerings?: PujaOffering[];
   gallery?: string[];
+  templeImage?: string;
   details?: {
     heroTitle?: string;
     heroSubtitle?: string;
@@ -70,6 +71,7 @@ interface Puja {
     templeName?: string;
     templeLocation?: string;
     templeNote?: string;
+    templeImage?: string;
     benefits?: { title: string; description: string; icon?: string }[];
     process?: { title: string; description: string }[];
     inclusions?: string[];
@@ -84,6 +86,35 @@ const slugify = (value: string) =>
     .replace(/[^a-z0-9\s-]/g, "")
     .replace(/\s+/g, "-")
     .replace(/-+/g, "-");
+
+const getPujaImageUrl = (imageUrl?: string, title?: string): string => {
+  if (imageUrl && typeof imageUrl === "string" && imageUrl.trim().length > 0) {
+    const trimmed = imageUrl.trim();
+    if (trimmed.startsWith("http://") || trimmed.startsWith("https://") || trimmed.startsWith("/")) {
+      return trimmed;
+    }
+    return `/images/${trimmed}`;
+  }
+
+  const lowerTitle = (title || "").toLowerCase();
+  if (lowerTitle.includes("saraswati") || lowerTitle.includes("saraswathi")) {
+    return "/images/Maa-saraswathi.jpg";
+  }
+  if (lowerTitle.includes("ganesh") || lowerTitle.includes("ganapathi") || lowerTitle.includes("vinayaka")) {
+    return "/images/Ganesh-Chaturthi-Mahapuja.jpg";
+  }
+  if (lowerTitle.includes("kali") || lowerTitle.includes("durga")) {
+    return "/images/maa-kali.jpg";
+  }
+  if (lowerTitle.includes("navagraha")) {
+    return "/images/Navagraha-Shanti-Puja.jpg";
+  }
+  if (lowerTitle.includes("lakshmi") || lowerTitle.includes("laxmi")) {
+    return "/images/Lakshmi-Homam.jpg";
+  }
+
+  return "/images/Ganesh-Chaturthi-Mahapuja.jpg";
+};
 
 export default function PujaDetailClient({
   initialPuja,
@@ -281,18 +312,17 @@ export default function PujaDetailClient({
 
   // Fallback structures if admin data is not provided
   const defaultBenefits = [
-    { title: "Courage to overcome obstacles", description: "Invocational blessing to grant strength and overcome hardships.", icon: "🛡️" },
-    { title: "Fulfillment of efforts & endeavours", description: "Divine support for success in work, career, and personal goals.", icon: "🎯" },
-    { title: "Divine grace for new ventures", description: "Auspicious beginnings with peace, protection, and growth.", icon: "✨" },
-    { title: "Full Confidence & Willpower", description: "Strengthen focus, remove self-doubt and fear.", icon: "⚡" },
-    { title: "Family Well-being", description: "Harmony, happiness, and health for all family members.", icon: "🏡" },
+    { title: "Divine Grace & Protection", description: "Invocational blessing to grant strength, peace, and protection.", icon: "🛡️" },
+    { title: "Success & Obstacle Removal", description: "Divine support for overcoming difficulties and achieving success.", icon: "🎯" },
+    { title: "Prosperity & Abundance", description: "Auspicious sacred rituals bringing prosperity and family wellbeing.", icon: "✨" },
+    { title: "Positive Energy & Peace", description: "Strengthen focus, harmony, and positive vibrations at home.", icon: "⚡" },
+    { title: "Family Wellbeing", description: "Harmony, happiness, and health for all family members.", icon: "🏡" },
   ];
 
   const defaultProcess = [
     { title: "Sankalpam", description: "Offering devotee's names and gotram during the sacred ritual by learned priests." },
     { title: "Ganapati Puja & Invocation", description: "Invoking Lord Ganesha for obstruction-free Puja and divine harmony." },
-    { title: "Special Abhishekam", description: "Authentic abhishekam with holy water, milk, honey and sacred items to the deity." },
-    { title: "Archana & Chanting of Namas", description: "Chanting sacred vedic mantras and 108 names for fulfillment of noble desires." },
+    { title: "Sacred Archana & Chanting", description: "Chanting sacred vedic mantras and 108 names for fulfillment of noble desires." },
     { title: "Mangalarathi & Prasad", description: "Offering final mangalarathi and receiving divine prasad blessings." },
   ];
 
@@ -308,20 +338,23 @@ export default function PujaDetailClient({
     puja.about ||
     puja.details?.about ||
     puja.description ||
+    puja.subtitle ||
     puja.heroSubtitle ||
-    "Lord Subrahmanya Swamy, son of Lord Shiva and Goddess Parvati, is worshipped as the divine commander who grants courage, wisdom, and victory over all difficulties.";
+    puja.details?.heroSubtitle ||
+    `Perform sacred ${puja.title} with authentic Vedic rituals to seek divine grace, peace, and fulfillment of prayers.`;
 
   const badgeText =
     puja.badge ||
+    puja.shortTitle ||
     puja.subtitle ||
     puja.heroTitle ||
     puja.details?.heroTitle ||
     "SPECIAL SANKALPAM";
 
   const descriptionText =
-    puja.heroSubtitle ||
     puja.description ||
     puja.subtitle ||
+    puja.heroSubtitle ||
     puja.details?.heroSubtitle ||
     "A special sacred ritual for devotees seeking courage, prosperity, and fulfillment of noble wishes.";
 
@@ -330,18 +363,20 @@ export default function PujaDetailClient({
     puja.location ||
     puja.templeVenue ||
     puja.details?.templeLocation ||
-    "Aadi Meenakshi Sameta Sundareshwarar Temple, Madurai";
+    puja.details?.templeName ||
+    "Sacred Temple Venue, India";
 
   const templeVenueText =
     puja.templeVenue ||
     puja.details?.templeName ||
     puja.location ||
-    "Aadi Meenakshi Sameta Sundareshwarar Temple";
+    puja.templeLocation ||
+    "Sacred Temple Venue";
 
   const templeNoteText =
     puja.templeNote ||
     puja.details?.templeNote ||
-    "This ancient temple is renowned for authentic Vedic rituals, powerful divine vibrations, and traditional archana services.";
+    "This sacred temple is renowned for authentic Vedic rituals, powerful divine vibrations, and traditional archana services.";
 
   const benefitsList =
     puja.benefits && puja.benefits.length > 0
@@ -374,10 +409,24 @@ export default function PujaDetailClient({
           { title: "Full Puja Video Recording", description: "Delivered directly to your WhatsApp number within 48 hours of ritual completion." },
         ];
 
+  const defaultPujaGallery = [
+    "/images/Navagraha-Shanti-Puja.jpg",
+    "/images/Lakshmi-Homam.jpg",
+    "/images/Ganesh-Chaturthi-Mahapuja.jpg",
+    "/images/maa-kali.jpg",
+  ];
+
   const galleryList =
     puja.gallery && puja.gallery.length > 0
-      ? puja.gallery
-      : [puja.imageUrl, puja.imageUrl, puja.imageUrl].filter(Boolean);
+      ? puja.gallery.map((img: string) => getPujaImageUrl(img, puja.title))
+      : defaultPujaGallery
+          .filter((img) => img !== getPujaImageUrl(puja.imageUrl, puja.title))
+          .slice(0, 3);
+
+  const templeImage =
+    (puja as any).templeImage ||
+    puja.details?.templeImage ||
+    "https://images.unsplash.com/photo-1620025732283-500f4058d844?auto=format&fit=crop&q=80&w=600";
 
   return (
     <main className="min-h-screen bg-white text-[#1f1f1f] font-sans pb-24">
@@ -392,9 +441,16 @@ export default function PujaDetailClient({
             <div className="lg:col-span-5 flex flex-col">
               <div className="relative w-full h-[320px] sm:h-[400px] md:h-[450px] rounded-3xl overflow-hidden border border-stone-200 shadow-md group">
                 <img
-                  src={puja.imageUrl || "/images/Ganesh-Chaturthi-Mahapuja.jpg"}
+                  src={getPujaImageUrl(puja.imageUrl, puja.title)}
                   alt={puja.title}
                   className="w-full h-full object-cover object-center"
+                  onError={(e) => {
+                    const target = e.currentTarget;
+                    if (!target.dataset.fallbackTried) {
+                      target.dataset.fallbackTried = "true";
+                      target.src = getPujaImageUrl("", puja.title);
+                    }
+                  }}
                 />
 
                 {/* Top Action Buttons (Wishlist & Share) */}
@@ -647,7 +703,18 @@ export default function PujaDetailClient({
             <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1f1a17] mb-6">Temple Details</h2>
             <div className="bg-white border border-stone-200/90 rounded-3xl p-6 sm:p-8 flex flex-col md:flex-row gap-6 items-center shadow-xs">
               <div className="w-full md:w-1/3 h-48 rounded-2xl overflow-hidden bg-stone-100 shrink-0 relative">
-                <img src={puja.imageUrl || "/images/Ganesh-Chaturthi-Mahapuja.jpg"} alt={templeVenueText} className="w-full h-full object-cover" />
+                <img
+                  src={templeImage}
+                  alt={templeVenueText}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    const target = e.currentTarget;
+                    if (!target.dataset.fallbackTried) {
+                      target.dataset.fallbackTried = "true";
+                      target.src = "https://images.unsplash.com/photo-1620025732283-500f4058d844?auto=format&fit=crop&q=80&w=600";
+                    }
+                  }}
+                />
               </div>
               <div className="flex-1">
                 <h3 className="font-serif font-bold text-stone-900 text-xl mb-2">{templeVenueText}</h3>
@@ -713,11 +780,25 @@ export default function PujaDetailClient({
           <section id="gallery" className="scroll-mt-32">
             <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1f1a17] mb-6">Puja Gallery</h2>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              {galleryList.map((img: string, idx: number) => (
-                <div key={idx} className="h-48 rounded-2xl overflow-hidden border border-stone-200 shadow-xs">
-                  <img src={img || puja.imageUrl || "/images/Ganesh-Chaturthi-Mahapuja.jpg"} alt="Gallery photo" className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" />
-                </div>
-              ))}
+              {galleryList.map((img: string, idx: number) => {
+                const gUrl = getPujaImageUrl(img, puja.title);
+                return (
+                  <div key={idx} className="h-48 rounded-2xl overflow-hidden border border-stone-200 shadow-xs">
+                    <img
+                      src={gUrl}
+                      alt="Gallery photo"
+                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                      onError={(e) => {
+                        const target = e.currentTarget;
+                        if (!target.dataset.fallbackTried) {
+                          target.dataset.fallbackTried = "true";
+                          target.src = getPujaImageUrl("", puja.title);
+                        }
+                      }}
+                    />
+                  </div>
+                );
+              })}
             </div>
           </section>
 

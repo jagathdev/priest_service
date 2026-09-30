@@ -63,6 +63,7 @@ interface Homa {
   packages?: HomaPackage[];
   offerings?: HomaOffering[];
   gallery?: string[];
+  templeImage?: string;
   details?: {
     heroTitle?: string;
     heroSubtitle?: string;
@@ -70,6 +71,7 @@ interface Homa {
     templeName?: string;
     templeLocation?: string;
     templeNote?: string;
+    templeImage?: string;
     benefits?: { title: string; description: string; icon?: string }[];
     process?: { title: string; description: string }[];
     inclusions?: string[];
@@ -84,6 +86,35 @@ const slugify = (value: string) =>
     .replace(/[^a-z0-9\s-]/g, "")
     .replace(/\s+/g, "-")
     .replace(/-+/g, "-");
+
+const getHomaImageUrl = (imageUrl?: string, title?: string): string => {
+  if (imageUrl && typeof imageUrl === "string" && imageUrl.trim().length > 0) {
+    const trimmed = imageUrl.trim();
+    if (trimmed.startsWith("http://") || trimmed.startsWith("https://") || trimmed.startsWith("/")) {
+      return trimmed;
+    }
+    return `/images/${trimmed}`;
+  }
+
+  const lowerTitle = (title || "").toLowerCase();
+  if (lowerTitle.includes("saraswati") || lowerTitle.includes("saraswathi")) {
+    return "/images/Maa-saraswathi.jpg";
+  }
+  if (lowerTitle.includes("ganesh") || lowerTitle.includes("ganapathi") || lowerTitle.includes("vinayaka")) {
+    return "/images/Ganesh-Chaturthi-Mahapuja.jpg";
+  }
+  if (lowerTitle.includes("kali") || lowerTitle.includes("durga")) {
+    return "/images/maa-kali.jpg";
+  }
+  if (lowerTitle.includes("navagraha")) {
+    return "/images/Navagraha-Shanti-Puja.jpg";
+  }
+  if (lowerTitle.includes("lakshmi") || lowerTitle.includes("laxmi")) {
+    return "/images/Lakshmi-Homam.jpg";
+  }
+
+  return "/images/Lakshmi-Homam.jpg";
+};
 
 export default function HomaDetailClient({
   initialHoma,
@@ -311,20 +342,23 @@ export default function HomaDetailClient({
     homa.about ||
     homa.details?.about ||
     homa.description ||
+    homa.subtitle ||
     homa.heroSubtitle ||
+    homa.details?.heroSubtitle ||
     "In Vedic tradition, Homa (Fire Lab) is considered the most potent ritual to invoke divine energies through Agni Devata, burning away negative karmas.";
 
   const badgeText =
     homa.badge ||
+    homa.shortTitle ||
     homa.subtitle ||
     homa.heroTitle ||
     homa.details?.heroTitle ||
     "SPECIAL VEDIC HOMA";
 
   const descriptionText =
-    homa.heroSubtitle ||
     homa.description ||
     homa.subtitle ||
+    homa.heroSubtitle ||
     homa.details?.heroSubtitle ||
     "A sacred fire lab for peace, prosperity, health, and divine protection.";
 
@@ -377,10 +411,24 @@ export default function HomaDetailClient({
           { title: "Full Homa Video Recording", description: "Delivered directly to your WhatsApp number within 48 hours of ritual completion." },
         ];
 
+  const defaultHomaGallery = [
+    "/images/Lakshmi-Homam.jpg",
+    "/images/Navagraha-Shanti-Puja.jpg",
+    "/images/Ganesh-Chaturthi-Mahapuja.jpg",
+    "/images/maa-kali.jpg",
+  ];
+
   const galleryList =
     homa.gallery && homa.gallery.length > 0
-      ? homa.gallery
-      : [homa.imageUrl, homa.imageUrl, homa.imageUrl].filter(Boolean);
+      ? homa.gallery.map((img: string) => getHomaImageUrl(img, homa.title))
+      : defaultHomaGallery
+          .filter((img) => img !== getHomaImageUrl(homa.imageUrl, homa.title))
+          .slice(0, 3);
+
+  const templeImage =
+    (homa as any).templeImage ||
+    homa.details?.templeImage ||
+    "https://images.unsplash.com/photo-1620025732283-500f4058d844?auto=format&fit=crop&q=80&w=600";
 
   return (
     <main className="min-h-screen bg-white text-[#1f1f1f] font-sans pb-24">
@@ -395,9 +443,16 @@ export default function HomaDetailClient({
             <div className="lg:col-span-5 flex flex-col">
               <div className="relative w-full h-[320px] sm:h-[400px] md:h-[450px] rounded-3xl overflow-hidden border border-stone-200 shadow-md group">
                 <img
-                  src={homa.imageUrl || "/images/Lakshmi-Homam.jpg"}
+                  src={getHomaImageUrl(homa.imageUrl, homa.title)}
                   alt={homa.title}
                   className="w-full h-full object-cover object-center"
+                  onError={(e) => {
+                    const target = e.currentTarget;
+                    if (!target.dataset.fallbackTried) {
+                      target.dataset.fallbackTried = "true";
+                      target.src = getHomaImageUrl("", homa.title);
+                    }
+                  }}
                 />
 
                 {/* Top Action Buttons (Wishlist & Share) */}
@@ -650,7 +705,18 @@ export default function HomaDetailClient({
             <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1f1a17] mb-6">Temple Details</h2>
             <div className="bg-white border border-stone-200/90 rounded-3xl p-6 sm:p-8 flex flex-col md:flex-row gap-6 items-center shadow-xs">
               <div className="w-full md:w-1/3 h-48 rounded-2xl overflow-hidden bg-stone-100 shrink-0 relative">
-                <img src={homa.imageUrl || "/images/Maha-Ganapati-Homa.jpg"} alt={templeVenueText} className="w-full h-full object-cover" />
+                <img
+                  src={templeImage}
+                  alt={templeVenueText}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    const target = e.currentTarget;
+                    if (!target.dataset.fallbackTried) {
+                      target.dataset.fallbackTried = "true";
+                      target.src = "https://images.unsplash.com/photo-1620025732283-500f4058d844?auto=format&fit=crop&q=80&w=600";
+                    }
+                  }}
+                />
               </div>
               <div className="flex-1">
                 <h3 className="font-serif font-bold text-stone-900 text-xl mb-2">{templeVenueText}</h3>
@@ -716,11 +782,25 @@ export default function HomaDetailClient({
           <section id="gallery" className="scroll-mt-32">
             <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1f1a17] mb-6">Homa Gallery</h2>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              {galleryList.map((img: string, idx: number) => (
-                <div key={idx} className="h-48 rounded-2xl overflow-hidden border border-stone-200 shadow-xs">
-                  <img src={img || homa.imageUrl || "/images/Maha-Ganapati-Homa.jpg"} alt="Gallery photo" className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" />
-                </div>
-              ))}
+              {galleryList.map((img: string, idx: number) => {
+                const gUrl = getHomaImageUrl(img, homa.title);
+                return (
+                  <div key={idx} className="h-48 rounded-2xl overflow-hidden border border-stone-200 shadow-xs">
+                    <img
+                      src={gUrl}
+                      alt="Gallery photo"
+                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                      onError={(e) => {
+                        const target = e.currentTarget;
+                        if (!target.dataset.fallbackTried) {
+                          target.dataset.fallbackTried = "true";
+                          target.src = getHomaImageUrl("", homa.title);
+                        }
+                      }}
+                    />
+                  </div>
+                );
+              })}
             </div>
           </section>
 

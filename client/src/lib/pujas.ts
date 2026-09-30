@@ -487,40 +487,41 @@ export const normalizePuja = (puja: any, offeringsMap: Record<string, any> = {})
         templeLocation: getStringField(record, 'templeLocation') || record.location,
         templeNote: getStringField(record, 'templeNote'),
         stats: buildStatsFromFlatFields(record),
-        benefits: buildSectionsFromFlatFields(record, 'benefit', defaultDetails.benefits),
-        process: buildSectionsFromFlatFields(record, 'process', defaultDetails.process),
+        benefits: buildSectionsFromFlatFields(record, 'benefit', []),
+        process: buildSectionsFromFlatFields(record, 'process', []),
         inclusions: buildInclusionsFromFlatFields(record),
         faq: buildFaqFromFlatFields(record),
       };
 
+      const recordDetails = (record.details || {}) as Partial<PujaDetails>;
+
       return {
-        ...defaultDetails,
-        ...(record.details || {}),
+        ...recordDetails,
         ...Object.fromEntries(Object.entries(flatDetails).filter(([, value]) => value !== undefined)),
-        benefits: normalizeSections(record.benefits ?? flatDetails.benefits ?? record.details?.benefits, defaultDetails.benefits),
-        process: normalizeSections(record.process ?? flatDetails.process ?? record.details?.process, defaultDetails.process),
-        faq: normalizeFaq(record.faq ?? flatDetails.faq ?? record.details?.faq, defaultDetails.faq),
+        benefits: normalizeSections(record.benefits ?? flatDetails.benefits ?? recordDetails.benefits, []),
+        process: normalizeSections(record.process ?? flatDetails.process ?? recordDetails.process, []),
+        faq: normalizeFaq(record.faq ?? flatDetails.faq ?? recordDetails.faq, []),
         inclusions:
           Array.isArray(record.inclusions) && record.inclusions.length > 0
             ? record.inclusions
             : Array.isArray(flatDetails.inclusions) && flatDetails.inclusions.length > 0
               ? flatDetails.inclusions
-              : Array.isArray(record.details?.inclusions) && record.details?.inclusions.length > 0
-                ? record.details!.inclusions.filter((item): item is string => typeof item === 'string' && item.trim().length > 0)
-                : defaultDetails.inclusions,
+              : Array.isArray(recordDetails.inclusions) && recordDetails.inclusions.length > 0
+                ? recordDetails.inclusions.filter((item): item is string => typeof item === 'string' && item.trim().length > 0)
+                : [],
         stats:
           Array.isArray(record.stats) && record.stats.length > 0
             ? record.stats
             : Array.isArray(flatDetails.stats) && flatDetails.stats.length > 0
               ? flatDetails.stats
-              : Array.isArray(record.details?.stats) && record.details?.stats.length > 0
-                ? record.details!.stats
-                : defaultDetails.stats,
+              : Array.isArray(recordDetails.stats) && recordDetails.stats.length > 0
+                ? recordDetails.stats
+                : [],
         templeName:
-          flatDetails.templeName || record.details?.templeName || record.templeVenue || defaultDetails.templeName,
+          flatDetails.templeName || recordDetails.templeName || record.templeVenue || record.location || '',
         templeLocation:
-          flatDetails.templeLocation || record.details?.templeLocation || record.location || defaultDetails.templeLocation,
-        templeNote: flatDetails.templeNote || record.details?.templeNote || record.templeNote || defaultDetails.templeNote,
+          flatDetails.templeLocation || recordDetails.templeLocation || record.location || '',
+        templeNote: flatDetails.templeNote || recordDetails.templeNote || record.templeNote || '',
       };
     })(),
     packages: normalizePackages(Array.isArray(record.packages) && record.packages.length > 0 ? record.packages : buildFlatPackages(record), defaultPackages),

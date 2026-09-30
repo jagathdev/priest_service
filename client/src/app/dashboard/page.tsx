@@ -206,13 +206,15 @@ export default function DashboardPage() {
                   ? `₹${p.packages[0].price}`
                   : "₹516";
                 const slugVal = p.slug || (p.title ? p.title.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-") : "");
+                const topTagVal = p.badge || p.shortTitle || p.subtitle || "SPECIAL PUJA";
+                const descriptionVal = p.description || p.subtitle || "Join us for this sacred ritual to seek divine blessings and fulfillment.";
                 return (
                   <PujaCard
                     key={p._id}
                     imageSrc={p.imageUrl || ganeshImg}
-                    topTag={p.badge || p.subtitle || p.shortTitle || "SPECIAL PUJA"}
+                    topTag={topTagVal}
                     title={p.title}
-                    subtitle={p.subtitle || p.description || ""}
+                    subtitle={descriptionVal}
                     location={p.location || p.filterLocation || p.templeVenue || "Sacred Temple, India"}
                     date={p.date || "Available Daily"}
                     price={priceVal}
@@ -509,6 +511,14 @@ function PujaCard({ imageSrc, topTag, title, subtitle, location, date, price, sl
           {/* Share Button */}
           <button
             aria-label="Share puja"
+            onClick={(e) => {
+              e.preventDefault();
+              if (navigator.share) {
+                navigator.share({ title, url: window.location.origin + `/puja/${slug}` });
+              } else {
+                navigator.clipboard?.writeText(window.location.origin + `/puja/${slug}`);
+              }
+            }}
             className="w-8 h-8 rounded-full bg-white/95 text-stone-700 hover:text-[#00b050] flex items-center justify-center shadow-md backdrop-blur-sm transition-transform active:scale-95"
           >
             <svg className="w-4 h-4 fill-none stroke-current" strokeWidth="2" viewBox="0 0 24 24">
@@ -533,13 +543,13 @@ function PujaCard({ imageSrc, topTag, title, subtitle, location, date, price, sl
           <div className="w-8 h-[1px] bg-[#F47820]/40" />
         </div>
 
-        {/* Card Title - Tight spacing and line height on 1024px & Tablet */}
-        <h3 className="font-serif font-bold text-[#1f1a17] text-lg sm:text-xl lg:text-2xl xl:text-2xl leading-tight sm:leading-snug xl:leading-snug tracking-tight mb-1 sm:mb-1.5 xl:mb-2.5 line-clamp-2 min-h-0 xl:min-h-[56px]">
+        {/* Card Title */}
+        <h3 className="font-serif font-bold text-[#1f1a17] text-lg sm:text-xl lg:text-2xl leading-tight sm:leading-snug tracking-tight mb-2 line-clamp-2">
           {title}
         </h3>
 
-        {/* Subtitle / Description - Tight spacing and line height on 1024px & Tablet */}
-        <p className="text-stone-600 text-xs sm:text-sm font-medium leading-tight sm:leading-snug xl:leading-relaxed mb-2 sm:mb-2.5 xl:mb-4 line-clamp-2 min-h-0 xl:min-h-[40px]">
+        {/* Subtitle / Description */}
+        <p className="text-stone-600 text-xs sm:text-sm font-medium leading-relaxed mb-4 line-clamp-2">
           {subtitle}
         </p>
 
@@ -550,7 +560,7 @@ function PujaCard({ imageSrc, topTag, title, subtitle, location, date, price, sl
             <svg className="w-5 h-5 text-[#F47820] shrink-0 mt-0.5" viewBox="0 0 24 24" fill="currentColor">
               <path d="M12 2L9 6H15L12 2ZM8 7L6 11H18L16 7H8ZM5 12L3 17H21L19 12H5ZM2 18V21H22V18H2Z" />
             </svg>
-            <span className="leading-snug">{location}</span>
+            <span className="leading-snug line-clamp-1">{location}</span>
           </div>
 
           <div className="w-full h-[1px] bg-stone-200/70" />
@@ -563,7 +573,7 @@ function PujaCard({ imageSrc, topTag, title, subtitle, location, date, price, sl
               <line x1="8" y1="2" x2="8" y2="6" />
               <line x1="3" y1="10" x2="21" y2="10" />
             </svg>
-            <span>{date}</span>
+            <span className="line-clamp-1">{date}</span>
           </div>
         </div>
 
@@ -577,7 +587,7 @@ function PujaCard({ imageSrc, topTag, title, subtitle, location, date, price, sl
 
           {/* CTA Button */}
           <Link
-            href={slug ? `/puja/${slug}` : "/puja/subrahmanya-swamy-abhishekam"}
+            href={slug ? `/puja/${slug}` : "/puja"}
             className="inline-flex items-center gap-2 bg-[#00b050] hover:bg-[#009644] active:scale-95 text-white font-extrabold text-xs sm:text-sm px-5 py-2.5 sm:py-3 rounded-full shadow-md shadow-green-600/20 transition-all duration-200 group/btn"
           >
             <span>Participate Now</span>
