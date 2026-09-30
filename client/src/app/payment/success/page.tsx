@@ -24,7 +24,6 @@ function SuccessContent() {
   // ── AstroVed backend verification state ──────────────────────────────────
   const [verifyStatus, setVerifyStatus]     = useState<VerifyStatus>("pending");
   const [transactionId, setTransactionId]   = useState<string>("");
-  const [verifyAttempt, setVerifyAttempt]   = useState(0);
 
   // ── Save booking to MongoDB exactly once after successful payment ─────────
   const savedRef = useRef(false);
@@ -33,19 +32,23 @@ function SuccessContent() {
   // AstroVed's backend may take a few seconds to register the payment,
   // so we retry up to 3 times with a 3-second delay between each attempt.
   useEffect(() => {
+    let cancelled = false;
+
     if (paymentId === "N/A" || !shoppingCartId || shoppingCartId === "N/A") {
-      setVerifyStatus("error");
-      return;
+      setTimeout(() => {
+        if (!cancelled) setVerifyStatus("error");
+      }, 0);
+      return () => { cancelled = true; };
     }
 
-    let cancelled = false;
     const MAX_ATTEMPTS = 3;
     const RETRY_DELAY_MS = 3000;
 
     async function verifyWithAstroved(attempt: number) {
       try {
+        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
         const res = await fetch(
-          `/api/payment/get-transaction-code?orderId=${encodeURIComponent(shoppingCartId)}`
+          `${baseUrl}/api/payments/get-transaction-code?orderId=${encodeURIComponent(shoppingCartId)}`
         );
         const data = await res.json();
 
@@ -55,17 +58,14 @@ function SuccessContent() {
           // ✅ Verified — AstroVed confirmed the payment
           setTransactionId(data.TransactionId);
           setVerifyStatus("verified");
-          setVerifyAttempt(attempt);
         } else if (data.StatusCode === 404 && attempt < MAX_ATTEMPTS) {
           // Payment not registered yet — retry after delay
-          setVerifyAttempt(attempt);
           setTimeout(() => {
             if (!cancelled) verifyWithAstroved(attempt + 1);
           }, RETRY_DELAY_MS);
         } else {
           // Either max retries hit or unexpected error
           setVerifyStatus(data.StatusCode === 404 ? "not_found" : "error");
-          setVerifyAttempt(attempt);
         }
       } catch {
         if (!cancelled) setVerifyStatus("error");
@@ -84,7 +84,8 @@ function SuccessContent() {
     if (verifyStatus === "pending") return;
 
     savedRef.current = true;
-    fetch("/api/bookings/create", {
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
+    fetch(`${baseUrl}/api/bookings/create`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -100,9 +101,6 @@ function SuccessContent() {
       }),
     }).catch(console.error);
   }, [verifyStatus, paymentId, transactionId, title, amount, name, shoppingCartId]);
-
-  const [shareUrl, setShareUrl] = useState("");
-  useEffect(() => { setShareUrl(window.location.href); }, []);
 
   const shareText = encodeURIComponent(`I just booked "${title}" on AstroVed! 🙏`);
 
@@ -208,9 +206,11 @@ function SuccessContent() {
               <div className="flex items-center gap-3 flex-wrap pt-2">
                 <span className="text-[13px] font-bold text-gray-400">Share this</span>
                 <a
-                  href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${shareText}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}&quote=${shareText}`, '_blank');
+                  }}
                   className="flex items-center gap-1.5 bg-[#d97736] text-white text-[10px] font-bold px-3 py-1.5 rounded-sm hover:bg-[#c66629] transition-colors"
                 >
                   <i className="fa-brands fa-facebook-f text-white/90"></i> FACEBOOK

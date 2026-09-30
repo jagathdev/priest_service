@@ -7,24 +7,35 @@ export const createPaymentOrder = async (req, res) => {
     try {
         const {
             amount,
+            totalamount,
             receipt,
+            customerId,
+            shoppingCartId,
+            contactDetail,
+            // ...other fields sent from frontend
         } = req.body;
+
+        const finalAmount = amount || totalamount;
 
         // VALIDATION
 
-        if (!amount) {
+        if (!finalAmount) {
             return res.status(400).json({
                 success: false,
                 message: "Amount is required",
             });
         }
 
-        if (Number(amount) <= 0) {
+        if (Number(finalAmount) <= 0) {
             return res.status(400).json({
                 success: false,
                 message: "Amount must be greater than 0",
             });
         }
+
+        // Here you can use the extra details (customerId, shoppingCartId, contactDetail)
+        // to save the order details in your MongoDB database before calling Razorpay
+        console.log("Order payload received:", { customerId, shoppingCartId, finalAmount, contactDetail });
 
         const orderReceipt =
             receipt ||
@@ -34,7 +45,7 @@ export const createPaymentOrder = async (req, res) => {
 
         const razorpayOrder =
             await createRazorpayOrder({
-                amount: Number(amount),
+                amount: Number(finalAmount),
                 receipt: orderReceipt,
             });
 
