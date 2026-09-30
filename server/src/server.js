@@ -1,5 +1,5 @@
+import 'dotenv/config';
 import express from 'express';
-import dotenv from 'dotenv';
 import cors from 'cors';
 import pujaRoutes from './routes/pujaRoutes.js';
 import homaRoutes from './routes/homaRoutes.js';
@@ -10,8 +10,7 @@ import wishlistRoutes from './routes/wishlist.routes.js';
 import connectDB from './config/db.js';
 import userRoutes from './routes/user.routes.js';
 import customerQueryRoutes from './routes/customerQuery.routes.js';
-
-dotenv.config();
+import paymentRoutes from './routes/payment.routes.js';
 
 const app = express();
 
@@ -31,6 +30,7 @@ app.use('/api/pooja-details', poojaDetailsRoutes);
 app.use("/api/wishlist", wishlistRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/customerQueries", customerQueryRoutes);
+app.use("/api/payments", paymentRoutes);
 
 const PORT = process.env.PORT || 5000;
 
