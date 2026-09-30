@@ -33,6 +33,16 @@ const slugify = (value: string) =>
     .replace(/\s+/g, "-")
     .replace(/-+/g, "-");
 
+const getHomaImageUrl = (imageUrl?: string): string => {
+  if (!imageUrl || typeof imageUrl !== "string") return "";
+  const trimmed = imageUrl.trim();
+  if (!trimmed) return "";
+  if (trimmed.startsWith("http://") || trimmed.startsWith("https://") || trimmed.startsWith("data:") || trimmed.startsWith("/")) {
+    return trimmed;
+  }
+  return `/${trimmed}`;
+};
+
 export default function HomaPage() {
   const { t } = useTranslation();
   const [allHomas, setAllHomas] = useState<Homa[]>([]);
@@ -375,7 +385,7 @@ export default function HomaPage() {
                         {/* ── Top Image Container ── */}
                         <div className="relative h-[210px] w-full overflow-hidden bg-gray-100 shrink-0">
                           <img
-                            src={homa.imageUrl}
+                            src={getHomaImageUrl(homa.imageUrl)}
                             alt={homa.title}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                           />

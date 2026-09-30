@@ -40,6 +40,16 @@ const slugify = (value: string) =>
     .replace(/\s+/g, "-")
     .replace(/-+/g, "-");
 
+const getPujaImageUrl = (imageUrl?: string): string => {
+  if (!imageUrl || typeof imageUrl !== "string") return "";
+  const trimmed = imageUrl.trim();
+  if (!trimmed) return "";
+  if (trimmed.startsWith("http://") || trimmed.startsWith("https://") || trimmed.startsWith("data:") || trimmed.startsWith("/")) {
+    return trimmed;
+  }
+  return `/${trimmed}`;
+};
+
 // --- filter config ------------------------------------------------------------
 // Each option has a `value` (what we store) and `keywords` (matched against puja text)
 const filterGroups = [
@@ -690,7 +700,7 @@ export default function PujaPage() {
                   >
                     <div className="relative h-[220px] w-full shrink-0">
                       <img
-                        src={puja.imageUrl || "https://images.unsplash.com/photo-1601024445121-e5b82f020549?auto=format&fit=crop&w=800&q=80"}
+                        src={getPujaImageUrl(puja.imageUrl)}
                         alt={puja.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                       />

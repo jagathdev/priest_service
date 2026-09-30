@@ -87,33 +87,14 @@ const slugify = (value: string) =>
     .replace(/\s+/g, "-")
     .replace(/-+/g, "-");
 
-const getPujaImageUrl = (imageUrl?: string, title?: string): string => {
-  if (imageUrl && typeof imageUrl === "string" && imageUrl.trim().length > 0) {
-    const trimmed = imageUrl.trim();
-    if (trimmed.startsWith("http://") || trimmed.startsWith("https://") || trimmed.startsWith("/")) {
-      return trimmed;
-    }
-    return `/images/${trimmed}`;
+const getPujaImageUrl = (imageUrl?: string): string => {
+  if (!imageUrl || typeof imageUrl !== "string") return "";
+  const trimmed = imageUrl.trim();
+  if (!trimmed) return "";
+  if (trimmed.startsWith("http://") || trimmed.startsWith("https://") || trimmed.startsWith("data:") || trimmed.startsWith("/")) {
+    return trimmed;
   }
-
-  const lowerTitle = (title || "").toLowerCase();
-  if (lowerTitle.includes("saraswati") || lowerTitle.includes("saraswathi")) {
-    return "/images/Maa-saraswathi.jpg";
-  }
-  if (lowerTitle.includes("ganesh") || lowerTitle.includes("ganapathi") || lowerTitle.includes("vinayaka")) {
-    return "/images/Ganesh-Chaturthi-Mahapuja.jpg";
-  }
-  if (lowerTitle.includes("kali") || lowerTitle.includes("durga")) {
-    return "/images/maa-kali.jpg";
-  }
-  if (lowerTitle.includes("navagraha")) {
-    return "/images/Navagraha-Shanti-Puja.jpg";
-  }
-  if (lowerTitle.includes("lakshmi") || lowerTitle.includes("laxmi")) {
-    return "/images/Lakshmi-Homam.jpg";
-  }
-
-  return "/images/Ganesh-Chaturthi-Mahapuja.jpg";
+  return `/${trimmed}`;
 };
 
 export default function PujaDetailClient({
@@ -140,6 +121,8 @@ export default function PujaDetailClient({
   const [cartError, setCartError] = useState("");
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [pendingSankalpUrl, setPendingSankalpUrl] = useState<string | null>(null);
+  const [isWishlisted, setIsWishlisted] = useState(false);
+  const [shareSuccess, setShareSuccess] = useState(false);
 
   // Fetch Puja details by slug
   useEffect(() => {
@@ -207,24 +190,57 @@ export default function PujaDetailClient({
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const defaultPackageAvatars = [
+    "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80",
+    "https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=150&q=80",
+    "https://images.unsplash.com/photo-1609234656388-0ff363383899?auto=format&fit=crop&w=150&q=80",
+    "https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=150&q=80",
+  ];
+
   // Compute normalized package list from Admin data or defaults
   const packagesList = useMemo(() => {
     if (puja?.packages && puja.packages.length > 0) {
-      return puja.packages.map((pkg: any, idx: number) => ({
-        id: pkg.id || pkg._id || `pkg-${idx}`,
-        name: pkg.name || `Package ${idx + 1}`,
-        priceINR: pkg.priceINR ?? pkg.price ?? puja.price ?? 516,
-        priceUSD: pkg.priceUSD,
-        priceMYR: pkg.priceMYR,
-        description: pkg.description || "Includes personalized sankalpam and video proof.",
-      }));
+      return puja.packages.map((pkg: any, idx: number) => {
+        const basePrice = pkg.priceINR ?? pkg.price ?? puja.price ?? 501;
+        const defaultDevotees = idx === 0 ? "1 Devotee" : idx === 1 ? "2 Devotees" : idx === 2 ? "4 Devotees" : "Multiple Devotees";
+        return {
+          id: pkg.id || pkg._id || `pkg-${idx}`,
+          name: pkg.name || `Package ${idx + 1}`,
+          devoteeCount: pkg.devoteeCount || pkg.devotees || defaultDevotees,
+          priceINR: basePrice,
+          priceUSD: pkg.priceUSD,
+          priceMYR: pkg.priceMYR,
+          description: pkg.description || "Includes personalized sankalpam and video proof.",
+          imageUrl: pkg.imageUrl || defaultPackageAvatars[idx % defaultPackageAvatars.length],
+        };
+      });
     }
+
+    const basePrice = puja?.price || 501;
     return [
       {
         id: "pkg-1",
-        name: "Individual Puja Package",
-        priceINR: puja?.price || 516,
+        name: "Individual Puja",
+        devoteeCount: "1 Devotee",
+        priceINR: basePrice,
         description: "Personalized Sankalpam for 1 Person with video recording.",
+        imageUrl: defaultPackageAvatars[0],
+      },
+      {
+        id: "pkg-2",
+        name: "Couple Puja",
+        devoteeCount: "2 Devotees",
+        priceINR: basePrice + 200,
+        description: "Personalized Sankalpam for Couple / 2 Devotees.",
+        imageUrl: defaultPackageAvatars[1],
+      },
+      {
+        id: "pkg-3",
+        name: "Family Puja",
+        devoteeCount: "4 Devotees",
+        priceINR: basePrice + 400,
+        description: "Personalized Sankalpam for 4 Family Members.",
+        imageUrl: defaultPackageAvatars[2],
       },
     ];
   }, [puja]);
@@ -409,24 +425,21 @@ export default function PujaDetailClient({
           { title: "Full Puja Video Recording", description: "Delivered directly to your WhatsApp number within 48 hours of ritual completion." },
         ];
 
-  const defaultPujaGallery = [
-    "/images/Navagraha-Shanti-Puja.jpg",
-    "/images/Lakshmi-Homam.jpg",
-    "/images/Ganesh-Chaturthi-Mahapuja.jpg",
-    "/images/maa-kali.jpg",
-  ];
-
   const galleryList =
-    puja.gallery && puja.gallery.length > 0
-      ? puja.gallery.map((img: string) => getPujaImageUrl(img, puja.title))
-      : defaultPujaGallery
-          .filter((img) => img !== getPujaImageUrl(puja.imageUrl, puja.title))
-          .slice(0, 3);
+    Array.isArray(puja.gallery) && puja.gallery.length > 0
+      ? puja.gallery.map((img: string) => getPujaImageUrl(img)).filter(Boolean)
+      : Array.isArray((puja as any).galleryUrl) && (puja as any).galleryUrl.length > 0
+      ? (puja as any).galleryUrl.map((img: string) => getPujaImageUrl(img)).filter(Boolean)
+      : typeof (puja as any).galleryUrl === "string" && (puja as any).galleryUrl.trim()
+      ? [getPujaImageUrl((puja as any).galleryUrl)]
+      : [];
 
   const templeImage =
-    (puja as any).templeImage ||
-    puja.details?.templeImage ||
-    "https://images.unsplash.com/photo-1620025732283-500f4058d844?auto=format&fit=crop&q=80&w=600";
+    (typeof (puja as any).templeImageUrl === "string" && (puja as any).templeImageUrl.trim()) ||
+    (typeof puja.templeImage === "string" && puja.templeImage.trim()) ||
+    (typeof (puja as any).details?.templeImageUrl === "string" && (puja as any).details.templeImageUrl.trim()) ||
+    (typeof puja.details?.templeImage === "string" && puja.details.templeImage.trim()) ||
+    "";
 
   return (
     <main className="min-h-screen bg-white text-[#1f1f1f] font-sans pb-24">
@@ -437,80 +450,94 @@ export default function PujaDetailClient({
         <div className="max-w-[1350px] mx-auto px-4 sm:px-6 lg:px-10">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 
-            {/* Left 5 Cols: Main Banner Image */}
-            <div className="lg:col-span-5 flex flex-col">
-              <div className="relative w-full h-[320px] sm:h-[400px] md:h-[450px] rounded-3xl overflow-hidden border border-stone-200 shadow-md group">
+            {/* Left 6 Cols: Main Banner Image (Wider Layout) */}
+            <div className="lg:col-span-6 flex flex-col">
+              <div className="relative w-full h-[320px] sm:h-[400px] md:h-[450px] lg:h-[480px] rounded-3xl overflow-hidden border border-stone-200/90 shadow-md group">
                 <img
-                  src={getPujaImageUrl(puja.imageUrl, puja.title)}
+                  src={getPujaImageUrl(puja.imageUrl)}
                   alt={puja.title}
                   className="w-full h-full object-cover object-center"
-                  onError={(e) => {
-                    const target = e.currentTarget;
-                    if (!target.dataset.fallbackTried) {
-                      target.dataset.fallbackTried = "true";
-                      target.src = getPujaImageUrl("", puja.title);
-                    }
-                  }}
                 />
 
-                {/* Top Action Buttons (Wishlist & Share) */}
-                <div className="absolute top-4 right-4 flex flex-col gap-2 z-10">
+                {/* Bottom Temple Overlay Banner */}
+                {templeVenueText && (
+                  <div className="absolute bottom-0 inset-x-0 bg-gradient-to-r from-[#902400] via-[#b83808] to-[#902400] border-t-2 border-white py-2.5 px-4 flex items-center justify-center gap-2 text-white font-serif font-bold text-xs sm:text-sm tracking-wide z-10 shadow-md">
+                    <span className="text-amber-300 text-sm sm:text-base">🛕</span>
+                    <span className="truncate">{templeVenueText}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Ratings / Stat & Action Strip Under Image */}
+              <div className="flex flex-wrap sm:flex-nowrap items-center justify-between gap-2 sm:gap-3 bg-white border border-stone-200/90 rounded-2xl p-3 sm:p-3.5 mt-4 shadow-xs">
+                {/* Stat 1: Ratings */}
+                <div className="text-center flex-1 min-w-[65px]">
+                  <span className="block text-sm sm:text-base font-extrabold text-[#1f1a17] leading-tight">4.17L+</span>
+                  <span className="text-[11px] text-stone-500 font-medium block">ratings</span>
+                </div>
+
+                <div className="w-[1px] h-7 bg-stone-200 shrink-0 hidden sm:block" />
+
+                {/* Stat 2: Pujas Conducted */}
+                <div className="text-center flex-1 min-w-[95px]">
+                  <span className="block text-sm sm:text-base font-extrabold text-[#1f1a17] leading-tight">22.92L+</span>
+                  <span className="text-[11px] text-stone-500 font-medium block whitespace-nowrap">pujas conducted</span>
+                </div>
+
+                <div className="w-[1px] h-7 bg-stone-200 shrink-0 hidden sm:block" />
+
+                {/* Stat 3: Average Ratings */}
+                <div className="text-center flex-1 min-w-[90px]">
+                  <div className="flex items-center justify-center gap-1">
+                    <span className="text-sm sm:text-base font-extrabold text-[#1f1a17] leading-tight">4.9/5</span>
+                    <span className="text-amber-400 text-xs sm:text-sm">⭐</span>
+                  </div>
+                  <span className="text-[11px] text-stone-500 font-medium block whitespace-nowrap">Average ratings</span>
+                </div>
+
+                {/* Action Buttons: Wishlist & Share */}
+                <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-center mt-2 sm:mt-0">
+                  {/* Wishlist Button */}
                   <button
                     aria-label="Add to wishlist"
-                    className="w-9 h-9 rounded-full bg-white/95 text-stone-700 hover:text-red-500 flex items-center justify-center shadow-md backdrop-blur-sm transition-transform active:scale-95"
+                    onClick={() => setIsWishlisted(!isWishlisted)}
+                    className={`border rounded-full px-3.5 py-1.5 flex items-center justify-center gap-1.5 font-bold text-xs transition-all active:scale-95 shadow-xs ${
+                      isWishlisted
+                        ? "border-red-500 bg-red-50 text-red-600"
+                        : "border-stone-300 hover:border-stone-400 bg-white text-stone-700"
+                    }`}
                   >
-                    <svg className="w-4 h-4 fill-none stroke-current" strokeWidth="2" viewBox="0 0 24 24">
+                    <svg className={`w-3.5 h-3.5 ${isWishlisted ? "fill-red-500 stroke-red-500" : "fill-none stroke-current"}`} strokeWidth="2" viewBox="0 0 24 24">
                       <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
                     </svg>
+                    <span>Wishlist</span>
                   </button>
+
+                  {/* Share Button */}
                   <button
                     aria-label="Share puja"
                     onClick={() => {
                       if (navigator.share) {
                         navigator.share({ title: puja.title, url: window.location.href });
+                      } else {
+                        navigator.clipboard?.writeText(window.location.href);
+                        setShareSuccess(true);
+                        setTimeout(() => setShareSuccess(false), 2000);
                       }
                     }}
-                    className="w-9 h-9 rounded-full bg-white/95 text-stone-700 hover:text-[#00b050] flex items-center justify-center shadow-md backdrop-blur-sm transition-transform active:scale-95"
+                    className="border border-stone-300 hover:border-stone-400 bg-white text-stone-700 rounded-full px-3.5 py-1.5 flex items-center justify-center gap-1.5 font-bold text-xs transition-all active:scale-95 shadow-xs"
                   >
-                    <svg className="w-4 h-4 fill-none stroke-current" strokeWidth="2" viewBox="0 0 24 24">
-                      <circle cx="18" cy="5" r="3" />
-                      <circle cx="6" cy="12" r="3" />
-                      <circle cx="18" cy="19" r="3" />
-                      <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
-                      <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                    <svg className="w-3.5 h-3.5 fill-none stroke-current" strokeWidth="2" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
                     </svg>
+                    <span>{shareSuccess ? "Copied!" : "Share"}</span>
                   </button>
                 </div>
               </div>
-
-              {/* Ratings / Stat Strip Under Image */}
-              <div className="flex items-center justify-around bg-white border border-stone-200 rounded-2xl p-3 mt-4 text-xs font-bold text-stone-700 shadow-sm">
-                <div className="text-center">
-                  <span className="block text-sm font-extrabold text-[#1f1a17]">4.95★</span>
-                  <span className="text-[11px] text-stone-500 font-semibold">22,824+ Bookings</span>
-                </div>
-                <div className="w-[1px] h-6 bg-stone-200" />
-                <div className="flex items-center gap-1.5 text-[#00b050]">
-                  <span className="bg-green-100 rounded-full p-1"><CheckIcon className="w-3.5 h-3.5" /></span>
-                  <span>Verified</span>
-                </div>
-                <div className="w-[1px] h-6 bg-stone-200" />
-                <button
-                  onClick={() => {
-                    if (navigator.share) {
-                      navigator.share({ title: puja.title, url: window.location.href });
-                    }
-                  }}
-                  className="text-stone-600 hover:text-stone-900 flex items-center gap-1"
-                >
-                  <span>Share</span>
-                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 100-5.367 3 3 0 000 5.367zm0 8.005a3 3 0 100-5.367 3 3 0 000 5.367z" /></svg>
-                </button>
-              </div>
             </div>
 
-            {/* Right 7 Cols: Details & CTA */}
-            <div className="lg:col-span-7 flex flex-col">
+            {/* Right 6 Cols: Details & CTA */}
+            <div className="lg:col-span-6 flex flex-col">
               {/* Filigree Subtag */}
               <div className="flex items-center gap-2 mb-2">
                 <div className="w-8 h-[1px] bg-[#F47820]/40" />
@@ -543,20 +570,60 @@ export default function PujaDetailClient({
                 </div>
               </div>
 
-              {/* Alert Text */}
-              <p className="text-xs text-stone-600 font-semibold mb-6 flex items-center gap-1.5">
-                <span className="text-[#F47820] font-bold">Note:</span> Puja will be performed on the selected date for your name, gotra and wish.
-              </p>
-
-              {/* Primary Participate CTA Button */}
-              <button
-                onClick={() => setShowPackageModal(true)}
-                className="w-full sm:w-auto bg-[#00b050] hover:bg-[#009644] active:scale-95 text-white font-extrabold text-base sm:text-lg px-8 py-4 rounded-full shadow-lg shadow-green-600/20 transition-all flex items-center justify-center gap-3 mb-4"
-              >
-                <span>Participate Now</span>
-                <div className="w-6 h-6 rounded-full bg-white text-[#00b050] flex items-center justify-center shadow-sm">
-                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
+              {/* Package Selection Cards Grid */}
+              <div className="bg-white border border-stone-200/90 rounded-2xl p-4 sm:p-5 mb-5 shadow-xs space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-extrabold tracking-wider text-stone-500 uppercase">Reserve your sankalp</span>
+                  <span className="text-[11px] font-bold text-[#00b050] bg-green-50 px-2.5 py-0.5 rounded-full border border-green-200/60">
+                    Verified Pandits
+                  </span>
                 </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {packagesList.map((pkg, idx) => {
+                    const isSelected = selectedPackage?.id === pkg.id;
+                    const displayPrice = getDisplayPrice(pkg);
+                    const pkgAvatar = pkg.imageUrl || defaultPackageAvatars[idx % defaultPackageAvatars.length];
+                    const devoteesText = pkg.devoteeCount || (pkg as any).devotees || (idx === 0 ? "1 Devotee" : idx === 1 ? "2 Devotees" : idx === 2 ? "4 Devotees" : "Multiple Devotees");
+
+                    return (
+                      <div
+                        key={pkg.id}
+                        onClick={() => setSelectedPackageId(pkg.id)}
+                        className={`relative border-2 rounded-2xl p-3 cursor-pointer transition-all flex items-center gap-3 ${
+                          isSelected
+                            ? "border-[#00b050] bg-green-50/50 shadow-xs"
+                            : "border-stone-200 hover:border-stone-300 bg-white"
+                        }`}
+                      >
+                        <div className="relative w-11 h-11 rounded-full overflow-hidden shrink-0 border border-stone-200 bg-stone-100">
+                          <img src={pkgAvatar} alt={pkg.name} className="w-full h-full object-cover" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-extrabold text-stone-900 text-xs truncate">{pkg.name}</h4>
+                          <span className="text-[11px] font-semibold text-stone-500 block truncate">{devoteesText}</span>
+                          <span className="font-extrabold text-sm text-[#00b050] block">₹{displayPrice}</span>
+                        </div>
+                        {isSelected && (
+                          <div className="absolute top-2 right-2 w-4 h-4 rounded-full bg-[#00b050] text-white flex items-center justify-center text-[10px] font-bold shadow-xs">
+                            ✓
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Primary Participate / Book Now CTA Button */}
+              <button
+                onClick={() => setShowDetailsModal(true)}
+                className="w-full bg-[#00b050] hover:bg-[#009644] active:scale-95 text-white font-extrabold text-lg py-4 px-6 rounded-2xl shadow-lg shadow-green-600/20 transition-all flex items-center justify-center gap-2 mb-4"
+              >
+                <span>₹{priceVal}</span>
+                <span className="opacity-40 font-normal">|</span>
+                <span>Book Now</span>
+                <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
               </button>
 
               {/* Secondary WhatsApp & Call Buttons */}
@@ -702,20 +769,15 @@ export default function PujaDetailClient({
           <section id="temple" className="scroll-mt-32">
             <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1f1a17] mb-6">Temple Details</h2>
             <div className="bg-white border border-stone-200/90 rounded-3xl p-6 sm:p-8 flex flex-col md:flex-row gap-6 items-center shadow-xs">
-              <div className="w-full md:w-1/3 h-48 rounded-2xl overflow-hidden bg-stone-100 shrink-0 relative">
-                <img
-                  src={templeImage}
-                  alt={templeVenueText}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    const target = e.currentTarget;
-                    if (!target.dataset.fallbackTried) {
-                      target.dataset.fallbackTried = "true";
-                      target.src = "https://images.unsplash.com/photo-1620025732283-500f4058d844?auto=format&fit=crop&q=80&w=600";
-                    }
-                  }}
-                />
-              </div>
+              {templeImage && (
+                <div className="w-full md:w-1/3 h-48 rounded-2xl overflow-hidden bg-stone-100 shrink-0 relative">
+                  <img
+                    src={templeImage}
+                    alt={templeVenueText}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
               <div className="flex-1">
                 <h3 className="font-serif font-bold text-stone-900 text-xl mb-2">{templeVenueText}</h3>
                 <p className="text-stone-600 text-xs sm:text-sm leading-relaxed font-medium mb-4">
@@ -777,30 +839,22 @@ export default function PujaDetailClient({
           </section>
 
           {/* Section: Puja Gallery */}
-          <section id="gallery" className="scroll-mt-32">
-            <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1f1a17] mb-6">Puja Gallery</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              {galleryList.map((img: string, idx: number) => {
-                const gUrl = getPujaImageUrl(img, puja.title);
-                return (
+          {galleryList.length > 0 && (
+            <section id="gallery" className="scroll-mt-32">
+              <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1f1a17] mb-6">Puja Gallery</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {galleryList.map((img: string, idx: number) => (
                   <div key={idx} className="h-48 rounded-2xl overflow-hidden border border-stone-200 shadow-xs">
                     <img
-                      src={gUrl}
-                      alt="Gallery photo"
+                      src={img}
+                      alt={`Gallery photo ${idx + 1}`}
                       className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                      onError={(e) => {
-                        const target = e.currentTarget;
-                        if (!target.dataset.fallbackTried) {
-                          target.dataset.fallbackTried = "true";
-                          target.src = getPujaImageUrl("", puja.title);
-                        }
-                      }}
                     />
                   </div>
-                );
-              })}
-            </div>
-          </section>
+                ))}
+              </div>
+            </section>
+          )}
 
         </div>
 

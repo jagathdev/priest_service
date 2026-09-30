@@ -451,9 +451,7 @@ export const normalizePuja = (homa: any, offeringsMap: Record<string, any> = {})
     title: record.title || 'Untitled homa',
     _id: record._id ? String(record._id) : slugify(record.title || 'Untitled homa'),
     buttonText: record.buttonText || 'Participate',
-    imageUrl:
-      record.imageUrl ||
-      'https://images.unsplash.com/photo-1542909168-82c3e7fdca5c?auto=format&fit=crop&w=1600&q=80',
+    imageUrl: typeof record.imageUrl === 'string' ? record.imageUrl.trim() : '',
     slug: record.slug || slugify(record.title || 'Untitled homa'),
     gallery: Array.isArray(record.gallery) && record.gallery.length > 0 ? record.gallery : undefined,
     eventDateTime: getStringField(record, 'eventDateTime') || undefined,

@@ -63,6 +63,7 @@ export default function AdminPujasPage() {
     { name: "imageUrl", label: "Image URL", type: "url" },
     { name: "location", label: "Temple/Location", type: "text" },
     { name: "templeVenue", label: "Temple Venue Name", type: "text", placeholder: "Shri Gajalakshmi Temple" },
+    { name: "templeImage", label: "Temple Image URL (optional)", type: "url", placeholder: "https://example.com/temple.jpg" },
     { name: "templeNote", label: "Temple Venue Note", type: "textarea", placeholder: "Short temple significance or venue note." },
     {
       name: "deity",
@@ -152,11 +153,13 @@ export default function AdminPujasPage() {
       label: "Packages",
       type: "array-object",
       objectSchema: [
-        { name: "name", label: "Package Name", type: "select", options: ["Individual Puja", "Partner Puja", "Family + Bhog", "Joint Family + Bhog"] },
+        { name: "name", label: "Package Name", type: "select", options: ["Individual Puja", "Couple Puja", "Partner Puja", "Family Puja", "Family + Bhog", "Joint Family + Bhog"] },
+        { name: "devoteeCount", label: "Devotee Subtitle (e.g. 1 Devotee, 2 Devotees)", type: "text", placeholder: "1 Devotee" },
         { name: "priceINR", label: "Price (INR)", type: "number" },
         { name: "priceUSD", label: "Price (USD)", type: "number" },
         { name: "priceMYR", label: "Price (MYR)", type: "number" },
-        { name: "description", label: "Description", type: "textarea" }
+        { name: "description", label: "Description (optional)", type: "textarea" },
+        { name: "imageUrl", label: "Package Avatar Image URL (optional)", type: "url" }
       ]
     },
     {

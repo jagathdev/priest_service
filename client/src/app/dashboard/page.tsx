@@ -211,7 +211,7 @@ export default function DashboardPage() {
                 return (
                   <PujaCard
                     key={p._id}
-                    imageSrc={p.imageUrl || ganeshImg}
+                    imageSrc={p.imageUrl ? (p.imageUrl.startsWith("http") || p.imageUrl.startsWith("/") ? p.imageUrl : `/${p.imageUrl}`) : ""}
                     topTag={topTagVal}
                     title={p.title}
                     subtitle={descriptionVal}
