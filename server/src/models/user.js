@@ -2,6 +2,11 @@ import mongoose from "mongoose";
 
 const addressSchema = new mongoose.Schema(
     {
+        type: {
+            type: String,
+            default: "Home",
+            trim: true,
+        },
         name: {
             type: String,
             default: "",

@@ -8,6 +8,7 @@ import Link from "next/link";
 
 interface User {
   id?: string;
+  _id?: string;
   name?: string;
   email?: string;
   phone?: string;
@@ -16,6 +17,24 @@ interface User {
   dob?: string;
   placeOfBirth?: string;
   occupation?: string;
+  addresses?: Address[];
+}
+
+export interface Address {
+  _id?: string;
+  id?: string;
+  type?: string;
+  name?: string;
+  phone?: string;
+  addressLine1?: string;
+  addressLine2?: string;
+  address?: string;
+  landmark?: string;
+  city?: string;
+  state?: string;
+  pincode?: string;
+  country?: string;
+  isDefault?: boolean;
 }
 
 export default function AccountPage() {
@@ -28,19 +47,10 @@ export default function AccountPage() {
   const [formData, setFormData] = useState<User>({});
   const [saving, setSaving] = useState(false);
 
-  // Address States
-  const [addresses, setAddresses] = useState([
-    {
-      id: 1,
-      type: "Work",
-      isDefault: true,
-      name: "jagth",
-      address: "12,Price info park, Ambattur, chennai, tamilnadu, 600083, India",
-      phone: "9360270984",
-    }
-  ]);
+  const addresses = user?.addresses || [];
   const [showAddressModal, setShowAddressModal] = useState(false);
   const [addressFormData, setAddressFormData] = useState({
+    _id: "",
     type: "Home",
     fullName: "",
     phone: "",
@@ -152,7 +162,7 @@ export default function AccountPage() {
         }, 0);
         return;
       } catch (e) {
-        // Fallback if parsing fails
+
       }
     }
 
@@ -234,6 +244,143 @@ export default function AccountPage() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleSaveAddress = async () => {
+    if (!user) return;
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:5000";
+
+      const newAddress = {
+        type: addressFormData.type,
+        name: addressFormData.fullName,
+        phone: addressFormData.phone,
+        addressLine1: addressFormData.address,
+        addressLine2: addressFormData.landmark,
+        city: addressFormData.city,
+        state: addressFormData.state,
+        pincode: addressFormData.pincode,
+        country: addressFormData.country,
+        isDefault: addressFormData.isDefault
+      };
+
+      let updatedAddresses = [...(user.addresses || [])];
+
+      if (newAddress.isDefault) {
+        updatedAddresses = updatedAddresses.map(a => ({ ...a, isDefault: false }));
+      } else if (updatedAddresses.length === 0) {
+        newAddress.isDefault = true;
+      }
+
+      if (addressFormData._id) {
+        const index = updatedAddresses.findIndex(a => a._id === addressFormData._id);
+        if (index > -1) {
+          updatedAddresses[index] = { ...updatedAddresses[index], ...newAddress };
+        }
+      } else {
+        updatedAddresses.push({ ...newAddress });
+      }
+
+      const payload = {
+        userId: user.id || user._id,
+        name: user.name || "",
+        email: user.email || "",
+        mobileNumber: user.mobileNumber || "",
+        addresses: updatedAddresses
+      };
+
+      const res = await fetch(`${baseUrl}/api/users/updateProfile`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        const updatedUser = { ...user, ...data.data };
+        setUser(updatedUser);
+        localStorage.setItem('mockUser', JSON.stringify(updatedUser));
+        setShowAddressModal(false);
+      } else {
+        alert(data.message || "Failed to save address");
+      }
+    } catch (error) {
+      alert("Error saving address");
+    }
+  };
+
+  const handleDeleteAddress = async (addressId: string) => {
+    if (!user) return;
+    if (!window.confirm("Are you sure to delete the address?")) return;
+
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:5000";
+
+      const updatedAddresses = (user.addresses || []).filter((a: Address) => a._id !== addressId && a.id !== addressId);
+
+      if (updatedAddresses.length > 0 && !updatedAddresses.some((a: Address) => a.isDefault)) {
+        updatedAddresses[0].isDefault = true;
+      }
+
+      const payload = {
+        userId: user.id || user._id,
+        name: user.name || "",
+        email: user.email || "",
+        mobileNumber: user.mobileNumber || "",
+        addresses: updatedAddresses
+      };
+
+      const res = await fetch(`${baseUrl}/api/users/updateProfile`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (data.success) {
+        const updatedUser = { ...user, ...data.data };
+        setUser(updatedUser);
+        localStorage.setItem('mockUser', JSON.stringify(updatedUser));
+      } else {
+        alert(data.message || "Failed to delete address");
+      }
+    } catch (error) {
+      alert("Error deleting address");
+    }
+  };
+
+  const openEditAddressModal = (addr: Address) => {
+    setAddressFormData({
+      _id: addr._id || "",
+      type: addr.type || "Home",
+      fullName: addr.name || "",
+      phone: addr.phone || "",
+      address: addr.addressLine1 || "",
+      landmark: addr.addressLine2 || "",
+      city: addr.city || "",
+      state: addr.state || "",
+      pincode: addr.pincode || "",
+      country: addr.country || "India",
+      isDefault: addr.isDefault || false
+    });
+    setShowAddressModal(true);
+  };
+
+
+  const openAddAddressModal = () => {
+    setAddressFormData({
+      _id: "",
+      type: "Home",
+      fullName: "",
+      phone: "",
+      address: "",
+      landmark: "",
+      city: "",
+      state: "",
+      pincode: "",
+      country: "India",
+      isDefault: false
+    });
+    setShowAddressModal(true);
   };
 
   if (loading) {
@@ -1097,7 +1244,7 @@ export default function AccountPage() {
                       </div>
                       {addresses.length > 0 && (
                         <button
-                          onClick={() => setShowAddressModal(true)}
+                          onClick={() => openAddAddressModal()}
                           className="bg-[#069e5d] text-white text-xs sm:text-sm font-bold px-4 py-2 sm:px-5 sm:py-2.5 rounded-full flex items-center gap-1.5 hover:bg-green-700 transition"
                         >
                           <span>+</span> Add New Address
@@ -1116,7 +1263,7 @@ export default function AccountPage() {
                         <h3 className="text-lg font-serif font-bold text-gray-800 mb-1">No saved addresses yet</h3>
                         <p className="text-[13px] text-gray-500 font-medium mb-6">Add a delivery address to check out faster next time.</p>
                         <button
-                          onClick={() => setShowAddressModal(true)}
+                          onClick={() => openAddAddressModal()}
                           className="bg-[#069e5d] text-white text-[13px] font-bold px-6 py-2.5 rounded-full flex items-center gap-1.5 hover:bg-green-700 transition"
                         >
                           <span>+</span> Add New Address
@@ -1125,7 +1272,7 @@ export default function AccountPage() {
                     ) : (
                       <>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
-                          {addresses.map((addr, idx) => (
+                          {addresses.map((addr: Address, idx: number) => (
                             <div key={idx} className="bg-white border border-gray-150 rounded-2xl p-5 shadow-sm">
                               <div className="flex flex-wrap items-center gap-2 mb-3">
                                 <span className="flex items-center gap-1.5 bg-[#fdf2f0] text-[#701a28] text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wide">
@@ -1152,13 +1299,13 @@ export default function AccountPage() {
                               </div>
                               <hr className="border-gray-150 mb-4" />
                               <div className="flex items-center gap-3">
-                                <button className="flex items-center gap-1.5 px-4 py-1.5 border border-gray-200 rounded-full text-[12px] font-bold text-gray-700 hover:bg-gray-50 transition">
+                                <button onClick={() => openEditAddressModal(addr)} className="flex items-center gap-1.5 px-4 py-1.5 border border-gray-200 rounded-full text-[12px] font-bold text-gray-700 hover:bg-gray-50 transition">
                                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                                   </svg>
                                   Edit
                                 </button>
-                                <button className="flex items-center gap-1.5 px-4 py-1.5 border border-gray-200 rounded-full text-[12px] font-bold text-gray-700 hover:bg-gray-50 transition">
+                                <button onClick={() => handleDeleteAddress((addr._id || addr.id) as string)} className="flex items-center gap-1.5 px-4 py-1.5 border border-gray-200 rounded-full text-[12px] font-bold text-gray-700 hover:bg-gray-50 transition">
                                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                   </svg>
@@ -1169,7 +1316,7 @@ export default function AccountPage() {
                           ))}
 
                           <div
-                            onClick={() => setShowAddressModal(true)}
+                            onClick={() => openAddAddressModal()}
                             className="border border-dashed border-[#a3e3c6] bg-[#e8fbf1] rounded-2xl p-5 flex flex-col items-center justify-center cursor-pointer hover:bg-[#d8f5e6] transition text-center min-h-[220px]"
                           >
                             <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm mb-3 text-[#069e5d]">
@@ -1795,32 +1942,10 @@ export default function AccountPage() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => {
-                    setAddresses(prev => [...prev, {
-                      id: Date.now(),
-                      type: addressFormData.type,
-                      isDefault: addressFormData.isDefault,
-                      name: addressFormData.fullName || 'New User',
-                      address: addressFormData.address || 'New Address',
-                      phone: addressFormData.phone || '+91 0000000000'
-                    }]);
-                    setShowAddressModal(false);
-                    setAddressFormData({
-                      type: "Home",
-                      fullName: "",
-                      phone: "",
-                      address: "",
-                      landmark: "",
-                      city: "",
-                      state: "",
-                      pincode: "",
-                      country: "India",
-                      isDefault: false
-                    });
-                  }}
-                  className="px-6 py-2.5 rounded-full bg-[#83d9aa] text-white text-sm font-bold hover:bg-[#68c894] transition"
+                  onClick={handleSaveAddress}
+                  className="px-6 py-2.5 rounded-full bg-[#069e5d] text-white text-sm font-bold hover:bg-green-700 transition"
                 >
-                  Add Address
+                  {addressFormData._id ? "Update Address" : "Add Address"}
                 </button>
               </div>
             </div>
