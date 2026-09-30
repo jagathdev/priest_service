@@ -11,6 +11,7 @@ interface User {
   name?: string;
   email?: string;
   phone?: string;
+  mobileNumber?: string;
   gender?: string;
   dob?: string;
   placeOfBirth?: string;
@@ -199,15 +200,40 @@ export default function AccountPage() {
 
 
 
-  const handleSave = () => {
+  const handleSave = async () => {
     setSaving(true);
-    setTimeout(() => {
-      const updatedUser = { ...user, ...formData };
-      setUser(updatedUser);
-      localStorage.setItem('mockUser', JSON.stringify(updatedUser));
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.PUBLIC_BASE_URL || "http://localhost:5000";
+      const updateUrl = process.env.API_USER_UPDATE || "/api/users/updateProfile";
+
+      const res = await fetch(`${baseUrl}${updateUrl}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: user?.id,
+          name: (formData.name || '').trim(),
+          email: (formData.email || '').trim(),
+          mobileNumber: (formData.mobileNumber || formData.phone || '').trim(),
+        }),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        const updatedUser = { ...user, ...data.data };
+        setUser(updatedUser);
+        localStorage.setItem('mockUser', JSON.stringify(updatedUser));
+        setShowEditModal(false);
+      } else {
+        alert(data.message || "Failed to update profile");
+      }
+    } catch (error) {
+      alert("Error updating profile");
+      console.error('Error updating profile:', error);
+    } finally {
       setSaving(false);
-      setShowEditModal(false);
-    }, 500);
+    }
   };
 
   if (loading) {
@@ -280,7 +306,13 @@ export default function AccountPage() {
               <h2 className="text-xl font-bold text-gray-800 mb-2">Authentication Required</h2>
               <p className="text-gray-500 max-w-sm mb-6">You must be logged in to access your account settings and history.</p>
               <button
-                onClick={() => setShowLoginModal(true)}
+                onClick={() => {
+                  setLoginStep('phone');
+                  setPhoneNumber('');
+                  setOtp(['', '', '', '', '', '']);
+                  setOtpError('');
+                  setShowLoginModal(true);
+                }}
                 className="bg-[#069e5d] text-white font-bold py-2.5 px-8 rounded-full hover:bg-[#058a51] transition"
               >
                 Login Now
@@ -509,7 +541,7 @@ export default function AccountPage() {
                                 type="text"
                                 value={formData.name || ''}
                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                placeholder="Your name"
+                                placeholder=""
                                 className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-[14px] focus:outline-none focus:border-[#069e5d] transition"
                               />
                             </div>
@@ -519,7 +551,7 @@ export default function AccountPage() {
                                 type="email"
                                 value={formData.email || ''}
                                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                placeholder="your.email@example.com"
+                                placeholder=""
                                 className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-[14px] focus:outline-none focus:border-[#069e5d] transition"
                               />
                             </div>
@@ -558,8 +590,8 @@ export default function AccountPage() {
                         ) : (
                           <div className="flex flex-col sm:flex-row items-start justify-between gap-6">
                             <div>
-                              <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
-                                {user?.name || "Jagath"}
+                              <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight h-8 capitalize">
+                                {user?.name || ""}
                               </h2>
                               <span className="bg-gray-100 text-gray-600 text-xs px-3 py-1 rounded-full font-semibold inline-block mt-1">
                                 Devotee
@@ -570,13 +602,13 @@ export default function AccountPage() {
                                   <svg className="w-4 h-4 text-amber-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                                   </svg>
-                                  <span>{user?.phone || "+91 9360270984"}</span>
+                                  <span>{user?.mobileNumber || user?.phone || "+91 XXXXXXXXXX"}</span>
                                 </div>
                                 <div className="flex items-center gap-2.5">
                                   <svg className="w-4 h-4 text-red-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                                   </svg>
-                                  <span>{user?.email || "sundari62005@gmail.com"}</span>
+                                  <span className="h-5 flex items-center">{user?.email || ""}</span>
                                 </div>
                               </div>
                             </div>

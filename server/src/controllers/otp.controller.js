@@ -106,12 +106,9 @@ export const verifyOtp = async (req, res) => {
         // ==========================================
 
         if (otpRecord.verified) {
-            return res.status(400).json({
-                success: false,
-                message:
-                    "Mobile number is already verified.",
-            });
+            // Already verified, proceed to login flow
         }
+
 
         // ==========================================
         // CHECK OTP EXPIRY

@@ -1,6 +1,8 @@
+import User from "../models/user.js";
+
 export const updateProfile = async (req, res) => {
     try {
-        const { userId, name, email } = req.body;
+        const { userId, name, email, mobileNumber } = req.body;
 
         if (!userId) {
             return res.status(400).json({
@@ -23,12 +25,18 @@ export const updateProfile = async (req, res) => {
             });
         }
 
+        const updateData = {
+            name: name.trim().charAt(0).toUpperCase() + name.trim().slice(1),
+            email: email.trim().toLowerCase(),
+        };
+
+        if (mobileNumber && mobileNumber.trim()) {
+            updateData.mobileNumber = mobileNumber.trim();
+        }
+
         const user = await User.findByIdAndUpdate(
             userId,
-            {
-                name: name.trim(),
-                email: email.trim().toLowerCase(),
-            },
+            updateData,
             {
                 returnDocument: "after",
                 runValidators: true,
