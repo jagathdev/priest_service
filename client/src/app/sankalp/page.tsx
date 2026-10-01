@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import { useUser } from "@/contexts/UserContext";
 
 interface RazorpayResponse {
   razorpay_order_id: string;
@@ -23,6 +24,7 @@ interface CustomWindow extends Window {
 function SankalpContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { user, setUser } = useUser();
 
   // Query Params preserved from Participate Now click
   const pujaId = searchParams?.get("pujaId") || searchParams?.get("id") || "";
@@ -38,8 +40,8 @@ function SankalpContent() {
 
   // Devotee details form state
   const [formData, setFormData] = useState({
-    whatsapp: searchParams?.get("wa") || "",
-    nameAndGotra: searchParams?.get("name") || "",
+    whatsapp: searchParams?.get("wa") || user?.mobileNumber || user?.phone || user?.whatsapp || "",
+    gotra: "",
     dontKnowGotra: false,
     wish: "",
     participants: ["", ""],
@@ -50,6 +52,47 @@ function SankalpContent() {
   const [paymentMethod, setPaymentMethod] = useState("upi");
   const [isProcessing, setIsProcessing] = useState(false);
   const [loadingMsg, setLoadingMsg] = useState("");
+
+  // Auto-populate user details from UserContext / backend profile API
+  useEffect(() => {
+    async function loadUserProfile() {
+      let phone = user?.mobileNumber || user?.phone || user?.whatsapp || searchParams?.get("wa") || "";
+      let name = user?.name || searchParams?.get("name") || "";
+
+      const uId = user?.id || user?._id;
+      if (uId) {
+        try {
+          const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
+          const res = await fetch(`${baseUrl}/api/users/profile/${uId}`);
+          if (res.ok) {
+            const data = await res.json();
+            if (data.success && data.data) {
+              if (data.data.mobileNumber) phone = data.data.mobileNumber;
+              if (data.data.name) name = data.data.name;
+              setUser({ ...user, ...data.data });
+            }
+          }
+        } catch (err) {
+          console.error("Error fetching user profile:", err);
+        }
+      }
+
+      setFormData((prev) => {
+        const nextWhatsapp = prev.whatsapp.trim() ? prev.whatsapp : phone;
+        const nextParticipants = [...prev.participants];
+        if (!nextParticipants[0]?.trim() && name) {
+          nextParticipants[0] = name;
+        }
+        return {
+          ...prev,
+          whatsapp: nextWhatsapp,
+          participants: nextParticipants,
+        };
+      });
+    }
+
+    loadUserProfile();
+  }, [user?.id, user?._id, user?.mobileNumber, user?.name]);
 
   // Fetch Puja details by preserved Puja ID / Slug
   useEffect(() => {
@@ -117,22 +160,52 @@ function SankalpContent() {
 
   const packagesList = React.useMemo(() => {
     if (pujaData?.packages && pujaData.packages.length > 0) {
-      return pujaData.packages;
+      return pujaData.packages.map((pkg: any, idx: number) => {
+        const defaultDevotees = idx === 0 ? "1 Devotee" : idx === 1 ? "2 Devotees" : idx === 2 ? "4 Devotees" : "Multiple Devotees";
+        return {
+          ...pkg,
+          id: pkg.id || pkg._id || `pkg-${idx + 1}`,
+          name: pkg.name || `Package ${idx + 1}`,
+          devoteeCount: pkg.devoteeCount || pkg.devotees || defaultDevotees,
+          priceINR: pkg.priceINR ?? pkg.price ?? (queryAmount ? Number(queryAmount) : pujaData?.price || 501),
+        };
+      });
     }
     // Fallback packages if missing from DB
-    const bPrice = pujaData?.price || 501;
+    const bPrice = queryAmount ? Number(queryAmount) : (pujaData?.price || 501);
     const title = pujaData?.title || queryTitle || "Puja";
     return [
       { id: "pkg-1", name: `Individual ${title}`, devoteeCount: "1 Devotee", priceINR: bPrice },
       { id: "pkg-2", name: `Couple ${title}`, devoteeCount: "2 Devotees", priceINR: bPrice + 200 },
       { id: "pkg-3", name: `Family ${title}`, devoteeCount: "4 Devotees", priceINR: bPrice + 400 },
     ];
-  }, [pujaData, queryTitle]);
+  }, [pujaData, queryTitle, queryAmount]);
 
   // Determine preserved package & price
   const selectedPackage = React.useMemo(() => {
-    if (!packagesList || !Array.isArray(packagesList)) return null;
-    return packagesList.find((p: any, idx: number) => p.id === pkgId || p._id === pkgId || `pkg-${idx}` === pkgId || `pkg-${idx + 1}` === pkgId) || packagesList[0] || null;
+    if (!packagesList || !Array.isArray(packagesList) || packagesList.length === 0) return null;
+    if (!pkgId) return packagesList[0];
+
+    const cleanPkgId = String(pkgId).trim().toLowerCase();
+
+    // 1. Direct match by id or index
+    const directMatch = packagesList.find((p: any, idx: number) => {
+      const pId = String(p.id || p._id || "").toLowerCase();
+      return pId === cleanPkgId || `pkg-${idx + 1}` === cleanPkgId;
+    });
+
+    if (directMatch) return directMatch;
+
+    // 2. Search by package name or keyword match
+    const nameMatch = packagesList.find((p: any) => {
+      const pName = String(p.name || "").toLowerCase();
+      if (cleanPkgId.includes("couple") && pName.includes("couple")) return true;
+      if (cleanPkgId.includes("family") && pName.includes("family")) return true;
+      if (cleanPkgId.includes("individual") && pName.includes("individual")) return true;
+      return pName.includes(cleanPkgId);
+    });
+
+    return nameMatch || packagesList[0];
   }, [packagesList, pkgId]);
 
   const defaultParticipantCount = React.useMemo(() => {
@@ -197,6 +270,31 @@ function SankalpContent() {
       alert("Please provide at least one Participant Name.");
       return;
     }
+
+    // Call updateProfile API to sync devotee profile details to backend database
+    const uId = user?.id || user?._id;
+    if (uId) {
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
+      const nameToSave = formData.participants[0]?.trim() || user?.name || "Devotee";
+      fetch(`${baseUrl}/api/users/updateProfile`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: uId,
+          name: nameToSave,
+          email: user?.email || "devotee@astroved.com",
+          mobileNumber: formData.whatsapp.trim(),
+        }),
+      })
+        .then((r) => r.json())
+        .then((resData) => {
+          if (resData.success && resData.data) {
+            setUser({ ...user, ...resData.data });
+          }
+        })
+        .catch(console.error);
+    }
+
     setStep(2);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -218,7 +316,7 @@ function SankalpContent() {
       }
 
       const backendUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-      const userName = formData.dontKnowGotra ? "Kashyapa" : formData.nameAndGotra || authData?.user?.name || "";
+      const userName = formData.participants[0]?.trim() || authData?.user?.name || user?.name || "Devotee";
       const userPhone = formData.whatsapp || authData?.user?.whatsapp || "";
       const customerId = authData?.user?.customerId || 0;
       const userEmail = authData?.user?.email || "";
@@ -299,7 +397,7 @@ function SankalpContent() {
         handler: async function (response: RazorpayResponse) {
           setLoadingMsg("Verifying payment...");
           try {
-            const verifyRes = await fetch(`${baseUrl}/api/payments/verify`, {
+            const verifyRes = await fetch(`${backendUrl}/api/payments/verify`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
@@ -519,17 +617,17 @@ function SankalpContent() {
                       </p>
                     </div>
 
-                    {/* Name & Gotra */}
+                    {/* Gotra */}
                     <div>
                       <label className="block text-stone-900 font-bold text-sm mb-3">
-                        Add your Name & Gotra <span className="text-stone-400 font-normal text-xs ml-1">(required)</span>
+                        Add your Gotra <span className="text-stone-400 font-normal text-xs ml-1">(required)</span>
                       </label>
                       <input
                         type="text"
                         disabled={formData.dontKnowGotra}
-                        value={formData.dontKnowGotra ? "Kashyapa" : formData.nameAndGotra}
-                        onChange={(e) => setFormData({ ...formData, nameAndGotra: e.target.value })}
-                        placeholder="Name & Gotra of Puja performer (Your Name)"
+                        value={formData.dontKnowGotra ? "Kashyapa" : formData.gotra}
+                        onChange={(e) => setFormData({ ...formData, gotra: e.target.value })}
+                        placeholder="Gotra of Puja performer (e.g. Kashyapa, Bharadwaja)"
                         className={`w-full border border-stone-200 rounded-xl px-4 py-3 text-sm font-medium outline-none focus:border-[#00b050] shadow-sm ${formData.dontKnowGotra ? "bg-[#f4f2ee] text-stone-500 cursor-not-allowed" : "bg-white"
                           }`}
                       />
@@ -588,7 +686,7 @@ function SankalpContent() {
                     <div>
                       <h3 className="text-sm font-extrabold text-stone-900 mb-4">Add prasadam & offerings</h3>
                       <div className="space-y-3">
-                        {offeringsList.map((offering, idx) => {
+                        {offeringsList.map((offering: any, idx: number) => {
                           const isAdded = selectedOfferings.find(o => o.title === offering.title);
                           return (
                             <div key={idx} className="bg-white p-3 rounded-2xl border border-stone-100 flex items-center gap-3">
