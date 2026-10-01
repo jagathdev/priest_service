@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import CustomerQuery from "../models/CustomerQuery.js";
+import CustomerQuery from "../models/customerQuery.js";
 
 
 // CREATE CUSTOMER QUERY / COMPLAINT
