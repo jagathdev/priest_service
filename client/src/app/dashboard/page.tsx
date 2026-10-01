@@ -4,6 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import React, { useState, useEffect, useRef } from "react";
 import Navbar from "@/components/layout/Navbar";
+import { useUser } from "@/contexts/UserContext";
+import WishlistButton from "@/components/common/WishlistButton";
 
 // Imported assets
 import step1Img from "@/assets/images/common/steo_1.png";
@@ -211,6 +213,7 @@ export default function DashboardPage() {
                 return (
                   <PujaCard
                     key={p._id}
+                    id={p._id}
                     imageSrc={p.imageUrl ? (p.imageUrl.startsWith("http") || p.imageUrl.startsWith("/") ? p.imageUrl : `/${p.imageUrl}`) : ""}
                     topTag={topTagVal}
                     title={p.title}
@@ -474,6 +477,7 @@ function FilterBtn({ text, active }: { text: string; active?: boolean }) {
 }
 
 interface PujaCardProps {
+  id?: string;
   imageSrc: string | { src: string };
   topTag: string;
   title: string;
@@ -484,7 +488,7 @@ interface PujaCardProps {
   slug?: string;
 }
 
-function PujaCard({ imageSrc, topTag, title, subtitle, location, date, price, slug }: PujaCardProps) {
+function PujaCard({ id, imageSrc, topTag, title, subtitle, location, date, price, slug }: PujaCardProps) {
   return (
     <div className="bg-white rounded-3xl border border-stone-200/80 p-2.5 sm:p-3 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col group text-left">
 
@@ -499,14 +503,7 @@ function PujaCard({ imageSrc, topTag, title, subtitle, location, date, price, sl
         {/* Top Right Floating Action Buttons (Wishlist & Share) */}
         <div className="absolute top-3 right-3 flex flex-col gap-2 z-10">
           {/* Wishlist Heart Button */}
-          <button
-            aria-label="Add to wishlist"
-            className="w-8 h-8 rounded-full bg-white/95 text-stone-700 hover:text-red-500 flex items-center justify-center shadow-md backdrop-blur-sm transition-transform active:scale-95"
-          >
-            <svg className="w-4 h-4 fill-none stroke-current" strokeWidth="2" viewBox="0 0 24 24">
-              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-            </svg>
-          </button>
+          {id && <WishlistButton itemId={id} />}
 
           {/* Share Button */}
           <button

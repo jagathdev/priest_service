@@ -5,6 +5,7 @@ import Navbar from "@/components/layout/Navbar";
 import Link from "next/link";
 import { useTranslation } from "@/contexts/LanguageContext";
 import Footer from "@/components/layout/Footer";
+import WishlistButton from "@/components/common/WishlistButton";
 
 interface Homa {
   _id: string;
@@ -51,7 +52,6 @@ export default function HomaPage() {
   const [selectedType, setSelectedType] = useState("All Homas");
   const [selectedDeities, setSelectedDeities] = useState<string[]>([]);
   const [selectedDoshas, setSelectedDoshas] = useState<string[]>([]);
-  const [favorites, setFavorites] = useState<Record<string, boolean>>({});
 
   // Fetch homas from Express API endpoint
   useEffect(() => {
@@ -72,10 +72,6 @@ export default function HomaPage() {
       })
       .finally(() => setFetched(true));
   }, []);
-
-  const toggleFavorite = (id: string) => {
-    setFavorites((prev) => ({ ...prev, [id]: !prev[id] }));
-  };
 
   const toggleDeity = (deity: string) => {
     setSelectedDeities((prev) =>
@@ -375,7 +371,6 @@ export default function HomaPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                   {displayedHomas.map((homa) => {
                     const priceVal = homa.price || homa.packages?.[0]?.price || 516;
-                    const isFav = !!favorites[homa._id];
 
                     return (
                       <div
@@ -397,16 +392,7 @@ export default function HomaPage() {
 
                           {/* Top Right Action Buttons (Heart & Share) */}
                           <div className="absolute top-3 right-3 flex items-center gap-1.5 z-10">
-                            <button
-                              type="button"
-                              onClick={() => toggleFavorite(homa._id)}
-                              aria-label="Favorite homa"
-                              className="w-8 h-8 rounded-full bg-white/95 hover:bg-white text-gray-700 hover:text-red-500 flex items-center justify-center shadow-sm transition"
-                            >
-                              <svg className={`w-4 h-4 ${isFav ? "fill-red-500 text-red-500" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                              </svg>
-                            </button>
+                            <WishlistButton itemId={homa._id} />
                             <button
                               type="button"
                               onClick={() => {

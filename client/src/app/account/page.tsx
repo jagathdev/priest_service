@@ -47,6 +47,9 @@ export default function AccountPage() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [formData, setFormData] = useState<User>({});
   const [saving, setSaving] = useState(false);
+  
+  const [wishlistItems, setWishlistItems] = useState<any[]>([]);
+  const [loadingWishlist, setLoadingWishlist] = useState(false);
 
   const addresses = user?.addresses || [];
   const [showAddressModal, setShowAddressModal] = useState(false);
@@ -215,6 +218,29 @@ export default function AccountPage() {
       }
     }
   }, []);
+
+  const fetchWishlist = async () => {
+    if (!user || (!user.id && !user._id)) return;
+    setLoadingWishlist(true);
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:5000";
+      const res = await fetch(`${baseUrl}/api/wishlist/${user.id || user._id}`);
+      const data = await res.json();
+      if (data.success && data.data) {
+        setWishlistItems(data.data);
+      }
+    } catch (err) {
+      console.error("Failed to fetch wishlist", err);
+    } finally {
+      setLoadingWishlist(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'wishlist' && user) {
+      fetchWishlist();
+    }
+  }, [activeTab, user]);
 
   const handleLogout = async () => {
     try {
@@ -1187,64 +1213,105 @@ export default function AccountPage() {
                         </svg>
                       </div>
                       <h1 className="text-xl sm:text-2xl font-bold font-serif text-[#333]">
-                        My Wishlist <span className="text-gray-500 font-medium text-lg">(1)</span>
+                        My Wishlist <span className="text-gray-500 font-medium text-lg">({wishlistItems.length})</span>
                       </h1>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                      {/* Wishlist Card */}
-                      <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition">
-                        {/* Top Image Section */}
-                        <div className="relative h-44 bg-[#6e1e12] overflow-hidden flex flex-col justify-center p-4">
-                          {/* Fake background image effect */}
-                          <div className="absolute right-0 top-0 bottom-0 w-1/2 bg-cover bg-center opacity-80" style={{ backgroundImage: "url('https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Sri_Subrahmanya_Swamy_Devalayam%2C_Skandagiri%2C_Secunderabad.jpg/640px-Sri_Subrahmanya_Swamy_Devalayam%2C_Skandagiri%2C_Secunderabad.jpg')" }}></div>
-                          <div className="absolute inset-0 bg-gradient-to-r from-[#6e1e12] via-[#6e1e12]/80 to-transparent"></div>
-
-                          {/* Heart Icon */}
-                          <div className="absolute top-3 right-3 z-20 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md cursor-pointer hover:bg-gray-50">
-                            <svg className="w-4 h-4 text-[#069e5d]" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
-                            </svg>
-                          </div>
-
-                          {/* Image Content */}
-                          <div className="relative z-10 w-[65%]">
-                            <div className="inline-block bg-[#801314] border border-[#a42018] text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm text-center leading-[1.1] mb-2">
-                              For marriage<br />and<br />offspring blessings
-                            </div>
-                            <div className="text-[#fad06a] font-serif font-bold text-sm leading-[1.15] drop-shadow-md mb-2">
-                              Shri<br />Subrahmanya<br />Swamy Abhishekam
-                            </div>
-                            <div className="inline-flex items-center bg-[#074f20] text-white text-[9px] font-bold px-2 py-1 rounded-full border border-[#0a7a30] shadow-sm">
-                              BOOK NOW <span className="ml-1 text-[11px] leading-none">›</span>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Bottom Content Section */}
-                        <div className="p-4">
-                          <h3 className="text-[13px] font-extrabold text-gray-900 leading-tight mb-2">
-                            Subrahmanya Swamy Abhishekam at Madurai...
-                          </h3>
-                          <div className="flex items-start gap-1.5 text-[11px] text-gray-500 font-medium mb-4">
-                            <svg className="w-3.5 h-3.5 shrink-0 mt-0.5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                            </svg>
-                            <span className="leading-snug">Aadi Meenakshi Sameta Sundareshwarar Temple, Sakkudi</span>
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <div className="text-[15px] font-extrabold text-gray-900">₹516</div>
-                            <button className="bg-[#069e5d] text-white text-[11px] font-bold px-4 py-2 rounded-full flex items-center gap-1.5 hover:bg-green-700 transition">
-                              Book Now
-                              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                              </svg>
-                            </button>
-                          </div>
-                        </div>
+                    {loadingWishlist ? (
+                      <div className="flex justify-center py-10">
+                        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-t-2 border-[#069e5d]"></div>
                       </div>
-                    </div>
+                    ) : wishlistItems.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center py-24 text-center bg-white rounded-2xl shadow-sm border border-gray-100">
+                        <svg className="w-16 h-16 text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                        </svg>
+                        <h2 className="text-lg font-extrabold text-gray-800 mb-2">Your wishlist is empty</h2>
+                        <p className="text-[13px] font-medium text-gray-500 mb-6">
+                          Save your favorite pujas and homas to view them here later.
+                        </p>
+                        <Link href="/" className="bg-[#069e5d] text-white px-6 py-2.5 rounded-full font-bold text-sm shadow-sm hover:bg-[#058a51] transition">
+                          Explore Services
+                        </Link>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                        {wishlistItems.map((item) => (
+                          <div key={item.wishlistId} className="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition">
+                            {/* Top Image Section */}
+                            <div className="relative h-44 bg-[#6e1e12] overflow-hidden flex flex-col justify-center p-4">
+                              {/* Background Image */}
+                              <img 
+                                src={item.image?.startsWith("http") ? item.image : `/${item.image}`} 
+                                alt={item.name} 
+                                className="absolute right-0 top-0 bottom-0 w-1/2 object-cover opacity-80"
+                              />
+                              <div className="absolute inset-0 bg-gradient-to-r from-[#6e1e12] via-[#6e1e12]/80 to-transparent"></div>
+
+                              {/* Heart Icon (Remove) */}
+                              <button 
+                                onClick={async () => {
+                                  try {
+                                    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:5000";
+                                    await fetch(`${baseUrl}/api/wishlist/updateWishlist`, {
+                                      method: "POST",
+                                      headers: { "Content-Type": "application/json" },
+                                      body: JSON.stringify({ userId: user?.id || user?._id, serviceId: item.serviceId, action: "remove" }),
+                                    });
+                                    fetchWishlist();
+                                  } catch (error) {
+                                    console.error(error);
+                                  }
+                                }}
+                                className="absolute top-3 right-3 z-20 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md cursor-pointer hover:bg-gray-50 text-[#069e5d]"
+                              >
+                                <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
+                                </svg>
+                              </button>
+
+                              {/* Image Content Overlay */}
+                              <div className="relative z-10 w-[65%]">
+                                <div className="inline-block bg-[#801314] border border-[#a42018] text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm text-center leading-[1.1] mb-2 max-w-full truncate whitespace-normal line-clamp-3">
+                                  {item.badge}
+                                </div>
+                                <div className="text-[#fad06a] font-serif font-bold text-sm leading-[1.15] drop-shadow-md mb-2 line-clamp-3">
+                                  {item.name}
+                                </div>
+                                <div className="inline-flex items-center bg-[#074f20] text-white text-[9px] font-bold px-2 py-1 rounded-full border border-[#0a7a30] shadow-sm">
+                                  BOOK NOW <span className="ml-1 text-[11px] leading-none">›</span>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Bottom Content Section */}
+                            <div className="p-4 flex flex-col min-h-[140px]">
+                              <h3 className="text-[13px] font-extrabold text-gray-900 leading-tight mb-2 line-clamp-2">
+                                {item.name}
+                              </h3>
+                              
+                              <div className="flex items-start gap-1.5 text-[11px] text-gray-500 font-medium mb-4">
+                                <svg className="w-3.5 h-3.5 shrink-0 mt-0.5 text-[#701a28]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                                <span className="leading-snug line-clamp-2">{item.location}</span>
+                              </div>
+
+                              <div className="mt-auto flex items-center justify-between">
+                                <div className="text-[15px] font-extrabold text-gray-900">₹{item.price || 516}</div>
+                                <Link href={`/${item.serviceType}/${item.slug || item.serviceId}`} className="bg-[#069e5d] text-white text-[11px] font-bold px-4 py-2 rounded-full flex items-center gap-1.5 hover:bg-green-700 transition shadow-sm">
+                                  Book Now
+                                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                  </svg>
+                                </Link>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
 

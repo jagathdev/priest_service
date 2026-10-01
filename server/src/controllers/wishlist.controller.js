@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 import Wishlist from "../models/wishList.js";
-import Pooja from "../models/Pooja.js";
+import Puja from "../models/pujaModel.js";
 import Homa from "../models/homaModel.js";
 
 export const updateWishList = async (req, res) => {
@@ -38,10 +38,10 @@ export const updateWishList = async (req, res) => {
             });
         }
 
-        // Check Pooja first
-        let service = await Pooja.findOne({
+        // Check Puja first
+        let service = await Puja.findOne({
             _id: serviceId,
-            isActive: true,
+            status: "active",
         });
 
         let serviceType = "pooja";
@@ -133,9 +133,9 @@ export const getWishlist = async (req, res) => {
             let service = null;
 
             if (item.serviceType === "pooja") {
-                service = await Pooja.findOne({
+                service = await Puja.findOne({
                     _id: item.serviceId,
-                    isActive: true,
+                    status: "active",
                 });
             }
 
@@ -171,6 +171,11 @@ export const getWishlist = async (req, res) => {
                     0,
 
                 currency: service.currency || "INR",
+                
+                location: service.location || service.templeVenue || service.filterLocation || "Sacred Temple, India",
+                subtitle: service.subtitle || service.description || "Join us for this sacred ritual to seek divine blessings and fulfillment.",
+                badge: service.badge || service.shortTitle || "SPECIAL PUJA",
+                slug: service.slug || "",
 
                 createdAt: item.createdAt,
             });
