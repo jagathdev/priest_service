@@ -202,7 +202,7 @@ export default function PujaDetailClient({
         const basePrice = pkg.priceINR ?? pkg.price ?? puja.price ?? 501;
         const defaultDevotees = idx === 0 ? "1 Devotee" : idx === 1 ? "2 Devotees" : idx === 2 ? "4 Devotees" : "Multiple Devotees";
         return {
-          id: pkg.id || pkg._id || `pkg-${idx}`,
+          id: pkg.id || pkg._id || `pkg-${idx + 1}`,
           name: pkg.name || `Package ${idx + 1}`,
           devoteeCount: pkg.devoteeCount || pkg.devotees || defaultDevotees,
           priceINR: basePrice,
