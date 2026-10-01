@@ -1,5 +1,44 @@
 import User from "../models/user.js";
 
+export const getProfile = async (req, res) => {
+    try {
+        const userId = req.params.userId || req.query.userId;
+
+        if (!userId) {
+            return res.status(400).json({
+                success: false,
+                message: "User ID is required",
+            });
+        }
+
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found",
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            data: {
+                id: user._id,
+                name: user.name,
+                email: user.email,
+                mobileNumber: user.mobileNumber,
+                addresses: user.addresses,
+            },
+        });
+    } catch (error) {
+        console.error("Get Profile Error:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Failed to fetch profile",
+        });
+    }
+};
+
 export const updateProfile = async (req, res) => {
     try {
         const { userId, name, email, mobileNumber, addresses } = req.body;
