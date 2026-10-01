@@ -1,14 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { 
-  UserCircleIcon, 
-  KeyIcon, 
-  EnvelopeIcon, 
-  UserIcon, 
-  CheckCircleIcon, 
-  XMarkIcon, 
-  ExclamationCircleIcon, 
+import {
+  UserCircleIcon,
+  KeyIcon,
+  EnvelopeIcon,
+  UserIcon,
+  CheckCircleIcon,
+  XMarkIcon,
+  ExclamationCircleIcon,
   ShieldCheckIcon,
   EyeIcon,
   EyeSlashIcon
@@ -18,10 +18,10 @@ export default function AdminProfilePage() {
   const [loading, setLoading] = useState(true);
   const [savingProfile, setSavingProfile] = useState(false);
   const [savingPassword, setSavingPassword] = useState(false);
-  
+
   const [profileSuccess, setProfileSuccess] = useState(false);
   const [profileError, setProfileError] = useState("");
-  
+
   const [passwordSuccess, setPasswordSuccess] = useState(false);
   const [passwordError, setPasswordError] = useState("");
 
@@ -45,7 +45,7 @@ export default function AdminProfilePage() {
 
   const fetchProfile = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:5000"}/api/admin/profile`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "https://priest-service.onrender.com/"}/api/admin/profile`);
       const data = await res.json();
       if (res.ok) {
         setFormData((prev) => ({
@@ -64,7 +64,7 @@ export default function AdminProfilePage() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    
+
     // Clear relevant errors
     if (name === "name" || name === "email") {
       setProfileSuccess(false);
@@ -190,7 +190,7 @@ export default function AdminProfilePage() {
       </div>
 
       <div className="space-y-8">
-        
+
         {/* Personal Information Card */}
         <div className="bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-2xl overflow-hidden">
           <div className="px-6 py-8 sm:p-10 border-b border-gray-900/5 bg-gray-50/50">
@@ -202,7 +202,7 @@ export default function AdminProfilePage() {
               Update your name and the email address used for logging in.
             </p>
           </div>
-          
+
           <div className="px-6 py-8 sm:p-10">
             {profileSuccess && (
               <div className="mb-6 rounded-xl bg-green-50 p-4 border border-green-100 flex items-start gap-3">
@@ -302,17 +302,17 @@ export default function AdminProfilePage() {
               </button>
             )}
           </div>
-          
+
           {showPasswordChange && (
             <div className="px-6 py-8 sm:p-10 bg-gray-50/30 animate-in fade-in slide-in-from-top-4 duration-300">
-              
+
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-lg font-medium text-gray-900">Update Password</h3>
-                <button 
+                <button
                   onClick={() => {
                     setShowPasswordChange(false);
                     setPasswordError("");
-                    setFormData(prev => ({...prev, currentPassword: "", newPassword: "", confirmPassword: ""}));
+                    setFormData(prev => ({ ...prev, currentPassword: "", newPassword: "", confirmPassword: "" }));
                   }}
                   className="text-gray-400 hover:text-gray-500"
                 >
@@ -336,7 +336,7 @@ export default function AdminProfilePage() {
               )}
 
               <form onSubmit={handlePasswordSubmit} className="space-y-6 max-w-md">
-                
+
                 <div>
                   <label htmlFor="currentPassword" className="block text-sm font-medium leading-6 text-gray-900">
                     Current Password

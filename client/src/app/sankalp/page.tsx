@@ -62,7 +62,7 @@ function SankalpContent() {
       const uId = user?.id || user?._id;
       if (uId) {
         try {
-          const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
+          const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priest-service.onrender.com/";
           const res = await fetch(`${baseUrl}/api/users/profile/${uId}`);
           if (res.ok) {
             const data = await res.json();
@@ -106,7 +106,7 @@ function SankalpContent() {
       setLoading(true);
       setError(null);
 
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priest-service.onrender.com/";
       const targetId = pujaId || slug;
 
       try {
@@ -274,7 +274,7 @@ function SankalpContent() {
     // Call updateProfile API to sync devotee profile details to backend database
     const uId = user?.id || user?._id;
     if (uId) {
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priest-service.onrender.com/";
       const nameToSave = formData.participants[0]?.trim() || user?.name || "Devotee";
       fetch(`${baseUrl}/api/users/updateProfile`, {
         method: "PUT",
@@ -315,7 +315,7 @@ function SankalpContent() {
         }
       }
 
-      const backendUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      const backendUrl = process.env.NEXT_PUBLIC_API_URL || "https://priest-service.onrender.com/";
       const userName = formData.participants[0]?.trim() || authData?.user?.name || user?.name || "Devotee";
       const userPhone = formData.whatsapp || authData?.user?.whatsapp || "";
       const customerId = authData?.user?.customerId || 0;
@@ -356,7 +356,7 @@ function SankalpContent() {
 
       const contentType = orderRes.headers.get("content-type");
       if (!contentType || !contentType.includes("application/json")) {
-         throw new Error("Server returned an invalid HTML response. Please make sure the backend is running.");
+        throw new Error("Server returned an invalid HTML response. Please make sure the backend is running.");
       }
 
       const orderData = await orderRes.json();
@@ -704,8 +704,8 @@ function SankalpContent() {
                                   else setSelectedOfferings(prev => [...prev, offering]);
                                 }}
                                 className={`text-[11px] font-bold px-5 py-2 rounded-full transition-colors shrink-0 flex items-center gap-1 ${isAdded
-                                    ? "bg-red-50 text-red-600 border border-red-200"
-                                    : "bg-[#00b050] text-white"
+                                  ? "bg-red-50 text-red-600 border border-red-200"
+                                  : "bg-[#00b050] text-white"
                                   }`}
                               >
                                 {isAdded ? "− Remove" : "+ Add"}

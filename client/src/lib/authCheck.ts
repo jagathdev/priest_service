@@ -2,7 +2,7 @@ export async function checkAuthStatus(): Promise<{ is_user: boolean; user: any }
   // API call removed per user request
   /*
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:5000"}/api/auth/me`);
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "https://priest-service.onrender.com/"}/api/auth/me`);
     if (res.ok) {
       const data = await res.json();
       if (data && (data.is_user === true || data.authenticated === true)) {

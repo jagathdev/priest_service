@@ -2,7 +2,7 @@
 
 This document provides a comprehensive list of all API endpoints referenced in `server.js`, including sample payloads and responses.
 
-Base URL: `http://localhost:5000`
+Base URL: `https://priest-service.onrender.com/`
 
 ---
 

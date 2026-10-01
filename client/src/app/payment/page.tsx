@@ -58,7 +58,7 @@ function PaymentContent() {
       const firstName = nameParts[0] || "";
       const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
 
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priest-service.onrender.com/";
 
       // 2. Call local Express API to create order
       setLoadingMsg("Creating order securely...");
@@ -66,10 +66,10 @@ function PaymentContent() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          customerId: Number(customerId) , 
+          customerId: Number(customerId),
           currencyCode: "INR",
-          shoppingCartId: Number(shoppingCartId) ,
-          totalamount: Number(amount) ,
+          shoppingCartId: Number(shoppingCartId),
+          totalamount: Number(amount),
           contactId: 1367254, // Hardcoded or dynamic
           localeId: 1,
           trackingCode1: "",
@@ -77,7 +77,7 @@ function PaymentContent() {
           shippingpreferred: false,
           contactDetail: {
             CustomerId: Number(customerId) || 1413824,
-            FirstName: firstName ,
+            FirstName: firstName,
             LastName: lastName,
             ShopName: "AstroVed",
             Street: "",
@@ -89,9 +89,9 @@ function PaymentContent() {
           }
         })
       });
-      
+
       const orderData = await orderRes.json();
-      
+
       if (!orderRes.ok || !orderData.data?.orderId) {
         throw new Error(orderData.message || "Failed to create order.");
       }
@@ -100,12 +100,12 @@ function PaymentContent() {
       const rzpKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || orderData.data.keyId;
 
       if (!rzpKey) {
-         throw new Error("Razorpay Key ID is missing. Add NEXT_PUBLIC_RAZORPAY_KEY_ID to .env.local.");
+        throw new Error("Razorpay Key ID is missing. Add NEXT_PUBLIC_RAZORPAY_KEY_ID to .env.local.");
       }
 
       // 3. Initialize Razorpay Checkout
       setLoadingMsg("Opening Razorpay...");
-      
+
       const options: Record<string, unknown> = {
         key: rzpKey,
         name: "AstroVed",
@@ -165,7 +165,7 @@ function PaymentContent() {
           backdropclose: false
         }
       };
-      
+
       // Load the script dynamically
       const loadRazorpayScript = () => {
         return new Promise((resolve) => {
@@ -182,7 +182,7 @@ function PaymentContent() {
       };
 
       const scriptLoaded = await loadRazorpayScript();
-      
+
       if (!scriptLoaded || !(window as unknown as CustomWindow).Razorpay) {
         throw new Error("Razorpay SDK failed to load. Please check your connection.");
       }
@@ -210,7 +210,7 @@ function PaymentContent() {
             </svg>
           </div>
         </div>
-        
+
         <h2 className="text-2xl font-serif font-bold text-stone-900 mb-2">Complete Your Booking</h2>
         <p className="text-stone-500 mb-8 font-medium">{title}</p>
 
@@ -251,7 +251,7 @@ function PaymentContent() {
             <div className="bg-red-50 text-red-600 p-4 rounded-xl mb-6 text-sm font-medium border border-red-100">
               {error}
             </div>
-            <button 
+            <button
               onClick={() => { setError(null); setIsProcessing(false); }}
               className="w-full px-6 py-3 bg-stone-100 text-stone-700 font-bold rounded-xl hover:bg-stone-200 transition-colors"
             >
@@ -259,7 +259,7 @@ function PaymentContent() {
             </button>
           </>
         )}
-        
+
         <div className="mt-6 flex items-center justify-center gap-2 text-xs text-stone-400 font-medium">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
             <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />

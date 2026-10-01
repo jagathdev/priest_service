@@ -144,7 +144,7 @@ export default function HomaDetailClient({
           return;
         }
 
-        const res = await fetch(`http://localhost:5000/api/homas`);
+        const res = await fetch(`https://priest-service.onrender.com//api/homas`);
         if (!res.ok) {
           setHoma(null);
           return;
@@ -154,8 +154,8 @@ export default function HomaDetailClient({
         const list: Homa[] = resData?.data && Array.isArray(resData.data)
           ? resData.data
           : Array.isArray(resData)
-          ? resData
-          : [];
+            ? resData
+            : [];
 
         const match = list.find(
           (h: Homa) => h.slug === slug || slugify(h.title) === slug || h._id === slug
@@ -377,29 +377,29 @@ export default function HomaDetailClient({
     homa.benefits && homa.benefits.length > 0
       ? homa.benefits
       : homa.details?.benefits && homa.details.benefits.length > 0
-      ? homa.details.benefits
-      : defaultBenefits;
+        ? homa.details.benefits
+        : defaultBenefits;
 
   const processList =
     homa.process && homa.process.length > 0
       ? homa.process
       : homa.details?.process && homa.details.process.length > 0
-      ? homa.details.process
-      : defaultProcess;
+        ? homa.details.process
+        : defaultProcess;
 
   const faqList =
     homa.faq && homa.faq.length > 0
       ? homa.faq
       : homa.details?.faq && homa.details.faq.length > 0
-      ? homa.details.faq
-      : defaultFaqs;
+        ? homa.details.faq
+        : defaultFaqs;
 
   const inclusionsList =
     homa.inclusions && homa.inclusions.length > 0
       ? homa.inclusions
       : homa.details?.inclusions && homa.details.inclusions.length > 0
-      ? homa.details.inclusions
-      : [
+        ? homa.details.inclusions
+        : [
           { title: "Special Invocational Sankalpam", description: "Performed with your name, gotra, and specific prayer request by learned priests." },
           { title: "Full Homa Video Recording", description: "Delivered directly to your WhatsApp number within 48 hours of ritual completion." },
         ];
@@ -408,10 +408,10 @@ export default function HomaDetailClient({
     Array.isArray(homa.gallery) && homa.gallery.length > 0
       ? homa.gallery.map((img: string) => getHomaImageUrl(img)).filter(Boolean)
       : Array.isArray(homa.galleryUrl) && homa.galleryUrl.length > 0
-      ? homa.galleryUrl.map((img: string) => getHomaImageUrl(img)).filter(Boolean)
-      : typeof homa.galleryUrl === "string" && homa.galleryUrl.trim()
-      ? [getHomaImageUrl(homa.galleryUrl)]
-      : [];
+        ? homa.galleryUrl.map((img: string) => getHomaImageUrl(img)).filter(Boolean)
+        : typeof homa.galleryUrl === "string" && homa.galleryUrl.trim()
+          ? [getHomaImageUrl(homa.galleryUrl)]
+          : [];
 
   const templeImage =
     (typeof homa.templeImageUrl === "string" && homa.templeImageUrl.trim()) ||
@@ -480,11 +480,10 @@ export default function HomaDetailClient({
                   <button
                     aria-label="Add to wishlist"
                     onClick={() => setIsWishlisted(!isWishlisted)}
-                    className={`border rounded-full px-3.5 py-1.5 flex items-center justify-center gap-1.5 font-bold text-xs transition-all active:scale-95 shadow-xs ${
-                      isWishlisted
+                    className={`border rounded-full px-3.5 py-1.5 flex items-center justify-center gap-1.5 font-bold text-xs transition-all active:scale-95 shadow-xs ${isWishlisted
                         ? "border-red-500 bg-red-50 text-red-600"
                         : "border-stone-300 hover:border-stone-400 bg-white text-stone-700"
-                    }`}
+                      }`}
                   >
                     <svg className={`w-3.5 h-3.5 ${isWishlisted ? "fill-red-500 stroke-red-500" : "fill-none stroke-current"}`} strokeWidth="2" viewBox="0 0 24 24">
                       <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
@@ -561,29 +560,28 @@ export default function HomaDetailClient({
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     {packagesList.map((pkg, idx) => {
-                    const isSelected = selectedPackage?.id === pkg.id;
-                    const displayPrice = getDisplayPrice(pkg);
-                    const pkgAvatar = pkg.imageUrl || defaultPackageAvatars[idx % defaultPackageAvatars.length];
-                    const devoteesText = pkg.devoteeCount || (pkg as any).devotees || (idx === 0 ? "1 Devotee" : idx === 1 ? "2 Devotees" : idx === 2 ? "4 Devotees" : "Multiple Devotees");
+                      const isSelected = selectedPackage?.id === pkg.id;
+                      const displayPrice = getDisplayPrice(pkg);
+                      const pkgAvatar = pkg.imageUrl || defaultPackageAvatars[idx % defaultPackageAvatars.length];
+                      const devoteesText = pkg.devoteeCount || (pkg as any).devotees || (idx === 0 ? "1 Devotee" : idx === 1 ? "2 Devotees" : idx === 2 ? "4 Devotees" : "Multiple Devotees");
 
-                    return (
-                      <div
-                        key={pkg.id}
-                        onClick={() => setSelectedPackageId(pkg.id)}
-                        className={`relative border-2 rounded-2xl p-3 cursor-pointer transition-all flex items-center gap-3 ${
-                          isSelected
-                            ? "border-[#00b050] bg-green-50/50 shadow-xs"
-                            : "border-stone-200 hover:border-stone-300 bg-white"
-                        }`}
-                      >
-                        <div className="relative w-11 h-11 rounded-full overflow-hidden shrink-0 border border-stone-200 bg-stone-100">
-                          <img src={pkgAvatar} alt={pkg.name} className="w-full h-full object-cover" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-extrabold text-stone-900 text-xs truncate">{pkg.name}</h4>
-                          <span className="text-[11px] font-semibold text-stone-500 block truncate">{devoteesText}</span>
-                          <span className="font-extrabold text-sm text-[#00b050] block">₹{displayPrice}</span>
-                        </div>
+                      return (
+                        <div
+                          key={pkg.id}
+                          onClick={() => setSelectedPackageId(pkg.id)}
+                          className={`relative border-2 rounded-2xl p-3 cursor-pointer transition-all flex items-center gap-3 ${isSelected
+                              ? "border-[#00b050] bg-green-50/50 shadow-xs"
+                              : "border-stone-200 hover:border-stone-300 bg-white"
+                            }`}
+                        >
+                          <div className="relative w-11 h-11 rounded-full overflow-hidden shrink-0 border border-stone-200 bg-stone-100">
+                            <img src={pkgAvatar} alt={pkg.name} className="w-full h-full object-cover" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-extrabold text-stone-900 text-xs truncate">{pkg.name}</h4>
+                            <span className="text-[11px] font-semibold text-stone-500 block truncate">{devoteesText}</span>
+                            <span className="font-extrabold text-sm text-[#00b050] block">₹{displayPrice}</span>
+                          </div>
                           {isSelected && (
                             <div className="absolute top-2 right-2 w-4 h-4 rounded-full bg-[#00b050] text-white flex items-center justify-center text-[10px] font-bold shadow-xs">
                               ✓
@@ -666,11 +664,10 @@ export default function HomaDetailClient({
                   window.scrollTo({ top: y, behavior: "smooth" });
                 }
               }}
-              className={`py-4 border-b-2 transition-colors whitespace-nowrap ${
-                activeTab === tab.id
+              className={`py-4 border-b-2 transition-colors whitespace-nowrap ${activeTab === tab.id
                   ? "border-[#00b050] text-[#00b050]"
                   : "border-transparent hover:text-stone-900"
-              }`}
+                }`}
             >
               {tab.label}
             </a>
@@ -925,11 +922,10 @@ export default function HomaDetailClient({
                     <div
                       key={pkg.id}
                       onClick={() => setSelectedPackageId(pkg.id)}
-                      className={`border-2 rounded-2xl p-4 cursor-pointer transition-all flex items-center justify-between ${
-                        isSelected
+                      className={`border-2 rounded-2xl p-4 cursor-pointer transition-all flex items-center justify-between ${isSelected
                           ? "border-[#00b050] bg-green-50/50 shadow-xs"
                           : "border-stone-200 hover:border-stone-400 bg-white"
-                      }`}
+                        }`}
                     >
                       <div>
                         <h4 className="font-bold text-stone-900 text-base">{pkg.name}</h4>

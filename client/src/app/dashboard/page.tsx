@@ -26,14 +26,14 @@ export default function DashboardPage() {
   const [fetchedPujas, setFetchedPujas] = useState(false);
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/pujas")
+    fetch("https://priest-service.onrender.com//api/pujas")
       .then((r) => (r.ok ? r.json() : null))
       .then((resData) => {
         const rawList = resData?.data && Array.isArray(resData.data)
           ? resData.data
           : Array.isArray(resData)
-          ? resData
-          : [];
+            ? resData
+            : [];
         const activeList = rawList.filter((item: { status?: string }) => !item.status || item.status === "active");
         setPujas(activeList.slice(0, 6));
       })
@@ -203,10 +203,10 @@ export default function DashboardPage() {
                 const priceVal = p.price
                   ? `₹${p.price}`
                   : p.packages?.[0]?.priceINR
-                  ? `₹${p.packages[0].priceINR}`
-                  : p.packages?.[0]?.price
-                  ? `₹${p.packages[0].price}`
-                  : "₹516";
+                    ? `₹${p.packages[0].priceINR}`
+                    : p.packages?.[0]?.price
+                      ? `₹${p.packages[0].price}`
+                      : "₹516";
                 const slugVal = p.slug || (p.title ? p.title.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-") : "");
                 const topTagVal = p.badge || p.shortTitle || p.subtitle || "SPECIAL PUJA";
                 const descriptionVal = p.description || p.subtitle || "Join us for this sacred ritual to seek divine blessings and fulfillment.";

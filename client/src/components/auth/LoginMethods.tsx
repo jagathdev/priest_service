@@ -75,7 +75,7 @@ export default function LoginMethods() {
     // 2. Dynamically detect country using GeoIP
     async function detectCountry() {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:5000"}/api/auth/geoip`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "https://priest-service.onrender.com/"}/api/auth/geoip`);
         const data = await res.json();
         if (data && data.country) {
           setDetectedCountry(data.country);
@@ -234,180 +234,180 @@ export default function LoginMethods() {
         </div>
       </div>
 
-        {/* Heading */}
-        <h1 className="text-center text-xl font-bold text-[#1a1a2e] leading-snug">
-          {isAdmin
-            ? "Admin Login"
-            : isIndian
-              ? "Login to continue"
-              : "Login to continue your booking"}
-        </h1>
-        <p className="mt-1.5 text-center text-sm text-[#6a4e95]">
-          {isAdmin
-            ? "Access the administrative control center."
-            : isIndian
-              ? "We will send an OTP to your WhatsApp number"
-              : "All booking updates will be sent to your email"}
-        </p>
+      {/* Heading */}
+      <h1 className="text-center text-xl font-bold text-[#1a1a2e] leading-snug">
+        {isAdmin
+          ? "Admin Login"
+          : isIndian
+            ? "Login to continue"
+            : "Login to continue your booking"}
+      </h1>
+      <p className="mt-1.5 text-center text-sm text-[#6a4e95]">
+        {isAdmin
+          ? "Access the administrative control center."
+          : isIndian
+            ? "We will send an OTP to your WhatsApp number"
+            : "All booking updates will be sent to your email"}
+      </p>
 
-        {/* Method tabs — only shown if not admin */}
-        {!isAdmin && (
-          <div className="mt-5 flex rounded-xl bg-[#f3f0ff] p-1">
-            {isIndian ? (
-              // Indian user: WhatsApp only (matching the original phone tab style)
+      {/* Method tabs — only shown if not admin */}
+      {!isAdmin && (
+        <div className="mt-5 flex rounded-xl bg-[#f3f0ff] p-1">
+          {isIndian ? (
+            // Indian user: WhatsApp only (matching the original phone tab style)
+            <button
+              type="button"
+              className="flex-1 flex items-center justify-center gap-2 rounded-lg py-2 text-sm font-semibold transition-all text-[#6869F9] bg-white shadow-sm"
+            >
+              <WhatsappIcon />
+              WhatsApp OTP
+            </button>
+          ) : (
+            // Foreign user: Email only
+            <button
+              type="button"
+              className="flex-1 flex items-center justify-center gap-2 rounded-lg py-2 text-sm font-semibold transition-all text-[#6869F9] bg-white shadow-sm"
+            >
+              <MailIcon />
+              Email OTP
+            </button>
+          )}
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="mt-5 space-y-4 flex-1 flex flex-col">
+        <div>
+          <label className="block text-sm font-medium text-[#5a3b8a] mb-1.5">
+            {method === "email" ? "Email" : "WhatsApp Number"}
+          </label>
+          <div className="flex items-center rounded-xl border border-[#d8c9fb] bg-[#fcfaff] px-4 py-3 transition-all duration-300 focus-within:border-[#6869F9] focus-within:ring-2 focus-within:ring-[#ddd1ff]">
+            {method !== "email" && (
+              <span className="mr-2 flex items-center gap-1.5 text-sm font-semibold text-[#6869F9] bg-[#eee9ff] px-2 py-0.5 rounded-md">
+                <Image src="/images/flag.png" alt="India Flag" width={20} height={14} className="rounded-[2px] object-cover" />
+                +{DEFAULT_COUNTRY.dialCode}
+              </span>
+            )}
+            <input
+              id="login-input"
+              type={method === "email" ? "email" : "tel"}
+              inputMode={method === "email" ? "email" : "numeric"}
+              autoComplete={method === "email" ? "email" : "tel"}
+              value={value}
+              onChange={(event) => setValue(event.target.value)}
+              placeholder={placeholder}
+              maxLength={method === "email" ? undefined : 16}
+              className="w-full bg-transparent text-base text-[#342151] outline-none placeholder:text-[#a288cf]"
+            />
+            {value && (
               <button
                 type="button"
-                className="flex-1 flex items-center justify-center gap-2 rounded-lg py-2 text-sm font-semibold transition-all text-[#6869F9] bg-white shadow-sm"
+                onClick={() => setValue("")}
+                className="ml-2 text-[#a288cf] hover:text-[#6869F9] transition-colors"
+                aria-label="Clear input"
               >
-                <WhatsappIcon />
-                WhatsApp OTP
-              </button>
-            ) : (
-              // Foreign user: Email only
-              <button
-                type="button"
-                className="flex-1 flex items-center justify-center gap-2 rounded-lg py-2 text-sm font-semibold transition-all text-[#6869F9] bg-white shadow-sm"
-              >
-                <MailIcon />
-                Email OTP
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
               </button>
             )}
+          </div>
+        </div>
+
+        {method === "email" && isAdmin && (
+          <div>
+            <label className="block text-sm font-medium text-[#5a3b8a] mb-1.5">
+              Password
+            </label>
+            <div className="relative flex items-center rounded-xl border border-[#d8c9fb] bg-[#faf8ff] px-4 py-3 transition-all duration-300 focus-within:border-[#6869F9] focus-within:ring-2 focus-within:ring-[#e0dcff]">
+              <input
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                placeholder="Enter your password"
+                className="w-full bg-transparent text-base text-[#342151] outline-none placeholder:text-[#a288cf] pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 p-1 text-[#a288cf] hover:text-[#5a3b8a] transition-colors"
+              >
+                {showPassword ? (
+                  <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24M1 1l22 22" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                ) : (
+                  <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                )}
+              </button>
+            </div>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="mt-5 space-y-4 flex-1 flex flex-col">
-          <div>
-            <label className="block text-sm font-medium text-[#5a3b8a] mb-1.5">
-              {method === "email" ? "Email" : "WhatsApp Number"}
-            </label>
-            <div className="flex items-center rounded-xl border border-[#d8c9fb] bg-[#fcfaff] px-4 py-3 transition-all duration-300 focus-within:border-[#6869F9] focus-within:ring-2 focus-within:ring-[#ddd1ff]">
-              {method !== "email" && (
-                <span className="mr-2 flex items-center gap-1.5 text-sm font-semibold text-[#6869F9] bg-[#eee9ff] px-2 py-0.5 rounded-md">
-                  <Image src="/images/flag.png" alt="India Flag" width={20} height={14} className="rounded-[2px] object-cover" />
-                  +{DEFAULT_COUNTRY.dialCode}
-                </span>
-              )}
-              <input
-                id="login-input"
-                type={method === "email" ? "email" : "tel"}
-                inputMode={method === "email" ? "email" : "numeric"}
-                autoComplete={method === "email" ? "email" : "tel"}
-                value={value}
-                onChange={(event) => setValue(event.target.value)}
-                placeholder={placeholder}
-                maxLength={method === "email" ? undefined : 16}
-                className="w-full bg-transparent text-base text-[#342151] outline-none placeholder:text-[#a288cf]"
-              />
-              {value && (
-                <button
-                  type="button"
-                  onClick={() => setValue("")}
-                  className="ml-2 text-[#a288cf] hover:text-[#6869F9] transition-colors"
-                  aria-label="Clear input"
-                >
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                  </svg>
-                </button>
-              )}
-            </div>
+        {error && (
+          <p className="rounded-lg bg-red-50 px-3 py-2 text-center text-sm font-medium text-red-500">
+            {error}
+          </p>
+        )}
+
+        {method === "email" && isAdmin && (
+          <div className="flex justify-end">
+            <Link
+              href="/auth/forgot-password"
+              className="text-sm font-medium text-[#6869F9] transition-colors duration-300 hover:text-[#5657e8]"
+            >
+              Forgot password?
+            </Link>
           </div>
+        )}
 
-          {method === "email" && isAdmin && (
-            <div>
-              <label className="block text-sm font-medium text-[#5a3b8a] mb-1.5">
-                Password
-              </label>
-              <div className="relative flex items-center rounded-xl border border-[#d8c9fb] bg-[#faf8ff] px-4 py-3 transition-all duration-300 focus-within:border-[#6869F9] focus-within:ring-2 focus-within:ring-[#e0dcff]">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(event) => setPassword(event.target.value)}
-                  placeholder="Enter your password"
-                  className="w-full bg-transparent text-base text-[#342151] outline-none placeholder:text-[#a288cf] pr-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 p-1 text-[#a288cf] hover:text-[#5a3b8a] transition-colors"
-                >
-                  {showPassword ? (
-                    <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5">
-                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24M1 1l22 22" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  ) : (
-                    <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5">
-                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                      <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  )}
-                </button>
-              </div>
-            </div>
+        <div className="flex-1" />
+
+        <button
+          id="login-submit-btn"
+          type="submit"
+          disabled={!isValid || loading}
+          className={`w-full rounded-xl px-4 py-3.5 text-base font-semibold text-white transition-all duration-500 ${isValid && !loading
+            ? "shadow-[0_10px_24px_rgba(104,105,249,0.35)] hover:brightness-110"
+            : "cursor-not-allowed opacity-50"
+            }`}
+          style={
+            isValid && !loading
+              ? { background: "linear-gradient(135deg, #6869F9 0%, #4546d4 100%)" }
+              : { background: "#c4b8f0" }
+          }
+        >
+          {loading ? (
+            <span className="flex items-center justify-center gap-2">
+              <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+              Processing...
+            </span>
+          ) : isAdmin ? (
+            "Sign In"
+          ) : (
+            "Get OTP"
           )}
+        </button>
 
-          {error && (
-            <p className="rounded-lg bg-red-50 px-3 py-2 text-center text-sm font-medium text-red-500">
-              {error}
-            </p>
-          )}
-
-          {method === "email" && isAdmin && (
-            <div className="flex justify-end">
-              <Link
-                href="/auth/forgot-password"
-                className="text-sm font-medium text-[#6869F9] transition-colors duration-300 hover:text-[#5657e8]"
-              >
-                Forgot password?
-              </Link>
-            </div>
-          )}
-
-          <div className="flex-1" />
-
-          <button
-            id="login-submit-btn"
-            type="submit"
-            disabled={!isValid || loading}
-            className={`w-full rounded-xl px-4 py-3.5 text-base font-semibold text-white transition-all duration-500 ${isValid && !loading
-              ? "shadow-[0_10px_24px_rgba(104,105,249,0.35)] hover:brightness-110"
-              : "cursor-not-allowed opacity-50"
-              }`}
-            style={
-              isValid && !loading
-                ? { background: "linear-gradient(135deg, #6869F9 0%, #4546d4 100%)" }
-                : { background: "#c4b8f0" }
-            }
-          >
-            {loading ? (
-              <span className="flex items-center justify-center gap-2">
-                <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                </svg>
-                Processing...
-              </span>
-            ) : isAdmin ? (
-              "Sign In"
-            ) : (
-              "Get OTP"
-            )}
-          </button>
-
-          {!isAdmin && (
-            <p className="text-center text-xs text-[#9b7ec8]">
-              By proceeding you agree to the{" "}
-              <Link href="/terms" className="font-semibold text-[#6869F9] hover:underline">
-                Terms &amp; Conditions
-              </Link>{" "}
-              and{" "}
-              <Link href="/privacy" className="font-semibold text-[#6869F9] hover:underline">
-                Privacy Policy
-              </Link>{" "}
-              of AstroVed
-            </p>
-          )}
-        </form>
+        {!isAdmin && (
+          <p className="text-center text-xs text-[#9b7ec8]">
+            By proceeding you agree to the{" "}
+            <Link href="/terms" className="font-semibold text-[#6869F9] hover:underline">
+              Terms &amp; Conditions
+            </Link>{" "}
+            and{" "}
+            <Link href="/privacy" className="font-semibold text-[#6869F9] hover:underline">
+              Privacy Policy
+            </Link>{" "}
+            of AstroVed
+          </p>
+        )}
+      </form>
     </div>
   );
 }

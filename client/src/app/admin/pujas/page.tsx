@@ -108,9 +108,9 @@ export default function AdminPujasPage() {
     { name: "ritualSummary", label: "Ritual Summary", type: "textarea" },
     { name: "about", label: "About Puja", type: "textarea" },
     { name: "templeLocation", label: "Temple Location (Details Section)", type: "text" },
-    { 
-      name: "gallery", 
-      label: "Gallery Image URLs", 
+    {
+      name: "gallery",
+      label: "Gallery Image URLs",
       type: "array-string",
       placeholder: "https://example.com/image.jpg"
     },
@@ -173,7 +173,7 @@ export default function AdminPujasPage() {
       name: "recommendedHomaIds",
       label: "Select Recommended Homas",
       type: "reference-array",
-      referenceEndpoint: "http://localhost:5000/api/homas",
+      referenceEndpoint: "https://priest-service.onrender.com//api/homas",
       referenceLabelField: "title"
     },
     {

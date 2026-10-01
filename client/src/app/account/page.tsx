@@ -47,7 +47,7 @@ export default function AccountPage() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [formData, setFormData] = useState<User>({});
   const [saving, setSaving] = useState(false);
-  
+
   const [wishlistItems, setWishlistItems] = useState<any[]>([]);
   const [loadingWishlist, setLoadingWishlist] = useState(false);
 
@@ -88,7 +88,7 @@ export default function AccountPage() {
     }
     setIsSubmittingHelp(true);
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:5000";
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "https://priest-service.onrender.com/";
       const apiUrl = process.env.NEXT_PUBLIC_API_CUSTOMERQUERIES || "/api/customerQueries";
 
       const res = await fetch(`${baseUrl}${apiUrl}`, {
@@ -141,7 +141,7 @@ export default function AccountPage() {
     }
     setIsSendingOtp(true);
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:5000";
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "https://priest-service.onrender.com/";
       const sendUrl = process.env.NEXT_PUBLIC_API_OTP_SEND || "/api/otp/sendOtp";
 
       const res = await fetch(`${baseUrl}${sendUrl}`, {
@@ -171,7 +171,7 @@ export default function AccountPage() {
 
     setIsVerifyingOtp(true);
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:5000";
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "https://priest-service.onrender.com/";
       const verifyUrl = process.env.NEXT_PUBLIC_API_OTP_VERIFY || "/api/otp/verifyOtp";
 
       const res = await fetch(`${baseUrl}${verifyUrl}`, {
@@ -223,7 +223,7 @@ export default function AccountPage() {
     if (!user || (!user.id && !user._id)) return;
     setLoadingWishlist(true);
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:5000";
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "https://priest-service.onrender.com/";
       const res = await fetch(`${baseUrl}/api/wishlist/${user.id || user._id}`);
       const data = await res.json();
       if (data.success && data.data) {
@@ -244,7 +244,7 @@ export default function AccountPage() {
 
   const handleLogout = async () => {
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:5000"}/api/auth/logout`, { method: "POST" });
+      await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "https://priest-service.onrender.com/"}/api/auth/logout`, { method: "POST" });
     } catch {
       // ignore
     }
@@ -257,7 +257,7 @@ export default function AccountPage() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.PUBLIC_BASE_URL || "http://localhost:5000";
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.PUBLIC_BASE_URL || "https://priest-service.onrender.com/";
       const updateUrl = process.env.NEXT_PUBLIC_API_USER_UPDATE || "/api/users/updateProfile";
 
       const res = await fetch(`${baseUrl}${updateUrl}`, {
@@ -293,7 +293,7 @@ export default function AccountPage() {
   const handleSaveAddress = async () => {
     if (!user) return;
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:5000";
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "https://priest-service.onrender.com/";
 
       const newAddress = {
         type: addressFormData.type,
@@ -359,7 +359,7 @@ export default function AccountPage() {
     if (!window.confirm("Are you sure to delete the address?")) return;
 
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:5000";
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "https://priest-service.onrender.com/";
 
       const updatedAddresses = (user.addresses || []).filter((a: Address) => a._id !== addressId && a.id !== addressId);
 
@@ -1241,18 +1241,18 @@ export default function AccountPage() {
                             {/* Top Image Section */}
                             <div className="relative h-44 bg-[#6e1e12] overflow-hidden flex flex-col justify-center p-4">
                               {/* Background Image */}
-                              <img 
-                                src={item.image?.startsWith("http") ? item.image : `/${item.image}`} 
-                                alt={item.name} 
+                              <img
+                                src={item.image?.startsWith("http") ? item.image : `/${item.image}`}
+                                alt={item.name}
                                 className="absolute right-0 top-0 bottom-0 w-1/2 object-cover opacity-80"
                               />
                               <div className="absolute inset-0 bg-gradient-to-r from-[#6e1e12] via-[#6e1e12]/80 to-transparent"></div>
 
                               {/* Heart Icon (Remove) */}
-                              <button 
+                              <button
                                 onClick={async () => {
                                   try {
-                                    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:5000";
+                                    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "https://priest-service.onrender.com/";
                                     await fetch(`${baseUrl}/api/wishlist/updateWishlist`, {
                                       method: "POST",
                                       headers: { "Content-Type": "application/json" },
@@ -1289,7 +1289,7 @@ export default function AccountPage() {
                               <h3 className="text-[13px] font-extrabold text-gray-900 leading-tight mb-2 line-clamp-2">
                                 {item.name}
                               </h3>
-                              
+
                               <div className="flex items-start gap-1.5 text-[11px] text-gray-500 font-medium mb-4">
                                 <svg className="w-3.5 h-3.5 shrink-0 mt-0.5 text-[#701a28]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />

@@ -15,12 +15,12 @@ export default function WishlistButton({ itemId, className, iconClassName }: Wis
 
   useEffect(() => {
     if (user && (user.id || user._id) && itemId) {
-      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:5000";
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "https://priest-service.onrender.com/";
       fetch(`${baseUrl}/api/wishlist/${user.id || user._id}`)
         .then(res => res.json())
         .then(data => {
           if (data.success && data.data && Array.isArray(data.data)) {
-            const isW = data.data.some((item: any) => 
+            const isW = data.data.some((item: any) =>
               item.serviceId === itemId
             );
             setIsWishlisted(isW);
@@ -36,13 +36,13 @@ export default function WishlistButton({ itemId, className, iconClassName }: Wis
       alert("Please login to add to wishlist");
       return;
     }
-    
+
     if (!itemId) return;
 
     const action = isWishlisted ? "remove" : "add";
-    
+
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:5000";
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "https://priest-service.onrender.com/";
       const res = await fetch(`${baseUrl}/api/wishlist/updateWishlist`, {
         method: "POST",
         headers: {
@@ -54,7 +54,7 @@ export default function WishlistButton({ itemId, className, iconClassName }: Wis
           action,
         }),
       });
-      
+
       const data = await res.json();
       if (data.success) {
         setIsWishlisted(!isWishlisted);

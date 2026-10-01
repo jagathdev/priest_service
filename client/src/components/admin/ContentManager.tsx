@@ -31,19 +31,19 @@ interface Field {
   name: string;
   label: string;
   type:
-    | "text"
-    | "textarea"
-    | "url"
-    | "number"
-    | "date"
-    | "date-ddmmyyyy"
-    | "datetime-local"
-    | "json"
-    | "array-string"
-    | "array-object"
-    | "reference-array"
-    | "section-order"
-    | "select";
+  | "text"
+  | "textarea"
+  | "url"
+  | "number"
+  | "date"
+  | "date-ddmmyyyy"
+  | "datetime-local"
+  | "json"
+  | "array-string"
+  | "array-object"
+  | "reference-array"
+  | "section-order"
+  | "select";
   required?: boolean;
   placeholder?: string;
   options?: string[];
@@ -104,7 +104,7 @@ export default function ContentManager({
   const [draggedItemIndex, setDraggedItemIndex] = useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [viewingReview, setViewingReview] = useState<any | null>(null);
-  const [currencyRates, setCurrencyRates] = useState<{usd: number, myr: number} | null>(null);
+  const [currencyRates, setCurrencyRates] = useState<{ usd: number, myr: number } | null>(null);
 
   const effectiveFilterGroups = useMemo(() => {
     if (type !== "puja" || !dynamicPujaLocationFromItems) {
@@ -162,11 +162,11 @@ export default function ContentManager({
 
   useEffect(() => {
     fetchItems();
-    
+
     // Fetch currency settings
     // API removed based on user request
     /*
-    fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:5000"}/api/admin/content?type=currency`)
+    fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "https://priest-service.onrender.com/"}/api/admin/content?type=currency`)
       .then(async (res) => {
         if (!res.ok) return null;
         const text = await res.text();
@@ -205,7 +205,7 @@ export default function ContentManager({
   }, [type]);
 
   const getEndpoint = (itemType: string, id?: string | null): string => {
-    const expressBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+    const expressBase = process.env.NEXT_PUBLIC_API_URL || "https://priest-service.onrender.com//api";
     if (itemType === "puja") {
       return id ? `${expressBase}/pujas/${id}` : `${expressBase}/pujas`;
     }
@@ -245,7 +245,7 @@ export default function ContentManager({
     const { name, value } = e.target;
     setFormData((prev: any) => {
       const next = { ...prev, [name]: value };
-      
+
       // Auto-calculate currencies
       if (currencyRates && name.endsWith("INR")) {
         const baseName = name.replace(/INR$/, "");
@@ -253,16 +253,16 @@ export default function ContentManager({
         if (!isNaN(valNum) && valNum > 0) {
           const usdField = baseName + "USD";
           const myrField = baseName + "MYR";
-          
+
           if (fields.some(f => f.name === usdField)) {
-             next[usdField] = (valNum * currencyRates.usd).toFixed(2);
+            next[usdField] = (valNum * currencyRates.usd).toFixed(2);
           }
           if (fields.some(f => f.name === myrField)) {
-             next[myrField] = (valNum * currencyRates.myr).toFixed(2);
+            next[myrField] = (valNum * currencyRates.myr).toFixed(2);
           }
         }
       }
-      
+
       return next;
     });
   };
@@ -272,17 +272,17 @@ export default function ContentManager({
       const arr = Array.isArray(prev[fieldName]) ? [...prev[fieldName]] : [];
       if (subField) {
         const itemObj = { ...arr[index], [subField]: value };
-        
+
         // Auto-calculate for array objects (e.g. packages)
         if (currencyRates && subField.endsWith("INR")) {
-           const baseName = subField.replace(/INR$/, "");
-           const valNum = Number(value);
-           if (!isNaN(valNum) && valNum > 0) {
-               itemObj[baseName + "USD"] = (valNum * currencyRates.usd).toFixed(2);
-               itemObj[baseName + "MYR"] = (valNum * currencyRates.myr).toFixed(2);
-           }
+          const baseName = subField.replace(/INR$/, "");
+          const valNum = Number(value);
+          if (!isNaN(valNum) && valNum > 0) {
+            itemObj[baseName + "USD"] = (valNum * currencyRates.usd).toFixed(2);
+            itemObj[baseName + "MYR"] = (valNum * currencyRates.myr).toFixed(2);
+          }
         }
-        
+
         arr[index] = itemObj;
       } else {
         arr[index] = value;
@@ -400,7 +400,7 @@ export default function ContentManager({
       }
 
       if (field.type === "array-object") {
-        payload[field.name] = (formData[field.name] || []).filter((v: any) => 
+        payload[field.name] = (formData[field.name] || []).filter((v: any) =>
           v && typeof v === "object" && Object.values(v).some(val => val !== "" && val !== null && val !== undefined)
         );
         continue;
@@ -433,7 +433,7 @@ export default function ContentManager({
 
     setSubmitting(true);
     try {
-      const expressBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+      const expressBase = process.env.NEXT_PUBLIC_API_URL || "https://priest-service.onrender.com//api";
       const endpoint = editingId
         ? getEndpoint(type, editingId)
         : (type === "hero-banner" || type === "home-banner" || type === "heroBanner"
@@ -458,7 +458,7 @@ export default function ContentManager({
 
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this item?")) return;
-    
+
     try {
       const endpoint = getEndpoint(type, id);
       const res = await fetch(endpoint, {
@@ -549,11 +549,10 @@ export default function ContentManager({
           {(!hideAddButton || isAdding) && (
             <button
               onClick={handleOpenAdd}
-              className={`flex items-center rounded-md px-4 py-2 text-sm font-medium text-white ${
-                isAdding
+              className={`flex items-center rounded-md px-4 py-2 text-sm font-medium text-white ${isAdding
                   ? "bg-gray-500 hover:bg-gray-600"
                   : "bg-[#6869F9] hover:bg-[#5657e8]"
-              }`}
+                }`}
             >
               {isAdding ? "Cancel" : <><PlusIcon className="mr-2 h-5 w-5" /> Add New</>}
             </button>
@@ -642,7 +641,7 @@ export default function ContentManager({
                   <label htmlFor={field.name} className="block text-sm font-medium text-gray-700 mb-1">
                     {field.label}
                   </label>
-                  
+
                   {field.type === "date-ddmmyyyy" ? (
                     <input
                       type="date"
@@ -919,11 +918,10 @@ export default function ContentManager({
                                 });
                                 if (res.ok) fetchItems();
                               }}
-                              className={`rounded-md border px-2 py-1 text-xs font-semibold ${
-                                item.approved
+                              className={`rounded-md border px-2 py-1 text-xs font-semibold ${item.approved
                                   ? "border-red-300 text-red-600 hover:bg-red-50"
                                   : "border-green-400 text-green-700 hover:bg-green-50"
-                              }`}
+                                }`}
                             >
                               {item.approved ? "Unapprove" : "Approve"}
                             </button>
@@ -999,11 +997,10 @@ export default function ContentManager({
                   <button
                     key={page}
                     onClick={() => setCurrentPage(page)}
-                    className={`rounded-md border px-3 py-1.5 text-sm ${
-                      page === currentPage
+                    className={`rounded-md border px-3 py-1.5 text-sm ${page === currentPage
                         ? "border-[#6869F9] bg-[#6869F9] text-white"
                         : "border-gray-300 text-gray-700 hover:bg-gray-50"
-                    }`}
+                      }`}
                   >
                     {page}
                   </button>
@@ -1049,12 +1046,11 @@ export default function ContentManager({
                 onClick={async () => {
                   const nextStatus = viewingReview.approved ? false : true;
                   const payload = { ...viewingReview, approved: nextStatus }; delete payload._id;
-                  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:5000"}/api/admin/content?type=${type}&id=${viewingReview._id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+                  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "https://priest-service.onrender.com/"}/api/admin/content?type=${type}&id=${viewingReview._id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
                   if (res.ok) { fetchItems(); setViewingReview({ ...viewingReview, approved: nextStatus }); }
                 }}
-                className={`rounded-md border px-4 py-1.5 text-sm font-semibold ${
-                  viewingReview.approved ? "border-red-300 text-red-600 hover:bg-red-50" : "border-green-400 text-green-700 hover:bg-green-50"
-                }`}
+                className={`rounded-md border px-4 py-1.5 text-sm font-semibold ${viewingReview.approved ? "border-red-300 text-red-600 hover:bg-red-50" : "border-green-400 text-green-700 hover:bg-green-50"
+                  }`}
               >
                 {viewingReview.approved ? "Unapprove" : "Approve"}
               </button>

@@ -477,14 +477,14 @@ export default function PujaPage() {
 
   // Fetch all pujas from Express API
   useEffect(() => {
-    fetch("http://localhost:5000/api/pujas")
+    fetch("https://priest-service.onrender.com//api/pujas")
       .then((r) => (r.ok ? r.json() : null))
       .then((resData) => {
         const rawList = resData?.data && Array.isArray(resData.data)
           ? resData.data
           : Array.isArray(resData)
-          ? resData
-          : [];
+            ? resData
+            : [];
         const activeList = rawList.filter((item: any) => !item.status || item.status === "active");
         setAllPujas(activeList);
       })

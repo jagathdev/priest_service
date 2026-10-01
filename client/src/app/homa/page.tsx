@@ -55,14 +55,14 @@ export default function HomaPage() {
 
   // Fetch homas from Express API endpoint
   useEffect(() => {
-    fetch("http://localhost:5000/api/homas")
+    fetch("https://priest-service.onrender.com//api/homas")
       .then((r) => (r.ok ? r.json() : null))
       .then((resData) => {
         const rawList = resData?.data && Array.isArray(resData.data)
           ? resData.data
           : Array.isArray(resData)
-          ? resData
-          : [];
+            ? resData
+            : [];
         const activeList = rawList.filter((item: any) => !item.status || item.status === "active");
         setAllHomas(activeList);
       })

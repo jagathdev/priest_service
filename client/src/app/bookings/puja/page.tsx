@@ -34,7 +34,7 @@ export default function MyPujaBookings() {
   const [filter, setFilter] = useState("All");
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:5000"}/api/bookings/me?type=puja`)
+    fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "https://priest-service.onrender.com/"}/api/bookings/me?type=puja`)
       .then((res) => res.json())
       .then((data) => {
         if (data.success) {
@@ -55,7 +55,7 @@ export default function MyPujaBookings() {
 
   const handleLogout = async () => {
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:5000"}/api/auth/logout`, { method: "POST" });
+      await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "https://priest-service.onrender.com/"}/api/auth/logout`, { method: "POST" });
     } catch {
       // ignore
     }
@@ -307,7 +307,7 @@ export default function MyPujaBookings() {
                             {/* Background lines */}
                             <div className="absolute top-6 left-12 right-1/2 h-[3px] bg-[#eadecd] -z-10"></div>
                             <div className="absolute top-6 left-1/2 right-14 h-[3px] bg-[#eadecd] -z-10"></div>
-                            
+
                             <div className="flex justify-between items-start text-center">
                               {/* Step 1 */}
                               <div className="flex flex-col items-center w-24">

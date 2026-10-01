@@ -15,7 +15,7 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:5000"}/api/admin/stats`)
+    fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "https://priest-service.onrender.com/"}/api/admin/stats`)
       .then((res) => res.json())
       .then((resData) => {
         if (resData.success && resData.data) {
@@ -156,11 +156,10 @@ export default function AdminDashboard() {
                       ₹{booking.pricing?.total || booking.amount || 0}
                     </td>
                     <td className="px-4 py-3">
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${
-                        (booking.paymentStatus || booking.orderStatus) === "paid" || (booking.paymentStatus || booking.orderStatus) === "completed"
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${(booking.paymentStatus || booking.orderStatus) === "paid" || (booking.paymentStatus || booking.orderStatus) === "completed"
                           ? "bg-green-100 text-green-700"
                           : "bg-blue-100 text-blue-700"
-                      }`}>
+                        }`}>
                         {booking.orderStatus || booking.paymentStatus || "Confirmed"}
                       </span>
                     </td>
