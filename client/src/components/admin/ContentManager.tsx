@@ -166,7 +166,7 @@ export default function ContentManager({
     // Fetch currency settings
     // API removed based on user request
     /*
-    fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "https://priest-service.onrender.com/"}/api/admin/content?type=currency`)
+    fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "https://priest-service.onrender.com"}/api/admin/content?type=currency`)
       .then(async (res) => {
         if (!res.ok) return null;
         const text = await res.text();
@@ -205,7 +205,7 @@ export default function ContentManager({
   }, [type]);
 
   const getEndpoint = (itemType: string, id?: string | null): string => {
-    const expressBase = process.env.NEXT_PUBLIC_API_URL || "https://priest-service.onrender.com//api";
+    const expressBase = process.env.NEXT_PUBLIC_API_URL || "https://priest-service.onrender.com/api";
     if (itemType === "puja") {
       return id ? `${expressBase}/pujas/${id}` : `${expressBase}/pujas`;
     }
@@ -433,7 +433,7 @@ export default function ContentManager({
 
     setSubmitting(true);
     try {
-      const expressBase = process.env.NEXT_PUBLIC_API_URL || "https://priest-service.onrender.com//api";
+      const expressBase = process.env.NEXT_PUBLIC_API_URL || "https://priest-service.onrender.com/api";
       const endpoint = editingId
         ? getEndpoint(type, editingId)
         : (type === "hero-banner" || type === "home-banner" || type === "heroBanner"
@@ -550,8 +550,8 @@ export default function ContentManager({
             <button
               onClick={handleOpenAdd}
               className={`flex items-center rounded-md px-4 py-2 text-sm font-medium text-white ${isAdding
-                  ? "bg-gray-500 hover:bg-gray-600"
-                  : "bg-[#6869F9] hover:bg-[#5657e8]"
+                ? "bg-gray-500 hover:bg-gray-600"
+                : "bg-[#6869F9] hover:bg-[#5657e8]"
                 }`}
             >
               {isAdding ? "Cancel" : <><PlusIcon className="mr-2 h-5 w-5" /> Add New</>}
@@ -919,8 +919,8 @@ export default function ContentManager({
                                 if (res.ok) fetchItems();
                               }}
                               className={`rounded-md border px-2 py-1 text-xs font-semibold ${item.approved
-                                  ? "border-red-300 text-red-600 hover:bg-red-50"
-                                  : "border-green-400 text-green-700 hover:bg-green-50"
+                                ? "border-red-300 text-red-600 hover:bg-red-50"
+                                : "border-green-400 text-green-700 hover:bg-green-50"
                                 }`}
                             >
                               {item.approved ? "Unapprove" : "Approve"}
@@ -998,8 +998,8 @@ export default function ContentManager({
                     key={page}
                     onClick={() => setCurrentPage(page)}
                     className={`rounded-md border px-3 py-1.5 text-sm ${page === currentPage
-                        ? "border-[#6869F9] bg-[#6869F9] text-white"
-                        : "border-gray-300 text-gray-700 hover:bg-gray-50"
+                      ? "border-[#6869F9] bg-[#6869F9] text-white"
+                      : "border-gray-300 text-gray-700 hover:bg-gray-50"
                       }`}
                   >
                     {page}
@@ -1046,7 +1046,7 @@ export default function ContentManager({
                 onClick={async () => {
                   const nextStatus = viewingReview.approved ? false : true;
                   const payload = { ...viewingReview, approved: nextStatus }; delete payload._id;
-                  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "https://priest-service.onrender.com/"}/api/admin/content?type=${type}&id=${viewingReview._id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+                  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "https://priest-service.onrender.com"}/api/admin/content?type=${type}&id=${viewingReview._id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
                   if (res.ok) { fetchItems(); setViewingReview({ ...viewingReview, approved: nextStatus }); }
                 }}
                 className={`rounded-md border px-4 py-1.5 text-sm font-semibold ${viewingReview.approved ? "border-red-300 text-red-600 hover:bg-red-50" : "border-green-400 text-green-700 hover:bg-green-50"

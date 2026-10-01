@@ -137,7 +137,7 @@ export default function PujaDetailClient({
           return;
         }
 
-        const res = await fetch(`https://priest-service.onrender.com//api/pujas`);
+        const res = await fetch(`https://priest-service.onrender.com/api/pujas`);
         if (!res.ok) {
           setPuja(null);
           return;

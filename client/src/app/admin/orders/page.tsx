@@ -23,7 +23,7 @@ export default function AdminOrdersPage() {
 
   useEffect(() => {
     // Fetch bookings & orders
-    fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "https://priest-service.onrender.com/"}/api/admin/orders`)
+    fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "https://priest-service.onrender.com"}/api/admin/orders`)
       .then((res) => (res.ok ? res.json() : []))
       .then((data) => {
         if (Array.isArray(data) && data.length > 0) {
@@ -135,8 +135,8 @@ export default function AdminOrdersPage() {
                     <td className="px-6 py-4 font-extrabold text-gray-900">₹{ord.amount || ord.price || 500}</td>
                     <td className="px-6 py-4">
                       <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase ${ord.status === "completed"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-blue-100 text-blue-700"
+                        ? "bg-green-100 text-green-700"
+                        : "bg-blue-100 text-blue-700"
                         }`}>
                         {ord.status || "confirmed"}
                       </span>

@@ -55,7 +55,7 @@ export default function HomaPage() {
 
   // Fetch homas from Express API endpoint
   useEffect(() => {
-    fetch("https://priest-service.onrender.com//api/homas")
+    fetch("https://priest-service.onrender.com/api/homas")
       .then((r) => (r.ok ? r.json() : null))
       .then((resData) => {
         const rawList = resData?.data && Array.isArray(resData.data)

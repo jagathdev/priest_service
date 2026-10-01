@@ -15,7 +15,7 @@ export default function WishlistButton({ itemId, className, iconClassName }: Wis
 
   useEffect(() => {
     if (user && (user.id || user._id) && itemId) {
-      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "https://priest-service.onrender.com/";
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "https://priest-service.onrender.com";
       fetch(`${baseUrl}/api/wishlist/${user.id || user._id}`)
         .then(res => res.json())
         .then(data => {
@@ -42,7 +42,7 @@ export default function WishlistButton({ itemId, className, iconClassName }: Wis
     const action = isWishlisted ? "remove" : "add";
 
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "https://priest-service.onrender.com/";
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "https://priest-service.onrender.com";
       const res = await fetch(`${baseUrl}/api/wishlist/updateWishlist`, {
         method: "POST",
         headers: {

@@ -81,7 +81,7 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
     setLoading(true);
 
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priest-service.onrender.com/";
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priest-service.onrender.com";
       const sendOtpUrl = process.env.NEXT_PUBLIC_API_OTP_SEND || "/api/otp/sendOtp";
 
       const res = await fetch(`${baseUrl}${sendOtpUrl}`, {
@@ -140,7 +140,7 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
     setLoading(true);
 
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priest-service.onrender.com/";
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priest-service.onrender.com";
       const verifyOtpUrl = process.env.NEXT_PUBLIC_API_OTP_VERIFY || "/api/otp/verifyOtp";
 
       const res = await fetch(`${baseUrl}${verifyOtpUrl}`, {
@@ -202,7 +202,7 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
     setError("");
     setLoading(true);
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priest-service.onrender.com/";
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priest-service.onrender.com";
       const sendOtpUrl = process.env.NEXT_PUBLIC_API_OTP_SEND || "/api/otp/sendOtp";
 
       await fetch(`${baseUrl}${sendOtpUrl}`, {

@@ -33,7 +33,7 @@ export default function Sidebar() {
 
   const handleLogout = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "https://priest-service.onrender.com/"}/api/admin/logout`, { method: "POST" });
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "https://priest-service.onrender.com"}/api/admin/logout`, { method: "POST" });
       if (res.ok) {
         router.push("/admin/login");
       }
@@ -92,8 +92,8 @@ export default function Sidebar() {
                 href={item.href}
                 onClick={() => setIsOpen(false)}
                 className={`group flex items-center rounded-xl px-3 py-3 text-xs sm:text-sm font-bold transition-all ${isActive
-                    ? "bg-[#e8f5e9] text-[#069e5d]"
-                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                  ? "bg-[#e8f5e9] text-[#069e5d]"
+                  : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                   }`}
               >
                 <item.icon

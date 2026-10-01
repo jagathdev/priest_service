@@ -69,7 +69,7 @@ export default function ReviewsSection() {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "https://priest-service.onrender.com/"}/api/reviews`)
+    fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "https://priest-service.onrender.com"}/api/reviews`)
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) setReviews(data);

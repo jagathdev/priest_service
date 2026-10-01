@@ -477,7 +477,7 @@ export default function PujaPage() {
 
   // Fetch all pujas from Express API
   useEffect(() => {
-    fetch("https://priest-service.onrender.com//api/pujas")
+    fetch("https://priest-service.onrender.com/api/pujas")
       .then((r) => (r.ok ? r.json() : null))
       .then((resData) => {
         const rawList = resData?.data && Array.isArray(resData.data)

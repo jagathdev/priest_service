@@ -144,7 +144,7 @@ export default function HomaDetailClient({
           return;
         }
 
-        const res = await fetch(`https://priest-service.onrender.com//api/homas`);
+        const res = await fetch(`https://priest-service.onrender.com/api/homas`);
         if (!res.ok) {
           setHoma(null);
           return;
@@ -481,8 +481,8 @@ export default function HomaDetailClient({
                     aria-label="Add to wishlist"
                     onClick={() => setIsWishlisted(!isWishlisted)}
                     className={`border rounded-full px-3.5 py-1.5 flex items-center justify-center gap-1.5 font-bold text-xs transition-all active:scale-95 shadow-xs ${isWishlisted
-                        ? "border-red-500 bg-red-50 text-red-600"
-                        : "border-stone-300 hover:border-stone-400 bg-white text-stone-700"
+                      ? "border-red-500 bg-red-50 text-red-600"
+                      : "border-stone-300 hover:border-stone-400 bg-white text-stone-700"
                       }`}
                   >
                     <svg className={`w-3.5 h-3.5 ${isWishlisted ? "fill-red-500 stroke-red-500" : "fill-none stroke-current"}`} strokeWidth="2" viewBox="0 0 24 24">
@@ -570,8 +570,8 @@ export default function HomaDetailClient({
                           key={pkg.id}
                           onClick={() => setSelectedPackageId(pkg.id)}
                           className={`relative border-2 rounded-2xl p-3 cursor-pointer transition-all flex items-center gap-3 ${isSelected
-                              ? "border-[#00b050] bg-green-50/50 shadow-xs"
-                              : "border-stone-200 hover:border-stone-300 bg-white"
+                            ? "border-[#00b050] bg-green-50/50 shadow-xs"
+                            : "border-stone-200 hover:border-stone-300 bg-white"
                             }`}
                         >
                           <div className="relative w-11 h-11 rounded-full overflow-hidden shrink-0 border border-stone-200 bg-stone-100">
@@ -665,8 +665,8 @@ export default function HomaDetailClient({
                 }
               }}
               className={`py-4 border-b-2 transition-colors whitespace-nowrap ${activeTab === tab.id
-                  ? "border-[#00b050] text-[#00b050]"
-                  : "border-transparent hover:text-stone-900"
+                ? "border-[#00b050] text-[#00b050]"
+                : "border-transparent hover:text-stone-900"
                 }`}
             >
               {tab.label}
@@ -923,8 +923,8 @@ export default function HomaDetailClient({
                       key={pkg.id}
                       onClick={() => setSelectedPackageId(pkg.id)}
                       className={`border-2 rounded-2xl p-4 cursor-pointer transition-all flex items-center justify-between ${isSelected
-                          ? "border-[#00b050] bg-green-50/50 shadow-xs"
-                          : "border-stone-200 hover:border-stone-400 bg-white"
+                        ? "border-[#00b050] bg-green-50/50 shadow-xs"
+                        : "border-stone-200 hover:border-stone-400 bg-white"
                         }`}
                     >
                       <div>

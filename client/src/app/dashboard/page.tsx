@@ -26,7 +26,7 @@ export default function DashboardPage() {
   const [fetchedPujas, setFetchedPujas] = useState(false);
 
   useEffect(() => {
-    fetch("https://priest-service.onrender.com//api/pujas")
+    fetch("https://priest-service.onrender.com/api/pujas")
       .then((r) => (r.ok ? r.json() : null))
       .then((resData) => {
         const rawList = resData?.data && Array.isArray(resData.data)

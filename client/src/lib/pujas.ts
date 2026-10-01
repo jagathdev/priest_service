@@ -542,7 +542,7 @@ export const normalizePuja = (puja: any, offeringsMap: Record<string, any> = {})
 
 export async function getAllPujas() {
   try {
-    const res = await fetch('https://priest-service.onrender.com//api/pujas', { cache: 'no-store' });
+    const res = await fetch('https://priest-service.onrender.com/api/pujas', { cache: 'no-store' });
     if (res.ok) {
       const resData = await res.json();
       const list = resData?.data && Array.isArray(resData.data) ? resData.data : Array.isArray(resData) ? resData : [];

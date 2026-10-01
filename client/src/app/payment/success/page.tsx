@@ -46,7 +46,7 @@ function SuccessContent() {
 
     async function verifyWithAstroved(attempt: number) {
       try {
-        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priest-service.onrender.com/";
+        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priest-service.onrender.com";
         const res = await fetch(
           `${baseUrl}/api/payments/get-transaction-code?orderId=${encodeURIComponent(shoppingCartId)}`
         );
@@ -84,7 +84,7 @@ function SuccessContent() {
     if (verifyStatus === "pending") return;
 
     savedRef.current = true;
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priest-service.onrender.com/";
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priest-service.onrender.com";
     fetch(`${baseUrl}/api/bookings/create`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
