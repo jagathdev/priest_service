@@ -11,6 +11,7 @@ import connectDB from './config/db.js';
 import userRoutes from './routes/user.routes.js';
 import customerQueryRoutes from './routes/customerQuery.routes.js';
 import paymentRoutes from './routes/payment.routes.js';
+import heroBannerRoutes from './routes/heroBannerRoutes.js';
 
 const app = express();
 
@@ -22,6 +23,7 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
+app.use("/api/hero-banners", heroBannerRoutes);
 app.use('/api/pujas', pujaRoutes);
 app.use('/api/homas', homaRoutes);
 app.use('/api/otp', otpRoutes);

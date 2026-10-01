@@ -137,3 +137,58 @@ export const verifyPayment = async (req, res) => {
         });
     }
 };
+
+export const razorpayWebhookResponse = async (req, res) => {
+    try {
+        const { razorpayres } = req.body;
+
+        if (!razorpayres) {
+            return res.status(400).json({
+                success: false,
+                message: "razorpayres is required",
+            });
+        }
+
+        let razorpayData = razorpayres;
+
+        // If Razorpay response was sent as a JSON string
+        if (typeof razorpayres === "string") {
+            try {
+                razorpayData = JSON.parse(razorpayres);
+            } catch (error) {
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "razorpayres must contain valid JSON",
+                });
+            }
+        }
+
+        console.log(
+            "Razorpay Webhook Response:",
+            JSON.stringify(
+                razorpayData,
+                null,
+                2
+            )
+        );
+
+        return res.status(200).json({
+            success: true,
+            message:
+                "Razorpay webhook response received",
+            data: razorpayData,
+        });
+    } catch (error) {
+        console.error(
+            "Razorpay Webhook Error:",
+            error
+        );
+
+        return res.status(500).json({
+            success: false,
+            message:
+                "Failed to process Razorpay webhook response",
+        });
+    }
+};
