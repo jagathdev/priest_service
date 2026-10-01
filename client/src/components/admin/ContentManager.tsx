@@ -212,6 +212,9 @@ export default function ContentManager({
     if (itemType === "homa") {
       return id ? `${expressBase}/homas/${id}` : `${expressBase}/homas`;
     }
+    if (itemType === "hero-banner" || itemType === "home-banner" || itemType === "heroBanner") {
+      return id ? `${expressBase}/hero-banners/${id}` : `${expressBase}/hero-banners?all=true`;
+    }
     return id ? `/api/admin/content?type=${itemType}&id=${id}` : `/api/admin/content?type=${itemType}`;
   };
 
@@ -328,7 +331,15 @@ export default function ContentManager({
     const draft: Record<string, unknown> = {};
 
     fields.forEach((field) => {
-      const raw = item[field.name];
+      let raw = item[field.name];
+      if (field.name === "ctaText" && item.cta && typeof item.cta === "object") {
+        raw = item.cta.text;
+      } else if (field.name === "ctaUrl" && item.cta && typeof item.cta === "object") {
+        raw = item.cta.url;
+      } else if (field.name === "isActive" && item.isActive !== undefined) {
+        raw = String(item.isActive);
+      }
+
       if (field.type === "json") {
         draft[field.name] = raw === undefined || raw === null ? "" : JSON.stringify(raw, null, 2);
         return;
@@ -410,9 +421,24 @@ export default function ContentManager({
       payload.status = "active";
     }
 
+    if (type === "hero-banner" || type === "home-banner" || type === "heroBanner") {
+      payload.cta = {
+        text: String(formData.ctaText || "Book Puja Now").trim(),
+        url: String(formData.ctaUrl || "/puja").trim(),
+      };
+      if (formData.isActive !== undefined) {
+        payload.isActive = String(formData.isActive) !== "false";
+      }
+    }
+
     setSubmitting(true);
     try {
-      const endpoint = getEndpoint(type, editingId);
+      const expressBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+      const endpoint = editingId
+        ? getEndpoint(type, editingId)
+        : (type === "hero-banner" || type === "home-banner" || type === "heroBanner"
+          ? `${expressBase}/hero-banners`
+          : getEndpoint(type));
 
       const res = await fetch(endpoint, {
         method: editingId ? "PUT" : "POST",
@@ -818,7 +844,7 @@ export default function ContentManager({
       )}
 
       {!isAdding && (
-        <div className="overflow-hidden rounded-lg border border-[#e8e2ff] bg-white shadow-sm">
+        <div className="overflow-x-auto rounded-lg border border-[#e8e2ff] bg-white shadow-sm">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
@@ -835,7 +861,7 @@ export default function ContentManager({
                     </th>
                   ))
                 )}
-                <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">Actions</th>
+                <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 min-w-[200px]">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 bg-white">
@@ -858,19 +884,19 @@ export default function ContentManager({
                       </>
                     ) : (
                       fields.slice(0, 3).map((field) => (
-                        <td key={field.name} className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">
+                        <td key={field.name} className="whitespace-nowrap px-6 py-4 text-sm text-gray-900 max-w-[200px] truncate">
                           {field.type === "url" && item[field.name] ? (
                             <div className="flex items-center">
                               <img src={item[field.name]} alt="" className="h-8 w-8 rounded object-cover mr-2" />
-                              <span className="truncate max-w-37.5">{item[field.name]}</span>
+                              <span className="truncate max-w-[150px]">{item[field.name]}</span>
                             </div>
                           ) : (
-                            <span className="truncate max-w-50 block">{item[field.name]}</span>
+                            <span className="truncate max-w-[200px] block" title={String(item[field.name] ?? "")}>{item[field.name]}</span>
                           )}
                         </td>
                       ))
                     )}
-                    <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
+                    <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium min-w-[200px]">
                       <div className="flex items-center justify-end gap-3">
                         {reviewMode ? (
                           <>
@@ -910,25 +936,28 @@ export default function ContentManager({
                           </>
                         ) : (
                           <>
-                            {(type === "puja" || type === "homa") && (
+                            {(type === "puja" || type === "homa" || type === "home-banner" || type === "hero-banner" || type === "heroBanner") && (
                               <>
-                                <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${item.status === "inactive" ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"}`}>
-                                  {item.status === "inactive" ? "Inactive" : "Active"}
+                                <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${item.status === "inactive" || item.isActive === false ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"}`}>
+                                  {item.status === "inactive" || item.isActive === false ? "Inactive" : "Active"}
                                 </span>
                                 <button
                                   onClick={async () => {
-                                    const nextStatus = item.status === "inactive" ? "active" : "inactive";
-                                    const payload = { ...item, status: nextStatus }; delete payload._id;
-                                    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:5000"}/api/admin/content?type=${type}&id=${item._id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+                                    const isCurrentActive = item.isActive !== false && item.status !== "inactive";
+                                    const nextStatus = isCurrentActive ? false : true;
+                                    const payload = { ...item, isActive: nextStatus, status: isCurrentActive ? "inactive" : "active" }; delete payload._id;
+                                    const res = await fetch(getEndpoint(type, item._id), { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
                                     if (res.ok) fetchItems();
                                   }}
                                   className="rounded-md border border-gray-300 px-2 py-1 text-xs text-gray-700 hover:bg-gray-50"
                                 >
-                                  Mark {item.status === "inactive" ? "Active" : "Inactive"}
+                                  Mark {item.isActive !== false && item.status !== "inactive" ? "Inactive" : "Active"}
                                 </button>
-                                <a href={`/${type}/${item.slug || String(item.title || "").toLowerCase().replace(/[^a-z0-9\s-]/g, "").trim().replace(/\s+/g, "-")}`} target="_blank" rel="noreferrer" className="text-[#000000] hover:text-[#4647c4]" title={`View ${type}`}>
-                                  <EyeIcon className="h-5 w-5" />
-                                </a>
+                                {(type === "puja" || type === "homa") && (
+                                  <a href={`/${type}/${item.slug || String(item.title || "").toLowerCase().replace(/[^a-z0-9\s-]/g, "").trim().replace(/\s+/g, "-")}`} target="_blank" rel="noreferrer" className="text-[#000000] hover:text-[#4647c4]" title={`View ${type}`}>
+                                    <EyeIcon className="h-5 w-5" />
+                                  </a>
+                                )}
                               </>
                             )}
                             {type === "chadhava" && (

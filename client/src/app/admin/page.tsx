@@ -6,28 +6,35 @@ import { SparklesIcon, FireIcon, ShoppingBagIcon, BanknotesIcon } from "@heroico
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({
-    pujas: 12,
-    homas: 10,
-    orders: 48,
-    revenue: 24580,
+    pujas: 0,
+    homas: 0,
+    orders: 0,
+    revenue: 0,
   });
+  const [recentBookings, setRecentBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:5000"}/api/admin/stats`)
       .then((res) => res.json())
-      .then((data) => {
-        if (!data.error) {
-          setStats((prev) => ({
-            ...prev,
-            pujas: data.puja || prev.pujas,
-            homas: data.homa || prev.homas,
-            orders: data.orders || prev.orders,
-          }));
+      .then((resData) => {
+        if (resData.success && resData.data) {
+          setStats({
+            pujas: resData.data.pujas ?? 0,
+            homas: resData.data.homas ?? 0,
+            orders: resData.data.orders ?? 0,
+            revenue: resData.data.revenue ?? 0,
+          });
+          if (Array.isArray(resData.data.recentBookings)) {
+            setRecentBookings(resData.data.recentBookings);
+          }
         }
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch((err) => {
+        console.error("Failed to load dashboard stats:", err);
+        setLoading(false);
+      });
   }, []);
 
   return (
@@ -127,20 +134,39 @@ export default function AdminDashboard() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 font-medium">
-              <tr className="hover:bg-gray-50">
-                <td className="px-4 py-3 font-bold text-gray-900">Jagath</td>
-                <td className="px-4 py-3 text-gray-800">Rudrabhishekam for 11 Mondays in Kashi</td>
-                <td className="px-4 py-3 font-bold text-[#069e5d] uppercase text-[10px]">Homa</td>
-                <td className="px-4 py-3 font-extrabold text-gray-900">₹516</td>
-                <td className="px-4 py-3"><span className="bg-blue-100 text-blue-700 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">Confirmed</span></td>
-              </tr>
-              <tr className="hover:bg-gray-50">
-                <td className="px-4 py-3 font-bold text-gray-900">Ramesh Sharma</td>
-                <td className="px-4 py-3 text-gray-800">Ganesh Chaturthi Mahapuja</td>
-                <td className="px-4 py-3 font-bold text-[#069e5d] uppercase text-[10px]">Puja</td>
-                <td className="px-4 py-3 font-extrabold text-gray-900">₹501</td>
-                <td className="px-4 py-3"><span className="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">Completed</span></td>
-              </tr>
+              {recentBookings.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-4 py-6 text-center text-gray-500 text-xs">
+                    No recent devotee bookings found.
+                  </td>
+                </tr>
+              ) : (
+                recentBookings.map((booking: any, idx: number) => (
+                  <tr key={booking._id || idx} className="hover:bg-gray-50">
+                    <td className="px-4 py-3 font-bold text-gray-900">
+                      {booking.participants?.[0]?.name || booking.name || "Devotee"}
+                    </td>
+                    <td className="px-4 py-3 text-gray-800">
+                      {booking.pooja?.title || booking.pooja?.name || booking.serviceName || "Puja Ritual"}
+                    </td>
+                    <td className="px-4 py-3 font-bold text-[#069e5d] uppercase text-[10px]">
+                      {booking.type || "Puja"}
+                    </td>
+                    <td className="px-4 py-3 font-extrabold text-gray-900">
+                      ₹{booking.pricing?.total || booking.amount || 0}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${
+                        (booking.paymentStatus || booking.orderStatus) === "paid" || (booking.paymentStatus || booking.orderStatus) === "completed"
+                          ? "bg-green-100 text-green-700"
+                          : "bg-blue-100 text-blue-700"
+                      }`}>
+                        {booking.orderStatus || booking.paymentStatus || "Confirmed"}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

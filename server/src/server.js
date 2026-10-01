@@ -12,6 +12,7 @@ import userRoutes from './routes/user.routes.js';
 import customerQueryRoutes from './routes/customerQuery.routes.js';
 import paymentRoutes from './routes/payment.routes.js';
 import heroBannerRoutes from './routes/heroBannerRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
 
 const app = express();
 
@@ -23,6 +24,7 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
+app.use("/api/admin", adminRoutes);
 app.use("/api/hero-banners", heroBannerRoutes);
 app.use('/api/pujas', pujaRoutes);
 app.use('/api/homas', homaRoutes);

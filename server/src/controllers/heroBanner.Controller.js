@@ -4,9 +4,9 @@ import HeroBanner from "../models/heroBanner.js";
 
 export const getHeroBanners = async (req, res) => {
     try {
-        const banners = await HeroBanner.find({
-            isActive: true,
-        }).sort({
+        const { all } = req.query;
+        const filter = all === "true" ? {} : { isActive: true };
+        const banners = await HeroBanner.find(filter).sort({
             displayOrder: 1,
             createdAt: -1,
         });
@@ -70,17 +70,22 @@ export const createHeroBanner = async (req, res) => {
             title,
             description,
             cta,
+            ctaText,
+            ctaUrl,
             imageUrl,
             isActive,
             displayOrder,
         } = req.body;
 
+        const text = (cta?.text || ctaText || "Book Puja Now").trim();
+        const url = (cta?.url || ctaUrl || "/puja").trim();
+
         if (
             !tagLine ||
             !title ||
             !description ||
-            !cta?.text ||
-            !cta?.url ||
+            !text ||
+            !url ||
             !imageUrl
         ) {
             return res.status(400).json({
@@ -113,20 +118,20 @@ export const createHeroBanner = async (req, res) => {
             description: description.trim(),
 
             cta: {
-                text: cta.text.trim(),
-                url: cta.url.trim(),
+                text,
+                url,
             },
 
             imageUrl: imageUrl.trim(),
 
             isActive:
                 isActive !== undefined
-                    ? isActive
+                    ? (typeof isActive === "string" ? isActive !== "false" : Boolean(isActive))
                     : true,
 
             displayOrder:
                 displayOrder !== undefined
-                    ? displayOrder
+                    ? Number(displayOrder) || 0
                     : 0,
         });
 
@@ -156,11 +161,33 @@ export const createHeroBanner = async (req, res) => {
 export const updateHeroBanner = async (req, res) => {
     try {
         const { id } = req.params;
+        const updateData = { ...req.body };
+
+        if (updateData.ctaText || updateData.ctaUrl || updateData.cta) {
+            const currentText = updateData.cta?.text || updateData.ctaText;
+            const currentUrl = updateData.cta?.url || updateData.ctaUrl;
+
+            updateData.cta = {
+                text: currentText ? String(currentText).trim() : "Book Puja Now",
+                url: currentUrl ? String(currentUrl).trim() : "/puja",
+            };
+
+            delete updateData.ctaText;
+            delete updateData.ctaUrl;
+        }
+
+        if (updateData.isActive !== undefined && typeof updateData.isActive === "string") {
+            updateData.isActive = updateData.isActive !== "false";
+        }
+
+        if (updateData.displayOrder !== undefined) {
+            updateData.displayOrder = Number(updateData.displayOrder) || 0;
+        }
 
         const banner =
             await HeroBanner.findByIdAndUpdate(
                 id,
-                req.body,
+                updateData,
                 {
                     returnDocument: "after",
                     runValidators: true,

@@ -20,7 +20,7 @@ interface BannerSlide {
   ctaLink: string;
 }
 
-const slides: BannerSlide[] = [
+const DEFAULT_SLIDES: BannerSlide[] = [
   {
     id: "shani-statue",
     badge: "SPECIAL SHANI POOJA",
@@ -99,17 +99,52 @@ const slides: BannerSlide[] = [
 ];
 
 export default function HeroSection() {
+  const [bannerSlides, setBannerSlides] = useState<BannerSlide[]>(DEFAULT_SLIDES);
   const [activeSlide, setActiveSlide] = useState(0);
+
+  useEffect(() => {
+    async function fetchHeroBanners() {
+      try {
+        const expressBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+        const res = await fetch(`${expressBase}/hero-banners`);
+        if (!res.ok) return;
+        const data = await res.json();
+        const list = Array.isArray(data) ? data : (data && Array.isArray(data.data) ? data.data : []);
+        if (Array.isArray(list) && list.length > 0) {
+          const mapped: BannerSlide[] = list.map((item: any) => ({
+            id: item._id || String(Math.random()),
+            badge: item.tagLine || "SPECIAL SANKALPAM",
+            title: item.title,
+            subtitle: item.description,
+            topBadge: item.tagLine || "",
+            bannerLine1: "",
+            bannerLine2: "",
+            bannerLine3: "",
+            bannerLine4: "",
+            location: "",
+            image: item.imageUrl,
+            ctaText: item.cta?.text || "Book Puja Now",
+            ctaLink: item.cta?.url || "/puja",
+          }));
+          setBannerSlides(mapped);
+        }
+      } catch (err) {
+        console.error("Error loading hero banners:", err);
+      }
+    }
+    fetchHeroBanners();
+  }, []);
 
   // Auto-advance slides every 5 seconds
   useEffect(() => {
+    if (bannerSlides.length === 0) return;
     const timer = setInterval(() => {
-      setActiveSlide((prev) => (prev + 1) % slides.length);
+      setActiveSlide((prev) => (prev + 1) % bannerSlides.length);
     }, 5000);
     return () => clearInterval(timer);
-  }, []);
+  }, [bannerSlides.length]);
 
-  const current = slides[activeSlide];
+  const current = bannerSlides[activeSlide] || bannerSlides[0] || DEFAULT_SLIDES[0];
 
   return (
     <section className="relative w-full max-w-[1350px] mx-auto px-4 sm:px-6 lg:px-10 pt-2 sm:pt-3 lg:pt-4 pb-8 md:pb-12 xl:py-12 bg-white my-0 sm:my-1 xl:my-2 overflow-hidden">
@@ -223,13 +258,22 @@ export default function HeroSection() {
           {/* Pure Full-Bleed Banner Card (Image Only, No Wordings) */}
           <div className="w-full relative rounded-3xl overflow-hidden shadow-2xl border border-stone-200 bg-[#160802] h-[300px] sm:h-[400px] md:h-[460px] lg:h-[500px] xl:h-[500px] shrink-0 transition-all duration-500 group">
 
-            {/* Full Background Image - Specific to active slide */}
+            {/* Ambient Blurred Background (Fills Card Seamlessly) */}
+            <Image
+              key={`bg-${current.id}`}
+              src={current.image}
+              alt=""
+              fill
+              className="object-cover blur-2xl opacity-40 scale-110"
+            />
+
+            {/* Full Uncropped Main Image (Preserves Left/Right Text & Edges) */}
             <Image
               key={current.id}
               src={current.image}
               alt={current.title}
               fill
-              className="object-cover object-center"
+              className="object-contain object-center relative z-10 drop-shadow-lg"
               priority
             />
 
@@ -237,7 +281,7 @@ export default function HeroSection() {
 
           {/* Slider Dots Navigation inside Hero */}
           <div className="flex items-center justify-center gap-2.5 mt-4 sm:mt-5">
-            {slides.map((_, index) => (
+            {bannerSlides.map((_, index) => (
               <button
                 key={index}
                 onClick={() => setActiveSlide(index)}

@@ -12,12 +12,14 @@ import {
   UserCircleIcon,
   Bars3Icon,
   XMarkIcon,
+  PhotoIcon,
 } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 const menuItems = [
   { name: "Dashboard", href: "/admin", icon: HomeIcon },
+  { name: "Home Banners", href: "/admin/home-banners", icon: PhotoIcon },
   { name: "Pujas", href: "/admin/pujas", icon: SparklesIcon },
   { name: "Homas", href: "/admin/homas", icon: FireIcon },
   { name: "Orders & Bookings", href: "/admin/orders", icon: ShoppingBagIcon },
