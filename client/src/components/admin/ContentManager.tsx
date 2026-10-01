@@ -164,7 +164,9 @@ export default function ContentManager({
     fetchItems();
     
     // Fetch currency settings
-    fetch("/api/admin/content?type=currency")
+    // API removed based on user request
+    /*
+    fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:5000"}/api/admin/content?type=currency`)
       .then(async (res) => {
         if (!res.ok) return null;
         const text = await res.text();
@@ -180,6 +182,7 @@ export default function ContentManager({
         }
       })
       .catch(console.error);
+    */
 
     // Fetch any reference data
     fields.forEach(async (f) => {
@@ -916,7 +919,7 @@ export default function ContentManager({
                                   onClick={async () => {
                                     const nextStatus = item.status === "inactive" ? "active" : "inactive";
                                     const payload = { ...item, status: nextStatus }; delete payload._id;
-                                    const res = await fetch(`/api/admin/content?type=${type}&id=${item._id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+                                    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:5000"}/api/admin/content?type=${type}&id=${item._id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
                                     if (res.ok) fetchItems();
                                   }}
                                   className="rounded-md border border-gray-300 px-2 py-1 text-xs text-gray-700 hover:bg-gray-50"
@@ -1017,7 +1020,7 @@ export default function ContentManager({
                 onClick={async () => {
                   const nextStatus = viewingReview.approved ? false : true;
                   const payload = { ...viewingReview, approved: nextStatus }; delete payload._id;
-                  const res = await fetch(`/api/admin/content?type=${type}&id=${viewingReview._id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+                  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:5000"}/api/admin/content?type=${type}&id=${viewingReview._id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
                   if (res.ok) { fetchItems(); setViewingReview({ ...viewingReview, approved: nextStatus }); }
                 }}
                 className={`rounded-md border px-4 py-1.5 text-sm font-semibold ${

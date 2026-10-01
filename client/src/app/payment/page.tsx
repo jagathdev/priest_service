@@ -35,11 +35,19 @@ function PaymentContent() {
     setError(null);
     setLoadingMsg("Initializing secure payment gateway...");
     try {
-      // 1. Get auth details from Express backend
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
-      
-      const authRes = await fetch(`${baseUrl}/api/auth/me`, { credentials: "include" });
-      const authData = await authRes.json();
+      // 1. Get auth details from cookie
+      let authData: any = {};
+      if (typeof window !== "undefined") {
+        const stored = document.cookie.includes("userLogin=true");
+        if (stored) {
+          const sessionUser = sessionStorage.getItem("user");
+          if (sessionUser) {
+            try { authData = { user: JSON.parse(sessionUser) }; } catch { authData = { user: {} }; }
+          } else {
+            authData = { user: {} };
+          }
+        }
+      }
       const userName = name || authData?.user?.name || authData?.data?.name || "";
       const userEmail = authData?.user?.email || authData?.data?.email || "";
       const userPhone = wa || authData?.user?.whatsapp || authData?.user?.phone || authData?.data?.mobileNumber || "";

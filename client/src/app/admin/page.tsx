@@ -14,7 +14,7 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/admin/stats")
+    fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:5000"}/api/admin/stats`)
       .then((res) => res.json())
       .then((data) => {
         if (!data.error) {

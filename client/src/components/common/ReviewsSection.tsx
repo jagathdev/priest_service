@@ -69,7 +69,7 @@ export default function ReviewsSection() {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
-    fetch("/api/reviews")
+    fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:5000"}/api/reviews`)
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) setReviews(data);

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { authService } from "@/services/authService";
+import { useUser } from "@/contexts/UserContext";
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -11,12 +12,13 @@ interface LoginModalProps {
 }
 
 export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
+  const { setUser } = useUser();
   const [step, setStep] = useState<"input" | "otp">("input");
   const [mobileNumber, setMobileNumber] = useState("");
   const [otp, setOtp] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [resendTimer, setResendTimer] = useState(60);
+  const [resendTimer, setResendTimer] = useState(30);
 
   const phoneInputRef = useRef<HTMLInputElement>(null);
   const otpInputRef = useRef<HTMLInputElement>(null);
@@ -62,7 +64,7 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
     setOtp("");
     setError("");
     setLoading(false);
-    setResendTimer(60);
+    setResendTimer(30);
     onClose();
   };
 
@@ -92,7 +94,7 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
 
       if (data.success) {
         setStep("otp");
-        setResendTimer(60);
+        setResendTimer(30);
       } else {
         // Fallback to Next.js API route /api/auth/otp/send if Express server fails or returns error
         try {
@@ -102,7 +104,7 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
             number: cleanNumber,
           });
           setStep("otp");
-          setResendTimer(60);
+          setResendTimer(30);
         } catch (fallbackErr: any) {
           setError(data.message || fallbackErr.message || "Failed to send OTP. Please try again.");
         }
@@ -116,7 +118,7 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
           number: cleanNumber,
         });
         setStep("otp");
-        setResendTimer(60);
+        setResendTimer(30);
       } catch (fallbackErr: any) {
         setError("Network error. Could not connect to authentication server.");
       }
@@ -150,8 +152,9 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
       const data = await res.json();
 
       if (data.success) {
-        const userObj = data.data?.user || data.user || { mobileNumber, name: `Devotee ${mobileNumber.slice(-4)}` };
-        localStorage.setItem("mockUser", JSON.stringify(userObj));
+        document.cookie = "userLogin=true; path=/; max-age=604800;";
+        const u = data.data?.user || data.user || {};
+        setUser(u);
         handleClose();
         if (onSuccess) onSuccess();
       } else {
@@ -163,8 +166,9 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
             number: mobileNumber.replace(/\D/g, ""),
             otp: cleanOtp,
           } as any);
-          const userObj = (verifyRes as any).user || { mobileNumber, name: `Devotee ${mobileNumber.slice(-4)}` };
-          localStorage.setItem("mockUser", JSON.stringify(userObj));
+          const u = (verifyRes as any).user || {};
+          document.cookie = "userLogin=true; path=/; max-age=604800;";
+          setUser(u);
           handleClose();
           if (onSuccess) onSuccess();
         } catch (fallbackErr: any) {
@@ -179,8 +183,9 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
           number: mobileNumber.replace(/\D/g, ""),
           otp: cleanOtp,
         } as any);
-        const userObj = (verifyRes as any).user || { mobileNumber, name: `Devotee ${mobileNumber.slice(-4)}` };
-        localStorage.setItem("mockUser", JSON.stringify(userObj));
+        const u = (verifyRes as any).user || {};
+        document.cookie = "userLogin=true; path=/; max-age=604800;";
+        setUser(u);
         handleClose();
         if (onSuccess) onSuccess();
       } catch (fallbackErr: any) {
@@ -205,7 +210,7 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ mobileNumber: mobileNumber.replace(/\D/g, "") }),
       });
-      setResendTimer(60);
+      setResendTimer(30);
       setOtp("");
       setError("OTP resent successfully!");
     } catch {

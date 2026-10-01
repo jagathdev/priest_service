@@ -107,141 +107,121 @@ function SuccessContent() {
 
 
   return (
-    <div className="min-h-screen bg-[#f5f5f5]">
+    <div className="min-h-screen bg-white">
       <Navbar />
       {/* Hide footer on success page */}
       <style>{`footer, [data-global-chrome="assistant"] { display: none !important; }`}</style>
 
-      <div className="mx-auto max-w-4xl px-4 py-12 space-y-8">
-
-        {/* ── Main Congratulations Card ─────────────────────────────────────── */}
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-          {/* Top green banner */}
-          <div className="bg-gradient-to-r from-[#59a031] to-[#71bf44] px-6 py-5 text-center">
-            <div className="flex items-center justify-center gap-3">
-              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white shrink-0">
-                <svg viewBox="0 0 20 20" fill="none" className="h-4 w-4">
-                  <path
-                    d="M4 10.5 7.5 14 16 6"
-                    stroke="#59a031"
-                    strokeWidth="3"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </span>
-              <p className="text-white font-semibold text-lg">
-                Congratulations!{name ? ` ${name}` : ""} Your Transaction was Successful
-              </p>
+      <div className="mx-auto max-w-3xl px-4 py-16 space-y-10 flex flex-col items-center">
+        
+        {/* ── Top Success Indicator ─────────────────────────────────────── */}
+        <div className="flex flex-col items-center text-center space-y-4">
+          <div className="w-24 h-24 rounded-full bg-green-50 flex items-center justify-center border-8 border-green-50/50 mb-2">
+            <div className="w-16 h-16 rounded-full bg-[#1e9e4a] flex items-center justify-center shadow-lg">
+              <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
             </div>
           </div>
-
-          {/* Body */}
-          <div className="grid grid-cols-1 md:grid-cols-[1fr_380px] gap-0 divide-y md:divide-y-0 md:divide-x divide-gray-100 border-b border-gray-100 border-dashed border-b-2">
-            {/* Left: Thank you message */}
-            <div className="px-8 py-8 space-y-4">
-              <p className="text-[13px] text-gray-700 leading-relaxed font-medium">
-                If you have any questions or comments to share, feel free to{" "}
-                <Link href="/contact" className="text-[#e66a1f] hover:underline">
-                  Contact Us
-                </Link>.
-              </p>
-              <p className="text-[13px] text-gray-700 leading-relaxed font-medium">
-                We thank you once again for the valuable orders you placed with AstroVed.com.
-              </p>
-              <p className="text-[13px] text-gray-700 leading-relaxed mt-4">
-                <span className="font-bold text-gray-800">Note:</span> We request you to contact us with the Transaction Number and Order ID for further clarifications.
-              </p>
-
-
-            </div>
-
-            {/* Right: Order details + buttons */}
-            <div className="px-8 py-8 space-y-5 bg-gray-50/30">
-              <div className="space-y-2">
-                <p className="text-[13px] text-gray-700 font-medium">
-                  Razorpay Payment ID :{" "}
-                  <span className="font-bold text-[#e66a1f] font-mono">{displayPayId}</span>
-                </p>
-                <p className="text-[13px] text-gray-700 font-medium">
-                  Order Number :{" "}
-                  <span className="font-bold text-[#e66a1f]">{displayOrdId}</span>
-                </p>
-
-              </div>
-
-              <div className="space-y-2.5 mt-6">
-                <Link
-                  href="/dashboard"
-                  className="w-full flex items-center justify-center bg-[#e66a1f] hover:bg-[#d55f18] text-white font-bold text-[13px] py-2.5 px-4 rounded transition-colors text-center"
-                >
-                  Click Here To View Your Wallet Balance
-                </Link>
-                <Link
-                  href="/bookings/puja"
-                  className="w-full flex items-center justify-center bg-[#e66a1f] hover:bg-[#d55f18] text-white font-bold text-[13px] py-2.5 px-4 rounded transition-colors text-center"
-                >
-                  Click Here To View Your Order Log and Status
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* ── Puja Share Card ───────────────────────────────────────────────── */}
-        <div className="bg-white rounded-2xl border border-gray-200 border-dashed border-t-0 border-x-0 pb-8 shadow-sm p-8 mt-4">
-          <p className="text-sm text-gray-500 mb-4">
-            I just bought <span className="font-bold text-[#3b82f6]">{title}</span>
+          <h1 className="text-3xl md:text-4xl font-serif text-stone-900 mb-1">Booking Successful</h1>
+          <p className="text-stone-500 text-sm max-w-md mx-auto">
+            Your sacred puja is booked. Our purohits will begin the preparations — blessings are on their way to you. 🙏
           </p>
-          <div className="flex flex-col sm:flex-row items-start gap-6">
-            {/* Placeholder Puja image */}
-            <div className="w-[180px] h-[180px] rounded overflow-hidden bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center shrink-0 shadow-sm border border-gray-200">
-              <i className="fa-solid fa-om text-white text-6xl"></i>
-            </div>
-
-            <div className="flex-1 space-y-5">
-              <p className="text-[13px] text-gray-800 leading-relaxed font-bold">
-                You may think, dream,  im agine, and hope to be a thousand things, but the Sun is what you are! To be your best self in terms of your Sun, cause your energies to work along the path in which they will have maximum help from the planetary vibrations.
-              </p>
-              <div className="flex items-center gap-3 flex-wrap pt-2">
-                <span className="text-[13px] font-bold text-gray-400">Share this</span>
-                <a
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}&quote=${shareText}`, '_blank');
-                  }}
-                  className="flex items-center gap-1.5 bg-[#d97736] text-white text-[10px] font-bold px-3 py-1.5 rounded-sm hover:bg-[#c66629] transition-colors"
-                >
-                  <i className="fa-brands fa-facebook-f text-white/90"></i> FACEBOOK
-                </a>
-                <a
-                  href={`https://twitter.com/intent/tweet?text=${shareText}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 bg-[#f58d04] text-white text-[10px] font-bold px-3 py-1.5 rounded-sm hover:bg-[#df7d03] transition-colors"
-                >
-                  <i className="fa-brands fa-twitter text-white/90"></i> TWITTER
-                </a>
-                <a
-                  href={`mailto:?subject=I booked a Puja on AstroVed!&body=${decodeURIComponent(shareText)}`}
-                  className="flex items-center gap-1.5 bg-[#e66a1f] text-white text-[10px] font-bold px-3 py-1.5 rounded-sm hover:bg-[#d55f18] transition-colors"
-                >
-                  <i className="fa-regular fa-envelope text-white/90"></i> EMAIL
-                </a>
-              </div>
-            </div>
+          <div className="mt-4 flex items-center gap-2 text-xs font-bold text-stone-500 bg-stone-50 px-4 py-2 rounded-full border border-stone-100">
+            <svg className="w-4 h-4 text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+            Booking ID <span className="text-[#f15a29] font-mono">#{displayOrdId !== "N/A" ? displayOrdId : displayPayId}</span>
           </div>
         </div>
 
-        {/* ── Top Sellers CTA ───────────────────────────────────────────────── */}
-        <div className="text-center pt-4">
-          <Link
-            href="/puja"
-            className="inline-block bg-[#5a8cd6] hover:bg-[#4b7cc4] text-white font-medium text-sm px-16 py-3 rounded-sm uppercase tracking-wide transition-colors shadow-sm"
-          >
-            TOP SELLERS
-          </Link>
+        {/* ── Order Summary Card ─────────────────────────────────────── */}
+        <div className="w-full bg-white rounded-3xl border border-stone-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-6 md:p-8">
+          <div className="flex justify-between items-start mb-6 pb-6 border-b border-stone-100 border-dashed">
+             <div>
+                <h2 className="text-lg font-bold text-stone-900">{title}</h2>
+             </div>
+             <div className="text-right">
+                <p className="text-[10px] text-stone-500 font-bold uppercase tracking-wider mb-1">Amount Paid</p>
+                <p className="text-xl font-black text-[#00b050]">₹{amount}</p>
+             </div>
+          </div>
+          
+          <div>
+            <h3 className="text-sm font-extrabold text-stone-900 mb-4">Puja Inclusions</h3>
+            <ul className="space-y-3">
+               <li className="flex items-start gap-2.5 text-sm text-stone-600 font-medium">
+                  <span className="text-[#f15a29] mt-1 shrink-0 text-xs">◆</span>
+                  A complete video recording of the ritual will be sent to your WhatsApp within 48 hours.
+               </li>
+               <li className="flex items-start gap-2.5 text-sm text-stone-600 font-medium">
+                  <span className="text-[#f15a29] mt-1 shrink-0 text-xs">◆</span>
+                  A personalized Sankalp taken using your name and Gotra.
+               </li>
+               <li className="flex items-start gap-2.5 text-sm text-stone-600 font-medium">
+                  <span className="text-[#f15a29] mt-1 shrink-0 text-xs">◆</span>
+                  Puja is a ritualistic worship performed to seek divine blessings.
+               </li>
+            </ul>
+          </div>
+        </div>
+
+        {/* ── Timeline ─────────────────────────────────────── */}
+        <div className="w-full max-w-md mx-auto pt-4 relative">
+           <div className="absolute left-[19px] top-4 bottom-8 w-px bg-[#f15a29]/20 z-0"></div>
+           
+           <div className="relative z-10 flex gap-4 mb-8">
+              <div className="w-10 h-10 rounded-full bg-white border-2 border-[#f15a29] flex items-center justify-center shrink-0 shadow-sm">
+                 <svg className="w-4 h-4 text-[#f15a29]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+              </div>
+              <div>
+                 <h4 className="text-sm font-bold text-stone-900">Sankalpam prepared</h4>
+                 <p className="text-xs text-stone-500 mt-1 font-medium leading-relaxed">Our purohit prepares your sankalpam using the devotee names and gotra you provided.</p>
+              </div>
+           </div>
+
+           <div className="relative z-10 flex gap-4 mb-8">
+              <div className="w-10 h-10 rounded-full bg-white border-2 border-[#f15a29] flex items-center justify-center shrink-0 shadow-sm">
+                 <svg className="w-4 h-4 text-[#f15a29]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
+              </div>
+              <div>
+                 <h4 className="text-sm font-bold text-stone-900">Puja performed at the temple</h4>
+                 <p className="text-xs text-stone-500 mt-1 font-medium leading-relaxed">Your ritual is performed live by verified purohits at the sacred temple.</p>
+              </div>
+           </div>
+
+           <div className="relative z-10 flex gap-4">
+              <div className="w-10 h-10 rounded-full bg-white border-2 border-[#f15a29] flex items-center justify-center shrink-0 shadow-sm">
+                 <svg className="w-4 h-4 text-[#f15a29]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              </div>
+              <div>
+                 <h4 className="text-sm font-bold text-stone-900">Puja video delivered</h4>
+                 <p className="text-xs text-stone-500 mt-1 font-medium leading-relaxed">Your puja video arrives on WhatsApp within 24 hours.</p>
+              </div>
+           </div>
+        </div>
+
+        {/* ── Action Buttons ─────────────────────────────────────── */}
+        <div className="pt-4 flex flex-col items-center space-y-4 w-full">
+           <div className="flex gap-4">
+              <Link
+                href="/bookings"
+                className="bg-[#00b050] hover:bg-[#009644] text-white font-extrabold text-sm px-8 py-3.5 rounded-xl transition-all shadow-sm flex items-center gap-2"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+                View My Bookings
+              </Link>
+              <Link
+                href="/"
+                className="bg-white border-2 border-stone-200 text-stone-700 hover:border-stone-300 hover:bg-stone-50 font-extrabold text-sm px-8 py-3.5 rounded-xl transition-all flex items-center gap-2"
+              >
+                <svg className="w-4 h-4 text-stone-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
+                Back to Home
+              </Link>
+           </div>
+           
+           <p className="text-xs font-bold text-[#00b050] flex items-center gap-1.5 mt-4">
+              <i className="fa-brands fa-whatsapp text-[16px]"></i>
+              A confirmation has been sent to your WhatsApp.
+           </p>
         </div>
 
       </div>

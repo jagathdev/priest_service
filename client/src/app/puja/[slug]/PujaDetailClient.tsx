@@ -7,7 +7,6 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import LoginModal from "@/components/auth/LoginModal";
 import { checkAuthStatus } from "@/lib/authCheck";
-import { useCurrency } from "@/contexts/CurrencyContext";
 import { CheckIcon, XMarkIcon } from "@heroicons/react/24/solid";
 
 interface PujaPackage {
@@ -107,13 +106,12 @@ export default function PujaDetailClient({
   const params = useParams<{ slug: string }>();
   const slugParam = params?.slug;
   const slug = Array.isArray(slugParam) ? slugParam[0] : slugParam;
-  const { currency } = useCurrency();
+  const currency = "INR";
 
   const [puja, setPuja] = useState<Puja | null>(initialPuja);
   const [loading, setLoading] = useState(!initialPuja);
   const [selectedPackageId, setSelectedPackageId] = useState<string | null>(null);
   const [showPackageModal, setShowPackageModal] = useState(false);
-  const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
   const [activeTab, setActiveTab] = useState("about");
   const [userDetails, setUserDetails] = useState({ name: "", whatsapp: "" });
@@ -149,8 +147,8 @@ export default function PujaDetailClient({
         const list: Puja[] = resData?.data && Array.isArray(resData.data)
           ? resData.data
           : Array.isArray(resData)
-          ? resData
-          : [];
+            ? resData
+            : [];
 
         const match = list.find(
           (p: Puja) => p.slug === slug || slugify(p.title) === slug || p._id === slug
@@ -398,29 +396,29 @@ export default function PujaDetailClient({
     puja.benefits && puja.benefits.length > 0
       ? puja.benefits
       : puja.details?.benefits && puja.details.benefits.length > 0
-      ? puja.details.benefits
-      : defaultBenefits;
+        ? puja.details.benefits
+        : defaultBenefits;
 
   const processList =
     puja.process && puja.process.length > 0
       ? puja.process
       : puja.details?.process && puja.details.process.length > 0
-      ? puja.details.process
-      : defaultProcess;
+        ? puja.details.process
+        : defaultProcess;
 
   const faqList =
     puja.faq && puja.faq.length > 0
       ? puja.faq
       : puja.details?.faq && puja.details.faq.length > 0
-      ? puja.details.faq
-      : defaultFaqs;
+        ? puja.details.faq
+        : defaultFaqs;
 
   const inclusionsList =
     puja.inclusions && puja.inclusions.length > 0
       ? puja.inclusions
       : puja.details?.inclusions && puja.details.inclusions.length > 0
-      ? puja.details.inclusions
-      : [
+        ? puja.details.inclusions
+        : [
           { title: "Special Invocational Sankalpam", description: "Performed with your name, gotra, and specific prayer request by learned priests." },
           { title: "Full Puja Video Recording", description: "Delivered directly to your WhatsApp number within 48 hours of ritual completion." },
         ];
@@ -429,10 +427,10 @@ export default function PujaDetailClient({
     Array.isArray(puja.gallery) && puja.gallery.length > 0
       ? puja.gallery.map((img: string) => getPujaImageUrl(img)).filter(Boolean)
       : Array.isArray((puja as any).galleryUrl) && (puja as any).galleryUrl.length > 0
-      ? (puja as any).galleryUrl.map((img: string) => getPujaImageUrl(img)).filter(Boolean)
-      : typeof (puja as any).galleryUrl === "string" && (puja as any).galleryUrl.trim()
-      ? [getPujaImageUrl((puja as any).galleryUrl)]
-      : [];
+        ? (puja as any).galleryUrl.map((img: string) => getPujaImageUrl(img)).filter(Boolean)
+        : typeof (puja as any).galleryUrl === "string" && (puja as any).galleryUrl.trim()
+          ? [getPujaImageUrl((puja as any).galleryUrl)]
+          : [];
 
   const templeImage =
     (typeof (puja as any).templeImageUrl === "string" && (puja as any).templeImageUrl.trim()) ||
@@ -501,11 +499,10 @@ export default function PujaDetailClient({
                   <button
                     aria-label="Add to wishlist"
                     onClick={() => setIsWishlisted(!isWishlisted)}
-                    className={`border rounded-full px-3.5 py-1.5 flex items-center justify-center gap-1.5 font-bold text-xs transition-all active:scale-95 shadow-xs ${
-                      isWishlisted
+                    className={`border rounded-full px-3.5 py-1.5 flex items-center justify-center gap-1.5 font-bold text-xs transition-all active:scale-95 shadow-xs ${isWishlisted
                         ? "border-red-500 bg-red-50 text-red-600"
                         : "border-stone-300 hover:border-stone-400 bg-white text-stone-700"
-                    }`}
+                      }`}
                   >
                     <svg className={`w-3.5 h-3.5 ${isWishlisted ? "fill-red-500 stroke-red-500" : "fill-none stroke-current"}`} strokeWidth="2" viewBox="0 0 24 24">
                       <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
@@ -590,11 +587,10 @@ export default function PujaDetailClient({
                       <div
                         key={pkg.id}
                         onClick={() => setSelectedPackageId(pkg.id)}
-                        className={`relative border-2 rounded-2xl p-3 cursor-pointer transition-all flex items-center gap-3 ${
-                          isSelected
+                        className={`relative border-2 rounded-2xl p-3 cursor-pointer transition-all flex items-center gap-3 ${isSelected
                             ? "border-[#00b050] bg-green-50/50 shadow-xs"
                             : "border-stone-200 hover:border-stone-300 bg-white"
-                        }`}
+                          }`}
                       >
                         <div className="relative w-11 h-11 rounded-full overflow-hidden shrink-0 border border-stone-200 bg-stone-100">
                           <img src={pkgAvatar} alt={pkg.name} className="w-full h-full object-cover" />
@@ -617,7 +613,7 @@ export default function PujaDetailClient({
 
               {/* Primary Participate / Book Now CTA Button */}
               <button
-                onClick={() => setShowDetailsModal(true)}
+                onClick={handleAddPujaToCart}
                 className="w-full bg-[#00b050] hover:bg-[#009644] active:scale-95 text-white font-extrabold text-lg py-4 px-6 rounded-2xl shadow-lg shadow-green-600/20 transition-all flex items-center justify-center gap-2 mb-4"
               >
                 <span>₹{priceVal}</span>
@@ -685,11 +681,10 @@ export default function PujaDetailClient({
                   window.scrollTo({ top: y, behavior: "smooth" });
                 }
               }}
-              className={`py-4 border-b-2 transition-colors whitespace-nowrap ${
-                activeTab === tab.id
+              className={`py-4 border-b-2 transition-colors whitespace-nowrap ${activeTab === tab.id
                   ? "border-[#00b050] text-[#00b050]"
                   : "border-transparent hover:text-stone-900"
-              }`}
+                }`}
             >
               {tab.label}
             </a>
@@ -943,11 +938,10 @@ export default function PujaDetailClient({
                   <div
                     key={pkg.id}
                     onClick={() => setSelectedPackageId(pkg.id)}
-                    className={`border-2 rounded-2xl p-4 cursor-pointer transition-all flex items-center justify-between ${
-                      isSelected
+                    className={`border-2 rounded-2xl p-4 cursor-pointer transition-all flex items-center justify-between ${isSelected
                         ? "border-[#00b050] bg-green-50/50 shadow-xs"
                         : "border-stone-200 hover:border-stone-400 bg-white"
-                    }`}
+                      }`}
                   >
                     <div>
                       <h4 className="font-bold text-stone-900 text-base">{pkg.name}</h4>
@@ -965,62 +959,11 @@ export default function PujaDetailClient({
             <button
               onClick={() => {
                 setShowPackageModal(false);
-                setShowDetailsModal(true);
+                handleAddPujaToCart();
               }}
               className="w-full bg-[#00b050] hover:bg-[#009644] text-white font-extrabold text-base py-3.5 rounded-full shadow-md transition-all"
             >
               Proceed to Details
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* ── 7. Details Entry Modal ── */}
-      {showDetailsModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl w-full max-w-md p-6 sm:p-8 shadow-2xl relative">
-            <button
-              onClick={() => setShowDetailsModal(false)}
-              className="absolute top-4 right-4 text-stone-400 hover:text-stone-700 p-2"
-            >
-              <XMarkIcon className="w-6 h-6" />
-            </button>
-
-            <h3 className="text-2xl font-serif font-bold text-stone-900 mb-2">Devotee Details</h3>
-            <p className="text-stone-600 text-xs sm:text-sm mb-6">Enter details for sacred Sankalpam and video delivery.</p>
-
-            <div className="space-y-4 mb-6">
-              <div>
-                <label className="block text-xs font-extrabold text-stone-700 uppercase mb-1">Devotee Name</label>
-                <input
-                  type="text"
-                  value={userDetails.name}
-                  onChange={(e) => setUserDetails({ ...userDetails, name: e.target.value })}
-                  placeholder="e.g. Ramesh Kumar"
-                  className="w-full border border-stone-300 rounded-xl px-4 py-3 text-sm outline-none focus:border-[#00b050]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-extrabold text-stone-700 uppercase mb-1">WhatsApp Number</label>
-                <input
-                  type="tel"
-                  value={userDetails.whatsapp}
-                  onChange={(e) => setUserDetails({ ...userDetails, whatsapp: e.target.value })}
-                  placeholder="e.g. 9876543210"
-                  className="w-full border border-stone-300 rounded-xl px-4 py-3 text-sm outline-none focus:border-[#00b050]"
-                />
-              </div>
-
-              {cartError && <p className="text-xs text-red-500 font-bold">{cartError}</p>}
-            </div>
-
-            <button
-              disabled={!userDetails.name.trim() || !userDetails.whatsapp.trim() || addingToCart}
-              onClick={handleAddPujaToCart}
-              className="w-full bg-[#00b050] hover:bg-[#009644] text-white font-extrabold text-base py-3.5 rounded-full shadow-md transition-all disabled:opacity-50"
-            >
-              {addingToCart ? "Processing..." : "Proceed to Sankalpam"}
             </button>
           </div>
         </div>

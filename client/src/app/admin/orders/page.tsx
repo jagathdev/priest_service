@@ -23,7 +23,7 @@ export default function AdminOrdersPage() {
 
   useEffect(() => {
     // Fetch bookings & orders
-    fetch("/api/admin/orders")
+    fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:5000"}/api/admin/orders`)
       .then((res) => (res.ok ? res.json() : []))
       .then((data) => {
         if (Array.isArray(data) && data.length > 0) {

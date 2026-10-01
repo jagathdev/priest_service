@@ -34,7 +34,7 @@ export default function MyPujaBookings() {
   const [filter, setFilter] = useState("All");
 
   useEffect(() => {
-    fetch("/api/bookings/me?type=puja")
+    fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:5000"}/api/bookings/me?type=puja`)
       .then((res) => res.json())
       .then((data) => {
         if (data.success) {
@@ -55,7 +55,7 @@ export default function MyPujaBookings() {
 
   const handleLogout = async () => {
     try {
-      await fetch("/api/auth/logout", { method: "POST" });
+      await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:5000"}/api/auth/logout`, { method: "POST" });
     } catch {
       // ignore
     }

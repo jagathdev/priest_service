@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslation } from "@/contexts/LanguageContext";
 import LoginModal from "@/components/auth/LoginModal";
+import { useUser } from "@/contexts/UserContext";
 
 // ── Sri Mandir–style account panel component ─────────────────────────────
 const AccountPanel = ({ accountOpen, setAccountOpen, user, setLoginModalOpen, handleLogout, t }: any) => {
@@ -164,7 +165,7 @@ const languageFullNames: Record<string, string> = {
 export default function Navbar() {
   const pathname = usePathname();
   const { t, language, setLanguage } = useTranslation();
-  const [user, setUser] = useState<{ name: string; email: string } | null>(null);
+  const { user, setUser } = useUser();
   const [langOpen, setLangOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
   const [loginModalOpen, setLoginModalOpen] = useState(false);
@@ -196,26 +197,25 @@ export default function Navbar() {
   }, [accountOpen, langOpen]);
 
   useEffect(() => {
-    fetch("/api/auth/me")
-      .then((r) => r.json())
-      .then((d) => { if (d.authenticated) setUser(d.user); else setUser(null); })
-      .catch(() => setUser(null));
-  }, [pathname]);
+    if (typeof window !== "undefined") {
+      const isUserLogin = document.cookie.includes("userLogin=true");
+      if (!isUserLogin) {
+        setUser(null);
+      }
+    }
+  }, [pathname, setUser]);
 
   const isActivePath = (path: string) =>
     pathname === path || (path === "/" && pathname === "/dashboard") || (path === "/dashboard" && pathname === "/") || (path !== "/" && path !== "/dashboard" && pathname?.startsWith(path + "/"));
 
   const handleLogout = async () => {
-    await fetch("/api/auth/logout", { method: "POST" });
+    document.cookie = "userLogin=false; path=/; max-age=0;";
     setUser(null);
     window.location.href = "/";
   };
 
   const handleLoginSuccess = () => {
-    fetch("/api/auth/me")
-      .then((r) => r.json())
-      .then((d) => { if (d.authenticated) setUser(d.user); })
-      .catch(() => { });
+    // User Context is updated by LoginModal directly
   };
 
   const isFullLanguagePage =
@@ -252,11 +252,11 @@ export default function Navbar() {
                   PUJA
                 </Link>
               </li>
-              <li>
+              {/* <li>
                 <Link href="/homa" className={isActivePath("/homa") ? "text-[#F47820] font-extrabold border-b-2 border-[#F47820] pb-1" : "transition-colors hover:text-[#F47820] uppercase"}>
                   HOMAS
                 </Link>
-              </li>
+              </li> */}
               <li>
                 <Link href="/account" className={isActivePath("/account") || isActivePath("/profile") ? "text-[#F47820] font-extrabold border-b-2 border-[#F47820] pb-1" : "transition-colors hover:text-[#F47820] uppercase"}>
                   ACCOUNT

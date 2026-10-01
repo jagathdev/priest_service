@@ -7,8 +7,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import LoginModal from "@/components/auth/LoginModal";
 import { checkAuthStatus } from "@/lib/authCheck";
-import { useCurrency } from "@/contexts/CurrencyContext";
-import { CheckIcon, XMarkIcon } from "@heroicons/react/24/solid";
+import { XMarkIcon } from "@heroicons/react/24/solid";
 
 interface HomaPackage {
   id: string;
@@ -63,7 +62,9 @@ interface Homa {
   packages?: HomaPackage[];
   offerings?: HomaOffering[];
   gallery?: string[];
+  galleryUrl?: string | string[];
   templeImage?: string;
+  templeImageUrl?: string;
   details?: {
     heroTitle?: string;
     heroSubtitle?: string;
@@ -72,6 +73,7 @@ interface Homa {
     templeLocation?: string;
     templeNote?: string;
     templeImage?: string;
+    templeImageUrl?: string;
     benefits?: { title: string; description: string; icon?: string }[];
     process?: { title: string; description: string }[];
     inclusions?: string[];
@@ -102,12 +104,13 @@ export default function HomaDetailClient({
   recommendations = [],
 }: {
   initialHoma: Homa | null;
-  recommendations?: any[];
+  recommendations?: Homa[];
 }) {
   const params = useParams<{ slug: string }>();
   const slugParam = params?.slug;
   const slug = Array.isArray(slugParam) ? slugParam[0] : slugParam;
-  const { currency, currencySymbol } = useCurrency();
+  const currency = "INR";
+  const currencySymbol = "₹";
 
   const [homa, setHoma] = useState<Homa | null>(initialHoma);
   const [loading, setLoading] = useState(!initialHoma);
@@ -115,7 +118,6 @@ export default function HomaDetailClient({
     initialHoma?.packages?.[0]?.id ?? null
   );
   const [showPackageModal, setShowPackageModal] = useState(false);
-  const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
   const [activeTab, setActiveTab] = useState("about");
   const [userDetails, setUserDetails] = useState({ name: "", whatsapp: "" });
@@ -220,33 +222,7 @@ export default function HomaDetailClient({
       });
     }
 
-    const basePrice = homa?.price || 1250;
-    return [
-      {
-        id: "pkg-1",
-        name: "Individual Homa",
-        devoteeCount: "1 Devotee",
-        priceINR: basePrice,
-        description: "Personalized Sankalpam for 1 Person with video recording.",
-        imageUrl: defaultPackageAvatars[0],
-      },
-      {
-        id: "pkg-2",
-        name: "Couple Homa",
-        devoteeCount: "2 Devotees",
-        priceINR: basePrice + 300,
-        description: "Personalized Sankalpam for Couple / 2 Devotees.",
-        imageUrl: defaultPackageAvatars[1],
-      },
-      {
-        id: "pkg-3",
-        name: "Family Homa",
-        devoteeCount: "4 Devotees",
-        priceINR: basePrice + 600,
-        description: "Personalized Sankalpam for 4 Family Members.",
-        imageUrl: defaultPackageAvatars[2],
-      },
-    ];
+    return [];
   }, [homa]);
 
   // Auto-select first package if none selected
@@ -256,7 +232,7 @@ export default function HomaDetailClient({
     }
   }, [packagesList, selectedPackageId]);
 
-  const getDisplayPrice = (item: any) => {
+  const getDisplayPrice = (item: Record<string, any>) => {
     return item?.[`price${currency}`] ?? item?.priceINR ?? item?.price ?? 1250;
   };
 
@@ -292,8 +268,9 @@ export default function HomaDetailClient({
         return;
       }
       window.location.href = sankalpUrl;
-    } catch (err: any) {
-      setCartError(err.message || "An error occurred. Please try again.");
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : "An error occurred. Please try again.";
+      setCartError(errorMessage);
     } finally {
       setAddingToCart(false);
     }
@@ -430,16 +407,16 @@ export default function HomaDetailClient({
   const galleryList =
     Array.isArray(homa.gallery) && homa.gallery.length > 0
       ? homa.gallery.map((img: string) => getHomaImageUrl(img)).filter(Boolean)
-      : Array.isArray((homa as any).galleryUrl) && (homa as any).galleryUrl.length > 0
-      ? (homa as any).galleryUrl.map((img: string) => getHomaImageUrl(img)).filter(Boolean)
-      : typeof (homa as any).galleryUrl === "string" && (homa as any).galleryUrl.trim()
-      ? [getHomaImageUrl((homa as any).galleryUrl)]
+      : Array.isArray(homa.galleryUrl) && homa.galleryUrl.length > 0
+      ? homa.galleryUrl.map((img: string) => getHomaImageUrl(img)).filter(Boolean)
+      : typeof homa.galleryUrl === "string" && homa.galleryUrl.trim()
+      ? [getHomaImageUrl(homa.galleryUrl)]
       : [];
 
   const templeImage =
-    (typeof (homa as any).templeImageUrl === "string" && (homa as any).templeImageUrl.trim()) ||
+    (typeof homa.templeImageUrl === "string" && homa.templeImageUrl.trim()) ||
     (typeof homa.templeImage === "string" && homa.templeImage.trim()) ||
-    (typeof (homa as any).details?.templeImageUrl === "string" && (homa as any).details.templeImageUrl.trim()) ||
+    (typeof homa.details?.templeImageUrl === "string" && homa.details.templeImageUrl.trim()) ||
     (typeof homa.details?.templeImage === "string" && homa.details.templeImage.trim()) ||
     "";
 
@@ -573,16 +550,17 @@ export default function HomaDetailClient({
               </div>
 
               {/* Package Selection Cards Grid */}
-              <div className="bg-white border border-stone-200/90 rounded-2xl p-4 sm:p-5 mb-5 shadow-xs space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-extrabold tracking-wider text-stone-500 uppercase">Reserve your sankalp</span>
-                  <span className="text-[11px] font-bold text-[#00b050] bg-green-50 px-2.5 py-0.5 rounded-full border border-green-200/60">
-                    Verified Pandits
-                  </span>
-                </div>
+              {packagesList.length > 0 && (
+                <div className="bg-white border border-stone-200/90 rounded-2xl p-4 sm:p-5 mb-5 shadow-xs space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-extrabold tracking-wider text-stone-500 uppercase">Reserve your sankalp</span>
+                    <span className="text-[11px] font-bold text-[#00b050] bg-green-50 px-2.5 py-0.5 rounded-full border border-green-200/60">
+                      Verified Pandits
+                    </span>
+                  </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  {packagesList.map((pkg, idx) => {
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    {packagesList.map((pkg, idx) => {
                     const isSelected = selectedPackage?.id === pkg.id;
                     const displayPrice = getDisplayPrice(pkg);
                     const pkgAvatar = pkg.imageUrl || defaultPackageAvatars[idx % defaultPackageAvatars.length];
@@ -606,20 +584,21 @@ export default function HomaDetailClient({
                           <span className="text-[11px] font-semibold text-stone-500 block truncate">{devoteesText}</span>
                           <span className="font-extrabold text-sm text-[#00b050] block">₹{displayPrice}</span>
                         </div>
-                        {isSelected && (
-                          <div className="absolute top-2 right-2 w-4 h-4 rounded-full bg-[#00b050] text-white flex items-center justify-center text-[10px] font-bold shadow-xs">
-                            ✓
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
+                          {isSelected && (
+                            <div className="absolute top-2 right-2 w-4 h-4 rounded-full bg-[#00b050] text-white flex items-center justify-center text-[10px] font-bold shadow-xs">
+                              ✓
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Primary Participate / Book Now CTA Button */}
               <button
-                onClick={() => setShowDetailsModal(true)}
+                onClick={handleAddHomaToCart}
                 className="w-full bg-[#00b050] hover:bg-[#009644] active:scale-95 text-white font-extrabold text-lg py-4 px-6 rounded-2xl shadow-lg shadow-green-600/20 transition-all flex items-center justify-center gap-2 mb-4"
               >
                 <span>₹{priceVal}</span>
@@ -938,91 +917,42 @@ export default function HomaDetailClient({
             <h3 className="text-2xl font-serif font-bold text-stone-900 mb-2">Select Package</h3>
             <p className="text-stone-600 text-xs sm:text-sm mb-6">Choose your desired package for sacred fire lab participation.</p>
 
-            <div className="space-y-4 mb-6">
-              {packagesList.map((pkg) => {
-                const isSelected = selectedPackage?.id === pkg.id;
-                return (
-                  <div
-                    key={pkg.id}
-                    onClick={() => setSelectedPackageId(pkg.id)}
-                    className={`border-2 rounded-2xl p-4 cursor-pointer transition-all flex items-center justify-between ${
-                      isSelected
-                        ? "border-[#00b050] bg-green-50/50 shadow-xs"
-                        : "border-stone-200 hover:border-stone-400 bg-white"
-                    }`}
-                  >
-                    <div>
-                      <h4 className="font-bold text-stone-900 text-base">{pkg.name}</h4>
-                      <p className="text-stone-600 text-xs mt-1">{pkg.description || "Includes personalized sankalpam and video proof."}</p>
+            {packagesList.length > 0 && (
+              <div className="space-y-4 mb-6">
+                {packagesList.map((pkg) => {
+                  const isSelected = selectedPackage?.id === pkg.id;
+                  return (
+                    <div
+                      key={pkg.id}
+                      onClick={() => setSelectedPackageId(pkg.id)}
+                      className={`border-2 rounded-2xl p-4 cursor-pointer transition-all flex items-center justify-between ${
+                        isSelected
+                          ? "border-[#00b050] bg-green-50/50 shadow-xs"
+                          : "border-stone-200 hover:border-stone-400 bg-white"
+                      }`}
+                    >
+                      <div>
+                        <h4 className="font-bold text-stone-900 text-base">{pkg.name}</h4>
+                        <p className="text-stone-600 text-xs mt-1">{pkg.description || "Includes personalized sankalpam and video proof."}</p>
+                      </div>
+                      <div className="text-right">
+                        <span className="font-extrabold text-lg text-stone-900 block">₹{getDisplayPrice(pkg)}</span>
+                        <span className="text-[10px] font-bold text-[#00b050] uppercase">{isSelected ? "Selected ✓" : "Select"}</span>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <span className="font-extrabold text-lg text-stone-900 block">₹{getDisplayPrice(pkg)}</span>
-                      <span className="text-[10px] font-bold text-[#00b050] uppercase">{isSelected ? "Selected ✓" : "Select"}</span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+                  );
+                })}
+              </div>
+            )}
 
             <button
               onClick={() => {
                 setShowPackageModal(false);
-                setShowDetailsModal(true);
+                handleAddHomaToCart();
               }}
               className="w-full bg-[#00b050] hover:bg-[#009644] text-white font-extrabold text-base py-3.5 rounded-full shadow-md transition-all"
             >
               Proceed to Details
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* ── 7. Details Entry Modal ── */}
-      {showDetailsModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl w-full max-w-md p-6 sm:p-8 shadow-2xl relative">
-            <button
-              onClick={() => setShowDetailsModal(false)}
-              className="absolute top-4 right-4 text-stone-400 hover:text-stone-700 p-2"
-            >
-              <XMarkIcon className="w-6 h-6" />
-            </button>
-
-            <h3 className="text-2xl font-serif font-bold text-stone-900 mb-2">Devotee Details</h3>
-            <p className="text-stone-600 text-xs sm:text-sm mb-6">Enter details for sacred Sankalpam and video delivery.</p>
-
-            <div className="space-y-4 mb-6">
-              <div>
-                <label className="block text-xs font-extrabold text-stone-700 uppercase mb-1">Devotee Name</label>
-                <input
-                  type="text"
-                  value={userDetails.name}
-                  onChange={(e) => setUserDetails({ ...userDetails, name: e.target.value })}
-                  placeholder="e.g. Ramesh Kumar"
-                  className="w-full border border-stone-300 rounded-xl px-4 py-3 text-sm outline-none focus:border-[#00b050]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-extrabold text-stone-700 uppercase mb-1">WhatsApp Number</label>
-                <input
-                  type="tel"
-                  value={userDetails.whatsapp}
-                  onChange={(e) => setUserDetails({ ...userDetails, whatsapp: e.target.value })}
-                  placeholder="e.g. 9876543210"
-                  className="w-full border border-stone-300 rounded-xl px-4 py-3 text-sm outline-none focus:border-[#00b050]"
-                />
-              </div>
-
-              {cartError && <p className="text-xs text-red-500 font-bold">{cartError}</p>}
-            </div>
-
-            <button
-              disabled={!userDetails.name.trim() || !userDetails.whatsapp.trim() || addingToCart}
-              onClick={handleAddHomaToCart}
-              className="w-full bg-[#00b050] hover:bg-[#009644] text-white font-extrabold text-base py-3.5 rounded-full shadow-md transition-all disabled:opacity-50"
-            >
-              {addingToCart ? "Processing..." : "Proceed to Sankalpam"}
             </button>
           </div>
         </div>

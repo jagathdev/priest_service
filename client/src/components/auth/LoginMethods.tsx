@@ -75,7 +75,7 @@ export default function LoginMethods() {
     // 2. Dynamically detect country using GeoIP
     async function detectCountry() {
       try {
-        const res = await fetch("/api/auth/geoip");
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:5000"}/api/auth/geoip`);
         const data = await res.json();
         if (data && data.country) {
           setDetectedCountry(data.country);

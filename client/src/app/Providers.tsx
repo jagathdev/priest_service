@@ -1,14 +1,14 @@
 "use client";
 
 import { LanguageProvider } from "@/contexts/LanguageContext";
-import { CurrencyProvider } from "@/contexts/CurrencyContext";
+import { UserProvider } from "@/contexts/UserContext";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <LanguageProvider>
-      <CurrencyProvider>
+    <UserProvider>
+      <LanguageProvider>
         {children}
-      </CurrencyProvider>
-    </LanguageProvider>
+      </LanguageProvider>
+    </UserProvider>
   );
 }

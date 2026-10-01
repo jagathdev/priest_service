@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import Link from "next/link";
+import { useUser } from "@/contexts/UserContext";
 
 interface User {
   id?: string;
@@ -39,28 +40,12 @@ export interface Address {
 
 export default function AccountPage() {
   const router = useRouter();
-  const [user, setUser] = useState<User | null>(() => {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('mockUser');
-      if (stored) {
-        try { return JSON.parse(stored); } catch (e) {}
-      }
-    }
-    return null;
-  });
+  const { user, setUser } = useUser();
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("profile");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [formData, setFormData] = useState<User>(() => {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('mockUser');
-      if (stored) {
-        try { return JSON.parse(stored); } catch (e) {}
-      }
-    }
-    return {};
-  });
+  const [formData, setFormData] = useState<User>({});
   const [saving, setSaving] = useState(false);
 
   const addresses = user?.addresses || [];
@@ -142,6 +127,10 @@ export default function AccountPage() {
   const [isSendingOtp, setIsSendingOtp] = useState(false);
   const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
 
+  useEffect(() => {
+    // API call removed
+  }, []);
+
   const handleSendOtp = async () => {
     if (!phoneNumber || phoneNumber.length !== 10) {
       alert("Please enter a valid 10-digit mobile number");
@@ -161,7 +150,7 @@ export default function AccountPage() {
 
       if (data.success) {
         setLoginStep('otp');
-        setTimer(60);
+        setTimer(30);
         setOtp(['', '', '', '', '', '']);
       } else {
         alert(data.message || "Failed to send OTP");
@@ -190,9 +179,10 @@ export default function AccountPage() {
       const data = await res.json();
 
       if (data.success) {
-        const userData = data.data.user;
-        setUser(userData);
-        localStorage.setItem('mockUser', JSON.stringify(userData));
+        const u = data.data?.user || {};
+        setUser(u);
+        setFormData(u);
+        document.cookie = "userLogin=true; path=/; max-age=604800;";
         setShowLoginModal(false);
         setOtp(['', '', '', '', '', '']);
       } else {
@@ -204,7 +194,7 @@ export default function AccountPage() {
       setIsVerifyingOtp(false);
     }
   };
-  const [timer, setTimer] = useState(60);
+  const [timer, setTimer] = useState(30);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -216,24 +206,6 @@ export default function AccountPage() {
     return () => clearInterval(interval);
   }, [showLoginModal, loginStep, timer]);
 
-  useEffect(() => {
-    fetch("/api/auth/me")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.authenticated) {
-          setUser(data.user);
-          setFormData(data.user);
-          localStorage.setItem('mockUser', JSON.stringify(data.user));
-        } else {
-          setUser(null);
-          localStorage.removeItem('mockUser');
-        }
-      })
-      .catch(() => {
-        setUser(null);
-        localStorage.removeItem('mockUser');
-      });
-  }, []);
 
   useEffect(() => {
     if (typeof window !== "undefined" && window.location.hash) {
@@ -246,11 +218,11 @@ export default function AccountPage() {
 
   const handleLogout = async () => {
     try {
-      await fetch("/api/auth/logout", { method: "POST" });
+      await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:5000"}/api/auth/logout`, { method: "POST" });
     } catch {
       // ignore
     }
-    localStorage.removeItem('mockUser');
+    document.cookie = "userLogin=false; path=/; max-age=0;";
     setUser(null);
   };
 
@@ -260,7 +232,7 @@ export default function AccountPage() {
     setSaving(true);
     try {
       const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.PUBLIC_BASE_URL || "http://localhost:5000";
-      const updateUrl = process.env.API_USER_UPDATE || "/api/users/updateProfile";
+      const updateUrl = process.env.NEXT_PUBLIC_API_USER_UPDATE || "/api/users/updateProfile";
 
       const res = await fetch(`${baseUrl}${updateUrl}`, {
         method: "PUT",
@@ -279,7 +251,7 @@ export default function AccountPage() {
       if (data.success) {
         const updatedUser = { ...user, ...data.data };
         setUser(updatedUser);
-        localStorage.setItem('mockUser', JSON.stringify(updatedUser));
+        // Mock update state
         setShowEditModal(false);
       } else {
         alert(data.message || "Failed to update profile");
@@ -335,7 +307,8 @@ export default function AccountPage() {
         addresses: updatedAddresses
       };
 
-      const res = await fetch(`${baseUrl}/api/users/updateProfile`, {
+      const updateUrl = process.env.NEXT_PUBLIC_API_USER_UPDATE || "/api/users/updateProfile";
+      const res = await fetch(`${baseUrl}${updateUrl}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
@@ -345,7 +318,7 @@ export default function AccountPage() {
       if (data.success) {
         const updatedUser = { ...user, ...data.data };
         setUser(updatedUser);
-        localStorage.setItem('mockUser', JSON.stringify(updatedUser));
+        // Mock update state
         setShowAddressModal(false);
       } else {
         alert(data.message || "Failed to save address");
@@ -376,7 +349,8 @@ export default function AccountPage() {
         addresses: updatedAddresses
       };
 
-      const res = await fetch(`${baseUrl}/api/users/updateProfile`, {
+      const updateUrl = process.env.NEXT_PUBLIC_API_USER_UPDATE || "/api/users/updateProfile";
+      const res = await fetch(`${baseUrl}${updateUrl}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
@@ -385,7 +359,7 @@ export default function AccountPage() {
       if (data.success) {
         const updatedUser = { ...user, ...data.data };
         setUser(updatedUser);
-        localStorage.setItem('mockUser', JSON.stringify(updatedUser));
+        // Mock update state
       } else {
         alert(data.message || "Failed to delete address");
       }
@@ -784,7 +758,7 @@ export default function AccountPage() {
                           <div className="flex flex-col sm:flex-row items-start justify-between gap-6">
                             <div>
                               <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight h-8 capitalize">
-                                {user?.name || ""}
+                                {user?.name || "Enter your name"}
                               </h2>
                               <span className="bg-gray-100 text-gray-600 text-xs px-3 py-1 rounded-full font-semibold inline-block mt-1">
                                 Devotee
@@ -801,7 +775,7 @@ export default function AccountPage() {
                                   <svg className="w-4 h-4 text-red-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                                   </svg>
-                                  <span className="h-5 flex items-center">{user?.email || ""}</span>
+                                  <span className="h-5 flex items-center">{user?.email || "Add your email"}</span>
                                 </div>
                               </div>
                             </div>
