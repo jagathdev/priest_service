@@ -20,11 +20,13 @@ function getRazorpay() {
 export const createRazorpayOrder = async ({
     amount,
     receipt,
+    notes,
 }) => {
     const order = await getRazorpay().orders.create({
         amount: Math.round(amount * 100),
         currency: process.env.RAZORPAY_CURRENCY || "INR",
         receipt,
+        notes,
     });
 
     return order;

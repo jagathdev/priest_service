@@ -2,6 +2,7 @@ import {
     createRazorpayOrder,
     verifyRazorpayPayment,
 } from "../services/payment.service.js";
+import crypto from "crypto";
 
 export const createPaymentOrder = async (req, res) => {
     try {
@@ -37,16 +38,17 @@ export const createPaymentOrder = async (req, res) => {
         // to save the order details in your MongoDB database before calling Razorpay
         console.log("Order payload received:", { customerId, shoppingCartId, finalAmount, contactDetail });
 
-        const orderReceipt =
-            receipt ||
-            `receipt_${Date.now()}`;
+        const customUniqueId = `TXN_${crypto.randomBytes(8).toString("hex").toUpperCase()}`;
 
-        // CREATE RAZORPAY ORDER
+        const orderReceipt = receipt ? String(receipt) : customUniqueId;
 
         const razorpayOrder =
             await createRazorpayOrder({
                 amount: Number(finalAmount),
                 receipt: orderReceipt,
+                notes: {
+                    uniqueId: customUniqueId,
+                },
             });
 
         return res.status(200).json({
@@ -54,9 +56,9 @@ export const createPaymentOrder = async (req, res) => {
             message: "Payment order created successfully",
 
             data: {
-                orderId: razorpayOrder.id,
                 amount: razorpayOrder.amount,
                 currency: razorpayOrder.currency,
+                notes: razorpayOrder.notes,
 
                 keyId: process.env.RAZORPAY_KEY_ID,
             },
