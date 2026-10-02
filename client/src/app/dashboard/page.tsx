@@ -26,7 +26,7 @@ export default function DashboardPage() {
   const [fetchedPujas, setFetchedPujas] = useState(false);
 
   useEffect(() => {
-    const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:5000";
+    const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "https://priest-service.onrender.com";
     fetch(`${backendUrl}/api/pujas`)
       .then((r) => (r.ok ? r.json() : null))
       .then((resData) => {

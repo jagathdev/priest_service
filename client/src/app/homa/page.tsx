@@ -55,7 +55,7 @@ export default function HomaPage() {
 
   // Fetch homas from Express API endpoint
   useEffect(() => {
-    const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:5000";
+    const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "https://priest-service.onrender.com";
     fetch(`${backendUrl}/api/homas`)
       .then((r) => (r.ok ? r.json() : null))
       .then((resData) => {
