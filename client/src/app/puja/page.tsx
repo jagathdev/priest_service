@@ -221,6 +221,8 @@ function PujaFilterModal({
   onClear: () => void;
 }) {
   const [draftFilters, setDraftFilters] = useState<FilterState>(filters);
+  const [activeTab, setActiveTab] = useState<string>(filterGroups[0].label);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const selectFilter = (label: string, value: string) => {
     setDraftFilters((prev) => {
@@ -233,139 +235,107 @@ function PujaFilterModal({
     });
   };
 
-  const renderCheckboxOption = (groupLabel: string, value: string) => {
-    const selected = (draftFilters[groupLabel] || []).includes(value);
-
-    return (
-      <button
-        key={value}
-        type="button"
-        onClick={() => selectFilter(groupLabel, value)}
-        className="flex w-full items-start gap-3 text-left"
-        aria-pressed={selected}
-      >
-        <span className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border transition ${selected ? "border-[#2563eb] bg-[#2563eb] text-white" : "border-gray-200 bg-white text-transparent"
-          }`}>
-          <svg viewBox="0 0 12 12" fill="none" className="h-3 w-3">
-            <path d="M2.2 6.2 4.8 8.7 9.8 3.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </span>
-        <span className="text-base font-bold leading-6 text-[#1f2937]">{value}</span>
-      </button>
-    );
-  };
-
-  const deityGroup = filterGroups.find((group) => group.label === "Deity");
-  const compactGroups = filterGroups.filter((group) => ["Tithis", "Dosha", "Benefits"].includes(group.label));
-  const locationGroup = filterGroups.find((group) => group.label === "Location");
+  const activeGroup = filterGroups.find((g) => g.label === activeTab) || filterGroups[0];
+  const filteredOptions = activeGroup.options.filter(
+    (o) => o.value !== "All" && o.value.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-[#111827]/55 px-0 sm:px-4 py-0 sm:py-6 backdrop-blur-[1px]">
-      <div className="flex max-h-[92vh] sm:max-h-[92vh] w-full max-w-[920px] flex-col overflow-hidden rounded-t-2xl sm:rounded-2xl bg-white shadow-[0_24px_80px_rgba(15,23,42,0.28)]">
-        <div className="flex items-center justify-between border-b border-gray-100 px-6 py-5">
-          <h3 className="text-xl font-black text-[#1f1f1f]">Puja Filters</h3>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close puja filters"
-            className="flex h-10 w-10 items-center justify-center rounded-full text-gray-700 transition hover:bg-gray-100"
-          >
-            <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6">
-              <path d="M6 6l12 12M18 6 6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-            </svg>
+    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm transition-opacity duration-300">
+      <div className="w-full max-w-[550px] flex flex-col overflow-hidden rounded-[20px] bg-white shadow-2xl max-h-[85dvh] animate-[fadeIn_0.2s_ease-out]">
+        
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-5 border-b border-[#ebd5c1]">
+          <h3 className="text-[22px] font-serif text-[#1f1f1f]">Puja Filters</h3>
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-800 transition-colors">
+             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
         </div>
 
-        <div className="overflow-y-auto px-6 py-7">
-          <div className="space-y-9">
-            {deityGroup && (
-              <section>
-                <h4 className="mb-5 text-xl font-black text-[#1f1f1f]">{deityGroup.label}</h4>
-                <div className="grid grid-cols-3 gap-x-4 gap-y-5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-                  {deityGroup.options
-                    .filter((option) => option.value !== "All")
-                    .map((option) => {
-                      const selected = (draftFilters[deityGroup.label] || []).includes(option.value);
+        {/* Body */}
+        <div className="flex flex-1 overflow-hidden min-h-[400px]">
+           {/* Sidebar */}
+           <div className="w-[35%] sm:w-1/3 border-r border-[#ebd5c1] overflow-y-auto bg-white">
+             {filterGroups.map((group) => {
+               const isActive = group.label === activeTab;
+               return (
+                 <button 
+                   key={group.label}
+                   onClick={() => {
+                     setActiveTab(group.label);
+                     setSearchQuery("");
+                   }}
+                   className={`w-full text-left px-5 py-4 text-[13px] sm:text-sm font-bold transition-colors relative ${isActive ? 'bg-[#fcf5f3] text-[#009644]' : 'text-gray-700 hover:bg-gray-50'}`}
+                 >
+                   {isActive && <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#009644]"></div>}
+                   {group.label}
+                 </button>
+               )
+             })}
+           </div>
 
-                      return (
-                        <button
-                          key={option.value}
-                          type="button"
-                          onClick={() => selectFilter(deityGroup.label, option.value)}
-                          className="text-center"
-                          aria-pressed={selected}
-                        >
-                          <span className={`relative mx-auto block h-24 w-24 overflow-hidden rounded-lg border-2 transition ${selected ? "border-[#5B5BF6] shadow-[0_0_0_3px_rgba(91,91,246,0.2)]" : "border-transparent hover:border-gray-200"
-                            }`}>
-                            <img
-                              src={filterOptionImages[option.value] || "/images/Lakshmi-Homam.jpg"}
-                              alt={option.value}
-                              className="h-full w-full object-cover"
-                            />
-                            {/* Selected overlay with big centered checkmark */}
-                            {selected && (
-                              <span className="absolute inset-0 flex items-center justify-center bg-[#5B5BF6]/50">
-                                <svg viewBox="0 0 24 24" fill="none" className="h-10 w-10 drop-shadow-lg">
-                                  <circle cx="12" cy="12" r="11" fill="white" />
-                                  <path d="M6.5 12.5 10.5 16.5 17.5 8" stroke="#5B5BF6" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-                                </svg>
-                              </span>
-                            )}
-                          </span>
-                          <span className={`mt-2 block text-sm font-bold leading-5 ${selected ? "text-[#5B5BF6]" : "text-[#1f2937]"
-                            }`}>
-                            {option.value}
-                          </span>
-                        </button>
-                      );
-                    })}
-                </div>
-              </section>
-            )}
+           {/* Content */}
+           <div className="w-[65%] sm:w-2/3 p-6 overflow-y-auto relative custom-scrollbar">
+             <h4 className="text-[17px] font-bold text-[#9e1c1c] mb-5">{activeGroup.label}</h4>
+             
+             {/* Search */}
+             <div className="relative mb-6">
+               <input 
+                 type="text" 
+                 value={searchQuery}
+                 onChange={(e) => setSearchQuery(e.target.value)}
+                 placeholder={`Search ${activeGroup.label}`} 
+                 className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-full outline-none text-[13px] sm:text-sm focus:border-[#009644] transition-colors"
+               />
+               <svg className="w-4 h-4 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-4.35-4.35M17 10a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+             </div>
 
-            <div className="grid gap-8 md:grid-cols-3">
-              {compactGroups.map((group) => (
-                <section key={group.label}>
-                  <h4 className="mb-5 text-xl font-black text-[#1f1f1f]">{group.label}</h4>
-                  <div className="space-y-4">
-                    {group.options
-                      .filter((option) => option.value !== "All")
-                      .map((option) => renderCheckboxOption(group.label, option.value))}
-                  </div>
-                </section>
-              ))}
-            </div>
-
-            {locationGroup && (
-              <section>
-                <h4 className="mb-5 text-xl font-black text-[#1f1f1f]">{locationGroup.label}</h4>
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  {locationGroup.options
-                    .filter((option) => option.value !== "All")
-                    .map((option) => renderCheckboxOption(locationGroup.label, option.value))}
-                </div>
-              </section>
-            )}
-          </div>
+             {/* Options */}
+             <div className="space-y-5">
+               {filteredOptions.length > 0 ? (
+                 filteredOptions.map((option) => {
+                   const isSelected = (draftFilters[activeGroup.label] || []).includes(option.value);
+                   return (
+                     <label key={option.value} className="flex items-start gap-3.5 cursor-pointer group">
+                       <div className="relative flex items-center justify-center shrink-0 mt-0.5">
+                         <input 
+                           type="checkbox" 
+                           checked={isSelected}
+                           onChange={() => selectFilter(activeGroup.label, option.value)}
+                           className="peer w-[18px] h-[18px] appearance-none rounded-[4px] border border-gray-300 checked:bg-white checked:border-[#009644] transition-colors cursor-pointer"
+                         />
+                         {/* Custom checkmark */}
+                         <svg className="absolute w-3 h-3 text-transparent peer-checked:text-[#009644] pointer-events-none transition-colors" viewBox="0 0 14 10" fill="none">
+                           <path d="M1 5L4.5 8.5L13 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                         </svg>
+                       </div>
+                       <span className="text-[13px] sm:text-sm font-bold text-gray-700 group-hover:text-gray-900 leading-snug pt-[1px]">{option.value}</span>
+                     </label>
+                   )
+                 })
+               ) : (
+                 <p className="text-sm text-gray-500 text-center py-4">No matching options found.</p>
+               )}
+             </div>
+           </div>
         </div>
 
-        <div className="flex flex-col gap-4 border-t border-gray-100 px-6 py-5 sm:flex-row">
-          <button
-            type="button"
-            onClick={() => {
-              setDraftFilters(defaultFilters);
-              onClear();
-            }}
-            className="h-14 rounded border border-gray-200 bg-white px-12 text-base font-bold text-[#1f1f1f] transition hover:bg-gray-50"
+        {/* Footer */}
+        <div className="flex flex-col sm:flex-row items-center justify-between p-4 sm:p-5 border-t border-[#ebd5c1] gap-3 bg-white">
+          <button 
+            onClick={() => { setDraftFilters(defaultFilters); onClear(); }}
+            className="w-full sm:flex-1 py-3 border border-gray-300 rounded-full text-sm font-bold text-gray-800 hover:bg-gray-50 transition-colors"
           >
             Clear Filter
           </button>
-          <button
-            type="button"
+          <button 
             onClick={() => onApply(draftFilters)}
-            className="h-14 rounded bg-[#2563eb] px-14 text-base font-bold text-white shadow-sm transition hover:bg-[#1d4ed8]"
+            className="w-full sm:flex-1 py-3 bg-[#00b050] text-white rounded-full text-sm font-bold flex items-center justify-center relative hover:bg-[#009644] transition-colors group"
           >
-            Apply Filter
+            <span>Apply Filter</span>
+            <div className="absolute right-2 w-[28px] h-[28px] rounded-full bg-white text-[#00b050] flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 transition-transform">
+               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+            </div>
           </button>
         </div>
       </div>
@@ -411,46 +381,38 @@ function ShareModal({
         <h3 className="text-lg font-bold text-gray-900 mb-6">Share Pooja</h3>
 
         <div className="grid grid-cols-2 gap-3">
-          <button onClick={() => handleShare("whatsapp")} className="flex flex-col items-center justify-center p-4 rounded-xl border border-gray-100 hover:bg-gray-50 hover:border-green-200 transition-colors">
-            <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white mb-2 shadow-sm">
-              <i className="fa-brands fa-whatsapp text-xl"></i>
-            </div>
-            <span className="text-xs font-semibold text-gray-700">WhatsApp</span>
+          <button onClick={() => handleShare("whatsapp")} className="flex flex-col items-center justify-center py-5 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors">
+            <i className="fa-brands fa-whatsapp text-3xl text-[#25D366] mb-2"></i>
+            <span className="text-sm font-semibold text-gray-700">WhatsApp</span>
           </button>
 
-          <button className="flex flex-col items-center justify-center p-4 rounded-xl border border-gray-100 hover:bg-gray-50 transition-colors">
-            <div className="w-10 h-10 bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-500 rounded-full flex items-center justify-center text-white mb-2 shadow-sm">
-              <i className="fa-brands fa-instagram text-xl"></i>
-            </div>
-            <span className="text-xs font-semibold text-gray-700">Instagram</span>
+          <button onClick={() => handleShare("instagram")} className="flex flex-col items-center justify-center py-5 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors">
+            <i className="fa-brands fa-instagram text-3xl mb-2" style={{ background: '-webkit-linear-gradient(#f09433, #e6683c, #dc2743, #cc2366, #bc1888)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}></i>
+            <span className="text-sm font-semibold text-gray-700">Instagram</span>
           </button>
 
-          <button onClick={() => handleShare("facebook")} className="flex flex-col items-center justify-center p-4 rounded-xl border border-gray-100 hover:bg-gray-50 hover:border-blue-200 transition-colors">
-            <div className="w-10 h-10 bg-[#1877F2] rounded-full flex items-center justify-center text-white mb-2 shadow-sm">
-              <i className="fa-brands fa-facebook-f text-xl"></i>
-            </div>
-            <span className="text-xs font-semibold text-gray-700">Facebook</span>
+          <button onClick={() => handleShare("facebook")} className="flex flex-col items-center justify-center py-5 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors">
+            <i className="fa-brands fa-facebook text-3xl text-[#1877F2] mb-2"></i>
+            <span className="text-sm font-semibold text-gray-700">Facebook</span>
           </button>
 
-          <button onClick={() => handleShare("twitter")} className="flex flex-col items-center justify-center p-4 rounded-xl border border-gray-100 hover:bg-gray-50 hover:border-gray-300 transition-colors">
-            <div className="w-10 h-10 bg-black rounded-full flex items-center justify-center text-white mb-2 shadow-sm">
-              <i className="fa-brands fa-x-twitter text-xl"></i>
+          <button onClick={() => handleShare("twitter")} className="flex flex-col items-center justify-center py-5 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors">
+            <div className="w-8 h-8 bg-black rounded-full flex items-center justify-center text-white mb-2">
+              <i className="fa-brands fa-x-twitter text-lg"></i>
             </div>
-            <span className="text-xs font-semibold text-gray-700">Twitter</span>
+            <span className="text-sm font-semibold text-gray-700">Twitter</span>
           </button>
 
-          <button onClick={() => handleShare("telegram")} className="flex flex-col items-center justify-center p-4 rounded-xl border border-gray-100 hover:bg-gray-50 hover:border-blue-200 transition-colors">
-            <div className="w-10 h-10 bg-[#0088cc] rounded-full flex items-center justify-center text-white mb-2 shadow-sm">
-              <i className="fa-brands fa-telegram text-xl"></i>
-            </div>
-            <span className="text-xs font-semibold text-gray-700">Telegram</span>
+          <button onClick={() => handleShare("telegram")} className="flex flex-col items-center justify-center py-5 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors">
+            <i className="fa-brands fa-telegram text-3xl text-[#0088cc] mb-2"></i>
+            <span className="text-sm font-semibold text-gray-700">Telegram</span>
           </button>
 
-          <button onClick={copyLink} className="flex flex-col items-center justify-center p-4 rounded-xl border border-gray-100 hover:bg-gray-50 transition-colors">
-            <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 mb-2 shadow-sm">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
+          <button onClick={copyLink} className="flex flex-col items-center justify-center py-5 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors">
+            <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 mb-2">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
             </div>
-            <span className="text-xs font-semibold text-gray-700">Copy Link</span>
+            <span className="text-sm font-semibold text-gray-700">Copy Link</span>
           </button>
         </div>
       </div>
@@ -697,67 +659,76 @@ export default function PujaPage() {
                 return (
                   <div
                     key={puja._id}
-                    className="bg-white rounded-2xl shadow-sm border border-gray-200 flex flex-col overflow-hidden group hover:shadow-md transition-shadow"
+                    className="bg-white rounded-2xl shadow-sm border border-gray-200 flex flex-col overflow-hidden group hover:shadow-md transition-shadow relative"
                   >
-                    <div className="relative h-[220px] w-full shrink-0">
-                      <img
-                        src={getPujaImageUrl(puja.imageUrl)}
-                        alt={puja.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                      />
-                      {puja.badge && (
-                        <div className="absolute top-4 left-0 bg-[#d92b2b] text-white text-[11px] font-bold px-3 py-1 shadow-sm rounded-r-md">
-                          {puja.badge}
-                        </div>
-                      )}
-
-                      <div className="absolute top-4 right-4 flex flex-col gap-2">
-                        <WishlistButton itemId={puja._id} />
-                        <button onClick={() => openShareModal(fullUrl)} className="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-sm text-gray-600 hover:text-[#d95a2b] transition-colors">
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg>
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="p-5 flex flex-col flex-1 text-left">
-                      <p className="text-[#d95a2b] text-[10px] font-bold uppercase tracking-widest mb-2 flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#d95a2b]"></span>
-                        {puja.subtitle || "SPECIAL PUJA"}
-                      </p>
-
-                      <h3 className="text-[18px] font-bold text-gray-900 mb-2 leading-snug line-clamp-2">
-                        {puja.title}
-                      </h3>
-
-                      <p className="text-gray-500 text-[13px] leading-relaxed line-clamp-2 mb-4 flex-1">
-                        {puja.description || "Join us for this sacred ritual to seek divine blessings and fulfillment."}
-                      </p>
-
-                      <div className="border border-gray-100 rounded-lg p-3 space-y-2 mb-4 bg-gray-50/50">
-                        <div className="flex items-center gap-2.5 text-[12px] text-gray-600">
-                          <svg className="w-4 h-4 text-[#d95a2b] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                          <span className="line-clamp-1">{puja.location || "Vaidika Yagashala"}</span>
-                        </div>
-                        <div className="flex items-center gap-2.5 text-[12px] text-gray-600">
-                          <svg className="w-4 h-4 text-[#d95a2b] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                          <span className="line-clamp-1">{puja.date || "Available Daily"}</span>
-                        </div>
+                    <Link href={`/puja/${puja.slug || slugify(puja.title)}`} className="flex flex-col flex-1 cursor-pointer block">
+                      <div className="relative h-[220px] w-full shrink-0">
+                        <img
+                          src={getPujaImageUrl(puja.imageUrl)}
+                          alt={puja.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                        />
+                        {puja.badge && (
+                          <div className="absolute top-4 left-0 bg-[#d92b2b] text-white text-[11px] font-bold px-3 py-1 shadow-sm rounded-r-md">
+                            {puja.badge}
+                          </div>
+                        )}
                       </div>
 
-                      <div className="flex items-center justify-between mt-auto">
-                        <div>
-                          {/* We will attempt to get a price, otherwise show a placeholder */}
-                          <div className="text-[18px] font-black text-gray-900">₹{(puja as any).packages?.[0]?.priceINR || (puja as any).packages?.[0]?.price || '516'}</div>
-                          <div className="text-[10px] text-gray-500 font-semibold uppercase">Per Booking</div>
+                      <div className="p-5 flex flex-col flex-1 text-left">
+                        <p className="text-[#d95a2b] text-[10px] font-bold uppercase tracking-widest mb-2 flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#d95a2b]"></span>
+                          {puja.subtitle || "SPECIAL PUJA"}
+                        </p>
+
+                        <h3 className="text-[18px] font-bold text-gray-900 mb-2 leading-snug line-clamp-2">
+                          {puja.title}
+                        </h3>
+
+                        <p className="text-gray-500 text-[13px] leading-relaxed line-clamp-2 mb-4 flex-1">
+                          {puja.description || "Join us for this sacred ritual to seek divine blessings and fulfillment."}
+                        </p>
+
+                        <div className="border border-gray-100 rounded-lg p-3 space-y-2 mb-4 bg-gray-50/50">
+                          <div className="flex items-center gap-2.5 text-[12px] text-gray-600">
+                            <svg className="w-4 h-4 text-[#d95a2b] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                            <span className="line-clamp-1">{puja.location || "Vaidika Yagashala"}</span>
+                          </div>
+                          <div className="flex items-center gap-2.5 text-[12px] text-gray-600">
+                            <svg className="w-4 h-4 text-[#d95a2b] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                            <span className="line-clamp-1">{puja.date || "Available Daily"}</span>
+                          </div>
                         </div>
-                        <Link
-                          href={`/puja/${puja.slug || slugify(puja.title)}`}
-                          className="bg-[#009e5b] text-white text-[13px] font-bold px-5 py-2.5 rounded-full hover:bg-[#008c51] transition-colors flex items-center gap-1.5 shadow-sm"
-                        >
-                          Book Now
-                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7" /></svg>
-                        </Link>
+
+                        <div className="flex items-center justify-between mt-auto">
+                          <div>
+                            {/* We will attempt to get a price, otherwise show a placeholder */}
+                            <div className="text-[18px] font-black text-gray-900">₹{(puja as any).packages?.[0]?.priceINR || (puja as any).packages?.[0]?.price || '516'}</div>
+                            <div className="text-[10px] text-gray-500 font-semibold uppercase">Per Booking</div>
+                          </div>
+                          <div
+                            className="bg-[#009e5b] text-white text-[13px] font-bold px-5 py-2.5 rounded-full hover:bg-[#008c51] transition-colors flex items-center gap-1.5 shadow-sm"
+                          >
+                            Book Now
+                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7" /></svg>
+                          </div>
+                        </div>
                       </div>
+                    </Link>
+                    
+                    {/* Floating Actions Overlay */}
+                    <div className="absolute top-4 right-4 flex flex-col gap-2 z-10">
+                      <WishlistButton itemId={puja._id} />
+                      <button 
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          openShareModal(fullUrl);
+                        }} 
+                        className="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-sm text-gray-600 hover:text-[#d95a2b] transition-colors"
+                      >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg>
+                      </button>
                     </div>
                   </div>
                 )

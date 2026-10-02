@@ -377,94 +377,97 @@ export default function HomaPage() {
                         key={homa._id}
                         className="bg-white rounded-2xl border border-gray-200 shadow-xs hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col group relative"
                       >
-                        {/* ── Top Image Container ── */}
-                        <div className="relative h-[210px] w-full overflow-hidden bg-gray-100 shrink-0">
-                          <img
-                            src={getHomaImageUrl(homa.imageUrl)}
-                            alt={homa.title}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                          />
+                        <Link href={`/homa/${homa.slug || slugify(homa.title)}`} className="flex flex-col flex-1 cursor-pointer block">
+                          {/* ── Top Image Container ── */}
+                          <div className="relative h-[210px] w-full overflow-hidden bg-gray-100 shrink-0">
+                            <img
+                              src={getHomaImageUrl(homa.imageUrl)}
+                              alt={homa.title}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            />
 
-                          {/* Top Left Maroon Badge Pill */}
-                          <div className="absolute top-3 left-3 bg-[#701a28] text-white text-[11px] font-extrabold px-3.5 py-1.5 rounded-full shadow-md z-10 backdrop-blur-xs max-w-[80%] truncate">
-                            {homa.badge || homa.subtitle || "Special Homa"}
+                            {/* Top Left Maroon Badge Pill */}
+                            <div className="absolute top-3 left-3 bg-[#701a28] text-white text-[11px] font-extrabold px-3.5 py-1.5 rounded-full shadow-md z-10 backdrop-blur-xs max-w-[80%] truncate">
+                              {homa.badge || homa.subtitle || "Special Homa"}
+                            </div>
                           </div>
 
-                          {/* Top Right Action Buttons (Heart & Share) */}
-                          <div className="absolute top-3 right-3 flex items-center gap-1.5 z-10">
-                            <WishlistButton itemId={homa._id} />
-                            <button
-                              type="button"
-                              onClick={() => {
-                                if (navigator.share) {
-                                  navigator.share({ title: homa.title, url: window.location.href });
-                                }
-                              }}
-                              aria-label="Share homa"
-                              className="w-8 h-8 rounded-full bg-white/95 hover:bg-white text-gray-700 hover:text-blue-500 flex items-center justify-center shadow-sm transition"
-                            >
-                              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 100-5.367 3 3 0 000 5.367zm0 8.005a3 3 0 100-5.367 3 3 0 000 5.367z" />
+                          {/* ── Maroon Decorative Subtitle Line Below Image ── */}
+                          <div className="pt-3 px-4 text-center">
+                            <p className="text-[10px] font-bold text-[#800000] uppercase tracking-widest flex items-center justify-center gap-1.5">
+                              <span className="w-3.5 h-px bg-[#800000]/40 inline-block"></span>
+                              <span className="truncate">{homa.subtitle || homa.shortTitle || "VEDIC HOMA RITUAL"}</span>
+                              <span className="w-3.5 h-px bg-[#800000]/40 inline-block"></span>
+                            </p>
+                          </div>
+
+                          {/* ── Card Content Body ── */}
+                          <div className="p-4 flex flex-col flex-1">
+                            <h3 className="text-[16px] font-bold text-gray-900 leading-snug line-clamp-2 min-h-[46px]">
+                              {homa.title}
+                            </h3>
+
+                            <p className="text-xs text-gray-500 line-clamp-2 mt-1.5 mb-4 leading-relaxed min-h-[36px]">
+                              {homa.description || "A sacred ritual for divine blessings, removing difficulties and bringing peace and health."}
+                            </p>
+
+                            {/* Info Box 1: Date & Frequency */}
+                            <div className="bg-[#f8f9fa] border border-gray-100 rounded-xl px-3.5 py-2.5 mb-2 flex items-center gap-3 text-xs text-gray-700">
+                              <svg className="w-4 h-4 text-amber-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                               </svg>
-                            </button>
-                          </div>
-                        </div>
-
-                        {/* ── Maroon Decorative Subtitle Line Below Image ── */}
-                        <div className="pt-3 px-4 text-center">
-                          <p className="text-[10px] font-bold text-[#800000] uppercase tracking-widest flex items-center justify-center gap-1.5">
-                            <span className="w-3.5 h-px bg-[#800000]/40 inline-block"></span>
-                            <span className="truncate">{homa.subtitle || homa.shortTitle || "VEDIC HOMA RITUAL"}</span>
-                            <span className="w-3.5 h-px bg-[#800000]/40 inline-block"></span>
-                          </p>
-                        </div>
-
-                        {/* ── Card Content Body ── */}
-                        <div className="p-4 flex flex-col flex-1">
-                          <h3 className="text-[16px] font-bold text-gray-900 leading-snug line-clamp-2 min-h-[46px]">
-                            {homa.title}
-                          </h3>
-
-                          <p className="text-xs text-gray-500 line-clamp-2 mt-1.5 mb-4 leading-relaxed min-h-[36px]">
-                            {homa.description || "A sacred ritual for divine blessings, removing difficulties and bringing peace and health."}
-                          </p>
-
-                          {/* Info Box 1: Date & Frequency */}
-                          <div className="bg-[#f8f9fa] border border-gray-100 rounded-xl px-3.5 py-2.5 mb-2 flex items-center gap-3 text-xs text-gray-700">
-                            <svg className="w-4 h-4 text-amber-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                            </svg>
-                            <span className="font-medium truncate">{homa.date || "Everyday • Dedicated Priest"}</span>
-                          </div>
-
-                          {/* Info Box 2: Temple Location */}
-                          <div className="bg-[#f8f9fa] border border-gray-100 rounded-xl px-3.5 py-2.5 mb-4 flex items-center gap-3 text-xs text-gray-700">
-                            <svg className="w-4 h-4 text-red-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                            </svg>
-                            <span className="font-medium truncate">{homa.location || "Renowned Temple, India"}</span>
-                          </div>
-
-                          {/* ── Card Footer ── */}
-                          <div className="mt-auto pt-3.5 border-t border-gray-100 flex items-center justify-between bg-white">
-                            <div>
-                              <span className="text-xl font-extrabold text-gray-900">₹{priceVal}</span>
-                              <span className="text-[11px] text-gray-400 font-medium block -mt-1">Per Booking</span>
+                              <span className="font-medium truncate">{homa.date || "Everyday • Dedicated Priest"}</span>
                             </div>
 
-                            <Link
-                              href={`/homa/${homa.slug || slugify(homa.title)}`}
-                              className="bg-[#069e5d] hover:bg-[#058a51] text-white text-xs font-black px-4.5 py-2.5 rounded-full transition-all shadow-xs flex items-center gap-2 group-hover:shadow-md"
-                            >
-                              <span>BOOK NOW</span>
-                              <div className="w-4 h-4 rounded-full bg-white/20 flex items-center justify-center">
-                                <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7" />
-                                </svg>
+                            {/* Info Box 2: Temple Location */}
+                            <div className="bg-[#f8f9fa] border border-gray-100 rounded-xl px-3.5 py-2.5 mb-4 flex items-center gap-3 text-xs text-gray-700">
+                              <svg className="w-4 h-4 text-red-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                              </svg>
+                              <span className="font-medium truncate">{homa.location || "Renowned Temple, India"}</span>
+                            </div>
+
+                            {/* ── Card Footer ── */}
+                            <div className="mt-auto pt-3.5 border-t border-gray-100 flex items-center justify-between bg-white">
+                              <div>
+                                <span className="text-xl font-extrabold text-gray-900">₹{priceVal}</span>
+                                <span className="text-[11px] text-gray-400 font-medium block -mt-1">Per Booking</span>
                               </div>
-                            </Link>
+
+                              <div
+                                className="bg-[#069e5d] hover:bg-[#058a51] text-white text-xs font-black px-4.5 py-2.5 rounded-full transition-all shadow-xs flex items-center gap-2 group-hover:shadow-md"
+                              >
+                                <span>BOOK NOW</span>
+                                <div className="w-4 h-4 rounded-full bg-white/20 flex items-center justify-center">
+                                  <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7" />
+                                  </svg>
+                                </div>
+                              </div>
+                            </div>
                           </div>
+                        </Link>
+                        
+                        {/* Top Right Action Buttons (Heart & Share) */}
+                        <div className="absolute top-3 right-3 flex items-center gap-1.5 z-10">
+                          <WishlistButton itemId={homa._id} />
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              if (navigator.share) {
+                                navigator.share({ title: homa.title, url: window.location.href });
+                              }
+                            }}
+                            aria-label="Share homa"
+                            className="w-8 h-8 rounded-full bg-white/95 hover:bg-white text-gray-700 hover:text-blue-500 flex items-center justify-center shadow-sm transition"
+                          >
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 100-5.367 3 3 0 000 5.367zm0 8.005a3 3 0 100-5.367 3 3 0 000 5.367z" />
+                            </svg>
+                          </button>
                         </div>
                       </div>
                     );

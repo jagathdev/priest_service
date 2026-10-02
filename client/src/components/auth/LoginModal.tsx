@@ -128,11 +128,11 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
   };
 
   // ── Step 2: Verify OTP handler ──
-  const handleVerifyOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const cleanOtp = otp.trim();
-    if (cleanOtp.length < 4) {
-      setError("Please enter the verification OTP");
+  const handleVerifyOtp = async (e?: React.FormEvent, otpToVerify?: string) => {
+    if (e) e.preventDefault();
+    const cleanOtp = (otpToVerify || otp).trim();
+    if (cleanOtp.length !== 6) {
+      setError("Please enter the 6-digit verification OTP");
       return;
     }
 
@@ -332,7 +332,13 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
                 inputMode="numeric"
                 maxLength={6}
                 value={otp}
-                onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/\D/g, "");
+                  setOtp(val);
+                  if (val.length === 6) {
+                    handleVerifyOtp(undefined, val);
+                  }
+                }}
                 placeholder="Enter 6-digit OTP"
                 className="w-full text-center text-xl font-bold tracking-[0.4em] py-3.5 border border-emerald-500 rounded-2xl outline-none bg-green-50/50 text-gray-900 font-mono"
               />
@@ -362,7 +368,7 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
 
               <button
                 type="submit"
-                disabled={otp.length < 4 || loading}
+                disabled={otp.length !== 6 || loading}
                 className="w-full bg-[#00b050] hover:bg-[#009644] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed text-white font-extrabold text-base py-3.5 px-6 rounded-full flex items-center justify-center relative shadow-md transition-all mt-4"
               >
                 <span>{loading ? "Verifying..." : "Verify & Continue"}</span>

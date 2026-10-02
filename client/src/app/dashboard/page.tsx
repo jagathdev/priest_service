@@ -489,112 +489,114 @@ interface PujaCardProps {
 }
 
 function PujaCard({ id, imageSrc, topTag, title, subtitle, location, date, price, slug }: PujaCardProps) {
+  const cardUrl = slug ? `/puja/${slug}` : "/puja";
+
   return (
-    <div className="bg-white rounded-3xl border border-stone-200/80 p-2.5 sm:p-3 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col group text-left">
-
-      {/* Top Banner Image Container with Subtle Space */}
-      <div className="relative w-full h-[260px] sm:h-[340px] md:h-[400px] lg:h-[450px] xl:h-[235px] rounded-2xl overflow-hidden mb-2 sm:mb-2.5 bg-stone-100 shrink-0">
-        <img
-          src={typeof imageSrc === "string" ? imageSrc : imageSrc?.src}
-          alt={title}
-          className="w-full h-full object-cover object-center"
-        />
-
-        {/* Top Right Floating Action Buttons (Wishlist & Share) */}
-        <div className="absolute top-3 right-3 flex flex-col gap-2 z-10">
-          {/* Wishlist Heart Button */}
-          {id && <WishlistButton itemId={id} />}
-
-          {/* Share Button */}
-          <button
-            aria-label="Share puja"
-            onClick={(e) => {
-              e.preventDefault();
-              if (navigator.share) {
-                navigator.share({ title, url: window.location.origin + `/puja/${slug}` });
-              } else {
-                navigator.clipboard?.writeText(window.location.origin + `/puja/${slug}`);
-              }
-            }}
-            className="w-8 h-8 rounded-full bg-white/95 text-stone-700 hover:text-[#00b050] flex items-center justify-center shadow-md backdrop-blur-sm transition-transform active:scale-95"
-          >
-            <svg className="w-4 h-4 fill-none stroke-current" strokeWidth="2" viewBox="0 0 24 24">
-              <circle cx="18" cy="5" r="3" />
-              <circle cx="6" cy="12" r="3" />
-              <circle cx="18" cy="19" r="3" />
-              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
-              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
-            </svg>
-          </button>
-        </div>
-      </div>
-
-      {/* Card Body Container */}
-      <div className="p-1 sm:px-1.5 flex flex-col flex-1">
-        {/* Sub-header Tag with Filigree Accents */}
-        <div className="flex items-center justify-center gap-2 mb-2">
-          <div className="w-8 h-[1px] bg-[#F47820]/40" />
-          <span className="text-[#F47820] font-serif font-extrabold text-xs sm:text-[13px] tracking-wider uppercase flex items-center gap-1.5 text-center">
-            <span className="text-[10px]">♦</span> {topTag} <span className="text-[10px]">♦</span>
-          </span>
-          <div className="w-8 h-[1px] bg-[#F47820]/40" />
+    <div className="bg-white rounded-3xl border border-stone-200/80 p-2.5 sm:p-3 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col group text-left relative">
+      
+      <Link href={cardUrl} className="flex flex-col flex-1 cursor-pointer block">
+        {/* Top Banner Image Container with Subtle Space */}
+        <div className="relative w-full h-[260px] sm:h-[340px] md:h-[400px] lg:h-[450px] xl:h-[235px] rounded-2xl overflow-hidden mb-2 sm:mb-2.5 bg-stone-100 shrink-0">
+          <img
+            src={typeof imageSrc === "string" ? imageSrc : (imageSrc as any)?.src}
+            alt={title}
+            className="w-full h-full object-cover object-center"
+          />
         </div>
 
-        {/* Card Title */}
-        <h3 className="font-serif font-bold text-[#1f1a17] text-lg sm:text-xl lg:text-2xl leading-tight sm:leading-snug tracking-tight mb-2 line-clamp-2">
-          {title}
-        </h3>
-
-        {/* Subtitle / Description */}
-        <p className="text-stone-600 text-xs sm:text-sm font-medium leading-relaxed mb-4 line-clamp-2">
-          {subtitle}
-        </p>
-
-        {/* Location & Date Details Box with Vector SVG Icons */}
-        <div className="bg-stone-50 border border-stone-200/90 rounded-2xl p-3 sm:p-3.5 mb-4 space-y-2.5 text-xs sm:text-[13px] font-bold text-stone-800 mt-auto">
-          {/* Location */}
-          <div className="flex items-start gap-2.5">
-            <svg className="w-5 h-5 text-[#F47820] shrink-0 mt-0.5" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 2L9 6H15L12 2ZM8 7L6 11H18L16 7H8ZM5 12L3 17H21L19 12H5ZM2 18V21H22V18H2Z" />
-            </svg>
-            <span className="leading-snug line-clamp-1">{location}</span>
+        {/* Card Body Container */}
+        <div className="p-1 sm:px-1.5 flex flex-col flex-1">
+          {/* Sub-header Tag with Filigree Accents */}
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <div className="w-8 h-[1px] bg-[#F47820]/40" />
+            <span className="text-[#F47820] font-serif font-extrabold text-xs sm:text-[13px] tracking-wider uppercase flex items-center gap-1.5 text-center">
+              <span className="text-[10px]">♦</span> {topTag} <span className="text-[10px]">♦</span>
+            </span>
+            <div className="w-8 h-[1px] bg-[#F47820]/40" />
           </div>
 
-          <div className="w-full h-[1px] bg-stone-200/70" />
+          {/* Card Title */}
+          <h3 className="font-serif font-bold text-[#1f1a17] text-lg sm:text-xl lg:text-2xl leading-tight sm:leading-snug tracking-tight mb-2 line-clamp-2">
+            {title}
+          </h3>
 
-          {/* Date */}
-          <div className="flex items-center gap-2.5">
-            <svg className="w-5 h-5 text-[#F47820] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-              <line x1="16" y1="2" x2="16" y2="6" />
-              <line x1="8" y1="2" x2="8" y2="6" />
-              <line x1="3" y1="10" x2="21" y2="10" />
-            </svg>
-            <span className="line-clamp-1">{date}</span>
-          </div>
-        </div>
+          {/* Subtitle / Description */}
+          <p className="text-stone-600 text-xs sm:text-sm font-medium leading-relaxed mb-4 line-clamp-2">
+            {subtitle}
+          </p>
 
-        {/* Bottom Footer Row: Price + Participate Button */}
-        <div className="flex items-center justify-between pt-0.5">
-          {/* Price */}
-          <div>
-            <span className="font-extrabold text-2xl sm:text-3xl text-[#1f1a17] leading-none block">{price}</span>
-            <span className="text-xs text-stone-500 font-semibold mt-0.5 block">Per Booking</span>
-          </div>
-
-          {/* CTA Button */}
-          <Link
-            href={slug ? `/puja/${slug}` : "/puja"}
-            className="inline-flex items-center gap-2 bg-[#00b050] hover:bg-[#009644] active:scale-95 text-white font-extrabold text-xs sm:text-sm px-5 py-2.5 sm:py-3 rounded-full shadow-md shadow-green-600/20 transition-all duration-200 group/btn"
-          >
-            <span>Participate Now</span>
-            <div className="w-5 h-5 rounded-full bg-white text-[#00b050] flex items-center justify-center shrink-0">
-              <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+          {/* Location & Date Details Box with Vector SVG Icons */}
+          <div className="bg-stone-50 border border-stone-200/90 rounded-2xl p-3 sm:p-3.5 mb-4 space-y-2.5 text-xs sm:text-[13px] font-bold text-stone-800 mt-auto">
+            {/* Location */}
+            <div className="flex items-start gap-2.5">
+              <svg className="w-5 h-5 text-[#F47820] shrink-0 mt-0.5" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2L9 6H15L12 2ZM8 7L6 11H18L16 7H8ZM5 12L3 17H21L19 12H5ZM2 18V21H22V18H2Z" />
               </svg>
+              <span className="leading-snug line-clamp-1">{location}</span>
             </div>
-          </Link>
+
+            <div className="w-full h-[1px] bg-stone-200/70" />
+
+            {/* Date */}
+            <div className="flex items-center gap-2.5">
+              <svg className="w-5 h-5 text-[#F47820] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                <line x1="16" y1="2" x2="16" y2="6" />
+                <line x1="8" y1="2" x2="8" y2="6" />
+                <line x1="3" y1="10" x2="21" y2="10" />
+              </svg>
+              <span className="line-clamp-1">{date}</span>
+            </div>
+          </div>
+
+          {/* Bottom Footer Row: Price + Participate Button */}
+          <div className="flex items-center justify-between pt-0.5">
+            {/* Price */}
+            <div>
+              <span className="font-extrabold text-2xl sm:text-3xl text-[#1f1a17] leading-none block">{price}</span>
+              <span className="text-xs text-stone-500 font-semibold mt-0.5 block">Per Booking</span>
+            </div>
+
+            {/* CTA Button */}
+            <div className="inline-flex items-center gap-2 bg-[#00b050] hover:bg-[#009644] active:scale-95 text-white font-extrabold text-xs sm:text-sm px-5 py-2.5 sm:py-3 rounded-full shadow-md shadow-green-600/20 transition-all duration-200 group/btn">
+              <span>Participate Now</span>
+              <div className="w-5 h-5 rounded-full bg-white text-[#00b050] flex items-center justify-center shrink-0">
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
+            </div>
+          </div>
         </div>
+      </Link>
+
+      {/* Top Right Floating Action Buttons (Wishlist & Share) */}
+      <div className="absolute top-5 right-5 flex flex-col gap-2 z-10">
+        {/* Wishlist Heart Button */}
+        {id && <WishlistButton itemId={id} />}
+
+        {/* Share Button */}
+        <button
+          aria-label="Share puja"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (navigator.share) {
+              navigator.share({ title, url: window.location.origin + cardUrl });
+            } else {
+              navigator.clipboard?.writeText(window.location.origin + cardUrl);
+            }
+          }}
+          className="w-8 h-8 rounded-full bg-white/95 text-stone-700 hover:text-[#00b050] flex items-center justify-center shadow-md backdrop-blur-sm transition-transform active:scale-95"
+        >
+          <svg className="w-4 h-4 fill-none stroke-current" strokeWidth="2" viewBox="0 0 24 24">
+            <circle cx="18" cy="5" r="3" />
+            <circle cx="6" cy="12" r="3" />
+            <circle cx="18" cy="19" r="3" />
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+          </svg>
+        </button>
       </div>
     </div>
   );

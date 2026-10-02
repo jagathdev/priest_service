@@ -8,6 +8,7 @@ import Footer from "@/components/layout/Footer";
 import LoginModal from "@/components/auth/LoginModal";
 import { checkAuthStatus } from "@/lib/authCheck";
 import { CheckIcon, XMarkIcon } from "@heroicons/react/24/solid";
+import WishlistButton from "@/components/common/WishlistButton";
 
 interface PujaPackage {
   id: string;
@@ -496,19 +497,7 @@ export default function PujaDetailClient({
                 {/* Action Buttons: Wishlist & Share */}
                 <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-center mt-2 sm:mt-0">
                   {/* Wishlist Button */}
-                  <button
-                    aria-label="Add to wishlist"
-                    onClick={() => setIsWishlisted(!isWishlisted)}
-                    className={`border rounded-full px-3.5 py-1.5 flex items-center justify-center gap-1.5 font-bold text-xs transition-all active:scale-95 shadow-xs ${isWishlisted
-                      ? "border-red-500 bg-red-50 text-red-600"
-                      : "border-stone-300 hover:border-stone-400 bg-white text-stone-700"
-                      }`}
-                  >
-                    <svg className={`w-3.5 h-3.5 ${isWishlisted ? "fill-red-500 stroke-red-500" : "fill-none stroke-current"}`} strokeWidth="2" viewBox="0 0 24 24">
-                      <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-                    </svg>
-                    <span>Wishlist</span>
-                  </button>
+                  <WishlistButton itemId={puja._id} text="Wishlist" />
 
                   {/* Share Button */}
                   <button

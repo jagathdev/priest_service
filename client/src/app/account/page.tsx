@@ -6,6 +6,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import Link from "next/link";
 import { useUser } from "@/contexts/UserContext";
+import LoginModal from "@/components/auth/LoginModal";
 
 interface User {
   id?: string;
@@ -123,91 +124,6 @@ export default function AccountPage() {
 
   // Login Modal States
   const [showLoginModal, setShowLoginModal] = useState(false);
-  const [loginStep, setLoginStep] = useState<'phone' | 'otp'>('phone');
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [otp, setOtp] = useState(['', '', '', '', '', '']);
-  const [otpError, setOtpError] = useState('');
-  const [isSendingOtp, setIsSendingOtp] = useState(false);
-  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
-
-  useEffect(() => {
-    // API call removed
-  }, []);
-
-  const handleSendOtp = async () => {
-    if (!phoneNumber || phoneNumber.length !== 10) {
-      alert("Please enter a valid 10-digit mobile number");
-      return;
-    }
-    setIsSendingOtp(true);
-    try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "https://priest-service.onrender.com";
-      const sendUrl = process.env.NEXT_PUBLIC_API_OTP_SEND || "/api/otp/sendOtp";
-
-      const res = await fetch(`${baseUrl}${sendUrl}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mobileNumber: phoneNumber }),
-      });
-      const data = await res.json();
-
-      if (data.success) {
-        setLoginStep('otp');
-        setTimer(30);
-        setOtp(['', '', '', '', '', '']);
-      } else {
-        alert(data.message || "Failed to send OTP");
-      }
-    } catch (error) {
-      alert("Error sending OTP");
-    } finally {
-      setIsSendingOtp(false);
-    }
-  };
-
-  const handleVerifyOtp = async (otpString?: string) => {
-    const finalOtp = otpString || otp.join('');
-    if (finalOtp.length !== 6) return;
-
-    setIsVerifyingOtp(true);
-    try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "https://priest-service.onrender.com";
-      const verifyUrl = process.env.NEXT_PUBLIC_API_OTP_VERIFY || "/api/otp/verifyOtp";
-
-      const res = await fetch(`${baseUrl}${verifyUrl}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mobileNumber: phoneNumber, otp: finalOtp }),
-      });
-      const data = await res.json();
-
-      if (data.success) {
-        const u = data.data?.user || {};
-        setUser(u);
-        setFormData(u);
-        document.cookie = "userLogin=true; path=/; max-age=604800;";
-        setShowLoginModal(false);
-        setOtp(['', '', '', '', '', '']);
-      } else {
-        setOtpError(data.message || "Invalid OTP");
-      }
-    } catch (error) {
-      setOtpError("Error verifying OTP");
-    } finally {
-      setIsVerifyingOtp(false);
-    }
-  };
-  const [timer, setTimer] = useState(30);
-
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (showLoginModal && loginStep === 'otp' && timer > 0) {
-      interval = setInterval(() => {
-        setTimer((prev) => prev - 1);
-      }, 1000);
-    }
-    return () => clearInterval(interval);
-  }, [showLoginModal, loginStep, timer]);
 
 
   useEffect(() => {
@@ -499,13 +415,7 @@ export default function AccountPage() {
               <h2 className="text-xl font-bold text-gray-800 mb-2">Authentication Required</h2>
               <p className="text-gray-500 max-w-sm mb-6">You must be logged in to access your account settings and history.</p>
               <button
-                onClick={() => {
-                  setLoginStep('phone');
-                  setPhoneNumber('');
-                  setOtp(['', '', '', '', '', '']);
-                  setOtpError('');
-                  setShowLoginModal(true);
-                }}
+                onClick={() => setShowLoginModal(true)}
                 className="bg-[#069e5d] text-white font-bold py-2.5 px-8 rounded-full hover:bg-[#058a51] transition"
               >
                 Login Now
@@ -2064,142 +1974,7 @@ export default function AccountPage() {
 
 
         {/* ── Login Modal ── */}
-        {showLoginModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-            <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden relative">
-              <button
-                type="button"
-                onClick={() => {
-                  setShowLoginModal(false);
-                  setLoginStep('phone');
-                  setPhoneNumber('');
-                  setOtp(['', '', '', '']);
-                }}
-                className="absolute top-5 right-5 text-gray-400 hover:text-gray-600 transition"
-              >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-
-              <div className="p-8 pt-10">
-                {loginStep === 'phone' ? (
-                  <>
-                    <h2 className="text-2xl font-serif text-center text-[#333] mb-8">Login or signup</h2>
-
-                    <div className="flex border border-gray-300 rounded-xl overflow-hidden focus-within:border-[#069e5d] mb-6">
-                      <div className="bg-white flex items-center gap-2 px-4 py-3.5 border-r border-gray-300 shrink-0">
-                        <img src="https://flagcdn.com/w20/in.png" alt="India flag" className="w-5 h-auto rounded-[2px]" />
-                        <span className="text-[14px] text-gray-800 font-medium">+91</span>
-                        <svg className="w-3 h-3 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                        </svg>
-                      </div>
-                      <input
-                        type="tel"
-                        value={phoneNumber}
-                        onChange={(e) => setPhoneNumber(e.target.value)}
-                        placeholder="Mobile number"
-                        className="w-full px-4 py-3.5 text-[15px] text-gray-800 focus:outline-none"
-                      />
-                    </div>
-
-                    <button
-                      onClick={handleSendOtp}
-                      disabled={isSendingOtp}
-                      className={`w-full bg-[#069e5d] text-white font-bold py-3.5 px-6 rounded-full flex items-center justify-center gap-2 transition relative group mb-4 ${isSendingOtp ? 'opacity-70 cursor-not-allowed' : 'hover:bg-[#058a51]'}`}
-                    >
-                      <span className="text-[15px]">{isSendingOtp ? 'Sending...' : 'Continue'}</span>
-                      <div className="absolute right-2 w-8 h-8 rounded-full bg-white text-[#069e5d] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                        </svg>
-                      </div>
-                    </button>
-
-                    <p className="text-[11px] text-center text-gray-500 leading-relaxed max-w-[280px] mx-auto">
-                      By tapping &quot;Continue&quot;, you agree to receive notifications, and our <Link href="#" className="text-blue-600 underline">terms and conditions</Link>.
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    <h2 className="text-2xl font-serif text-center text-[#333] mb-2">Enter OTP</h2>
-                    <p className="text-[12px] text-center text-gray-500 mb-8">
-                      OTP has been sent to +91 {phoneNumber || '93602 70984'}
-                    </p>
-
-                    <div className="flex justify-center gap-2 sm:gap-3 mb-2">
-                      {[0, 1, 2, 3, 4, 5].map((index) => (
-                        <input
-                          key={index}
-                          id={`otp-${index}`}
-                          autoFocus={index === 0}
-                          type="text"
-                          maxLength={1}
-                          value={otp[index]}
-                          onChange={(e) => {
-                            const val = e.target.value.replace(/\D/g, '');
-                            if (val.length > 1) return; // Prevent pasting multiple chars here
-
-                            const newOtp = [...otp];
-                            newOtp[index] = val;
-                            setOtp(newOtp);
-                            setOtpError('');
-
-                            // Auto focus next
-                            if (val && index < 5) {
-                              const nextInput = document.getElementById(`otp-${index + 1}`);
-                              if (nextInput) nextInput.focus();
-                            }
-
-                            // Auto submit if full
-                            if (newOtp.every(d => d !== '')) {
-                              handleVerifyOtp(newOtp.join(''));
-                            }
-                          }}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Backspace' && !otp[index] && index > 0) {
-                              const prevInput = document.getElementById(`otp-${index - 1}`);
-                              if (prevInput) prevInput.focus();
-                            }
-                          }}
-                          className={`w-10 h-10 sm:w-12 sm:h-12 text-center text-xl font-bold text-gray-800 border-b-2 bg-transparent focus:outline-none ${otpError ? 'border-red-500 text-red-500' : otp[index] ? 'border-gray-800' : 'border-gray-300 focus:border-[#069e5d]'}`}
-                        />
-                      ))}
-                    </div>
-
-                    {otpError ? (
-                      <p className="text-red-500 text-[12px] text-center font-medium mb-6">{otpError}</p>
-                    ) : (
-                      <div className="h-6 mb-6"></div>
-                    )}
-
-                    <p className="text-[13px] text-center text-gray-500 mb-8">
-                      {timer > 0 ? (
-                        <>Resend code in <strong className="text-gray-800 font-bold">00:{timer < 10 ? `0${timer}` : timer}</strong></>
-                      ) : (
-                        <button onClick={handleSendOtp} disabled={isSendingOtp} className="text-[#069e5d] font-bold hover:underline">Resend code now</button>
-                      )}
-                    </p>
-
-                    <button
-                      onClick={() => handleVerifyOtp()}
-                      disabled={isVerifyingOtp || otp.join('').length !== 6}
-                      className={`w-full bg-[#069e5d] text-white font-bold py-3.5 px-6 rounded-full flex items-center justify-center gap-2 transition relative group ${(isVerifyingOtp || otp.join('').length !== 6) ? 'opacity-70 cursor-not-allowed' : 'hover:bg-[#058a51]'}`}
-                    >
-                      <span className="text-[15px]">{isVerifyingOtp ? 'Verifying...' : 'Continue'}</span>
-                      <div className="absolute right-2 w-8 h-8 rounded-full bg-white text-[#069e5d] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                        </svg>
-                      </div>
-                    </button>
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
+        <LoginModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
       </main>
       <Footer />
     </>
