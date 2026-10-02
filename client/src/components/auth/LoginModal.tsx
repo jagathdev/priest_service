@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { authService } from "@/services/authService";
+import { authService } from "@/services/auth.service";
 import { useUser } from "@/contexts/UserContext";
 
 interface LoginModalProps {
@@ -81,47 +81,16 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
     setLoading(true);
 
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priest-service.onrender.com";
-      const sendOtpUrl = process.env.NEXT_PUBLIC_API_OTP_SEND || "/api/otp/sendOtp";
+      const data = await authService.sendOtp({
+        method: "whatsapp",
+        country: { isoCode: "IN", dialCode: "+91", name: "India" } as any,
+        number: cleanNumber,
+      } as any);
 
-      const res = await fetch(`${baseUrl}${sendOtpUrl}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mobileNumber: cleanNumber }),
-      });
-
-      const data = await res.json();
-
-      if (data.success) {
-        setStep("otp");
-        setResendTimer(30);
-      } else {
-        // Fallback to Next.js API route /api/auth/otp/send if Express server fails or returns error
-        try {
-          await authService.sendOtp({
-            method: "whatsapp",
-            country: { isoCode: "IN", dialCode: "+91", name: "India" } as any,
-            number: cleanNumber,
-          });
-          setStep("otp");
-          setResendTimer(30);
-        } catch (fallbackErr: any) {
-          setError(data.message || fallbackErr.message || "Failed to send OTP. Please try again.");
-        }
-      }
-    } catch (err) {
-      // Direct call fallback
-      try {
-        await authService.sendOtp({
-          method: "whatsapp",
-          country: { isoCode: "IN", dialCode: "+91", name: "India" } as any,
-          number: cleanNumber,
-        });
-        setStep("otp");
-        setResendTimer(30);
-      } catch (fallbackErr: any) {
-        setError("Network error. Could not connect to authentication server.");
-      }
+      setStep("otp");
+      setResendTimer(30);
+    } catch (err: any) {
+      setError(err.message || "Failed to send OTP. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -140,57 +109,25 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
     setLoading(true);
 
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priest-service.onrender.com";
-      const verifyOtpUrl = process.env.NEXT_PUBLIC_API_OTP_VERIFY || "/api/otp/verifyOtp";
+      const verifyRes = await authService.verifyOtp({
+        method: "whatsapp",
+        country: { isoCode: "IN", dialCode: "+91", name: "India" } as any,
+        number: mobileNumber.replace(/\D/g, ""),
+        otp: cleanOtp,
+      } as any);
 
-      const res = await fetch(`${baseUrl}${verifyOtpUrl}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mobileNumber: mobileNumber.replace(/\D/g, ""), otp: cleanOtp }),
-      });
-
-      const data = await res.json();
-
-      if (data.success) {
+      if (verifyRes.data && verifyRes.data.user) {
+        const u = verifyRes.data.user;
         document.cookie = "userLogin=true; path=/; max-age=604800;";
-        const u = data.data?.user || data.user || {};
+        localStorage.setItem("mockUser", JSON.stringify(u));
         setUser(u);
         handleClose();
         if (onSuccess) onSuccess();
       } else {
-        // Fallback to Next.js API route
-        try {
-          const verifyRes = await authService.verifyOtp({
-            method: "whatsapp",
-            country: { isoCode: "IN", dialCode: "+91", name: "India" } as any,
-            number: mobileNumber.replace(/\D/g, ""),
-            otp: cleanOtp,
-          } as any);
-          const u = (verifyRes as any).user || {};
-          document.cookie = "userLogin=true; path=/; max-age=604800;";
-          setUser(u);
-          handleClose();
-          if (onSuccess) onSuccess();
-        } catch (fallbackErr: any) {
-          setError(data.message || fallbackErr.message || "Invalid OTP. Please try again.");
-        }
+        throw new Error("Invalid response from server");
       }
-    } catch (err) {
-      try {
-        const verifyRes = await authService.verifyOtp({
-          method: "whatsapp",
-          country: { isoCode: "IN", dialCode: "+91", name: "India" } as any,
-          number: mobileNumber.replace(/\D/g, ""),
-          otp: cleanOtp,
-        } as any);
-        const u = (verifyRes as any).user || {};
-        document.cookie = "userLogin=true; path=/; max-age=604800;";
-        setUser(u);
-        handleClose();
-        if (onSuccess) onSuccess();
-      } catch (fallbackErr: any) {
-        setError("Error verifying OTP. Please try again.");
-      }
+    } catch (err: any) {
+      setError(err.message || "Error verifying OTP. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -202,19 +139,17 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
     setError("");
     setLoading(true);
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priest-service.onrender.com";
-      const sendOtpUrl = process.env.NEXT_PUBLIC_API_OTP_SEND || "/api/otp/sendOtp";
-
-      await fetch(`${baseUrl}${sendOtpUrl}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mobileNumber: mobileNumber.replace(/\D/g, "") }),
-      });
+      await authService.sendOtp({
+        method: "whatsapp",
+        country: { isoCode: "IN", dialCode: "+91", name: "India" } as any,
+        number: mobileNumber.replace(/\D/g, ""),
+      } as any);
+      
       setResendTimer(30);
       setOtp("");
       setError("OTP resent successfully!");
-    } catch {
-      setError("Failed to resend OTP.");
+    } catch (err: any) {
+      setError(err.message || "Failed to resend OTP.");
     } finally {
       setLoading(false);
     }

@@ -3,12 +3,11 @@
 import React, { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useTranslation } from "@/contexts/LanguageContext";
 import LoginModal from "@/components/auth/LoginModal";
 import { useUser } from "@/contexts/UserContext";
 
 // ── Sri Mandir–style account panel component ─────────────────────────────
-const AccountPanel = ({ accountOpen, setAccountOpen, user, setLoginModalOpen, handleLogout, t }: any) => {
+const AccountPanel = ({ accountOpen, setAccountOpen, user, setLoginModalOpen, handleLogout }: any) => {
   if (!accountOpen) return null;
 
   return (
@@ -135,7 +134,7 @@ const AccountPanel = ({ accountOpen, setAccountOpen, user, setLoginModalOpen, ha
                 className="mt-2 w-full py-3 text-sm font-bold text-red-500 hover:bg-red-50 rounded-xl transition-colors"
               >
                 <svg viewBox="0 0 24 24" fill="none" className="inline h-4 w-4 mr-2"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                {t("account.logout")}
+                Logout
               </button>
             )}
           </div>
@@ -164,7 +163,6 @@ const languageFullNames: Record<string, string> = {
 
 export default function Navbar() {
   const pathname = usePathname();
-  const { t, language, setLanguage } = useTranslation();
   const { user, setUser } = useUser();
   const [langOpen, setLangOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
@@ -328,7 +326,6 @@ export default function Navbar() {
               user={user}
               setLoginModalOpen={setLoginModalOpen}
               handleLogout={handleLogout}
-              t={t}
             />
           </div>
         </div>

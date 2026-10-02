@@ -53,6 +53,8 @@ function SankalpContent() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [loadingMsg, setLoadingMsg] = useState("");
 
+  const profileFetchedRef = React.useRef(false);
+
   // Auto-populate user details from UserContext / backend profile API
   useEffect(() => {
     async function loadUserProfile() {
@@ -60,7 +62,8 @@ function SankalpContent() {
       let name = user?.name || searchParams?.get("name") || "";
 
       const uId = user?.id || user?._id;
-      if (uId) {
+      if (uId && !profileFetchedRef.current) {
+        profileFetchedRef.current = true;
         try {
           const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priest-service.onrender.com";
           const res = await fetch(`${baseUrl}/api/users/profile/${uId}`);
@@ -94,6 +97,8 @@ function SankalpContent() {
     loadUserProfile();
   }, [user?.id, user?._id, user?.mobileNumber, user?.name]);
 
+  const pujaFetchedRef = React.useRef(false);
+
   // Fetch Puja details by preserved Puja ID / Slug
   useEffect(() => {
     async function fetchPujaDetails() {
@@ -102,6 +107,9 @@ function SankalpContent() {
         setLoading(false);
         return;
       }
+
+      if (pujaFetchedRef.current) return;
+      pujaFetchedRef.current = true;
 
       setLoading(true);
       setError(null);
@@ -404,6 +412,20 @@ function SankalpContent() {
                 razorpayOrderId: response.razorpay_order_id,
                 razorpayPaymentId: response.razorpay_payment_id,
                 razorpaySignature: response.razorpay_signature,
+                orderDetails: {
+                  pooja: pujaData?._id,
+                  whatsappNumber: formData.whatsapp,
+                  participants: formData.participants.filter((p: string) => p.trim()).map((p: string) => ({ name: p.trim() })),
+                  gotra: formData.dontKnowGotra ? "Kashyapa" : formData.gotra,
+                  doesNotKnowGotra: formData.dontKnowGotra,
+                  wish: formData.wish,
+                  pricing: {
+                    basePrice: basePrice,
+                    extraParticipantCount: extraParticipantCount,
+                    extraParticipantAmount: extraParticipantFee,
+                    total: finalPrice
+                  }
+                }
               })
             });
             const verifyData = await verifyRes.json();

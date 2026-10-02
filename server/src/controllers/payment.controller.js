@@ -3,6 +3,7 @@ import {
     verifyRazorpayPayment,
 } from "../services/payment.service.js";
 import crypto from "crypto";
+import Order from "../models/order.js";
 
 export const createPaymentOrder = async (req, res) => {
     try {
@@ -115,9 +116,20 @@ export const verifyPayment = async (req, res) => {
 
         // PAYMENT VERIFIED
 
-        // TODO:
-        // Find your local Order here
-        // and update paymentStatus = "PAID"
+        let savedOrder = null;
+        if (req.body.orderDetails) {
+            try {
+                savedOrder = await Order.create({
+                    ...req.body.orderDetails,
+                    bookingDate: new Date(),
+                    paymentStatus: "paid",
+                    orderStatus: "confirmed"
+                });
+                console.log("Order saved to DB successfully:", savedOrder._id);
+            } catch (err) {
+                console.error("Failed to save order to DB:", err);
+            }
+        }
 
         return res.status(200).json({
             success: true,
@@ -125,6 +137,7 @@ export const verifyPayment = async (req, res) => {
             data: {
                 razorpayOrderId,
                 razorpayPaymentId,
+                orderId: savedOrder ? savedOrder._id : null
             },
         });
     } catch (error) {

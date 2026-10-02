@@ -20,86 +20,8 @@ interface BannerSlide {
   ctaLink: string;
 }
 
-const DEFAULT_SLIDES: BannerSlide[] = [
-  {
-    id: "shani-statue",
-    badge: "SPECIAL SHANI POOJA",
-    title: "Sade Sati Shani Shanti Puja & Oil Abhishekam at the 23-Foot Shani Statue",
-    subtitle: "Shani Shanti Puja & Oil Abhishekam for Relief from the Harsh Effects of Sade Sati",
-    topBadge: "Shani Purnima Special",
-    bannerLine1: "Sade Sati",
-    bannerLine2: "Shani Shanti Puja",
-    bannerLine3: "Oil Abhishekam",
-    bannerLine4: "at the 23-Foot\nShani Statue",
-    location: "Bannanje Shri Shani Devara Kshetra",
-    image: "/shani_statue_hero_banner.png",
-    ctaText: "Book Puja Now",
-    ctaLink: "/puja/sade-sati-shani-shanti-puja",
-  },
-  {
-    id: "subrahmanya",
-    badge: "SPECIAL TUESDAY SANKALPAM",
-    title: "Subrahmanya Swamy Abhishekam at Madurai Temple for success and fulfillment of wishes.",
-    subtitle: "A special Tuesday Abhishekam for devotees seeking the courage to overcome obstacles, fulfillment of efforts, and success.",
-    topBadge: "Special Tuesday Sankalpam",
-    bannerLine1: "Shri",
-    bannerLine2: "Subrahmanya Swamy",
-    bannerLine3: "Abhishekam Seva",
-    bannerLine4: "for Wish Fulfillment",
-    location: "Madurai Temple",
-    image: "/subrahmanya_swamy_hero.png",
-    ctaText: "Book Puja Now",
-    ctaLink: "/puja/subrahmanya-swamy-abhishekam",
-  },
-  {
-    id: "mahalakshmi",
-    badge: "SPECIAL FRIDAY SANKALPAM",
-    title: "Maha Lakshmi Kumkumarchana for Wealth, Abundance & Prosperity.",
-    subtitle: "Sacred Friday Kumkumarchana ritual at Kolhapur Mahalakshmi Temple to attract wealth, business success, and joy.",
-    topBadge: "Maha Lakshmi Special",
-    bannerLine1: "Maha Lakshmi",
-    bannerLine2: "Kumkumarchana",
-    bannerLine3: "Seva",
-    bannerLine4: "for Prosperity & Joy",
-    location: "Mahalakshmi Temple",
-    image: "/images/Lakshmi-Homam.jpg",
-    ctaText: "Book Puja Now",
-    ctaLink: "/puja/mahalakshmi-kumkumarchana",
-  },
-  {
-    id: "mrityunjaya",
-    badge: "SPECIAL SOMVAR SANKALPAM",
-    title: "Maha Mrityunjaya Homa for Health, Healing & Long Life.",
-    subtitle: "Powerful Vedic chantings and oblations to Lord Shiva for immunity, healing, protection, and overcoming health hurdles.",
-    topBadge: "Maha Mrityunjaya Special",
-    bannerLine1: "Maha Mrityunjaya",
-    bannerLine2: "Homa Seva",
-    bannerLine3: "for Healing",
-    bannerLine4: "at Trimbakeshwar Temple",
-    location: "Trimbakeshwar Temple",
-    image: "/images/Navagraha-Shanti-Puja.jpg",
-    ctaText: "Book Puja Now",
-    ctaLink: "/puja/maha-mrityunjaya-homa",
-  },
-  {
-    id: "ganesh",
-    badge: "SPECIAL SANKASHTI SANKALPAM",
-    title: "Sankashti Ganesh Puja for Removal of Obstacles & New Beginnings.",
-    subtitle: "Special Modak and Durva offering to Bhagwan Ganesha at Ashtavinayak Temple to ensure success in all endeavors.",
-    topBadge: "Sankashti Ganesha Special",
-    bannerLine1: "Sankashti Ganesha",
-    bannerLine2: "Abhishekam Seva",
-    bannerLine3: "for Obstacle Removal",
-    bannerLine4: "at Ashtavinayak Temple",
-    location: "Ashtavinayak Temple",
-    image: "/images/Ganesh-Chaturthi-Mahapuja.jpg",
-    ctaText: "Book Puja Now",
-    ctaLink: "/puja/sankashti-ganesh-puja",
-  }
-];
-
 export default function HeroSection() {
-  const [bannerSlides, setBannerSlides] = useState<BannerSlide[]>(DEFAULT_SLIDES);
+  const [bannerSlides, setBannerSlides] = useState<BannerSlide[]>([]);
   const [activeSlide, setActiveSlide] = useState(0);
 
   useEffect(() => {
@@ -144,7 +66,15 @@ export default function HeroSection() {
     return () => clearInterval(timer);
   }, [bannerSlides.length]);
 
-  const current = bannerSlides[activeSlide] || bannerSlides[0] || DEFAULT_SLIDES[0];
+  if (bannerSlides.length === 0) {
+    return (
+      <section className="relative w-full max-w-[1350px] mx-auto px-4 sm:px-6 lg:px-10 py-12 bg-white">
+        <div className="w-full h-[300px] sm:h-[400px] md:h-[460px] lg:h-[500px] bg-stone-100 animate-pulse rounded-3xl" />
+      </section>
+    );
+  }
+
+  const current = bannerSlides[activeSlide];
 
   return (
     <section className="relative w-full max-w-[1350px] mx-auto px-4 sm:px-6 lg:px-10 pt-2 sm:pt-3 lg:pt-4 pb-8 md:pb-12 xl:py-12 bg-white my-0 sm:my-1 xl:my-2 overflow-hidden">

@@ -145,7 +145,8 @@ export default function HomaDetailClient({
           return;
         }
 
-        const res = await fetch(`https://priest-service.onrender.com/api/homas`);
+        const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:5000";
+        const res = await fetch(`${backendUrl}/api/homas`);
         if (!res.ok) {
           setHoma(null);
           return;

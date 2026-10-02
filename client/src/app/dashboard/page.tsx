@@ -26,7 +26,8 @@ export default function DashboardPage() {
   const [fetchedPujas, setFetchedPujas] = useState(false);
 
   useEffect(() => {
-    fetch("https://priest-service.onrender.com/api/pujas")
+    const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:5000";
+    fetch(`${backendUrl}/api/pujas`)
       .then((r) => (r.ok ? r.json() : null))
       .then((resData) => {
         const rawList = resData?.data && Array.isArray(resData.data)
@@ -208,8 +209,8 @@ export default function DashboardPage() {
                       ? `₹${p.packages[0].price}`
                       : "₹516";
                 const slugVal = p.slug || (p.title ? p.title.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-") : "");
-                const topTagVal = p.badge || p.shortTitle || p.subtitle || "SPECIAL PUJA";
-                const descriptionVal = p.description || p.subtitle || "Join us for this sacred ritual to seek divine blessings and fulfillment.";
+                const topTagVal = p.badge || p.shortTitle || p.subtitle;
+                const descriptionVal = p.description || p.subtitle;
                 return (
                   <PujaCard
                     key={p._id}
@@ -218,8 +219,8 @@ export default function DashboardPage() {
                     topTag={topTagVal}
                     title={p.title}
                     subtitle={descriptionVal}
-                    location={p.location || p.filterLocation || p.templeVenue || "Sacred Temple, India"}
-                    date={p.date || "Available Daily"}
+                    location={p.location || p.filterLocation || p.templeVenue}
+                    date={p.date}
                     price={priceVal}
                     slug={slugVal}
                   />

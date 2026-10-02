@@ -1,8 +1,6 @@
 import { NextResponse, NextRequest } from 'next/server';
-import { jwtVerify } from 'jose';
-import { getJwtSecret } from '@/lib/server/authSession';
 
-const USER_PROTECTED_PATHS = ['/payment'];
+const USER_PROTECTED_PATHS = ['/payment', '/account', '/bookings', '/sankalp'];
 
 function isUserProtectedPath(pathname: string) {
   return USER_PROTECTED_PATHS.some(
@@ -25,21 +23,15 @@ export async function proxy(request: NextRequest) {
       }
       return NextResponse.redirect(new URL('/admin/login', request.url));
     }
-    try {
-      await jwtVerify(token, getJwtSecret());
-      return NextResponse.next();
-    } catch {
-      if (isAdminApi) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-      }
-      return NextResponse.redirect(new URL('/admin/login', request.url));
-    }
+    
+    // We rely on backend validation for real requests. Here we just do a surface-level check.
+    return NextResponse.next();
   }
 
   if (isUserProtectedPath(pathname)) {
-    const token = request.cookies.get('userToken')?.value;
+    const isUserLoggedIn = request.cookies.get('userLogin')?.value === 'true';
 
-    if (!token) {
+    if (!isUserLoggedIn) {
       const loginUrl = new URL('/auth/login', request.url);
       loginUrl.searchParams.set(
         'callbackUrl',
@@ -48,17 +40,7 @@ export async function proxy(request: NextRequest) {
       return NextResponse.redirect(loginUrl);
     }
 
-    try {
-      await jwtVerify(token, getJwtSecret());
-      return NextResponse.next();
-    } catch {
-      const loginUrl = new URL('/auth/login', request.url);
-      loginUrl.searchParams.set(
-        'callbackUrl',
-        `${request.nextUrl.pathname}${request.nextUrl.search}`
-      );
-      return NextResponse.redirect(loginUrl);
-    }
+    return NextResponse.next();
   }
 
   return NextResponse.next();

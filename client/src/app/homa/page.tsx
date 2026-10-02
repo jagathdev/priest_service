@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import Navbar from "@/components/layout/Navbar";
 import Link from "next/link";
-import { useTranslation } from "@/contexts/LanguageContext";
+import { useRouter } from "next/navigation";
 import Footer from "@/components/layout/Footer";
 import WishlistButton from "@/components/common/WishlistButton";
 
@@ -45,17 +45,18 @@ const getHomaImageUrl = (imageUrl?: string): string => {
 };
 
 export default function HomaPage() {
-  const { t } = useTranslation();
   const [allHomas, setAllHomas] = useState<Homa[]>([]);
   const [fetched, setFetched] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedType, setSelectedType] = useState("All Homas");
   const [selectedDeities, setSelectedDeities] = useState<string[]>([]);
   const [selectedDoshas, setSelectedDoshas] = useState<string[]>([]);
+  const router = useRouter();
 
   // Fetch homas from Express API endpoint
   useEffect(() => {
-    fetch("https://priest-service.onrender.com/api/homas")
+    const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:5000";
+    fetch(`${backendUrl}/api/homas`)
       .then((r) => (r.ok ? r.json() : null))
       .then((resData) => {
         const rawList = resData?.data && Array.isArray(resData.data)
@@ -375,9 +376,10 @@ export default function HomaPage() {
                     return (
                       <div
                         key={homa._id}
-                        className="bg-white rounded-2xl border border-gray-200 shadow-xs hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col group relative"
+                        onClick={() => router.push(`/homa/${homa.slug || slugify(homa.title)}`)}
+                        className="bg-white rounded-2xl border border-gray-200 shadow-xs hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col group relative cursor-pointer"
                       >
-                        <Link href={`/homa/${homa.slug || slugify(homa.title)}`} className="flex flex-col flex-1 cursor-pointer block">
+                        <div className="flex flex-col flex-1 block">
                           {/* ── Top Image Container ── */}
                           <div className="relative h-[210px] w-full overflow-hidden bg-gray-100 shrink-0">
                             <img
@@ -388,7 +390,7 @@ export default function HomaPage() {
 
                             {/* Top Left Maroon Badge Pill */}
                             <div className="absolute top-3 left-3 bg-[#701a28] text-white text-[11px] font-extrabold px-3.5 py-1.5 rounded-full shadow-md z-10 backdrop-blur-xs max-w-[80%] truncate">
-                              {homa.badge || homa.subtitle || "Special Homa"}
+                              {homa.badge || homa.subtitle}
                             </div>
                           </div>
 
@@ -396,7 +398,7 @@ export default function HomaPage() {
                           <div className="pt-3 px-4 text-center">
                             <p className="text-[10px] font-bold text-[#800000] uppercase tracking-widest flex items-center justify-center gap-1.5">
                               <span className="w-3.5 h-px bg-[#800000]/40 inline-block"></span>
-                              <span className="truncate">{homa.subtitle || homa.shortTitle || "VEDIC HOMA RITUAL"}</span>
+                              <span className="truncate">{homa.subtitle || homa.shortTitle}</span>
                               <span className="w-3.5 h-px bg-[#800000]/40 inline-block"></span>
                             </p>
                           </div>
@@ -408,7 +410,7 @@ export default function HomaPage() {
                             </h3>
 
                             <p className="text-xs text-gray-500 line-clamp-2 mt-1.5 mb-4 leading-relaxed min-h-[36px]">
-                              {homa.description || "A sacred ritual for divine blessings, removing difficulties and bringing peace and health."}
+                              {homa.description}
                             </p>
 
                             {/* Info Box 1: Date & Frequency */}
@@ -416,7 +418,7 @@ export default function HomaPage() {
                               <svg className="w-4 h-4 text-amber-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                               </svg>
-                              <span className="font-medium truncate">{homa.date || "Everyday • Dedicated Priest"}</span>
+                              <span className="font-medium truncate">{homa.date}</span>
                             </div>
 
                             {/* Info Box 2: Temple Location */}
@@ -425,7 +427,7 @@ export default function HomaPage() {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                               </svg>
-                              <span className="font-medium truncate">{homa.location || "Renowned Temple, India"}</span>
+                              <span className="font-medium truncate">{homa.location}</span>
                             </div>
 
                             {/* ── Card Footer ── */}
@@ -447,10 +449,10 @@ export default function HomaPage() {
                               </div>
                             </div>
                           </div>
-                        </Link>
-                        
+                        </div>
+
                         {/* Top Right Action Buttons (Heart & Share) */}
-                        <div className="absolute top-3 right-3 flex items-center gap-1.5 z-10">
+                        <div className="absolute top-3 right-3 flex items-center gap-1.5 z-10" onClick={(e) => e.stopPropagation()}>
                           <WishlistButton itemId={homa._id} />
                           <button
                             type="button"

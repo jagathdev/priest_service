@@ -4,8 +4,9 @@ import Link from "next/link";
 import { useMemo, useRef, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getCountryByIsoCode } from "@/lib/auth/countries";
-import { authService } from "@/services/authService";
+import { authService } from "@/services/auth.service";
 import type { LoginMethod, OtpPayload } from "@/types/auth";
+import { useUser } from "@/contexts/UserContext";
 
 const RESEND_SECONDS = 30;
 
@@ -59,6 +60,7 @@ export default function OtpClient() {
   const [loading, setLoading] = useState(false);
   const [resendSeconds, setResendSeconds] = useState(RESEND_SECONDS);
   const otpInputRef = useRef<HTMLInputElement | null>(null);
+  const { setUser } = useUser();
 
   useEffect(() => {
     otpInputRef.current?.focus();
@@ -72,7 +74,7 @@ export default function OtpClient() {
 
   const redirectAfterLogin = () => {
     const callbackUrl = new URLSearchParams(window.location.search).get("callbackUrl") || "/dashboard";
-    window.location.href = callbackUrl;
+    router.push(callbackUrl);
   };
 
   const handleVerifyOtp = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -92,8 +94,15 @@ export default function OtpClient() {
 
     setLoading(true);
     try {
-      await authService.verifyOtp({ ...otpPayload, otp: otpValue });
-      redirectAfterLogin();
+      const res = await authService.verifyOtp({ ...otpPayload, otp: otpValue });
+      if (res.data && res.data.user) {
+        setUser(res.data.user);
+        document.cookie = "userLogin=true; path=/; max-age=" + 60 * 60 * 24 * 7;
+        localStorage.setItem("mockUser", JSON.stringify(res.data.user));
+        redirectAfterLogin();
+      } else {
+        throw new Error("Invalid response from server");
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "OTP verification failed");
     } finally {

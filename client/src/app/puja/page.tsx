@@ -2,10 +2,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import Navbar from "@/components/layout/Navbar";
 import { SparklesIcon } from "@heroicons/react/24/outline";
-import Link from "next/link";
-import { useTranslation } from "@/contexts/LanguageContext";
-import ReviewsSection from "@/components/common/ReviewsSection";
-import HowItWorksCarousel from "@/components/common/HowItWorksCarousel";
+import { useRouter } from "next/navigation";
 import WishlistButton from "@/components/common/WishlistButton";
 
 interface Puja {
@@ -243,98 +240,98 @@ function PujaFilterModal({
   return (
     <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm transition-opacity duration-300">
       <div className="w-full max-w-[550px] flex flex-col overflow-hidden rounded-[20px] bg-white shadow-2xl max-h-[85dvh] animate-[fadeIn_0.2s_ease-out]">
-        
+
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-[#ebd5c1]">
           <h3 className="text-[22px] font-serif text-[#1f1f1f]">Puja Filters</h3>
           <button onClick={onClose} className="text-gray-500 hover:text-gray-800 transition-colors">
-             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
         </div>
 
         {/* Body */}
         <div className="flex flex-1 overflow-hidden min-h-[400px]">
-           {/* Sidebar */}
-           <div className="w-[35%] sm:w-1/3 border-r border-[#ebd5c1] overflow-y-auto bg-white">
-             {filterGroups.map((group) => {
-               const isActive = group.label === activeTab;
-               return (
-                 <button 
-                   key={group.label}
-                   onClick={() => {
-                     setActiveTab(group.label);
-                     setSearchQuery("");
-                   }}
-                   className={`w-full text-left px-5 py-4 text-[13px] sm:text-sm font-bold transition-colors relative ${isActive ? 'bg-[#fcf5f3] text-[#009644]' : 'text-gray-700 hover:bg-gray-50'}`}
-                 >
-                   {isActive && <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#009644]"></div>}
-                   {group.label}
-                 </button>
-               )
-             })}
-           </div>
+          {/* Sidebar */}
+          <div className="w-[35%] sm:w-1/3 border-r border-[#ebd5c1] overflow-y-auto bg-white">
+            {filterGroups.map((group) => {
+              const isActive = group.label === activeTab;
+              return (
+                <button
+                  key={group.label}
+                  onClick={() => {
+                    setActiveTab(group.label);
+                    setSearchQuery("");
+                  }}
+                  className={`w-full text-left px-5 py-4 text-[13px] sm:text-sm font-bold transition-colors relative ${isActive ? 'bg-[#fcf5f3] text-[#009644]' : 'text-gray-700 hover:bg-gray-50'}`}
+                >
+                  {isActive && <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#009644]"></div>}
+                  {group.label}
+                </button>
+              )
+            })}
+          </div>
 
-           {/* Content */}
-           <div className="w-[65%] sm:w-2/3 p-6 overflow-y-auto relative custom-scrollbar">
-             <h4 className="text-[17px] font-bold text-[#9e1c1c] mb-5">{activeGroup.label}</h4>
-             
-             {/* Search */}
-             <div className="relative mb-6">
-               <input 
-                 type="text" 
-                 value={searchQuery}
-                 onChange={(e) => setSearchQuery(e.target.value)}
-                 placeholder={`Search ${activeGroup.label}`} 
-                 className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-full outline-none text-[13px] sm:text-sm focus:border-[#009644] transition-colors"
-               />
-               <svg className="w-4 h-4 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-4.35-4.35M17 10a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-             </div>
+          {/* Content */}
+          <div className="w-[65%] sm:w-2/3 p-6 overflow-y-auto relative custom-scrollbar">
+            <h4 className="text-[17px] font-bold text-[#9e1c1c] mb-5">{activeGroup.label}</h4>
 
-             {/* Options */}
-             <div className="space-y-5">
-               {filteredOptions.length > 0 ? (
-                 filteredOptions.map((option) => {
-                   const isSelected = (draftFilters[activeGroup.label] || []).includes(option.value);
-                   return (
-                     <label key={option.value} className="flex items-start gap-3.5 cursor-pointer group">
-                       <div className="relative flex items-center justify-center shrink-0 mt-0.5">
-                         <input 
-                           type="checkbox" 
-                           checked={isSelected}
-                           onChange={() => selectFilter(activeGroup.label, option.value)}
-                           className="peer w-[18px] h-[18px] appearance-none rounded-[4px] border border-gray-300 checked:bg-white checked:border-[#009644] transition-colors cursor-pointer"
-                         />
-                         {/* Custom checkmark */}
-                         <svg className="absolute w-3 h-3 text-transparent peer-checked:text-[#009644] pointer-events-none transition-colors" viewBox="0 0 14 10" fill="none">
-                           <path d="M1 5L4.5 8.5L13 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                         </svg>
-                       </div>
-                       <span className="text-[13px] sm:text-sm font-bold text-gray-700 group-hover:text-gray-900 leading-snug pt-[1px]">{option.value}</span>
-                     </label>
-                   )
-                 })
-               ) : (
-                 <p className="text-sm text-gray-500 text-center py-4">No matching options found.</p>
-               )}
-             </div>
-           </div>
+            {/* Search */}
+            <div className="relative mb-6">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={`Search ${activeGroup.label}`}
+                className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-full outline-none text-[13px] sm:text-sm focus:border-[#009644] transition-colors"
+              />
+              <svg className="w-4 h-4 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-4.35-4.35M17 10a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+            </div>
+
+            {/* Options */}
+            <div className="space-y-5">
+              {filteredOptions.length > 0 ? (
+                filteredOptions.map((option) => {
+                  const isSelected = (draftFilters[activeGroup.label] || []).includes(option.value);
+                  return (
+                    <label key={option.value} className="flex items-start gap-3.5 cursor-pointer group">
+                      <div className="relative flex items-center justify-center shrink-0 mt-0.5">
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => selectFilter(activeGroup.label, option.value)}
+                          className="peer w-[18px] h-[18px] appearance-none rounded-[4px] border border-gray-300 checked:bg-white checked:border-[#009644] transition-colors cursor-pointer"
+                        />
+                        {/* Custom checkmark */}
+                        <svg className="absolute w-3 h-3 text-transparent peer-checked:text-[#009644] pointer-events-none transition-colors" viewBox="0 0 14 10" fill="none">
+                          <path d="M1 5L4.5 8.5L13 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      </div>
+                      <span className="text-[13px] sm:text-sm font-bold text-gray-700 group-hover:text-gray-900 leading-snug pt-[1px]">{option.value}</span>
+                    </label>
+                  )
+                })
+              ) : (
+                <p className="text-sm text-gray-500 text-center py-4">No matching options found.</p>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Footer */}
         <div className="flex flex-col sm:flex-row items-center justify-between p-4 sm:p-5 border-t border-[#ebd5c1] gap-3 bg-white">
-          <button 
+          <button
             onClick={() => { setDraftFilters(defaultFilters); onClear(); }}
             className="w-full sm:flex-1 py-3 border border-gray-300 rounded-full text-sm font-bold text-gray-800 hover:bg-gray-50 transition-colors"
           >
             Clear Filter
           </button>
-          <button 
+          <button
             onClick={() => onApply(draftFilters)}
             className="w-full sm:flex-1 py-3 bg-[#00b050] text-white rounded-full text-sm font-bold flex items-center justify-center relative hover:bg-[#009644] transition-colors group"
           >
             <span>Apply Filter</span>
             <div className="absolute right-2 w-[28px] h-[28px] rounded-full bg-white text-[#00b050] flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 transition-transform">
-               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
             </div>
           </button>
         </div>
@@ -422,7 +419,6 @@ function ShareModal({
 
 // --- Main Page ----------------------------------------------------------------
 export default function PujaPage() {
-  const { t } = useTranslation();
   const [allPujas, setAllPujas] = useState<Puja[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [fetched, setFetched] = useState(false);
@@ -431,6 +427,7 @@ export default function PujaPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [shareUrl, setShareUrl] = useState("");
+  const router = useRouter();
 
   const openShareModal = (url: string) => {
     setShareUrl(url);
@@ -457,38 +454,8 @@ export default function PujaPage() {
       .finally(() => setFetched(true));
   }, []);
 
-  const defaultBanners: Puja[] = [
-    {
-      _id: "default-1",
-      title: "Ganesh Chaturthi Mahapuja",
-      location: "Maharashtra",
-      date: "Available Daily",
-      imageUrl: "/images/Ganesh-Chaturthi-Mahapuja.jpg",
-      buttonText: "Participate Now",
-      slug: "ganesh-chaturthi-mahapuja",
-    },
-    {
-      _id: "default-2",
-      title: "Navagraha Shanti Puja",
-      location: "Tamil Nadu",
-      date: "Available Daily",
-      imageUrl: "/images/Navagraha-Shanti-Puja.jpg",
-      buttonText: "Participate Now",
-      slug: "navagraha-shanti-puja",
-    },
-    {
-      _id: "default-3",
-      title: "Lakshmi Homam",
-      location: "Karnataka",
-      date: "Available Daily",
-      imageUrl: "/images/Lakshmi-Homam.jpg",
-      buttonText: "Participate Now",
-      slug: "lakshmi-homam",
-    }
-  ];
-
-  // Limit carousel to first 5 pujas, or use default static banners if not loaded
-  const carouselPujas = allPujas.length > 0 ? allPujas.slice(0, 5) : defaultBanners;
+  // Limit carousel to first 5 pujas
+  const carouselPujas = allPujas.slice(0, 5);
 
   // Banner auto-rotate
   useEffect(() => {
@@ -511,41 +478,7 @@ export default function PujaPage() {
 
   // -- Apply filters to get displayed pujas --
   const displayedPujas = allPujas.filter((p) => pujaMatchesFilters(p, filters, searchQuery));
-  const howItWorksSteps = [
-    {
-      title: t.puja.step1Title,
-      description: t.puja.step1Desc,
-      imageSrc: "/images/app-banner1.jpg",
-      imageAlt: "Choose a puja from the list",
-      tag: "Book Puja",
-      cta: t.puja.bookNow,
-    },
-    {
-      title: t.puja.step2Title,
-      description: t.puja.step2Desc,
-      imageSrc: "/images/app-banner2.jpg",
-      imageAlt: "Fill devotee information for the puja",
-      tag: "Sankalp Details",
-      cta: t.puja.bookNow,
-    },
-    {
-      title: t.puja.step3Title,
-      description: t.puja.step3Desc,
-      imageSrc: "/images/app-banner3.jpg",
-      imageAlt: "Receive puja video on WhatsApp",
-      tag: "Puja Video",
-      cta: t.puja.bookNow,
-    },
-    {
-      title: t.puja.step4Title,
-      description: t.puja.step4Desc,
-      imageSrc: "/images/app-banner1.jpg",
-      imageAlt: "Receive aashirwad box at the registered address",
-      tag: "Aashirwad Box",
-      cta: t.puja.bookNow,
-    },
-  ];
-
+ 
   return (
     <>
       <Navbar />
@@ -642,14 +575,14 @@ export default function PujaPage() {
           ) : displayedPujas.length === 0 ? (
             <div className="mt-16 flex flex-col items-center justify-center gap-4 rounded-2xl border border-dashed border-[#e3d1c2] bg-white py-16 text-center">
               <SparklesIcon className="h-10 w-10 text-[#d95a2b]" />
-              <p className="text-lg font-semibold text-[#5c2424]">{t.puja.noMatch}</p>
-              <p className="text-sm text-gray-500">{t.puja.noMatchSub}</p>
+              <p className="text-lg font-semibold text-[#5c2424]">No pujas found</p>
+              <p className="text-sm text-gray-500">Try adjusting your filters to find what you're looking for.</p>
               <button
                 type="button"
                 onClick={clearFilters}
                 className="mt-2 rounded-full bg-[#d95a2b] px-6 py-2.5 text-sm font-bold text-white shadow-md hover:bg-[#b0451f] transition"
               >
-                {t.puja.clearFilters}
+                Clear Filters
               </button>
             </div>
           ) : (
@@ -659,9 +592,10 @@ export default function PujaPage() {
                 return (
                   <div
                     key={puja._id}
-                    className="bg-white rounded-2xl shadow-sm border border-gray-200 flex flex-col overflow-hidden group hover:shadow-md transition-shadow relative"
+                    onClick={() => router.push(`/puja/${puja.slug || slugify(puja.title)}`)}
+                    className="bg-white rounded-2xl shadow-sm border border-gray-200 flex flex-col overflow-hidden group hover:shadow-md transition-shadow relative cursor-pointer"
                   >
-                    <Link href={`/puja/${puja.slug || slugify(puja.title)}`} className="flex flex-col flex-1 cursor-pointer block">
+                    <div className="flex flex-col flex-1 block">
                       <div className="relative h-[220px] w-full shrink-0">
                         <img
                           src={getPujaImageUrl(puja.imageUrl)}
@@ -678,7 +612,7 @@ export default function PujaPage() {
                       <div className="p-5 flex flex-col flex-1 text-left">
                         <p className="text-[#d95a2b] text-[10px] font-bold uppercase tracking-widest mb-2 flex items-center gap-1">
                           <span className="w-1.5 h-1.5 rounded-full bg-[#d95a2b]"></span>
-                          {puja.subtitle || "SPECIAL PUJA"}
+                          {puja.subtitle}
                         </p>
 
                         <h3 className="text-[18px] font-bold text-gray-900 mb-2 leading-snug line-clamp-2">
@@ -686,17 +620,17 @@ export default function PujaPage() {
                         </h3>
 
                         <p className="text-gray-500 text-[13px] leading-relaxed line-clamp-2 mb-4 flex-1">
-                          {puja.description || "Join us for this sacred ritual to seek divine blessings and fulfillment."}
+                          {puja.description}
                         </p>
 
                         <div className="border border-gray-100 rounded-lg p-3 space-y-2 mb-4 bg-gray-50/50">
                           <div className="flex items-center gap-2.5 text-[12px] text-gray-600">
                             <svg className="w-4 h-4 text-[#d95a2b] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                            <span className="line-clamp-1">{puja.location || "Vaidika Yagashala"}</span>
+                            <span className="line-clamp-1">{puja.location}</span>
                           </div>
                           <div className="flex items-center gap-2.5 text-[12px] text-gray-600">
                             <svg className="w-4 h-4 text-[#d95a2b] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                            <span className="line-clamp-1">{puja.date || "Available Daily"}</span>
+                            <span className="line-clamp-1">{puja.date}</span>
                           </div>
                         </div>
 
@@ -714,17 +648,17 @@ export default function PujaPage() {
                           </div>
                         </div>
                       </div>
-                    </Link>
-                    
+                    </div>
+
                     {/* Floating Actions Overlay */}
-                    <div className="absolute top-4 right-4 flex flex-col gap-2 z-10">
+                    <div className="absolute top-4 right-4 flex flex-col gap-2 z-10" onClick={(e) => e.stopPropagation()}>
                       <WishlistButton itemId={puja._id} />
-                      <button 
+                      <button
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
                           openShareModal(fullUrl);
-                        }} 
+                        }}
                         className="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-sm text-gray-600 hover:text-[#d95a2b] transition-colors"
                       >
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg>

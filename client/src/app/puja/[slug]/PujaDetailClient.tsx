@@ -138,7 +138,8 @@ export default function PujaDetailClient({
           return;
         }
 
-        const res = await fetch(`https://priest-service.onrender.com/api/pujas`);
+        const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:5000";
+        const res = await fetch(`${backendUrl}/api/pujas`);
         if (!res.ok) {
           setPuja(null);
           return;
