@@ -16,8 +16,9 @@ export default function WishlistButton({ itemId, className, iconClassName, text 
   const [isWishlisted, setIsWishlisted] = useState(false);
 
   useEffect(() => {
-    if (user && (user.id || user._id) && itemId) {
-      wishlistService.getWishlist(user.id || user._id)
+    const userId = user?.id || user?._id;
+    if (userId && itemId) {
+      wishlistService.getWishlist(userId as string)
         .then(data => {
           if (data.success && data.data && Array.isArray(data.data)) {
             const isW = data.data.some((item: any) =>
@@ -34,7 +35,9 @@ export default function WishlistButton({ itemId, className, iconClassName, text 
     e.preventDefault();
     e.stopPropagation();
 
-    if (!user) {
+    const userId = user?.id || user?._id;
+
+    if (!user || !userId) {
       alert("Please login to add to wishlist");
       return;
     }
@@ -45,7 +48,7 @@ export default function WishlistButton({ itemId, className, iconClassName, text 
 
     try {
       const data = await wishlistService.updateWishlist({
-        userId: user.id || user._id,
+        userId: userId as string,
         serviceId: itemId,
         action,
       });
