@@ -19,6 +19,7 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [resendTimer, setResendTimer] = useState(30);
+  const [waitTimer, setWaitTimer] = useState(0);
 
   const phoneInputRef = useRef<HTMLInputElement>(null);
   const otpInputRef = useRef<HTMLInputElement>(null);
@@ -45,6 +46,17 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
     return () => clearInterval(interval);
   }, [isOpen, step, resendTimer]);
 
+  // Wait timer for rate limit on input step
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isOpen && step === "input" && waitTimer > 0) {
+      interval = setInterval(() => {
+        setWaitTimer((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [isOpen, step, waitTimer]);
+
   // Prevent background body scrolling when modal is open
   useEffect(() => {
     if (isOpen) {
@@ -65,6 +77,7 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
     setError("");
     setLoading(false);
     setResendTimer(30);
+    setWaitTimer(0);
     onClose();
   };
 
@@ -90,7 +103,14 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
       setStep("otp");
       setResendTimer(30);
     } catch (err: any) {
-      setError(err.message || "Failed to send OTP. Please try again.");
+      const msg = err.message || "";
+      const match = msg.match(/wait (\d+) seconds before requesting another OTP/i);
+      if (match) {
+        setWaitTimer(parseInt(match[1], 10));
+        setError("");
+      } else {
+        setError(msg || "Failed to send OTP. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
@@ -144,7 +164,7 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
         country: { isoCode: "IN", dialCode: "+91", name: "India" } as any,
         number: mobileNumber.replace(/\D/g, ""),
       } as any);
-      
+
       setResendTimer(30);
       setOtp("");
       setError("OTP resent successfully!");
@@ -213,16 +233,22 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
                 />
               </div>
 
-              {error && (
+              {error && !waitTimer && (
                 <p className="text-xs text-red-500 font-semibold text-center mt-1">
                   {error}
+                </p>
+              )}
+
+              {waitTimer > 0 && (
+                <p className="text-xs text-stone-500 font-medium text-center mt-2">
+                  Please wait <span className="font-bold text-[#00b050]">{waitTimer}s</span> before requesting another OTP.
                 </p>
               )}
 
               {/* Continue Button with Right Arrow */}
               <button
                 type="submit"
-                disabled={mobileNumber.length !== 10 || loading}
+                disabled={mobileNumber.length !== 10 || loading || waitTimer > 0}
                 className="w-full bg-[#00b050] hover:bg-[#009644] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed text-white font-extrabold text-base py-3.5 px-6 rounded-full flex items-center justify-center relative shadow-md transition-all mt-6"
               >
                 <span>{loading ? "Sending..." : "Continue"}</span>

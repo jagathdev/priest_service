@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { DEFAULT_COUNTRY } from "@/lib/auth/countries";
+const DEFAULT_COUNTRY: { name: string; isoCode: string; dialCode: string } = { name: "India", isoCode: "IN", dialCode: "91" };
 import CountryPhoneField from "@/components/auth/CountryPhoneField";
 import type { CountryOption } from "@/types/auth";
 

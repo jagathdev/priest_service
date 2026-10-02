@@ -3,7 +3,11 @@
 import { PhoneInput } from "react-international-phone";
 import "react-international-phone/style.css";
 import type { CountryOption } from "@/types/auth";
-import { COUNTRIES, DEFAULT_COUNTRY } from "@/lib/auth/countries";
+
+const DEFAULT_COUNTRY: CountryOption = { name: "India", isoCode: "IN", dialCode: "91" };
+const COUNTRIES: CountryOption[] = [
+  { name: "India", isoCode: "IN", dialCode: "91" },
+];
 
 type Props = {
   label: string;

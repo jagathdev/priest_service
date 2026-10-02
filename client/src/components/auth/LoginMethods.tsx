@@ -3,7 +3,8 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useMemo, useState, useEffect } from "react";
-import { DEFAULT_COUNTRY } from "@/lib/auth/countries";
+import type { CountryOption } from "@/types/auth";
+const DEFAULT_COUNTRY: CountryOption = { name: "India", isoCode: "IN", dialCode: "91" };
 import { authService } from "@/services/authService";
 
 type LoginMethod = "email" | "phone" | "whatsapp";

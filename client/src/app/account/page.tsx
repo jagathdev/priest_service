@@ -42,7 +42,12 @@ export interface Address {
 export default function AccountPage() {
   const router = useRouter();
   const { user, setUser } = useUser();
+  const [isMounted, setIsMounted] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
   const [activeTab, setActiveTab] = useState("profile");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -345,7 +350,7 @@ export default function AccountPage() {
     setShowAddressModal(true);
   };
 
-  if (loading) {
+  if (!isMounted || loading) {
     return (
       <>
         <Navbar />

@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { useMemo, useRef, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { getCountryByIsoCode } from "@/lib/auth/countries";
+const DEFAULT_COUNTRY = { name: "India", isoCode: "IN", dialCode: "91" };
+
+
 import { authService } from "@/services/auth.service";
 import type { LoginMethod, OtpPayload } from "@/types/auth";
 import { useUser } from "@/contexts/UserContext";
@@ -37,7 +39,7 @@ function parseOtpContext(params: URLSearchParams): OtpPayload | null {
   if (method !== "phone" && method !== "whatsapp") return null;
   if (!isoCode || !number) return null;
 
-  const country = getCountryByIsoCode(isoCode);
+  const country = DEFAULT_COUNTRY;
 
   return {
     method,
@@ -115,7 +117,7 @@ export default function OtpClient() {
     setError("");
     setLoading(true);
     try {
-      await authService.resendOtp(otpPayload);
+      await authService.sendOtp(otpPayload);
       setOtp("");
       setResendSeconds(RESEND_SECONDS);
       otpInputRef.current?.focus();
