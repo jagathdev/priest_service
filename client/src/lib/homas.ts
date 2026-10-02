@@ -1,4 +1,4 @@
-import clientPromise from './mongodb';
+
 
 export type PujaPackage = {
   id: string;
@@ -535,27 +535,10 @@ export async function getAllHomas() {
     }
   } catch (err) {
     // Fallback if API fetch fails
+    console.error("Failed to fetch homas from API", err);
   }
 
-  try {
-    const client = await clientPromise;
-    const db = client.db();
-    const collection = db.collection('homa');
-
-    const items = await collection.find({}).toArray();
-
-    const offeringsCollection = db.collection('offering');
-    const offeringsData = await offeringsCollection.find({}).toArray();
-    const offeringsMap = Object.fromEntries(offeringsData.map(o => [String(o._id), o]));
-
-    const normalized = (items as any[]).map(p => normalizePuja(p, offeringsMap));
-
-    return normalized.filter(
-      (item: any) => String(item.status || "active").toLowerCase() !== "inactive"
-    );
-  } catch (err) {
-    return [];
-  }
+  return [];
 }
 
 export async function getHomaBySlug(slug: string) {
