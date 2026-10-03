@@ -121,11 +121,11 @@ export const getUserOrders = async (req, res) => {
         const { userId } = req.params;
 
         let query = { customer: userId };
-        
+
         // Ensure userId is valid ObjectId before querying User model
         if (mongoose.Types.ObjectId.isValid(userId)) {
             const user = await User.findById(userId);
-            
+
             if (user && user.mobileNumber) {
                 // Strip potential country code like +91 for flexible matching
                 const strippedMobile = user.mobileNumber.replace(/^\+91/, '').trim();
