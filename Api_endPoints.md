@@ -951,3 +951,125 @@ Base URL: `https://priest-service.onrender.com`
   }
 }
 ```
+
+---
+
+## 11. Admin API
+**Base Path:** `/api/admin`
+
+### 11.1 Admin Login
+- **Endpoint:** `/api/admin/login`
+- **Method:** `POST`
+- **Payload:**
+```json
+{
+  "email": "admin@vedamandir.com",
+  "password": "password123"
+}
+```
+- **Response:**
+```json
+{
+  "success": true,
+  "message": "Admin logged in successfully",
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "admin": {
+    "id": "6abd0358cd62648ac4fa1c4a",
+    "email": "admin@vedamandir.com",
+    "name": "Super Admin"
+  }
+}
+```
+
+### 11.2 Get Admin Dashboard Stats
+- **Endpoint:** `/api/admin/stats`
+- **Method:** `GET`
+- **Payload:** None
+- **Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "pujas": 12,
+    "homas": 8,
+    "orders": 150,
+    "revenue": 525000,
+    "recentBookings": [
+      {
+        "_id": "6ac06417d6fcac10cf339e5c",
+        "pooja": {
+          "_id": "6abd0362cd62648ac4fa1c4b",
+          "title": "Rameshwaram Tharpanam",
+          "imageUrl": "https://example.com/image.jpg"
+        },
+        "customerName": "Jagathratchagan",
+        "orderNumber": "200627",
+        "whatsappNumber": "9360270984",
+        "pricing": {
+          "total": 2500,
+          "currency": "INR"
+        },
+        "paymentStatus": "paid",
+        "createdAt": "2026-09-25T01:59:08.972Z"
+      }
+    ]
+  }
+}
+```
+
+### 11.3 Get Admin Orders
+- **Endpoint:** `/api/admin/orders`
+- **Method:** `GET`
+- **Payload:** None
+- **Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "_id": "6ac06417d6fcac10cf339e5c",
+      "pooja": {
+        "_id": "6abd0362cd62648ac4fa1c4b",
+        "title": "Rameshwaram Tharpanam",
+        "imageUrl": "https://example.com/image.jpg"
+      },
+      "customerName": "Jagathratchagan",
+      "orderNumber": "200627",
+      "whatsappNumber": "9360270984",
+      "pricing": {
+        "total": 2500,
+        "currency": "INR"
+      },
+      "paymentStatus": "paid",
+      "createdAt": "2026-09-25T01:59:08.972Z"
+    }
+  ]
+}
+```
+
+### 11.4 Get Admin Payments Analytics
+- **Endpoint:** `/api/admin/payments`
+- **Method:** `GET`
+- **Payload:** None
+- **Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "totalRevenue": 525000,
+    "monthlyRevenue": 45000,
+    "successfulPayments": 125,
+    "pendingPayments": 25,
+    "recentTransactions": [
+      {
+        "transactionId": "pay_TjGKajdznC2zO8",
+        "devoteeName": "Jagathratchagan",
+        "method": "Razorpay",
+        "amount": 2500,
+        "status": "paid",
+        "currency": "INR"
+      }
+    ]
+  }
+}
+```

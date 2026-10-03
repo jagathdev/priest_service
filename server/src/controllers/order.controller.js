@@ -3,7 +3,7 @@ import Pooja from "../models/Pooja.js";
 import Homa from "../models/homaModel.js";
 import { calculateServicePrice } from "../services/pricing.service.js";
 import Order from "../models/Order.js";
-
+import User from "../models/user.js";
 export const previewOrder = async (req, res) => {
     try {
         const {
@@ -120,22 +120,24 @@ export const getUserOrders = async (req, res) => {
     try {
         const { userId } = req.params;
 
-        // Find the user to get their mobile number
-        const user = await mongoose.model("User").findById(userId);
-
         let query = { customer: userId };
+        
+        // Ensure userId is valid ObjectId before querying User model
+        if (mongoose.Types.ObjectId.isValid(userId)) {
+            const user = await User.findById(userId);
+            
+            if (user && user.mobileNumber) {
+                // Strip potential country code like +91 for flexible matching
+                const strippedMobile = user.mobileNumber.replace(/^\+91/, '').trim();
 
-        if (user && user.mobileNumber) {
-            // Strip potential country code like +91 for flexible matching
-            const strippedMobile = user.mobileNumber.replace(/^\+91/, '').trim();
-
-            query = {
-                $or: [
-                    { customer: userId },
-                    { whatsappNumber: { $regex: new RegExp(strippedMobile + "$") } },
-                    { mobileNumber: { $regex: new RegExp(strippedMobile + "$") } }
-                ]
-            };
+                query = {
+                    $or: [
+                        { customer: userId },
+                        { whatsappNumber: { $regex: new RegExp(strippedMobile + "$") } },
+                        { mobileNumber: { $regex: new RegExp(strippedMobile + "$") } }
+                    ]
+                };
+            }
         }
 
         const orders = await Order.find(query).sort({ createdAt: -1 });
