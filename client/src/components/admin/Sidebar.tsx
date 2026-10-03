@@ -23,7 +23,7 @@ const menuItems = [
   { name: "Pujas", href: "/admin/pujas", icon: SparklesIcon },
   { name: "Homas", href: "/admin/homas", icon: FireIcon },
   { name: "Orders & Bookings", href: "/admin/orders", icon: ShoppingBagIcon },
-  { name: "Payments & Revenue", href: "/admin/payments", icon: CreditCardIcon },
+  // { name: "Payments & Revenue", href: "/admin/payments", icon: CreditCardIcon },
 ];
 
 export default function Sidebar() {
@@ -31,15 +31,9 @@ export default function Sidebar() {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
 
-  const handleLogout = async () => {
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "https://priest-service.onrender.com"}/api/admin/logout`, { method: "POST" });
-      if (res.ok) {
-        router.push("/admin/login");
-      }
-    } catch (error) {
-      console.error("Logout failed:", error);
-    }
+  const handleLogout = () => {
+    document.cookie = "adminToken=; path=/; max-age=0";
+    router.push("/admin/login");
   };
 
   return (

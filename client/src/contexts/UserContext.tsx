@@ -21,8 +21,9 @@ interface UserContextType {
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
-export function UserProvider({ children }: { children: ReactNode }) {
+export function UserProvider({ children, initialUser }: { children: ReactNode; initialUser?: User | null }) {
   const [user, setUser] = useState<User | null>(() => {
+    if (initialUser) return initialUser;
     if (typeof window !== "undefined") {
       if (document.cookie.includes("userLogin=true")) {
         const stored = localStorage.getItem("mockUser");
@@ -42,8 +43,12 @@ export function UserProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (user && Object.keys(user).length > 0) {
       localStorage.setItem("mockUser", JSON.stringify(user));
+      document.cookie = "mockUser=" + encodeURIComponent(JSON.stringify(user)) + "; path=/; max-age=604800;";
+      document.cookie = "userLogin=true; path=/; max-age=604800;";
     } else if (user === null) {
       localStorage.removeItem("mockUser");
+      document.cookie = "mockUser=; path=/; max-age=0;";
+      document.cookie = "userLogin=false; path=/; max-age=0;";
     }
   }, [user]);
 

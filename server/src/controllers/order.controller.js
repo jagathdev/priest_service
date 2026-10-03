@@ -119,8 +119,26 @@ export const previewOrder = async (req, res) => {
 export const getUserOrders = async (req, res) => {
     try {
         const { userId } = req.params;
-        const orders = await Order.find({ customer: userId }).sort({ createdAt: -1 });
-        
+
+        // Find the user to get their mobile number
+        const user = await mongoose.model("User").findById(userId);
+
+        let query = { customer: userId };
+
+        if (user && user.mobileNumber) {
+            // Strip potential country code like +91 for flexible matching
+            const strippedMobile = user.mobileNumber.replace(/^\+91/, '').trim();
+
+            query = {
+                $or: [
+                    { customer: userId },
+                    { whatsappNumber: { $regex: new RegExp(strippedMobile + "$") } },
+                    { mobileNumber: { $regex: new RegExp(strippedMobile + "$") } }
+                ]
+            };
+        }
+
+        const orders = await Order.find(query).sort({ createdAt: -1 });
         return res.status(200).json({
             success: true,
             data: orders

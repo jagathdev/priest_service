@@ -20,37 +20,17 @@ import lakshmiHomamImg from "@/assets/images/homa/Lakshmi-Homam.jpg";
 import HeroSection from "@/components/home/HeroSection";
 import ReviewsSection from "@/components/common/ReviewsSection";
 
-export default function DashboardPage() {
+export default function DashboardPage({ initialHeroBanners, initialPujas }: { initialHeroBanners?: any[], initialPujas?: any[] }) {
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
-  const [pujas, setPujas] = useState<any[]>([]);
-  const [fetchedPujas, setFetchedPujas] = useState(false);
-
-  useEffect(() => {
-    const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "https://priest-service.onrender.com";
-    fetch(`${backendUrl}/api/pujas`)
-      .then((r) => (r.ok ? r.json() : null))
-      .then((resData) => {
-        const rawList = resData?.data && Array.isArray(resData.data)
-          ? resData.data
-          : Array.isArray(resData)
-            ? resData
-            : [];
-        const activeList = rawList.filter((item: { status?: string }) => !item.status || item.status === "active");
-        setPujas(activeList.slice(0, 6));
-      })
-      .catch((err) => {
-        console.error("Error fetching home pujas:", err);
-        setPujas([]);
-      })
-      .finally(() => setFetchedPujas(true));
-  }, []);
+  const [pujas, setPujas] = useState<any[]>(initialPujas || []);
+  const [fetchedPujas, setFetchedPujas] = useState(true);
 
   return (
     <main className="min-h-screen bg-white text-[#1f1f1f] font-sans">
       <Navbar />
 
       {/* ── 1. Hero Section ── */}
-      <HeroSection />
+      <HeroSection initialBanners={initialHeroBanners} />
 
       {/* ── 2. Steps Section ── "Your Journey to Divine Blessings" ── */}
       <section className="py-12 sm:py-16 md:py-20 bg-[#fdfbf7] border-y border-[#f0e4d0] relative overflow-hidden">

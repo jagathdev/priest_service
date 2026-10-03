@@ -2,9 +2,9 @@
 
 import { UserProvider } from "@/contexts/UserContext";
 
-export function Providers({ children }: { children: React.ReactNode }) {
+export function Providers({ children, serverUser }: { children: React.ReactNode; serverUser?: any }) {
   return (
-    <UserProvider>
+    <UserProvider initialUser={serverUser}>
       {children}
     </UserProvider>
   );

@@ -1,41 +1,32 @@
-"use client";
-
-import React, { useEffect, useState } from "react";
+import React from "react";
 import Link from "next/link";
 import { SparklesIcon, FireIcon, ShoppingBagIcon, BanknotesIcon } from "@heroicons/react/24/outline";
 
-export default function AdminDashboard() {
-  const [stats, setStats] = useState({
-    pujas: 0,
-    homas: 0,
-    orders: 0,
-    revenue: 0,
-  });
-  const [recentBookings, setRecentBookings] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+export default async function AdminDashboard() {
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priest-service.onrender.com";
+  let stats = { pujas: 0, homas: 0, orders: 0, revenue: 0 };
+  let recentBookings: any[] = [];
+  let loading = false;
 
-  useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "https://priest-service.onrender.com"}/api/admin/stats`)
-      .then((res) => res.json())
-      .then((resData) => {
-        if (resData.success && resData.data) {
-          setStats({
-            pujas: resData.data.pujas ?? 0,
-            homas: resData.data.homas ?? 0,
-            orders: resData.data.orders ?? 0,
-            revenue: resData.data.revenue ?? 0,
-          });
-          if (Array.isArray(resData.data.recentBookings)) {
-            setRecentBookings(resData.data.recentBookings);
-          }
+  try {
+    const res = await fetch(`${baseUrl}/api/admin/stats`, { cache: "no-store" });
+    if (res.ok) {
+      const resData = await res.json();
+      if (resData.success && resData.data) {
+        stats = {
+          pujas: resData.data.pujas ?? 0,
+          homas: resData.data.homas ?? 0,
+          orders: resData.data.orders ?? 0,
+          revenue: resData.data.revenue ?? 0,
+        };
+        if (Array.isArray(resData.data.recentBookings)) {
+          recentBookings = resData.data.recentBookings;
         }
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error("Failed to load dashboard stats:", err);
-        setLoading(false);
-      });
-  }, []);
+      }
+    }
+  } catch (err) {
+    console.error("Failed to load dashboard stats:", err);
+  }
 
   return (
     <div className="space-y-8">

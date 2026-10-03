@@ -1,14 +1,33 @@
-"use client";
+import React from "react";
 
-import React, { useEffect, useState } from "react";
+export default async function AdminPaymentsPage() {
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priest-service.onrender.com";
+  let data = {
+    totalRevenue: 0,
+    monthlyRevenue: 0,
+    successfulPayments: 0,
+    pendingPayments: 0,
+    recentTransactions: [] as any[],
+  };
 
-export default function AdminPaymentsPage() {
-  const [stats, setStats] = useState({
-    totalRevenue: 24580,
-    monthlyRevenue: 12400,
-    successfulPayments: 48,
-    pendingPayments: 2,
-  });
+  try {
+    const res = await fetch(`${baseUrl}/api/admin/payments`, { cache: "no-store" });
+    if (res.ok) {
+      const result = await res.json();
+      if (result.success && result.data) {
+        data = result.data;
+      }
+    }
+  } catch (err) {
+    console.error("Error fetching admin payments:", err);
+  }
+
+  const stats = {
+    totalRevenue: data.totalRevenue || 0,
+    monthlyRevenue: data.monthlyRevenue || 0,
+    successfulPayments: data.successfulPayments || 0,
+    pendingPayments: data.pendingPayments || 0,
+  };
 
   return (
     <div className="space-y-6">
@@ -22,7 +41,7 @@ export default function AdminPaymentsPage() {
         <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-xs">
           <dt className="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Revenue</dt>
           <dd className="text-2xl font-black text-[#069e5d] mt-2">₹{stats.totalRevenue.toLocaleString()}</dd>
-          <span className="text-[11px] text-green-600 font-bold mt-1 inline-block">↑ 14% this month</span>
+          <span className="text-[11px] text-green-600 font-bold mt-1 inline-block">Lifetime earnings</span>
         </div>
 
         <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-xs">
@@ -34,7 +53,7 @@ export default function AdminPaymentsPage() {
         <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-xs">
           <dt className="text-xs font-bold text-gray-400 uppercase tracking-wider">Successful Transactions</dt>
           <dd className="text-2xl font-black text-gray-900 mt-2">{stats.successfulPayments}</dd>
-          <span className="text-[11px] text-green-600 font-bold mt-1 inline-block">98.2% Success rate</span>
+          <span className="text-[11px] text-green-600 font-bold mt-1 inline-block">Completed payments</span>
         </div>
 
         <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-xs">
@@ -59,27 +78,27 @@ export default function AdminPaymentsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 font-medium">
-              <tr className="hover:bg-gray-50">
-                <td className="px-4 py-3 font-mono font-bold text-gray-900">TXN-8849102</td>
-                <td className="px-4 py-3 text-gray-800">Jagath</td>
-                <td className="px-4 py-3 text-gray-500">Razorpay / UPI</td>
-                <td className="px-4 py-3 font-extrabold text-gray-900">₹516</td>
-                <td className="px-4 py-3"><span className="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">Success</span></td>
-              </tr>
-              <tr className="hover:bg-gray-50">
-                <td className="px-4 py-3 font-mono font-bold text-gray-900">TXN-8849101</td>
-                <td className="px-4 py-3 text-gray-800">Ramesh Sharma</td>
-                <td className="px-4 py-3 text-gray-500">Credit Card</td>
-                <td className="px-4 py-3 font-extrabold text-gray-900">₹501</td>
-                <td className="px-4 py-3"><span className="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">Success</span></td>
-              </tr>
-              <tr className="hover:bg-gray-50">
-                <td className="px-4 py-3 font-mono font-bold text-gray-900">TXN-8849100</td>
-                <td className="px-4 py-3 text-gray-800">Priya Raman</td>
-                <td className="px-4 py-3 text-gray-500">Net Banking</td>
-                <td className="px-4 py-3 font-extrabold text-gray-900">₹116</td>
-                <td className="px-4 py-3"><span className="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">Success</span></td>
-              </tr>
+              {data.recentTransactions.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-4 py-8 text-center text-gray-500">
+                    No transactions found.
+                  </td>
+                </tr>
+              ) : (
+                data.recentTransactions.map((txn, index) => (
+                  <tr key={index} className="hover:bg-gray-50">
+                    <td className="px-4 py-3 font-mono font-bold text-gray-900">{txn.transactionId}</td>
+                    <td className="px-4 py-3 text-gray-800">{txn.devoteeName}</td>
+                    <td className="px-4 py-3 text-gray-500">{txn.method}</td>
+                    <td className="px-4 py-3 font-extrabold text-gray-900">₹{txn.amount}</td>
+                    <td className="px-4 py-3">
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${txn.status === 'paid' ? 'bg-green-100 text-green-700' : txn.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}`}>
+                        {txn.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

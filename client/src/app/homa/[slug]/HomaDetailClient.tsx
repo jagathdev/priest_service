@@ -871,29 +871,29 @@ export default function HomaDetailClient({
       </div>
 
       {/* ── 5. Sticky Floating Action Bar at Bottom ── */}
-      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 w-[95%] max-w-[1100px]">
-        <div className="bg-[#00b050] text-white rounded-full p-3 sm:px-6 sm:py-3.5 flex items-center justify-between shadow-2xl shadow-green-900/40 border border-green-400/30 backdrop-blur-md">
-          <div className="flex items-center gap-3 pl-2">
-            <span className="bg-white text-[#00b050] rounded-full p-2 text-sm">🔥</span>
-            <div>
-              <span className="font-serif font-bold text-xs sm:text-sm block truncate max-w-[200px] sm:max-w-md">{homa.title}</span>
-              <span className="font-extrabold text-lg sm:text-xl block leading-none">₹{priceVal}</span>
+      <div className="fixed bottom-[80px] lg:bottom-6 left-1/2 -translate-x-1/2 z-40 w-[95%] max-w-[1100px]">
+        <div className="bg-[#00b050] text-white rounded-full p-2 sm:p-3 sm:px-6 flex items-center justify-between shadow-2xl shadow-green-900/40 border border-green-400/30 backdrop-blur-md overflow-hidden">
+          <div className="flex items-center gap-2 sm:gap-3 pl-1 sm:pl-2 flex-1 min-w-0 pr-2">
+            <span className="bg-white text-[#00b050] rounded-full flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 text-sm shrink-0">🔥</span>
+            <div className="flex-1 min-w-0">
+              <span className="font-serif font-bold text-xs sm:text-sm block truncate w-full">{homa.title}</span>
+              <span className="font-extrabold text-base sm:text-xl block leading-none mt-0.5">₹{priceVal}</span>
             </div>
           </div>
           <button
             onClick={() => setShowPackageModal(true)}
-            className="bg-white text-[#00b050] hover:bg-green-50 active:scale-95 font-extrabold text-xs sm:text-sm px-6 py-2.5 rounded-full shadow-md transition-all flex items-center gap-1.5"
+            className="bg-white text-[#00b050] hover:bg-green-50 active:scale-95 font-extrabold text-[11px] sm:text-sm px-4 sm:px-6 py-2 sm:py-2.5 rounded-full shadow-md transition-all flex items-center gap-1 sm:gap-1.5 shrink-0 whitespace-nowrap mr-1 sm:mr-0"
           >
             <span>Participate</span>
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
+            <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
           </button>
         </div>
       </div>
 
       {/* ── 6. Package Selection Modal ── */}
       {showPackageModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl w-full max-w-2xl p-6 sm:p-8 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 pb-[90px] md:pb-4 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl w-full max-w-2xl p-6 sm:p-8 shadow-2xl relative max-h-[85vh] md:max-h-[90vh] overflow-y-auto">
             <button
               onClick={() => setShowPackageModal(false)}
               className="absolute top-4 right-4 text-stone-400 hover:text-stone-700 p-2"

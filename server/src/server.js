@@ -13,12 +13,14 @@ import customerQueryRoutes from './routes/customerQuery.routes.js';
 import paymentRoutes from './routes/payment.routes.js';
 import heroBannerRoutes from './routes/heroBannerRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
+import setupAdmin from './config/setupAdmin.js';
 
 const app = express();
 
 // Connect Database
-connectDB();
-
+connectDB().then(() => {
+    setupAdmin();
+});
 // Middleware
 app.use(cors());
 app.use(express.json());

@@ -41,15 +41,12 @@ export interface Address {
 }
 
 function AccountPageContent() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const { user, setUser } = useUser();
-  const [isMounted, setIsMounted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("profile");
 
   useEffect(() => {
-    setIsMounted(true);
     const tabParam = searchParams.get('tab');
     if (tabParam) {
       setActiveTab(tabParam);
@@ -117,9 +114,8 @@ function AccountPageContent() {
     setIsSubmittingHelp(true);
     try {
       const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "https://priest-service.onrender.com";
-      const apiUrl = process.env.NEXT_PUBLIC_API_CUSTOMERQUERIES || "/api/customerQueries";
 
-      const res = await fetch(`${baseUrl}${apiUrl}`, {
+      const res = await fetch(`${baseUrl}/api/customerQueries`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -201,9 +197,8 @@ function AccountPageContent() {
     setSaving(true);
     try {
       const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.PUBLIC_BASE_URL || "https://priest-service.onrender.com";
-      const updateUrl = process.env.NEXT_PUBLIC_API_USER_UPDATE || "/api/users/updateProfile";
 
-      const res = await fetch(`${baseUrl}${updateUrl}`, {
+      const res = await fetch(`${baseUrl}/api/users/updateProfile`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -276,8 +271,7 @@ function AccountPageContent() {
         addresses: updatedAddresses
       };
 
-      const updateUrl = process.env.NEXT_PUBLIC_API_USER_UPDATE || "/api/users/updateProfile";
-      const res = await fetch(`${baseUrl}${updateUrl}`, {
+      const res = await fetch(`${baseUrl}/api/users/updateProfile`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
@@ -317,9 +311,7 @@ function AccountPageContent() {
         mobileNumber: user.mobileNumber || "",
         addresses: updatedAddresses
       };
-
-      const updateUrl = process.env.NEXT_PUBLIC_API_USER_UPDATE || "/api/users/updateProfile";
-      const res = await fetch(`${baseUrl}${updateUrl}`, {
+      const res = await fetch(`${baseUrl}/api/users/updateProfile`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
@@ -372,69 +364,11 @@ function AccountPageContent() {
     setShowAddressModal(true);
   };
 
-  if (!isMounted || loading) {
+  if (loading) {
     return (
-      <>
-        <Navbar />
-        <div className="flex min-h-screen items-start justify-center bg-[#fafafc]"> 
-          <div className="w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-6 lg:py-8 flex flex-col lg:flex-row gap-6 animate-pulse">
-            {/* Sidebar Skeleton */}
-            <div className="w-full lg:w-[280px] xl:w-[320px] shrink-0">
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-150 p-6 flex flex-col gap-4 h-[400px]">
-                <div className="flex items-center gap-4 border-b border-gray-100 pb-4">
-                  <div className="w-12 h-12 rounded-full bg-stone-200"></div>
-                  <div className="space-y-2 flex-1">
-                    <div className="h-4 bg-stone-200 rounded w-2/3"></div>
-                    <div className="h-3 bg-stone-100 rounded w-1/2"></div>
-                  </div>
-                </div>
-                <div className="space-y-3 mt-2">
-                  <div className="h-10 bg-stone-100 rounded-xl w-full"></div>
-                  <div className="h-10 bg-stone-100 rounded-xl w-full"></div>
-                  <div className="h-10 bg-stone-100 rounded-xl w-full"></div>
-                  <div className="h-10 bg-stone-100 rounded-xl w-full"></div>
-                </div>
-              </div>
-            </div>
-            {/* Main Content Skeleton */}
-            <div className="flex-1 w-full max-w-full lg:max-w-[calc(100%-300px)]">
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-150 p-6 sm:p-8 min-h-[600px]">
-                <div className="w-1/4 h-8 bg-stone-200 rounded-md mb-8"></div>
-
-                <div className="space-y-6">
-                  {/* Info blocks skeleton */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="h-24 bg-stone-50 rounded-xl border border-stone-100 p-4 space-y-3">
-                      <div className="h-4 bg-stone-200 rounded w-1/3"></div>
-                      <div className="h-3 bg-stone-100 rounded w-2/3"></div>
-                    </div>
-                    <div className="h-24 bg-stone-50 rounded-xl border border-stone-100 p-4 space-y-3">
-                      <div className="h-4 bg-stone-200 rounded w-1/3"></div>
-                      <div className="h-3 bg-stone-100 rounded w-2/3"></div>
-                    </div>
-                    <div className="h-24 bg-stone-50 rounded-xl border border-stone-100 p-4 space-y-3">
-                      <div className="h-4 bg-stone-200 rounded w-1/3"></div>
-                      <div className="h-3 bg-stone-100 rounded w-2/3"></div>
-                    </div>
-                    <div className="h-24 bg-stone-50 rounded-xl border border-stone-100 p-4 space-y-3">
-                      <div className="h-4 bg-stone-200 rounded w-1/3"></div>
-                      <div className="h-3 bg-stone-100 rounded w-2/3"></div>
-                    </div>
-                  </div>
-
-                  {/* Wide block skeleton */}
-                  <div className="h-32 bg-stone-50 rounded-xl border border-stone-100 p-4 space-y-3 mt-8">
-                    <div className="h-4 bg-stone-200 rounded w-1/4"></div>
-                    <div className="h-3 bg-stone-100 rounded w-3/4"></div>
-                    <div className="h-3 bg-stone-100 rounded w-1/2"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <Footer />
-      </>
+      <div className="flex min-h-screen items-center justify-center bg-[#fafafc]">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#069e5d]"></div>
+      </div>
     );
   }
 

@@ -20,36 +20,58 @@ interface BannerSlide {
   ctaLink: string;
 }
 
-export default function HeroSection() {
-  const [bannerSlides, setBannerSlides] = useState<BannerSlide[]>([]);
+const DEFAULT_IMAGE = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='400'%3E%3Crect width='800' height='400' fill='%23cccccc'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='24' fill='%23333333'%3ENo Image Available%3C/text%3E%3C/svg%3E`;
+
+const mapBanners = (list: any[]): BannerSlide[] => {
+  return list.map((item: any) => {
+    let safeImage = item.imageUrl || "";
+    if (
+      safeImage &&
+      !safeImage.startsWith("/") &&
+      !safeImage.startsWith("http://") &&
+      !safeImage.startsWith("https://") &&
+      !safeImage.startsWith("data:")
+    ) {
+      safeImage = DEFAULT_IMAGE;
+    }
+
+    return {
+      id: item._id || String(Math.random()),
+      badge: item.tagLine || "SPECIAL SANKALPAM",
+      title: item.title,
+      subtitle: item.description,
+      topBadge: item.tagLine || "",
+      bannerLine1: "",
+      bannerLine2: "",
+      bannerLine3: "",
+      bannerLine4: "",
+      location: "",
+      image: safeImage || DEFAULT_IMAGE,
+      ctaText: item.cta?.text || "Book Puja Now",
+      ctaLink: item.cta?.url || "/puja",
+    };
+  });
+};
+
+export default function HeroSection({ initialBanners }: { initialBanners?: any[] }) {
+  const [bannerSlides, setBannerSlides] = useState<BannerSlide[]>(
+    initialBanners && initialBanners.length > 0 ? mapBanners(initialBanners) : []
+  );
   const [activeSlide, setActiveSlide] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(!initialBanners || initialBanners.length === 0);
 
   useEffect(() => {
     async function fetchHeroBanners() {
       try {
         const expressBase = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priest-service.onrender.com";
-        const res = await fetch(`${expressBase}/api/hero-banners`);
-        if (!res.ok) return;
-        const data = await res.json();
-        const list = Array.isArray(data) ? data : (data && Array.isArray(data.data) ? data.data : []);
-        if (Array.isArray(list) && list.length > 0) {
-          const mapped: BannerSlide[] = list.map((item: any) => ({
-            id: item._id || String(Math.random()),
-            badge: item.tagLine || "SPECIAL SANKALPAM",
-            title: item.title,
-            subtitle: item.description,
-            topBadge: item.tagLine || "",
-            bannerLine1: "",
-            bannerLine2: "",
-            bannerLine3: "",
-            bannerLine4: "",
-            location: "",
-            image: item.imageUrl,
-            ctaText: item.cta?.text || "Book Puja Now",
-            ctaLink: item.cta?.url || "/puja",
-          }));
-          setBannerSlides(mapped);
+        if (!initialBanners || initialBanners.length === 0) {
+          const res = await fetch(`${expressBase}/api/hero-banners`);
+          if (!res.ok) return;
+          const data = await res.json();
+          const list = Array.isArray(data) ? data : (data && Array.isArray(data.data) ? data.data : []);
+          if (Array.isArray(list) && list.length > 0) {
+            setBannerSlides(mapBanners(list));
+          }
         }
       } catch (err) {
         console.error("Error loading hero banners:", err);

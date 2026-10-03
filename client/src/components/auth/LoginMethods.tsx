@@ -6,6 +6,7 @@ import { useMemo, useState, useEffect } from "react";
 import type { CountryOption } from "@/types/auth";
 const DEFAULT_COUNTRY: CountryOption = { name: "India", isoCode: "IN", dialCode: "91" };
 import { authService } from "@/services/authService";
+import { adminService } from "@/services/admin.service";
 
 type LoginMethod = "email" | "phone" | "whatsapp";
 
@@ -107,7 +108,7 @@ export default function LoginMethods() {
   const isValid = useMemo(() => {
     if (method === "email") {
       if (isAdmin) {
-        return emailRegex.test(email) && password.length > 0;
+        return email.length > 0 && password.length > 0;
       }
       return emailRegex.test(email);
     }
@@ -155,14 +156,16 @@ export default function LoginMethods() {
 
     try {
       if (method === "email" && isAdmin) {
-        const data = await authService.loginWithEmail({ email, password });
+        const data = await adminService.login({ email, password });
 
-        if (data.isAdmin) {
+        if (data.success || data.token) {
+          // Set cookie for proxy middleware (if not already set by backend)
+          document.cookie = `adminToken=${data.token}; path=/; max-age=86400`;
           window.location.href = "/admin";
           return;
         }
 
-        const callbackUrl = new URLSearchParams(window.location.search).get("callbackUrl") || "/dashboard";
+        const callbackUrl = new URLSearchParams(window.location.search).get("callbackUrl") || "/admin";
         window.location.href = callbackUrl;
         return;
       }

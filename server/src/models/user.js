@@ -103,6 +103,16 @@ const userSchema = new mongoose.Schema(
             type: [addressSchema],
             default: [],
         },
+        role: {
+            type: String,
+            enum: ["user", "admin"],
+            default: "user",
+        },
+
+        password: {
+            type: String,
+            default: "",
+        },
     },
     {
         timestamps: true,

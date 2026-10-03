@@ -205,7 +205,10 @@ export default function ContentManager({
   }, [type]);
 
   const getEndpoint = (itemType: string, id?: string | null): string => {
-    const expressBase = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priest-service.onrender.com/api";
+    let expressBase = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priest-service.onrender.com";
+    if (!expressBase.endsWith('/api')) {
+      expressBase += '/api';
+    }
     if (itemType === "puja") {
       return id ? `${expressBase}/pujas/${id}` : `${expressBase}/pujas`;
     }
@@ -433,7 +436,10 @@ export default function ContentManager({
 
     setSubmitting(true);
     try {
-      const expressBase = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priest-service.onrender.com/api";
+      let expressBase = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priest-service.onrender.com";
+      if (!expressBase.endsWith('/api')) {
+        expressBase += '/api';
+      }
       const endpoint = editingId
         ? getEndpoint(type, editingId)
         : (type === "hero-banner" || type === "home-banner" || type === "heroBanner"
