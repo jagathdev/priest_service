@@ -27,8 +27,8 @@ export default function HeroSection() {
   useEffect(() => {
     async function fetchHeroBanners() {
       try {
-        const expressBase = process.env.NEXT_PUBLIC_API_URL || "https://priest-service.onrender.com/api";
-        const res = await fetch(`${expressBase}/hero-banners`);
+        const expressBase = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priest-service.onrender.com";
+        const res = await fetch(`${expressBase}/api/hero-banners`);
         if (!res.ok) return;
         const data = await res.json();
         const list = Array.isArray(data) ? data : (data && Array.isArray(data.data) ? data.data : []);

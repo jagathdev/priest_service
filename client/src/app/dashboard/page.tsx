@@ -494,7 +494,6 @@ function PujaCard({ id, imageSrc, topTag, title, subtitle, location, date, price
 
   return (
     <div className="bg-white rounded-3xl border border-stone-200/80 p-2.5 sm:p-3 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col group text-left relative">
-      
       <Link href={cardUrl} className="flex flex-col flex-1 cursor-pointer block">
         {/* Top Banner Image Container with Subtle Space */}
         <div className="relative w-full h-[260px] sm:h-[340px] md:h-[400px] lg:h-[450px] xl:h-[235px] rounded-2xl overflow-hidden mb-2 sm:mb-2.5 bg-stone-100 shrink-0">

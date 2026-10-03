@@ -1,6 +1,6 @@
 # API Endpoints Documentation
 
-This document provides a comprehensive list of all API endpoints referenced in `server.js`, including sample payloads and responses.
+This document provides a comprehensive list of all API endpoints referenced in `server.js`, including full sample payloads and responses.
 
 Base URL: `https://priest-service.onrender.com`
 
@@ -31,8 +31,8 @@ Base URL: `https://priest-service.onrender.com`
       "imageUrl": "https://example.com/banner.jpg",
       "isActive": true,
       "displayOrder": 1,
-      "createdAt": "2023-10-01T12:00:00Z",
-      "updatedAt": "2023-10-01T12:00:00Z"
+      "createdAt": "2023-10-01T12:00:00.000Z",
+      "updatedAt": "2023-10-01T12:00:00.000Z"
     }
   ]
 }
@@ -57,7 +57,9 @@ Base URL: `https://priest-service.onrender.com`
     },
     "imageUrl": "https://example.com/banner.jpg",
     "isActive": true,
-    "displayOrder": 1
+    "displayOrder": 1,
+    "createdAt": "2023-10-01T12:00:00.000Z",
+    "updatedAt": "2023-10-01T12:00:00.000Z"
   }
 }
 ```
@@ -96,7 +98,9 @@ Base URL: `https://priest-service.onrender.com`
     },
     "imageUrl": "https://example.com/banner.jpg",
     "isActive": true,
-    "displayOrder": 1
+    "displayOrder": 1,
+    "createdAt": "2023-10-01T12:00:00.000Z",
+    "updatedAt": "2023-10-01T12:00:00.000Z"
   }
 }
 ```
@@ -118,8 +122,18 @@ Base URL: `https://priest-service.onrender.com`
   "message": "Hero banner updated successfully",
   "data": {
     "_id": "60d5ecb8b392d700153f93c1",
+    "tagLine": "Special Offer",
     "title": "Updated Ganesh Chaturthi Special",
-    "displayOrder": 2
+    "description": "Book your puja now and get 10% off.",
+    "cta": {
+      "text": "Book Now",
+      "url": "/puja/ganesh-chaturthi"
+    },
+    "imageUrl": "https://example.com/banner.jpg",
+    "isActive": true,
+    "displayOrder": 2,
+    "createdAt": "2023-10-01T12:00:00.000Z",
+    "updatedAt": "2023-10-05T12:00:00.000Z"
   }
 }
 ```
@@ -153,11 +167,23 @@ Base URL: `https://priest-service.onrender.com`
   "data": [
     {
       "_id": "60d5ecb8b392d700153f93c2",
+      "name": "Ganesh Puja",
       "title": "Ganesh Puja",
-      "description": "Removes obstacles.",
+      "description": "Removes obstacles and brings prosperity.",
+      "about": "Detailed about section for Ganesh Puja...",
+      "benefits": ["Removes Obstacles", "Brings Success"],
+      "process": ["Ganapati Sthapana", "Sankalpa", "Aarti"],
+      "deity": "Lord Ganesha",
       "price": 1000,
-      "imageUrl": "ganesh-puja.jpg",
-      "status": "active"
+      "basePrice": 1000,
+      "extraParticipantPrice": 250,
+      "maxParticipants": 5,
+      "imageUrl": "https://example.com/ganesh-puja.jpg",
+      "image": "https://example.com/ganesh-puja.jpg",
+      "status": "active",
+      "isActive": true,
+      "createdAt": "2023-10-01T12:00:00.000Z",
+      "updatedAt": "2023-10-01T12:00:00.000Z"
     }
   ]
 }
@@ -170,10 +196,18 @@ Base URL: `https://priest-service.onrender.com`
 ```json
 {
   "title": "Ganesh Puja",
-  "description": "Removes obstacles.",
+  "description": "Removes obstacles and brings prosperity.",
+  "about": "Detailed about section for Ganesh Puja...",
+  "benefits": ["Removes Obstacles", "Brings Success"],
+  "process": ["Ganapati Sthapana", "Sankalpa", "Aarti"],
+  "deity": "Lord Ganesha",
   "price": 1000,
-  "imageUrl": "ganesh-puja.jpg",
-  "status": "active"
+  "basePrice": 1000,
+  "extraParticipantPrice": 250,
+  "maxParticipants": 5,
+  "imageUrl": "https://example.com/ganesh-puja.jpg",
+  "status": "active",
+  "isActive": true
 }
 ```
 - **Response:**
@@ -183,9 +217,23 @@ Base URL: `https://priest-service.onrender.com`
   "message": "Puja created successfully",
   "data": {
     "_id": "60d5ecb8b392d700153f93c2",
+    "name": "Ganesh Puja",
     "title": "Ganesh Puja",
-    "description": "Removes obstacles.",
-    "price": 1000
+    "description": "Removes obstacles and brings prosperity.",
+    "about": "Detailed about section for Ganesh Puja...",
+    "benefits": ["Removes Obstacles", "Brings Success"],
+    "process": ["Ganapati Sthapana", "Sankalpa", "Aarti"],
+    "deity": "Lord Ganesha",
+    "price": 1000,
+    "basePrice": 1000,
+    "extraParticipantPrice": 250,
+    "maxParticipants": 5,
+    "imageUrl": "https://example.com/ganesh-puja.jpg",
+    "image": "https://example.com/ganesh-puja.jpg",
+    "status": "active",
+    "isActive": true,
+    "createdAt": "2023-10-01T12:00:00.000Z",
+    "updatedAt": "2023-10-01T12:00:00.000Z"
   }
 }
 ```
@@ -194,7 +242,32 @@ Base URL: `https://priest-service.onrender.com`
 - **Endpoint:** `/api/pujas/:id`
 - **Method:** `GET`
 - **Payload:** None
-- **Response:** Similar to Get All, but a single object.
+- **Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "60d5ecb8b392d700153f93c2",
+    "name": "Ganesh Puja",
+    "title": "Ganesh Puja",
+    "description": "Removes obstacles and brings prosperity.",
+    "about": "Detailed about section for Ganesh Puja...",
+    "benefits": ["Removes Obstacles", "Brings Success"],
+    "process": ["Ganapati Sthapana", "Sankalpa", "Aarti"],
+    "deity": "Lord Ganesha",
+    "price": 1000,
+    "basePrice": 1000,
+    "extraParticipantPrice": 250,
+    "maxParticipants": 5,
+    "imageUrl": "https://example.com/ganesh-puja.jpg",
+    "image": "https://example.com/ganesh-puja.jpg",
+    "status": "active",
+    "isActive": true,
+    "createdAt": "2023-10-01T12:00:00.000Z",
+    "updatedAt": "2023-10-01T12:00:00.000Z"
+  }
+}
+```
 
 ### 2.4 Update Puja
 - **Endpoint:** `/api/pujas/:id`
@@ -202,10 +275,37 @@ Base URL: `https://priest-service.onrender.com`
 - **Payload:**
 ```json
 {
-  "price": 1200
+  "price": 1200,
+  "basePrice": 1200
 }
 ```
-- **Response:** Similar to Create response.
+- **Response:**
+```json
+{
+  "success": true,
+  "message": "Puja updated successfully",
+  "data": {
+    "_id": "60d5ecb8b392d700153f93c2",
+    "name": "Ganesh Puja",
+    "title": "Ganesh Puja",
+    "description": "Removes obstacles and brings prosperity.",
+    "about": "Detailed about section for Ganesh Puja...",
+    "benefits": ["Removes Obstacles", "Brings Success"],
+    "process": ["Ganapati Sthapana", "Sankalpa", "Aarti"],
+    "deity": "Lord Ganesha",
+    "price": 1200,
+    "basePrice": 1200,
+    "extraParticipantPrice": 250,
+    "maxParticipants": 5,
+    "imageUrl": "https://example.com/ganesh-puja.jpg",
+    "image": "https://example.com/ganesh-puja.jpg",
+    "status": "active",
+    "isActive": true,
+    "createdAt": "2023-10-01T12:00:00.000Z",
+    "updatedAt": "2023-10-05T12:00:00.000Z"
+  }
+}
+```
 
 ### 2.5 Delete Puja
 - **Endpoint:** `/api/pujas/:id`
@@ -228,7 +328,35 @@ Base URL: `https://priest-service.onrender.com`
 - **Endpoint:** `/api/homas`
 - **Method:** `GET`
 - **Payload:** None
-- **Response:** Similar to Pujas list.
+- **Response:**
+```json
+{
+  "success": true,
+  "count": 1,
+  "data": [
+    {
+      "_id": "60d5ecb8b392d700153f93c3",
+      "name": "Lakshmi Homa",
+      "title": "Lakshmi Homa",
+      "description": "For wealth and prosperity.",
+      "about": "Detailed about section for Lakshmi Homa...",
+      "benefits": ["Wealth", "Prosperity"],
+      "process": ["Ganapati Sthapana", "Sankalpa", "Havan"],
+      "deity": "Goddess Lakshmi",
+      "price": 2500,
+      "basePrice": 2500,
+      "extraParticipantPrice": 500,
+      "maxParticipants": 5,
+      "imageUrl": "https://example.com/lakshmi-homa.jpg",
+      "image": "https://example.com/lakshmi-homa.jpg",
+      "status": "active",
+      "isActive": true,
+      "createdAt": "2023-10-01T12:00:00.000Z",
+      "updatedAt": "2023-10-01T12:00:00.000Z"
+    }
+  ]
+}
+```
 
 ### 3.2 Create Homa
 - **Endpoint:** `/api/homas`
@@ -238,24 +366,77 @@ Base URL: `https://priest-service.onrender.com`
 {
   "title": "Lakshmi Homa",
   "description": "For wealth and prosperity.",
+  "about": "Detailed about section for Lakshmi Homa...",
+  "benefits": ["Wealth", "Prosperity"],
+  "process": ["Ganapati Sthapana", "Sankalpa", "Havan"],
+  "deity": "Goddess Lakshmi",
   "price": 2500,
-  "imageUrl": "lakshmi-homa.jpg",
+  "basePrice": 2500,
+  "extraParticipantPrice": 500,
+  "maxParticipants": 5,
+  "imageUrl": "https://example.com/lakshmi-homa.jpg",
   "status": "active"
 }
 ```
-- **Response:** Returns created Homa object.
+- **Response:**
+```json
+{
+  "success": true,
+  "message": "Homa created successfully",
+  "data": {
+    "_id": "60d5ecb8b392d700153f93c3",
+    "name": "Lakshmi Homa",
+    "title": "Lakshmi Homa",
+    "description": "For wealth and prosperity.",
+    "about": "Detailed about section for Lakshmi Homa...",
+    "benefits": ["Wealth", "Prosperity"],
+    "process": ["Ganapati Sthapana", "Sankalpa", "Havan"],
+    "deity": "Goddess Lakshmi",
+    "price": 2500,
+    "basePrice": 2500,
+    "extraParticipantPrice": 500,
+    "maxParticipants": 5,
+    "imageUrl": "https://example.com/lakshmi-homa.jpg",
+    "image": "https://example.com/lakshmi-homa.jpg",
+    "status": "active",
+    "isActive": true,
+    "createdAt": "2023-10-01T12:00:00.000Z",
+    "updatedAt": "2023-10-01T12:00:00.000Z"
+  }
+}
+```
 
 ### 3.3 Get Homa by ID
 - **Endpoint:** `/api/homas/:id`
 - **Method:** `GET`
+- **Payload:** None
+- **Response:** 
+*(Identical full homa object payload as returned in Create Homa)*
 
 ### 3.4 Update Homa
 - **Endpoint:** `/api/homas/:id`
 - **Method:** `PUT`
+- **Payload:**
+```json
+{
+  "price": 2700,
+  "basePrice": 2700
+}
+```
+- **Response:** 
+*(Identical full homa object payload with updated fields)*
 
 ### 3.5 Delete Homa
 - **Endpoint:** `/api/homas/:id`
 - **Method:** `DELETE`
+- **Payload:** None
+- **Response:**
+```json
+{
+  "success": true,
+  "message": "Homa deleted successfully"
+}
+```
 
 ---
 
@@ -285,7 +466,7 @@ Base URL: `https://priest-service.onrender.com`
 - **Payload:**
 ```json
 {
-  "phone": "+919876543210",
+  "phone": "+919360270984",
   "otp": "123456"
 }
 ```
@@ -294,7 +475,12 @@ Base URL: `https://priest-service.onrender.com`
 {
   "success": true,
   "message": "OTP verified successfully",
-  "token": "jwt-token-here"
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "user": {
+    "_id": "6abd0358cd62648ac4fa1c4a",
+    "mobileNumber": "+919360270984",
+    "name": "Jagathratchagan"
+  }
 }
 ```
 
@@ -309,13 +495,17 @@ Base URL: `https://priest-service.onrender.com`
 - **Payload:**
 ```json
 {
-  "cartItems": [
+  "poojaId": "6abd0362cd62648ac4fa1c4b",
+  "participants": [
     {
-      "itemId": "60d5ecb8b392d700153f93c2",
-      "quantity": 1,
-      "type": "puja"
+      "name": "Jagathratchagan"
     }
-  ]
+  ],
+  "whatsappNumber": "9360270984",
+  "gotra": "shiva gotra",
+  "doesNotKnowGotra": false,
+  "wish": "For wealth and prosperity.",
+  "bookingDate": "2026-10-12T00:00:00.000Z"
 }
 ```
 - **Response:**
@@ -323,10 +513,90 @@ Base URL: `https://priest-service.onrender.com`
 {
   "success": true,
   "data": {
-    "subTotal": 1000,
-    "tax": 180,
-    "total": 1180
+    "type": "pooja",
+    "service": {
+      "id": "6abd0362cd62648ac4fa1c4b",
+      "name": "Rameshwaram Tharpanam",
+      "image": "https://example.com/image.jpg"
+    },
+    "booking": {
+      "whatsappNumber": "9360270984",
+      "participants": [
+        {
+          "name": "Jagathratchagan"
+        }
+      ],
+      "gotra": "shiva gotra",
+      "doesNotKnowGotra": false,
+      "wish": "For wealth and prosperity.",
+      "bookingDate": "2026-10-12T00:00:00.000Z"
+    },
+    "pricing": {
+      "basePrice": 2500,
+      "extraParticipantCount": 0,
+      "extraParticipantAmount": 0,
+      "total": 2500,
+      "convenienceFee": 0,
+      "panditFee": 0,
+      "recordingFee": 0,
+      "currency": "INR"
+    }
   }
+}
+```
+
+### 5.2 Get User Orders
+- **Endpoint:** `/api/orders/user/:userId`
+- **Method:** `GET`
+- **Payload:** None
+- **Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "_id": "6ac06417d6fcac10cf339e5c",
+      "pooja": "Rameshwaram Tharpanam",
+      "customer": "6abd0358cd62648ac4fa1c4a",
+      "customerName": "Jagathratchagan",
+      "orderNumber": "200627",
+      "whatsappNumber": "9360270984",
+      "mobileNumber": "9360270984",
+      "participants": [
+        {
+          "name": "Jagathratchagan"
+        }
+      ],
+      "gotra": "shiva gotra",
+      "doesNotKnowGotra": false,
+      "wish": "Prayers offered for family happiness, prosperity, and divine blessings.",
+      "bookingDate": "2026-10-12T00:00:00.000Z",
+      "pricing": {
+        "basePrice": 2500,
+        "extraParticipantCount": 0,
+        "extraParticipantAmount": 0,
+        "total": 2500,
+        "convenienceFee": 0,
+        "panditFee": 0,
+        "recordingFee": 0,
+        "currency": "INR"
+      },
+      "paymentDetails": {
+        "transactionId": "pay_TjGKajdznC2zO8",
+        "paymentMethod": "Razorpay",
+        "paymentDate": "2026-09-25T01:59:08.972Z",
+        "gatewayResponse": {
+          "razorpayOrderId": "order_TjGKDZrwmLS1kA",
+          "razorpayPaymentId": "pay_TjGKajdznC2zO8",
+          "razorpaySignature": "457b1f686661120c09ba6b0db4794ce1a98ad8e3b8c1fa5e4d90bbda793e6983"
+        }
+      },
+      "paymentStatus": "paid",
+      "orderStatus": "paid",
+      "createdAt": "2026-09-25T01:59:08.972Z",
+      "updatedAt": "2026-09-25T01:59:08.972Z"
+    }
+  ]
 }
 ```
 
@@ -345,8 +615,23 @@ Base URL: `https://priest-service.onrender.com`
   "success": true,
   "data": {
     "_id": "60d5ecb8b392d700153f93c2",
-    "title": "Detailed Pooja View",
-    "rituals": ["Sankalpam", "Aarti"]
+    "name": "Ganesh Puja",
+    "title": "Ganesh Puja",
+    "description": "Removes obstacles and brings prosperity.",
+    "about": "Detailed about section for Ganesh Puja...",
+    "benefits": ["Removes Obstacles", "Brings Success"],
+    "process": ["Ganapati Sthapana", "Sankalpa", "Aarti"],
+    "deity": "Lord Ganesha",
+    "price": 1000,
+    "basePrice": 1000,
+    "extraParticipantPrice": 250,
+    "maxParticipants": 5,
+    "imageUrl": "https://example.com/ganesh-puja.jpg",
+    "image": "https://example.com/ganesh-puja.jpg",
+    "status": "active",
+    "isActive": true,
+    "createdAt": "2023-10-01T12:00:00.000Z",
+    "updatedAt": "2023-10-01T12:00:00.000Z"
   }
 }
 ```
@@ -362,7 +647,7 @@ Base URL: `https://priest-service.onrender.com`
 - **Payload:**
 ```json
 {
-  "userId": "60d5ecb8b392d700153f93c3",
+  "userId": "6abd0358cd62648ac4fa1c4a",
   "itemId": "60d5ecb8b392d700153f93c2",
   "action": "add" 
 }
@@ -373,6 +658,7 @@ Base URL: `https://priest-service.onrender.com`
   "success": true,
   "message": "Wishlist updated successfully",
   "data": {
+    "user": "6abd0358cd62648ac4fa1c4a",
     "items": ["60d5ecb8b392d700153f93c2"]
   }
 }
@@ -390,7 +676,9 @@ Base URL: `https://priest-service.onrender.com`
     "items": [
       {
         "_id": "60d5ecb8b392d700153f93c2",
-        "title": "Ganesh Puja"
+        "name": "Ganesh Puja",
+        "price": 1000,
+        "imageUrl": "https://example.com/ganesh-puja.jpg"
       }
     ]
   }
@@ -411,10 +699,31 @@ Base URL: `https://priest-service.onrender.com`
 {
   "success": true,
   "data": {
-    "_id": "60d5ecb8b392d700153f93c3",
-    "name": "John Doe",
-    "email": "john@example.com",
-    "phone": "+919876543210"
+    "_id": "6abd0358cd62648ac4fa1c4a",
+    "name": "Jagathratchagan",
+    "email": "jagath@example.com",
+    "mobileNumber": "9360270984",
+    "gender": "Male",
+    "dob": "1990-01-01",
+    "placeOfBirth": "Chennai",
+    "occupation": "Software Engineer",
+    "addresses": [
+      {
+        "type": "Home",
+        "name": "Jagathratchagan",
+        "phone": "9360270984",
+        "addressLine1": "No 1, Main Road",
+        "addressLine2": "Near Temple",
+        "city": "Chennai",
+        "state": "Tamil Nadu",
+        "pincode": "600001",
+        "country": "India",
+        "isDefault": true,
+        "_id": "6ac12345cd62648ac4fa1c5b"
+      }
+    ],
+    "createdAt": "2023-10-01T12:00:00.000Z",
+    "updatedAt": "2023-10-05T12:00:00.000Z"
   }
 }
 ```
@@ -422,8 +731,8 @@ Base URL: `https://priest-service.onrender.com`
 ### 8.2 Get Profile (Self)
 - **Endpoint:** `/api/users/profile`
 - **Method:** `GET`
-- **Payload:** None (Uses Auth Token)
-- **Response:** Returns the authenticated user's profile.
+- **Payload:** None (Uses Auth Token header `Authorization: Bearer <token>`)
+- **Response:** *(Identical full user object payload as returned in Get Profile by ID)*
 
 ### 8.3 Update Profile
 - **Endpoint:** `/api/users/updateProfile`
@@ -431,8 +740,13 @@ Base URL: `https://priest-service.onrender.com`
 - **Payload:**
 ```json
 {
-  "name": "John Updated",
-  "email": "john.updated@example.com"
+  "userId": "6abd0358cd62648ac4fa1c4a",
+  "name": "Jagathratchagan Updated",
+  "email": "jagath.updated@example.com",
+  "gender": "Male",
+  "dob": "1990-01-01",
+  "placeOfBirth": "Chennai",
+  "occupation": "Senior Software Engineer"
 }
 ```
 - **Response:**
@@ -441,8 +755,31 @@ Base URL: `https://priest-service.onrender.com`
   "success": true,
   "message": "Profile updated successfully",
   "data": {
-    "name": "John Updated",
-    "email": "john.updated@example.com"
+    "_id": "6abd0358cd62648ac4fa1c4a",
+    "name": "Jagathratchagan Updated",
+    "email": "jagath.updated@example.com",
+    "mobileNumber": "9360270984",
+    "gender": "Male",
+    "dob": "1990-01-01",
+    "placeOfBirth": "Chennai",
+    "occupation": "Senior Software Engineer",
+    "addresses": [
+      {
+        "type": "Home",
+        "name": "Jagathratchagan",
+        "phone": "9360270984",
+        "addressLine1": "No 1, Main Road",
+        "addressLine2": "Near Temple",
+        "city": "Chennai",
+        "state": "Tamil Nadu",
+        "pincode": "600001",
+        "country": "India",
+        "isDefault": true,
+        "_id": "6ac12345cd62648ac4fa1c5b"
+      }
+    ],
+    "createdAt": "2023-10-01T12:00:00.000Z",
+    "updatedAt": "2023-10-06T12:00:00.000Z"
   }
 }
 ```
@@ -460,15 +797,27 @@ Base URL: `https://priest-service.onrender.com`
 {
   "name": "Jane Doe",
   "email": "jane@example.com",
-  "phone": "9876543210",
-  "message": "I want to know more about the Lakshmi Homa."
+  "mobileNumber": "9876543210",
+  "subject": "Inquiry regarding Lakshmi Homa",
+  "message": "I want to know more about the Lakshmi Homa availability for next month."
 }
 ```
 - **Response:**
 ```json
 {
   "success": true,
-  "message": "Query submitted successfully"
+  "message": "Query submitted successfully",
+  "data": {
+    "_id": "6abd0999cd62648ac4fa1c9f",
+    "name": "Jane Doe",
+    "email": "jane@example.com",
+    "mobileNumber": "9876543210",
+    "subject": "Inquiry regarding Lakshmi Homa",
+    "message": "I want to know more about the Lakshmi Homa availability for next month.",
+    "status": "Open",
+    "createdAt": "2023-10-10T12:00:00.000Z",
+    "updatedAt": "2023-10-10T12:00:00.000Z"
+  }
 }
 ```
 
@@ -483,9 +832,13 @@ Base URL: `https://priest-service.onrender.com`
 - **Payload:**
 ```json
 {
-  "amount": 1000,
+  "amount": 2500,
   "currency": "INR",
-  "receipt": "receipt_order_74394"
+  "receipt": "receipt_order_200627",
+  "notes": {
+    "customerId": "6abd0358cd62648ac4fa1c4a",
+    "serviceName": "Rameshwaram Tharpanam"
+  }
 }
 ```
 - **Response:**
@@ -493,12 +846,20 @@ Base URL: `https://priest-service.onrender.com`
 {
   "success": true,
   "data": {
-    "id": "order_IluGWxBm9U8zJ8",
+    "id": "order_TjGKDZrwmLS1kA",
     "entity": "order",
-    "amount": 100000, 
+    "amount": 250000, 
+    "amount_paid": 0,
+    "amount_due": 250000,
     "currency": "INR",
-    "receipt": "receipt_order_74394",
-    "status": "created"
+    "receipt": "receipt_order_200627",
+    "status": "created",
+    "attempts": 0,
+    "notes": {
+      "customerId": "6abd0358cd62648ac4fa1c4a",
+      "serviceName": "Rameshwaram Tharpanam"
+    },
+    "created_at": 1696500000
   }
 }
 ```
@@ -509,9 +870,9 @@ Base URL: `https://priest-service.onrender.com`
 - **Payload:**
 ```json
 {
-  "razorpay_order_id": "order_IluGWxBm9U8zJ8",
-  "razorpay_payment_id": "pay_IluGWxBm9U8zJ8",
-  "razorpay_signature": "signature_hash_here"
+  "razorpay_order_id": "order_TjGKDZrwmLS1kA",
+  "razorpay_payment_id": "pay_TjGKajdznC2zO8",
+  "razorpay_signature": "457b1f686661120c09ba6b0db4794ce1a98ad8e3b8c1fa5e4d90bbda793e6983"
 }
 ```
 - **Response:**
@@ -528,18 +889,47 @@ Base URL: `https://priest-service.onrender.com`
 - **Payload:**
 ```json
 {
-  "razorpayres": {
-    "event": "payment.captured",
-    "payload": {
-      "payment": {
-        "entity": {
-          "id": "pay_IluGWxBm9U8zJ8",
-          "amount": 100000,
-          "status": "captured"
-        }
+  "event": "payment.captured",
+  "contains": ["payment"],
+  "payload": {
+    "payment": {
+      "entity": {
+        "id": "pay_TjGKajdznC2zO8",
+        "entity": "payment",
+        "amount": 250000,
+        "currency": "INR",
+        "status": "captured",
+        "order_id": "order_TjGKDZrwmLS1kA",
+        "invoice_id": null,
+        "international": false,
+        "method": "card",
+        "amount_refunded": 0,
+        "refund_status": null,
+        "captured": true,
+        "description": "Payment for Priest Service",
+        "card_id": "card_TjGKhL0Qj2N51l",
+        "bank": null,
+        "wallet": null,
+        "vpa": null,
+        "email": "jagath@example.com",
+        "contact": "+919360270984",
+        "notes": {
+          "customerId": "6abd0358cd62648ac4fa1c4a",
+          "serviceName": "Rameshwaram Tharpanam"
+        },
+        "fee": 5000,
+        "tax": 900,
+        "error_code": null,
+        "error_description": null,
+        "error_source": null,
+        "error_step": null,
+        "error_reason": null,
+        "created_at": 1696500050
       }
     }
-  }
+  },
+  "created_at": 1696500060,
+  "account_id": "acc_Gj8c67jJ2KopR9"
 }
 ```
 - **Response:**
@@ -552,8 +942,8 @@ Base URL: `https://priest-service.onrender.com`
     "payload": {
       "payment": {
         "entity": {
-          "id": "pay_IluGWxBm9U8zJ8",
-          "amount": 100000,
+          "id": "pay_TjGKajdznC2zO8",
+          "amount": 250000,
           "status": "captured"
         }
       }

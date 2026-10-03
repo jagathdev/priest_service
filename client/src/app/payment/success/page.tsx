@@ -21,86 +21,20 @@ function SuccessContent() {
   const displayPayId = paymentId;
   const displayOrdId = shoppingCartId;
 
-  // ── AstroVed backend verification state ──────────────────────────────────
+  // ── Payment is already verified and order is saved by sankalp/page.tsx ────
   const [verifyStatus, setVerifyStatus] = useState<VerifyStatus>("pending");
   const [transactionId, setTransactionId] = useState<string>("");
 
-  // ── Save booking to MongoDB exactly once after successful payment ─────────
-  const savedRef = useRef(false);
-
-  // ── Step 1: Call GetTransactionCode with retry logic ─────────────────────
-  // AstroVed's backend may take a few seconds to register the payment,
-  // so we retry up to 3 times with a 3-second delay between each attempt.
   useEffect(() => {
-    let cancelled = false;
-
     if (paymentId === "N/A" || !shoppingCartId || shoppingCartId === "N/A") {
-      setTimeout(() => {
-        if (!cancelled) setVerifyStatus("error");
-      }, 0);
-      return () => { cancelled = true; };
+      setVerifyStatus("error");
+    } else {
+      // Since we reached here from a successful Razorpay callback that already called /api/payments/verify,
+      // we can safely assume it's verified and the order is saved in the DB.
+      setTransactionId(paymentId);
+      setVerifyStatus("verified");
     }
-
-    const MAX_ATTEMPTS = 3;
-    const RETRY_DELAY_MS = 3000;
-
-    async function verifyWithAstroved(attempt: number) {
-      try {
-        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priest-service.onrender.com";
-        const res = await fetch(
-          `${baseUrl}/api/payments/get-transaction-code?orderId=${encodeURIComponent(shoppingCartId)}`
-        );
-        const data = await res.json();
-
-        if (cancelled) return;
-
-        if (data.StatusCode === 200 && data.TransactionId) {
-          // ✅ Verified — AstroVed confirmed the payment
-          setTransactionId(data.TransactionId);
-          setVerifyStatus("verified");
-        } else if (data.StatusCode === 404 && attempt < MAX_ATTEMPTS) {
-          // Payment not registered yet — retry after delay
-          setTimeout(() => {
-            if (!cancelled) verifyWithAstroved(attempt + 1);
-          }, RETRY_DELAY_MS);
-        } else {
-          // Either max retries hit or unexpected error
-          setVerifyStatus(data.StatusCode === 404 ? "not_found" : "error");
-        }
-      } catch {
-        if (!cancelled) setVerifyStatus("error");
-      }
-    }
-
-    verifyWithAstroved(1);
-    return () => { cancelled = true; };
   }, [paymentId, shoppingCartId]);
-
-  // ── Step 2: Save booking to MongoDB once verification resolves ────────────
-  useEffect(() => {
-    if (savedRef.current) return;
-    if (paymentId === "N/A") return;
-    // Save as soon as we have the result (verified or not)
-    if (verifyStatus === "pending") return;
-
-    savedRef.current = true;
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priest-service.onrender.com";
-    fetch(`${baseUrl}/api/bookings/create`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        type: "puja",
-        title,
-        amount,
-        name,
-        orderId: shoppingCartId,
-        paymentId,
-        // Include AstroVed's confirmed transaction ID if available
-        transactionId: transactionId || null,
-        verificationStatus: verifyStatus,
-      }),
-    }).catch(console.error);
-  }, [verifyStatus, paymentId, transactionId, title, amount, name, shoppingCartId]);
 
   const shareText = encodeURIComponent(`I just booked "${title}" on AstroVed! 🙏`);
 
@@ -203,7 +137,7 @@ function SuccessContent() {
         <div className="pt-4 flex flex-col items-center space-y-4 w-full">
           <div className="flex gap-4">
             <Link
-              href="/bookings"
+              href="/account?tab=bookings"
               className="bg-[#00b050] hover:bg-[#009644] text-white font-extrabold text-sm px-8 py-3.5 rounded-xl transition-all shadow-sm flex items-center gap-2"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>

@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import Link from "next/link";
 import { useUser } from "@/contexts/UserContext";
 import LoginModal from "@/components/auth/LoginModal";
+import BookingsTab from "@/components/account/BookingsTab";
 
 interface User {
   id?: string;
@@ -41,14 +42,19 @@ export interface Address {
 
 export default function AccountPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user, setUser } = useUser();
   const [isMounted, setIsMounted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState("profile");
 
   useEffect(() => {
     setIsMounted(true);
-  }, []);
-  const [activeTab, setActiveTab] = useState("profile");
+    const tabParam = searchParams.get('tab');
+    if (tabParam) {
+      setActiveTab(tabParam);
+    }
+  }, [searchParams]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [formData, setFormData] = useState<User>({});
@@ -814,137 +820,10 @@ export default function AccountPage() {
                   </>
                 )}
 
+
+
                 {activeTab === 'bookings' && (
-                  <div>
-                    {/* Header section with Title and Filters */}
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-[10px] bg-[#701a28] text-white flex items-center justify-center shrink-0 shadow-sm">
-                          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" />
-                          </svg>
-                        </div>
-                        <h1 className="text-xl sm:text-2xl font-serif text-[#333]">
-                          Bookings <span className="text-gray-500 font-medium text-lg">(1)</span>
-                        </h1>
-                      </div>
-
-                      <div className="flex items-center gap-3">
-                        <button className="px-5 py-2 rounded-full text-sm font-bold flex items-center gap-2 border border-[#069e5d] text-[#069e5d] bg-white transition">
-                          All
-                          <div className="w-4 h-4 rounded-full bg-[#069e5d] text-white flex items-center justify-center">
-                            <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                            </svg>
-                          </div>
-                        </button>
-                        <button className="px-5 py-2 rounded-full text-sm font-bold flex items-center gap-2 border border-transparent text-gray-700 bg-[#f0f0f0] hover:bg-[#e0e0e0] transition">
-                          Ongoing
-                        </button>
-                        <button className="px-5 py-2 rounded-full text-sm font-bold flex items-center gap-2 border border-transparent text-gray-700 bg-[#f0f0f0] hover:bg-[#e0e0e0] transition">
-                          Complete
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Bookings List */}
-                    <div className="bg-white rounded-[20px] border border-[#a8d5c0] p-5 hover:shadow-sm transition mb-12">
-                      {/* Card Header */}
-                      <div className="flex justify-between items-center mb-3">
-                        <div className="flex items-center gap-2 font-bold text-gray-800 text-[13px] sm:text-[15px]">
-                          <svg className="w-4 h-4 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                          </svg>
-                          <span>25 Sept 2026</span>
-                        </div>
-                        <div className="font-bold text-gray-800 text-[13px] sm:text-[15px]">
-                          Booking: <span className="text-[#3b82f6]">#200627</span>
-                        </div>
-                      </div>
-
-                      <hr className="border-gray-100 mb-5" />
-
-                      {/* Card Body */}
-                      <div className="flex items-start gap-4 mb-6">
-                        <div className="w-24 h-16 sm:w-28 sm:h-18 bg-gray-200 rounded-lg overflow-hidden shrink-0 relative border border-gray-100">
-                          <img src="https://picsum.photos/seed/rahu/200/100" alt="Puja" className="w-full h-full object-cover" />
-                        </div>
-                        <div>
-                          <h3 className="text-[16px] sm:text-[18px] font-bold text-[#069e5d] mb-1">Rahu Shanti Rudrabhishek</h3>
-                          <div className="flex items-center gap-1.5 text-gray-700 font-bold text-[13px] sm:text-[15px]">
-                            <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
-                            </svg>
-                            <span>Shri Rahu Temple, Paithani,</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Progress Tracker */}
-                      <div className="relative max-w-[380px] mt-8 pb-2">
-                        {/* Background lines */}
-                        <div className="absolute top-6 left-12 right-1/2 h-[3px] bg-[#eadecd] -z-10"></div>
-                        <div className="absolute top-6 left-1/2 right-14 h-[3px] bg-[#eadecd] -z-10"></div>
-
-                        <div className="flex justify-between items-start text-center">
-                          {/* Step 1 */}
-                          <div className="flex flex-col items-center w-24">
-                            <div className="w-12 h-12 rounded-full border-[2px] border-[#069e5d] bg-white flex items-center justify-center mb-2 z-10 shadow-sm relative">
-                              {/* calendar icon */}
-                              <svg className="w-5 h-5 text-[#069e5d]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 12l2 2 4-4" />
-                              </svg>
-                            </div>
-                            <p className="text-[12px] font-extrabold text-gray-900 leading-tight">Booked</p>
-                            <div className="flex items-center justify-center gap-1 mt-0.5">
-                              <span className="text-[11px] font-bold text-gray-600">25 Sept 2026</span>
-                              <div className="w-3.5 h-3.5 rounded-full bg-[#069e5d] text-white flex items-center justify-center shrink-0">
-                                <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="4">
-                                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                                </svg>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Step 2 */}
-                          <div className="flex flex-col items-center w-24">
-                            <div className="w-12 h-12 rounded-full bg-[#fae8e3] flex items-center justify-center mb-2 z-10 shadow-[0_0_0_4px_white]">
-                              {/* diya icon */}
-                              <svg className="w-6 h-6 text-[#a3948e]" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M12 2C8 2 8 8 8 8s-4 0-4 4c0 3 4 5 8 8 4-3 8-5 8-8 0-4-4-4-4-4s0-6-4-6zm0 13c-2 0-4-1-5-2 1 1 3 2 5 2s4-1 5-2c-1 1-3 2-5 2z" />
-                              </svg>
-                            </div>
-                            <p className="text-[12px] font-bold text-[#a8a19d] leading-tight">Puja Scheduled</p>
-                            <p className="text-[11px] font-bold text-[#a8a19d] mt-0.5">on 12 Oct 2026</p>
-                          </div>
-
-                          {/* Step 3 */}
-                          <div className="flex flex-col items-center w-28">
-                            <div className="h-12 flex items-center justify-center mb-2 z-10 shadow-[0_0_0_4px_white]">
-                              <div className="px-4 py-1.5 rounded-full bg-[#edeae8] text-[#a09691] font-bold text-[12px] flex items-center gap-1.5">
-                                <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 24 24">
-                                  <path d="M8 5v14l11-7z" />
-                                </svg>
-                                Puja Video
-                              </div>
-                            </div>
-                            <p className="text-[10px] font-bold text-[#a8a19d] leading-tight px-1">Available only after puja performed</p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Bottom Messages */}
-                    <div className="flex flex-col items-center justify-center text-center pb-8">
-                      <p className="text-[14px] font-extrabold text-gray-600 mb-1">
-                        You&apos;ve reached the end of your all bookings
-                      </p>
-                      <p className="text-[12px] font-bold text-gray-400">
-                        1 of 1 bookings shown
-                      </p>
-                    </div>
-                  </div>
+                  <BookingsTab />
                 )}
 
                 {activeTab === 'subscriptions' && (

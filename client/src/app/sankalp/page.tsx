@@ -312,33 +312,33 @@ function SankalpContent() {
     setError(null);
     setLoadingMsg("Initializing secure payment gateway...");
     try {
-      let authData: any = {};
-      if (typeof window !== "undefined") {
-        const stored = document.cookie.includes("userLogin=true");
-        if (stored) {
-          const sessionUser = sessionStorage.getItem("user");
-          if (sessionUser) {
-            try { authData = { user: JSON.parse(sessionUser) }; } catch { authData = { user: {} }; }
-          }
-        }
-      }
+      const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priest-service.onrender.com";
+      
+      const userName = formData.participants[0]?.trim() || user?.name || "Devotee";
+      const userPhone = formData.whatsapp || user?.whatsapp || user?.mobileNumber || user?.phone || "";
+      const mongoUserId = user?._id || user?.id || user?.customerId || null;
+      const userEmail = user?.email || "";
+      const userAddresses = user?.addresses || [];
+      const defaultAddress = userAddresses.find((a: any) => a.isDefault) || userAddresses[0] || {};
 
-      const backendUrl = process.env.NEXT_PUBLIC_API_URL || "https://priest-service.onrender.com";
-      const userName = formData.participants[0]?.trim() || authData?.user?.name || user?.name || "Devotee";
-      const userPhone = formData.whatsapp || authData?.user?.whatsapp || "";
-      const customerId = authData?.user?.customerId || 0;
-      const userEmail = authData?.user?.email || "";
+      const userStreet = defaultAddress.addressLine1 || "N/A";
+      const userCity = defaultAddress.city || "N/A";
+      const userState = defaultAddress.state || "N/A";
+      const userPincode = defaultAddress.pincode || "000000";
+      const userCountry = defaultAddress.country || "India";
 
       const nameParts = userName.split(" ");
       const firstName = nameParts[0] || "";
       const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
+
+      const itemName = pujaData?.title || queryTitle || "Sacred Puja";
 
       setLoadingMsg("Creating order securely...");
       const orderRes = await fetch(`${backendUrl}/api/payments/create-order`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          customerId: Number(customerId),
+          customerId: mongoUserId,
           currencyCode: "INR",
           shoppingCartId: 0,
           totalamount: Number(finalPrice),
@@ -348,15 +348,15 @@ function SankalpContent() {
           trackingCode2: "",
           shippingpreferred: false,
           contactDetail: {
-            CustomerId: Number(customerId) || 1413824,
+            CustomerId: mongoUserId,
             FirstName: firstName,
             LastName: lastName,
             ShopName: "AstroVed",
-            Street: "",
-            City: "",
-            State: "",
-            Country: "India",
-            Pincode: "",
+            Street: userStreet,
+            City: userCity,
+            State: userState,
+            Country: userCountry,
+            Pincode: userPincode,
             Phone: userPhone
           }
         })
@@ -385,7 +385,7 @@ function SankalpContent() {
       const options: Record<string, unknown> = {
         key: rzpKey,
         name: "AstroVed",
-        description: pujaData?.title || queryTitle || "Sacred Puja",
+        description: itemName,
         order_id: orderId,
         image: "https://www.astroved.com/Images/astroved-logo.jpg",
         prefill: {
@@ -413,7 +413,11 @@ function SankalpContent() {
                 razorpayPaymentId: response.razorpay_payment_id,
                 razorpaySignature: response.razorpay_signature,
                 orderDetails: {
-                  pooja: pujaData?._id,
+                  pooja: itemName,
+                  customer: mongoUserId,
+                  customerName: userName,
+                  itemName: itemName,
+                  mobileNumber: userPhone,
                   whatsappNumber: formData.whatsapp,
                   participants: formData.participants.filter((p: string) => p.trim()).map((p: string) => ({ name: p.trim() })),
                   gotra: formData.dontKnowGotra ? "Kashyapa" : formData.gotra,

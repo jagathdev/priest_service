@@ -15,10 +15,36 @@ const participantSchema = new mongoose.Schema(
 
 const orderSchema = new mongoose.Schema(
     {
+        orderNumber: {
+            type: String,
+            unique: true,
+            default: () => "ORD" + Date.now() + Math.floor(Math.random() * 1000),
+        },
+
         pooja: {
+            type: String,
+            trim: true,
+            required: false, // Made optional to support homas if needed
+        },
+
+        customer: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "Pooja",
-            required: true,
+            ref: "User",
+        },
+
+        customerName: {
+            type: String,
+            trim: true,
+        },
+
+        itemName: {
+            type: String,
+            trim: true,
+        },
+
+        mobileNumber: {
+            type: String,
+            trim: true,
         },
 
         whatsappNumber: {
@@ -100,6 +126,23 @@ const orderSchema = new mongoose.Schema(
             required: true,
         },
 
+        paymentDetails: {
+            transactionId: {
+                type: String,
+                trim: true,
+            },
+            paymentMethod: {
+                type: String,
+                trim: true,
+            },
+            paymentDate: {
+                type: Date,
+            },
+            gatewayResponse: {
+                type: mongoose.Schema.Types.Mixed, // Stores the raw response from the payment gateway
+            },
+        },
+
         paymentStatus: {
             type: String,
             enum: [
@@ -127,6 +170,6 @@ const orderSchema = new mongoose.Schema(
     }
 );
 
-const Order = mongoose.model("Order", orderSchema);
+const Order = mongoose.models.Order || mongoose.model("Order", orderSchema);
 
 export default Order;

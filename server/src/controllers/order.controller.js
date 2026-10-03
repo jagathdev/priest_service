@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import Pooja from "../models/Pooja.js";
 import Homa from "../models/homaModel.js";
 import { calculateServicePrice } from "../services/pricing.service.js";
+import Order from "../models/Order.js";
 
 export const previewOrder = async (req, res) => {
     try {
@@ -111,6 +112,24 @@ export const previewOrder = async (req, res) => {
         return res.status(500).json({
             success: false,
             message: "Failed to calculate order",
+        });
+    }
+};
+
+export const getUserOrders = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const orders = await Order.find({ customer: userId }).sort({ createdAt: -1 });
+        
+        return res.status(200).json({
+            success: true,
+            data: orders
+        });
+    } catch (error) {
+        console.error("Get User Orders Error:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Failed to fetch orders",
         });
     }
 };

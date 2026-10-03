@@ -6,7 +6,7 @@ export const apiClient = async (endpoint: string, options: RequestInit = {}) => 
   if (typeof window !== 'undefined') {
     token = localStorage.getItem('token');
   }
-  
+
   const headers = {
     'Content-Type': 'application/json',
     ...(token && { Authorization: `Bearer ${token}` }),
