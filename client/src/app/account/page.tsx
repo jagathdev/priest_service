@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
@@ -40,7 +40,7 @@ export interface Address {
   isDefault?: boolean;
 }
 
-export default function AccountPage() {
+function AccountPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, setUser } = useUser();
@@ -64,6 +64,22 @@ export default function AccountPage() {
   const [loadingWishlist, setLoadingWishlist] = useState(false);
 
   const addresses = user?.addresses || [];
+  const [bookingsCount, setBookingsCount] = useState(0);
+
+  useEffect(() => {
+    const userId = user?._id || user?.id;
+    if (userId) {
+      const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "https://priest-service.onrender.com";
+      fetch(`${backendUrl}/api/orders/user/${userId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.success && Array.isArray(data.data)) {
+            setBookingsCount(data.data.length);
+          }
+        })
+        .catch(err => console.error("Error fetching bookings count:", err));
+    }
+  }, [user?._id, user?.id]);
   const [showAddressModal, setShowAddressModal] = useState(false);
   const [addressFormData, setAddressFormData] = useState({
     _id: "",
@@ -360,8 +376,62 @@ export default function AccountPage() {
     return (
       <>
         <Navbar />
-        <div className="flex min-h-screen items-center justify-center bg-[#fafafc]">
-          <div className="h-10 w-10 animate-spin rounded-full border-b-2 border-t-2 border-[#069e5d]" />
+        <div className="flex min-h-screen items-start justify-center bg-[#fafafc]"> 
+          <div className="w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-6 lg:py-8 flex flex-col lg:flex-row gap-6 animate-pulse">
+            {/* Sidebar Skeleton */}
+            <div className="w-full lg:w-[280px] xl:w-[320px] shrink-0">
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-150 p-6 flex flex-col gap-4 h-[400px]">
+                <div className="flex items-center gap-4 border-b border-gray-100 pb-4">
+                  <div className="w-12 h-12 rounded-full bg-stone-200"></div>
+                  <div className="space-y-2 flex-1">
+                    <div className="h-4 bg-stone-200 rounded w-2/3"></div>
+                    <div className="h-3 bg-stone-100 rounded w-1/2"></div>
+                  </div>
+                </div>
+                <div className="space-y-3 mt-2">
+                  <div className="h-10 bg-stone-100 rounded-xl w-full"></div>
+                  <div className="h-10 bg-stone-100 rounded-xl w-full"></div>
+                  <div className="h-10 bg-stone-100 rounded-xl w-full"></div>
+                  <div className="h-10 bg-stone-100 rounded-xl w-full"></div>
+                </div>
+              </div>
+            </div>
+            {/* Main Content Skeleton */}
+            <div className="flex-1 w-full max-w-full lg:max-w-[calc(100%-300px)]">
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-150 p-6 sm:p-8 min-h-[600px]">
+                <div className="w-1/4 h-8 bg-stone-200 rounded-md mb-8"></div>
+
+                <div className="space-y-6">
+                  {/* Info blocks skeleton */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="h-24 bg-stone-50 rounded-xl border border-stone-100 p-4 space-y-3">
+                      <div className="h-4 bg-stone-200 rounded w-1/3"></div>
+                      <div className="h-3 bg-stone-100 rounded w-2/3"></div>
+                    </div>
+                    <div className="h-24 bg-stone-50 rounded-xl border border-stone-100 p-4 space-y-3">
+                      <div className="h-4 bg-stone-200 rounded w-1/3"></div>
+                      <div className="h-3 bg-stone-100 rounded w-2/3"></div>
+                    </div>
+                    <div className="h-24 bg-stone-50 rounded-xl border border-stone-100 p-4 space-y-3">
+                      <div className="h-4 bg-stone-200 rounded w-1/3"></div>
+                      <div className="h-3 bg-stone-100 rounded w-2/3"></div>
+                    </div>
+                    <div className="h-24 bg-stone-50 rounded-xl border border-stone-100 p-4 space-y-3">
+                      <div className="h-4 bg-stone-200 rounded w-1/3"></div>
+                      <div className="h-3 bg-stone-100 rounded w-2/3"></div>
+                    </div>
+                  </div>
+
+                  {/* Wide block skeleton */}
+                  <div className="h-32 bg-stone-50 rounded-xl border border-stone-100 p-4 space-y-3 mt-8">
+                    <div className="h-4 bg-stone-200 rounded w-1/4"></div>
+                    <div className="h-3 bg-stone-100 rounded w-3/4"></div>
+                    <div className="h-3 bg-stone-100 rounded w-1/2"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
         <Footer />
       </>
@@ -757,7 +827,7 @@ export default function AccountPage() {
                             </svg>
                           </div>
                           <div>
-                            <h4 className="text-xs font-bold text-gray-900">My Bookings (1)</h4>
+                            <h4 className="text-xs font-bold text-gray-900">My Bookings ({bookingsCount})</h4>
                             <p className="text-[11px] text-gray-500 font-medium leading-tight">View your all puja bookings and History</p>
                           </div>
                         </div>
@@ -800,7 +870,7 @@ export default function AccountPage() {
                             </svg>
                           </div>
                           <div>
-                            <h4 className="text-xs font-bold text-gray-900">My Addresses (0)</h4>
+                            <h4 className="text-xs font-bold text-gray-900">My Addresses ({addresses.length})</h4>
                             <p className="text-[11px] text-gray-500 font-medium leading-tight">Manage your saved delivery addresses</p>
                           </div>
                         </div>
@@ -1862,5 +1932,13 @@ export default function AccountPage() {
       </main>
       <Footer />
     </>
+  );
+}
+
+export default function AccountPage() {
+  return (
+    <Suspense fallback={<div className="flex h-screen items-center justify-center">Loading...</div>}>
+      <AccountPageContent />
+    </Suspense>
   );
 }

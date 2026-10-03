@@ -195,7 +195,21 @@ export default function DashboardPage() {
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 sm:gap-8 w-full max-w-full xl:max-w-none mx-auto">
             {!fetchedPujas ? (
               Array.from({ length: 3 }).map((_, i) => (
-                <div key={`skeleton-${i}`} className="bg-gray-100/80 rounded-[32px] h-[450px] animate-pulse border border-stone-100"></div>
+                <div key={`skeleton-${i}`} className="bg-white rounded-3xl h-[450px] animate-pulse border border-stone-200 p-3 shadow-sm flex flex-col">
+                  <div className="w-full h-[235px] bg-stone-100 rounded-2xl mb-4 flex items-center justify-center">
+                    <svg className="w-8 h-8 text-stone-300 animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                  </div>
+                  <div className="w-1/3 h-3 bg-stone-200 rounded-full mx-auto mb-4" />
+                  <div className="w-3/4 h-5 bg-stone-200 rounded-full mb-3" />
+                  <div className="w-1/2 h-4 bg-stone-100 rounded-full mb-auto" />
+                  <div className="flex justify-between items-end mt-4">
+                    <div className="w-20 h-6 bg-stone-200 rounded-full" />
+                    <div className="w-32 h-10 bg-[#00b050]/20 rounded-full" />
+                  </div>
+                </div>
               ))
             ) : pujas.length === 0 ? (
               <div className="col-span-full py-12 text-center text-stone-400 font-medium">No active Pujas found.</div>

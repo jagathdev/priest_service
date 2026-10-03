@@ -23,6 +23,7 @@ interface BannerSlide {
 export default function HeroSection() {
   const [bannerSlides, setBannerSlides] = useState<BannerSlide[]>([]);
   const [activeSlide, setActiveSlide] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     async function fetchHeroBanners() {
@@ -52,6 +53,8 @@ export default function HeroSection() {
         }
       } catch (err) {
         console.error("Error loading hero banners:", err);
+      } finally {
+        setIsLoading(false);
       }
     }
     fetchHeroBanners();
@@ -66,13 +69,53 @@ export default function HeroSection() {
     return () => clearInterval(timer);
   }, [bannerSlides.length]);
 
-  if (bannerSlides.length === 0) {
+  if (isLoading) {
     return (
-      <section className="relative w-full max-w-[1350px] mx-auto px-4 sm:px-6 lg:px-10 py-12 bg-white">
-        <div className="w-full h-[300px] sm:h-[400px] md:h-[460px] lg:h-[500px] bg-stone-100 animate-pulse rounded-3xl" />
+      <section className="relative w-full max-w-[1350px] mx-auto px-4 sm:px-6 lg:px-10 pt-2 sm:pt-3 lg:pt-4 pb-8 md:pb-12 xl:py-12 bg-white my-0 sm:my-1 xl:my-2 overflow-hidden flex flex-col xl:flex-row items-center justify-between gap-6 lg:gap-8 xl:gap-14 animate-pulse">
+        {/* Skeleton Left Content */}
+        <div className="flex-1 w-full max-w-[640px] pt-2 pb-1 flex flex-col justify-between h-auto xl:min-h-[500px]">
+          <div className="flex flex-col items-center xl:items-start w-full">
+            {/* Top Badge */}
+            <div className="w-32 h-6 bg-stone-200 rounded-full mb-5 hidden xl:block" />
+
+            {/* Main Title */}
+            <div className="w-full sm:w-[90%] xl:w-[80%] h-12 sm:h-14 xl:h-20 bg-stone-200 rounded-xl mb-4 xl:mb-5" />
+            <div className="w-3/4 sm:w-[70%] xl:w-[60%] h-12 sm:h-14 xl:h-20 bg-stone-200 rounded-xl mb-6" />
+
+            {/* Subtitle */}
+            <div className="w-full sm:w-[85%] h-4 sm:h-5 bg-stone-100 rounded-full mb-3" />
+            <div className="w-[90%] sm:w-[75%] h-4 sm:h-5 bg-stone-100 rounded-full mb-3" />
+            <div className="w-[80%] sm:w-[60%] h-4 sm:h-5 bg-stone-100 rounded-full mb-8" />
+          </div>
+
+          <div className="mt-auto pt-4 lg:pt-6 flex flex-col items-center xl:items-start w-full">
+            {/* CTA Button */}
+            <div className="w-full max-w-[500px] sm:max-w-[540px] xl:max-w-[420px] h-14 sm:h-16 bg-[#00b050]/20 rounded-full mb-6" />
+
+            {/* Social Proof Banner */}
+            <div className="w-full max-w-[380px] sm:max-w-[400px] h-16 bg-stone-100 rounded-xl border border-stone-200" />
+          </div>
+        </div>
+
+        {/* Skeleton Right Content (Image Card) */}
+        <div className="w-full max-w-full lg:w-full xl:w-[650px] 2xl:w-[720px] shrink-0 flex flex-col items-center">
+          <div className="w-full bg-stone-100 rounded-3xl border border-stone-200 h-[300px] sm:h-[400px] md:h-[460px] lg:h-[500px] flex items-center justify-center">
+            <svg className="w-12 h-12 text-stone-200 animate-spin" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+          </div>
+          <div className="flex gap-2.5 mt-5">
+            <div className="w-7 h-2 bg-stone-300 rounded-full" />
+            <div className="w-2 h-2 bg-stone-200 rounded-full" />
+            <div className="w-2 h-2 bg-stone-200 rounded-full" />
+          </div>
+        </div>
       </section>
     );
   }
+
+  if (bannerSlides.length === 0) return null;
 
   const current = bannerSlides[activeSlide];
 

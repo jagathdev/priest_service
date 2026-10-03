@@ -87,7 +87,7 @@ const AccountPanel = ({ accountOpen, setAccountOpen, user, setLoginModalOpen, ha
             {[
               { href: "/dashboard", label: "Home", icon: <HomeIcon /> },
               { href: "/puja", label: "Puja Seva", icon: <FlameIcon />, badge: "New" },
-              { href: "/homa", label: "Homa Seva", icon: <FlameIcon />, badge: "New" },
+              // { href: "/homa", label: "Homa Seva", icon: <FlameIcon />, badge: "New" },
             ].map((item) => (
               <Link
                 key={item.label}

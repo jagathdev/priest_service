@@ -109,9 +109,8 @@ export default function MobileBottomNav() {
       >
         <HomeIcon active={isHomeActive} />
         <span
-          className={`text-[11px] font-bold tracking-wider uppercase ${
-            isHomeActive ? "text-[#15803d]" : "text-gray-500"
-          }`}
+          className={`text-[11px] font-bold tracking-wider uppercase ${isHomeActive ? "text-[#15803d]" : "text-gray-500"
+            }`}
         >
           HOME
         </span>
@@ -124,16 +123,15 @@ export default function MobileBottomNav() {
       >
         <PujaIcon active={isPujaActive} />
         <span
-          className={`text-[11px] font-bold tracking-wider uppercase ${
-            isPujaActive ? "text-[#15803d]" : "text-gray-500"
-          }`}
+          className={`text-[11px] font-bold tracking-wider uppercase ${isPujaActive ? "text-[#15803d]" : "text-gray-500"
+            }`}
         >
           PUJA
         </span>
       </Link>
 
       {/* SEVAS */}
-      <Link
+      {/* <Link
         href="/homa"
         className="flex flex-col items-center justify-center flex-1 h-full active:bg-gray-50 transition-colors"
       >
@@ -145,7 +143,7 @@ export default function MobileBottomNav() {
         >
           SEVAS
         </span>
-      </Link>
+      </Link> */}
 
       {/* ACCOUNT */}
       <Link
@@ -154,9 +152,8 @@ export default function MobileBottomNav() {
       >
         <AccountIcon active={isAccountActive} />
         <span
-          className={`text-[11px] font-bold tracking-wider uppercase ${
-            isAccountActive ? "text-[#15803d]" : "text-gray-500"
-          }`}
+          className={`text-[11px] font-bold tracking-wider uppercase ${isAccountActive ? "text-[#15803d]" : "text-gray-500"
+            }`}
         >
           ACCOUNT
         </span>
