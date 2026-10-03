@@ -555,21 +555,6 @@ function AccountPageContent() {
                   <span>Saved Address</span>
                 </button>
 
-                {/* Language */}
-                <button
-                  type="button"
-                  onClick={() => { setActiveTab("language"); setIsSidebarOpen(false); }}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm transition ${activeTab === "language"
-                    ? "bg-[#069e5d] text-white font-bold shadow-xs"
-                    : "text-gray-700 font-medium hover:bg-gray-50"
-                    }`}
-                >
-                  <svg className={`w-4 h-4 shrink-0 ${activeTab === 'language' ? '' : 'text-gray-500'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <span>Language</span>
-                </button>
-
                 {/* About */}
                 <button
                   type="button"
@@ -733,7 +718,10 @@ function AccountPageContent() {
 
                             <button
                               type="button"
-                              onClick={() => setShowEditModal(true)}
+                              onClick={() => {
+                                setFormData(user || {});
+                                setShowEditModal(true);
+                              }}
                               className="border border-[#069e5d] text-[#069e5d] hover:bg-green-50 text-xs font-bold px-4 py-1.5 rounded-full flex items-center gap-1.5 transition self-start shadow-xs"
                             >
                               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -910,7 +898,7 @@ function AccountPageContent() {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M3 10h18M7 15h1m4 0h1m-7 4h12a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                               </svg>
                             </div>
-                            <h2 className="text-[17px] font-medium font-serif text-gray-800 tracking-wide">VedaMandir Wallet</h2>
+                            <h2 className="text-[17px] font-medium font-serif text-gray-800 tracking-wide">astroved Wallet</h2>
                           </div>
                           <div className="bg-[#ce9d52] text-white text-[9.5px] font-extrabold px-3.5 py-1.5 rounded-full tracking-wider shadow-sm uppercase">
                             Coming Soon
@@ -1326,25 +1314,25 @@ function AccountPageContent() {
                         </svg>
                       </div>
                       <h1 className="text-xl sm:text-2xl font-bold font-serif text-[#333]">
-                        About VedaMandir
+                        About astroved
                       </h1>
                     </div>
 
                     {/* Top Banner */}
                     <div className="bg-[#fcf5f3] rounded-2xl p-8 mb-8 text-center border border-[#faebe8]">
                       <div className="mb-4 flex justify-center">
-                        {/* VedaMandir text logo approximation */}
+                        {/* astroved text logo approximation */}
                         <div className="flex items-center gap-1.5 text-[#701a28]">
                           <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
                             <path d="M12 6c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm0 10c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z" />
                           </svg>
-                          <span className="font-serif font-bold text-sm tracking-wide">vedamandir</span>
+                          <span className="font-serif font-bold text-sm tracking-wide">astroved</span>
                         </div>
                       </div>
                       <h2 className="text-2xl font-serif font-bold text-[#333] mb-4">A Sacred Bridge Between Devotees and Temples</h2>
                       <p className="text-[13px] text-gray-600 leading-relaxed max-w-2xl mx-auto">
-                        VedaMandir is a spiritual platform that enables devotees to book authentic Vedic pujas from sacred temples across India. We connect you with verified, experienced purohits who perform rituals in your name and family&apos;s name &mdash; and deliver the complete puja video, prasadam, and divine blessings right to your home.
+                        astroved is a spiritual platform that enables devotees to book authentic Vedic pujas from sacred temples across India. We connect you with verified, experienced purohits who perform rituals in your name and family&apos;s name &mdash; and deliver the complete puja video, prasadam, and divine blessings right to your home.
                       </p>
                     </div>
 
@@ -1442,7 +1430,7 @@ function AccountPageContent() {
                     <h3 className="text-lg font-serif font-bold text-gray-800 mb-4">Our Mission</h3>
                     <div className="bg-white border border-gray-150 rounded-2xl p-6 shadow-sm mb-8">
                       <p className="text-[13px] text-gray-600 leading-relaxed">
-                        Our mission is to make authentic Vedic worship accessible to every devotee, wherever they are. Distance, time, and busy lives should never stand between a devotee and divine blessings. Through technology and tradition together, VedaMandir brings the sanctity of the temple to your home.
+                        Our mission is to make authentic Vedic worship accessible to every devotee, wherever they are. Distance, time, and busy lives should never stand between a devotee and divine blessings. Through technology and tradition together, astroved brings the sanctity of the temple to your home.
                       </p>
                     </div>
 
@@ -1685,7 +1673,7 @@ function AccountPageContent() {
                           onChange={(e) => setHelpFormData({ ...helpFormData, consent: e.target.checked })}
                           className="mt-0.5 w-3.5 h-3.5 rounded border-gray-300 text-[#069e5d] focus:ring-[#069e5d]"
                         />
-                        <span className="text-[11px] font-medium text-gray-600">I authorize VedaMandir to send notifications via SMS / WhatsApp / email. <span className="text-red-500">*</span></span>
+                        <span className="text-[11px] font-medium text-gray-600">I authorize astroved to send notifications via SMS / WhatsApp / email. <span className="text-red-500">*</span></span>
                       </label>
 
                       <button

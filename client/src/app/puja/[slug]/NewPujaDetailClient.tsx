@@ -365,7 +365,7 @@ export default function NewPujaDetailClient({ initialPuja, recommendations }: Pr
       <footer className="mt-20 bg-[#2d110f] text-white pt-16 pb-8 px-4 sm:px-6 lg:px-8 border-t-[8px] border-[#d87d4a]">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-serif mb-4">A Sacred Path to Divine Blessings Book Your<br/>Sacred Puja</h2>
+            <h2 className="text-3xl font-serif mb-4">A Sacred Path to Divine Blessings Book Your<br />Sacred Puja</h2>
             <p className="text-[#d87d4a] text-sm mb-8">Connect with divine blessings through authentic Vedic rituals.</p>
             <div className="flex justify-center items-center gap-4 mb-6">
               <span className="text-xl font-serif">Follow us -</span>
@@ -377,15 +377,15 @@ export default function NewPujaDetailClient({ initialPuja, recommendations }: Pr
               </div>
             </div>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-sm border-t border-white/10 pt-12">
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <span className="text-2xl text-[#d87d4a]">🔥</span>
-                <span className="text-xl font-bold">vedamandir</span>
+                <span className="text-xl font-bold">astroved</span>
               </div>
               <p className="text-gray-400 text-xs leading-relaxed">
-                Vedamandir is a spiritual platform that enables devotees to book authentic Vedic pujas at sacred temples across India.
+                astroved is a spiritual platform that enables devotees to book authentic Vedic pujas at sacred temples across India.
               </p>
             </div>
             <div>
@@ -408,13 +408,13 @@ export default function NewPujaDetailClient({ initialPuja, recommendations }: Pr
             <div>
               <h4 className="font-bold mb-4 text-[#d87d4a]">Contact</h4>
               <ul className="space-y-2 text-gray-400">
-                <li>📧 support@vedamandir.com</li>
+                <li>📧 support@astroved.com</li>
                 <li>📞 +91 73373 53123</li>
               </ul>
             </div>
           </div>
           <div className="text-center text-xs text-gray-500 mt-12 pt-8 border-t border-white/10">
-            © 2024 Vedamandir. All rights reserved.
+            © 2024 astroved. All rights reserved.
           </div>
         </div>
       </footer>

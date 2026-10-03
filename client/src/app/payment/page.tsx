@@ -21,7 +21,7 @@ function PaymentContent() {
   const searchParams = useSearchParams();
 
   const amount = searchParams?.get("amount") || "0";
-  const title = searchParams?.get("title") || "Vedamandir Puja";
+  const title = searchParams?.get("title") || "astroved Puja";
   const name = searchParams?.get("name") || "";
   const wa = searchParams?.get("wa") || "";
   const shoppingCartId = searchParams?.get("shoppingCartId") || "";

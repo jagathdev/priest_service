@@ -8,8 +8,8 @@ export default async function HomePage() {
 
   try {
     const [bannersRes, pujasRes] = await Promise.all([
-      fetch(`${expressBase}/api/hero-banners`, { cache: "no-store" }),
-      fetch(`${expressBase}/api/pujas`, { cache: "no-store" })
+      fetch(`${expressBase}/api/hero-banners`, { next: { revalidate: 60 } }),
+      fetch(`${expressBase}/api/pujas`, { next: { revalidate: 60 } })
     ]);
 
     if (bannersRes.ok) {

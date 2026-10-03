@@ -356,16 +356,6 @@ export default function LoginMethods() {
           </p>
         )}
 
-        {method === "email" && isAdmin && (
-          <div className="flex justify-end">
-            <Link
-              href="/auth/forgot-password"
-              className="text-sm font-medium text-[#6869F9] transition-colors duration-300 hover:text-[#5657e8]"
-            >
-              Forgot password?
-            </Link>
-          </div>
-        )}
 
         <div className="flex-1" />
 
@@ -374,13 +364,13 @@ export default function LoginMethods() {
           type="submit"
           disabled={!isValid || loading}
           className={`w-full rounded-xl px-4 py-3.5 text-base font-semibold text-white transition-all duration-500 ${isValid && !loading
-            ? "shadow-[0_10px_24px_rgba(104,105,249,0.35)] hover:brightness-110"
+            ? "shadow-[0_10px_24px_rgba(59,130,246,0.35)] hover:brightness-110"
             : "cursor-not-allowed opacity-50"
             }`}
           style={
             isValid && !loading
-              ? { background: "linear-gradient(135deg, #6869F9 0%, #4546d4 100%)" }
-              : { background: "#c4b8f0" }
+              ? { background: "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)" }
+              : { background: "#93c5fd" }
           }
         >
           {loading ? (

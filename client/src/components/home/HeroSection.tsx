@@ -60,6 +60,39 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
   const [activeSlide, setActiveSlide] = useState(0);
   const [isLoading, setIsLoading] = useState(!initialBanners || initialBanners.length === 0);
 
+  // Swipe logic states
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const minSwipeDistance = 50;
+
+  const nextSlide = () => {
+    setActiveSlide((prev) => (prev + 1) % bannerSlides.length);
+  };
+
+  const prevSlide = () => {
+    setActiveSlide((prev) => (prev === 0 ? bannerSlides.length - 1 : prev - 1));
+  };
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+
+    if (distance > minSwipeDistance) {
+      nextSlide();
+    } else if (distance < -minSwipeDistance) {
+      prevSlide();
+    }
+  };
+
   useEffect(() => {
     async function fetchHeroBanners() {
       try {
@@ -165,7 +198,14 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
         </span>
       </div>
 
-      <div className="relative z-10 flex flex-col-reverse xl:flex-row items-center justify-between gap-6 lg:gap-8 xl:gap-14">
+      <div
+        className="relative z-10 flex flex-col-reverse xl:flex-row items-center justify-between gap-6 lg:gap-8 xl:gap-14 group"
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
+
+        {/* Arrows moved down to the image section for perfect centering on mobile & desktop */}
 
         {/* ── Left Content (Text & CTA) ── Fixed starting point at top, space left above CTA button */}
         <div className="flex-1 text-center xl:text-left flex flex-col justify-between items-center xl:items-start h-auto min-h-0 xl:min-h-[500px] w-full max-w-[640px] pt-2 pb-1">
@@ -248,10 +288,34 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
         </div>
 
         {/* ── Right Content (Hero Banner Card) ── 100% Full width on 1024px & Tablet, fixed width on XL desktop ── */}
-        <div className="w-full max-w-full lg:w-full xl:w-[650px] 2xl:w-[720px] shrink-0 flex flex-col items-center">
+        <div className="w-full max-w-full lg:w-full xl:w-[650px] 2xl:w-[720px] shrink-0 flex flex-col items-center relative">
+
+          {/* Left/Right Arrow Buttons (Always Visible on Mobile too) */}
+          <button
+            onClick={prevSlide}
+            className="absolute left-2 lg:-left-6 top-[150px] sm:top-[200px] md:top-[230px] lg:top-[250px] xl:top-1/2 -translate-y-1/2 z-30 w-10 h-10 sm:w-12 sm:h-12 bg-white/95 hover:bg-white text-gray-800 rounded-full shadow-lg flex items-center justify-center"
+            aria-label="Previous slide"
+          >
+            <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+
+          <button
+            onClick={nextSlide}
+            className="absolute right-2 lg:-right-6 top-[150px] sm:top-[200px] md:top-[230px] lg:top-[250px] xl:top-1/2 -translate-y-1/2 z-30 w-10 h-10 sm:w-12 sm:h-12 bg-white/95 hover:bg-white text-gray-800 rounded-full shadow-lg flex items-center justify-center"
+            aria-label="Next slide"
+          >
+            <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
 
           {/* Pure Full-Bleed Banner Card (Image Only, No Wordings) */}
-          <div className="w-full relative rounded-3xl overflow-hidden shadow-2xl border border-stone-200 bg-[#160802] h-[300px] sm:h-[400px] md:h-[460px] lg:h-[500px] xl:h-[500px] shrink-0 transition-all duration-500 group">
+          <Link
+            href={current.ctaLink}
+            className="w-full block relative rounded-3xl overflow-hidden shadow-2xl border border-stone-200 bg-[#160802] h-[300px] sm:h-[400px] md:h-[460px] lg:h-[500px] xl:h-[500px] shrink-0 transition-all duration-500 group cursor-pointer"
+          >
 
             {/* Ambient Blurred Background (Fills Card Seamlessly) */}
             <Image
@@ -272,7 +336,7 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
               priority
             />
 
-          </div>
+          </Link>
 
           {/* Slider Dots Navigation inside Hero */}
           <div className="flex items-center justify-center gap-2.5 mt-4 sm:mt-5">

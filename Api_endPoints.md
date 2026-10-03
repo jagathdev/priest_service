@@ -963,7 +963,7 @@ Base URL: `https://priest-service.onrender.com`
 - **Payload:**
 ```json
 {
-  "email": "admin@vedamandir.com",
+  "email": "admin@astroved.com",
   "password": "password123"
 }
 ```
@@ -975,7 +975,7 @@ Base URL: `https://priest-service.onrender.com`
   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
   "admin": {
     "id": "6abd0358cd62648ac4fa1c4a",
-    "email": "admin@vedamandir.com",
+    "email": "admin@astroved.com",
     "name": "Super Admin"
   }
 }
