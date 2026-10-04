@@ -606,7 +606,7 @@ export default function HomaDetailClient({
                   <span className="text-[#25D366] text-base">💬</span> Book via WhatsApp
                 </a>
                 <a
-                  href="tel:+917207202029"
+                  href="tel:+919677391108"
                   className="flex-1 min-w-[160px] inline-flex items-center justify-center gap-2 bg-white border border-stone-300 text-stone-700 hover:border-stone-400 font-extrabold text-xs sm:text-sm py-3 px-4 rounded-full transition-colors shadow-xs"
                 >
                   <span className="text-stone-600 text-base">📞</span> Book via Call

@@ -186,6 +186,27 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
         }}
       />
 
+      {/* Global Left/Right Arrow Buttons (Moved from image to section edges) */}
+      <button
+        onClick={prevSlide}
+        className="hidden xl:flex absolute left-2 top-1/2 -translate-y-1/2 z-40 w-12 h-12 bg-white hover:bg-stone-50 text-gray-800 rounded-full shadow-lg border border-stone-100 items-center justify-center transition-transform hover:scale-105"
+        aria-label="Previous slide"
+      >
+        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
+        </svg>
+      </button>
+
+      <button
+        onClick={nextSlide}
+        className="hidden xl:flex absolute right-2 top-1/2 -translate-y-1/2 z-40 w-12 h-12 bg-white hover:bg-stone-50 text-gray-800 rounded-full shadow-lg border border-stone-100 items-center justify-center transition-transform hover:scale-105"
+        aria-label="Next slide"
+      >
+        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
+        </svg>
+      </button>
+
       {/* ── Top Sub-header Badge (Above Hero Image on 1024px & Tablet < xl) ── */}
       <div className="xl:hidden flex items-center justify-center gap-2.5 mt-0.5 sm:mt-1 mb-2.5 sm:mb-3.5 z-10 relative">
         <svg className="w-5 h-5 text-[#F47820] shrink-0" viewBox="0 0 24 24" fill="currentColor">
@@ -290,10 +311,10 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
         {/* ── Right Content (Hero Banner Card) ── 100% Full width on 1024px & Tablet, fixed width on XL desktop ── */}
         <div className="w-full max-w-full lg:w-full xl:w-[650px] 2xl:w-[720px] shrink-0 flex flex-col items-center relative">
 
-          {/* Left/Right Arrow Buttons (Always Visible on Mobile too) */}
+          {/* Left/Right Arrow Buttons (Mobile/Tablet only, since desktop uses global edges) */}
           <button
             onClick={prevSlide}
-            className="absolute left-2 lg:-left-6 top-[150px] sm:top-[200px] md:top-[230px] lg:top-[250px] xl:top-1/2 -translate-y-1/2 z-30 w-10 h-10 sm:w-12 sm:h-12 bg-white/95 hover:bg-white text-gray-800 rounded-full shadow-lg flex items-center justify-center"
+            className="xl:hidden absolute -left-3 sm:-left-5 lg:-left-7 top-[150px] sm:top-[200px] md:top-[230px] lg:top-[250px] -translate-y-1/2 z-30 w-10 h-10 sm:w-12 sm:h-12 bg-white hover:bg-stone-50 text-gray-800 rounded-full shadow-lg border border-stone-100 flex items-center justify-center transition-transform hover:scale-105"
             aria-label="Previous slide"
           >
             <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -303,7 +324,7 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
 
           <button
             onClick={nextSlide}
-            className="absolute right-2 lg:-right-6 top-[150px] sm:top-[200px] md:top-[230px] lg:top-[250px] xl:top-1/2 -translate-y-1/2 z-30 w-10 h-10 sm:w-12 sm:h-12 bg-white/95 hover:bg-white text-gray-800 rounded-full shadow-lg flex items-center justify-center"
+            className="xl:hidden absolute -right-3 sm:-right-5 lg:-right-7 top-[150px] sm:top-[200px] md:top-[230px] lg:top-[250px] -translate-y-1/2 z-30 w-10 h-10 sm:w-12 sm:h-12 bg-white hover:bg-stone-50 text-gray-800 rounded-full shadow-lg border border-stone-100 flex items-center justify-center transition-transform hover:scale-105"
             aria-label="Next slide"
           >
             <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
