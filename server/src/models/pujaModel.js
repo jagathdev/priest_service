@@ -23,6 +23,14 @@ const packageSchema = new mongoose.Schema({
   description: { type: String, default: "" },
 }, { _id: false });
 
+const offeringSchema = new mongoose.Schema({
+  name: { type: String, default: "" },
+  priceINR: { type: Number, default: 0 },
+  description: { type: String, default: "" },
+  imageUrl: { type: String, default: "" },
+  badge: { type: String, default: "" },
+});
+
 const pujaSchema = new mongoose.Schema(
   {
     title: {
@@ -78,7 +86,7 @@ const pujaSchema = new mongoose.Schema(
     inclusions: [{ type: String }],
     faq: [faqSchema],
     packages: [packageSchema],
-    offeringIds: [{ type: String }],
+    offerings: [offeringSchema],
     recommendedHomaIds: [{ type: String }],
     sectionOrder: [{ type: String }],
   },

@@ -163,11 +163,16 @@ export default function AdminPujasPage() {
       ]
     },
     {
-      name: "offeringIds",
-      label: "Select Offerings",
-      type: "reference-array",
-      referenceEndpoint: "/api/admin/content?type=offering",
-      referenceLabelField: "name"
+      name: "offerings",
+      label: "Prasadam & Offerings",
+      type: "array-object",
+      objectSchema: [
+        { name: "name", label: "Offering Name", type: "text" },
+        { name: "priceINR", label: "Price (INR)", type: "number" },
+        { name: "description", label: "Description", type: "textarea" },
+        { name: "imageUrl", label: "Image URL", type: "url" },
+        { name: "badge", label: "Badge (Optional)", type: "text" }
+      ]
     },
     {
       name: "recommendedHomaIds",

@@ -236,29 +236,7 @@ function SankalpContent() {
   }, [defaultParticipantCount]);
 
   const offeringsList = React.useMemo(() => {
-    if (pujaData?.offerings && pujaData.offerings.length > 0) {
-      return pujaData.offerings;
-    }
-    return [
-      {
-        title: "Pitru Shanti Goseva",
-        description: "Freedom from accrued sins, done consciously or unconsciously.",
-        priceINR: 201,
-        image: "https://images.unsplash.com/photo-1596700778747-062e78740c03?w=100&q=80"
-      },
-      {
-        title: "Brahmin Bhoj",
-        description: "Relief from health issues caused by ancestral afflictions.",
-        priceINR: 251,
-        image: "https://images.unsplash.com/photo-1604085572502-a39c941c9f4d?w=100&q=80"
-      },
-      {
-        title: "Pitru Shanti Sampurna seva",
-        description: "Sampurna seva for the peace of the Ancestors and their blessings.",
-        priceINR: 351,
-        image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&q=80"
-      }
-    ];
+    return pujaData?.offerings && pujaData.offerings.length > 0 ? pujaData.offerings : [];
   }, [pujaData]);
 
   const packageName = selectedPackage?.name || "Standard Seva Package";
@@ -313,7 +291,7 @@ function SankalpContent() {
     setLoadingMsg("Initializing secure payment gateway...");
     try {
       const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priest-service.onrender.com";
-      
+
       const userName = formData.participants[0]?.trim() || user?.name || "Devotee";
       const userPhone = formData.whatsapp || user?.whatsapp || user?.mobileNumber || user?.phone || "";
       const mongoUserId = user?._id || user?.id || user?.customerId || null;
@@ -713,20 +691,29 @@ function SankalpContent() {
                       <h3 className="text-sm font-extrabold text-stone-900 mb-4">Add prasadam & offerings</h3>
                       <div className="space-y-3">
                         {offeringsList.map((offering: any, idx: number) => {
-                          const isAdded = selectedOfferings.find(o => o.title === offering.title);
+                          const offeringName = offering.name || offering.title;
+                          const offeringImage = offering.imageUrl || offering.image;
+                          const isAdded = selectedOfferings.find((o: any) => (o.name || o.title) === offeringName);
                           return (
                             <div key={idx} className="bg-white p-3 rounded-2xl border border-stone-100 flex items-center gap-3">
-                              <div className="w-12 h-12 rounded-full overflow-hidden shrink-0 bg-stone-100 border border-stone-200">
-                                <img src={offering.image} alt={offering.title} className="w-full h-full object-cover" />
-                              </div>
+                              {offeringImage && offeringImage.trim() !== '' && (
+                                <div className="w-12 h-12 rounded-full overflow-hidden shrink-0 bg-stone-100 border border-stone-200">
+                                  <img
+                                    src={offeringImage.startsWith("http") || offeringImage.startsWith("/") ? offeringImage : `/${offeringImage}`}
+                                    alt={offeringName}
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => { e.currentTarget.parentElement!.style.display = 'none'; }}
+                                  />
+                                </div>
+                              )}
                               <div className="flex-1 min-w-0">
-                                <h4 className="text-[12px] font-bold text-stone-800">{offering.title}</h4>
-                                <p className="text-[10px] text-stone-500 truncate">{offering.description}</p>
+                                <h4 className="text-[12px] font-bold text-stone-800">{offeringName}</h4>
+                                <p className="text-[10px] text-stone-500 truncate">{offering.description || offering.badge}</p>
                               </div>
-                              <div className="font-extrabold text-[#f15a29] text-sm">₹{offering.priceINR}</div>
+                              <div className="font-extrabold text-[#f15a29] text-sm">₹{offering.priceINR || offering.price || 0}</div>
                               <button
                                 onClick={() => {
-                                  if (isAdded) setSelectedOfferings(prev => prev.filter(o => o.title !== offering.title));
+                                  if (isAdded) setSelectedOfferings(prev => prev.filter((o: any) => (o.name || o.title) !== offeringName));
                                   else setSelectedOfferings(prev => [...prev, offering]);
                                 }}
                                 className={`text-[11px] font-bold px-5 py-2 rounded-full transition-colors shrink-0 flex items-center gap-1 ${isAdded

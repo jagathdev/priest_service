@@ -716,8 +716,8 @@ export default function ContentManager({
                       <p className="text-xs text-gray-500 mt-2">Drag and drop to reorder sections on the frontend.</p>
                     </div>
                   ) : field.type === "array-string" ? (
-                    <div className="space-y-2">
-                      {(Array.isArray(formData[field.name]) ? formData[field.name] : []).map((val: string, idx: number) => (
+                    <div className="space-y-3 rounded-lg border border-gray-200 bg-gray-50 p-4">
+                      {(Array.isArray(formData[field.name]) && formData[field.name].length > 0 ? formData[field.name] : []).map((val: string, idx: number) => (
                         <div key={idx} className="flex gap-2">
                           <input
                             type="text"
@@ -726,13 +726,17 @@ export default function ContentManager({
                             placeholder={field.placeholder || "Enter value"}
                             className="block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-[#6869F9] focus:outline-none focus:ring-[#1f1f1f] sm:text-sm"
                           />
-                          <button type="button" onClick={() => removeArrayItem(field.name, idx, field.label)} className="text-red-500 hover:text-red-700">
+                          <button type="button" onClick={() => removeArrayItem(field.name, idx, field.label)} className="text-red-500 hover:text-red-700 bg-white border border-red-200 px-2 rounded-md">
                             <TrashIcon className="h-5 w-5" />
                           </button>
                         </div>
                       ))}
-                      <button type="button" onClick={() => addArrayItem(field.name, "array-string")} className="mt-3 inline-flex text-sm text-[#1f1f1f] font-medium hover:underline">
-                        + Add {field.label}
+                      <button
+                        type="button"
+                        onClick={() => addArrayItem(field.name, "array-string")}
+                        className="inline-flex items-center gap-1 rounded-md bg-white border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                      >
+                        <PlusIcon className="h-4 w-4" /> Add {field.label}
                       </button>
                     </div>
                   ) : field.type === "array-object" ? (

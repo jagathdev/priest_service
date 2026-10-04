@@ -51,7 +51,7 @@ export default async function PujaDetailPage({ params }: Props) {
   const slug = resolvedParams.slug;
   const puja = slug ? await getPujaBySlug(slug) : null;
   const allHomas = await getAllHomas();
-  const recommendations = allHomas.filter((h: any) => {
+  const recommendations = allHomas.filter((h: { _id?: string | number | undefined }) => {
     const recommendedIds = (puja as { recommendedHomaIds?: string[] } | null)?.recommendedHomaIds;
     return recommendedIds?.includes(String(h._id));
   });

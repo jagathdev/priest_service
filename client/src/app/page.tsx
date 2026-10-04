@@ -1,4 +1,4 @@
-import DashboardPage from "./dashboard/page";
+import DashboardPage from "./dashboard/DashboardClient";
 
 export default async function HomePage() {
   const expressBase = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priest-service.onrender.com";

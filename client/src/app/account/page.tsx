@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import Link from "next/link";
@@ -40,6 +40,18 @@ export interface Address {
   isDefault?: boolean;
 }
 
+export interface WishlistItem {
+  wishlistId?: string;
+  serviceId?: string;
+  serviceType?: string;
+  slug?: string;
+  image?: string;
+  name?: string;
+  location?: string;
+  price?: number | string;
+  [key: string]: unknown;
+}
+
 function AccountPageContent() {
   const searchParams = useSearchParams();
   const { user, setUser } = useUser();
@@ -57,7 +69,7 @@ function AccountPageContent() {
   const [formData, setFormData] = useState<User>({});
   const [saving, setSaving] = useState(false);
 
-  const [wishlistItems, setWishlistItems] = useState<any[]>([]);
+  const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([]);
   const [loadingWishlist, setLoadingWishlist] = useState(false);
 
   const addresses = user?.addresses || [];
@@ -196,7 +208,7 @@ function AccountPageContent() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.PUBLIC_BASE_URL || "https://priest-service.onrender.com";
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "https://priest-service.onrender.com";
 
       const res = await fetch(`${baseUrl}/api/users/updateProfile`, {
         method: "PUT",
@@ -758,20 +770,20 @@ function AccountPageContent() {
                         </div>
                       </div>
 
-                      {/* Card 2: My Subscriptions */}
+                      {/* Card 2: My Wishlist */}
                       <div
-                        onClick={() => setActiveTab('subscriptions')}
+                        onClick={() => setActiveTab('wishlist')}
                         className="cursor-pointer bg-[#fffbeb] border border-[#fef3c7] rounded-2xl p-4 flex items-center justify-between hover:shadow-sm transition"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-full bg-white flex items-center justify-center text-amber-600 shrink-0 shadow-2xs">
-                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          <div className="w-9 h-9 rounded-full bg-white flex items-center justify-center text-[#701a28] shrink-0 shadow-2xs">
+                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
                             </svg>
                           </div>
                           <div>
-                            <h4 className="text-xs font-bold text-gray-900">My Subscriptions (0)</h4>
-                            <p className="text-[11px] text-gray-500 font-medium leading-tight">Manage your active subscriptions</p>
+                            <h4 className="text-xs font-bold text-gray-900">My Wishlist ({wishlistItems.length})</h4>
+                            <p className="text-[11px] text-gray-500 font-medium leading-tight">View your saved pujas and services</p>
                           </div>
                         </div>
                         <div className="w-7 h-7 rounded-full bg-[#069e5d] text-white flex items-center justify-center text-xs font-bold shrink-0 ml-2">
@@ -1024,19 +1036,23 @@ function AccountPageContent() {
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                         {wishlistItems.map((item) => (
                           <div key={item.wishlistId} className="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition">
-                            {/* Top Image Section */}
-                            <div className="relative h-44 bg-[#6e1e12] overflow-hidden flex flex-col justify-center p-4">
-                              {/* Background Image */}
+                            {/* Top Image Section - Full Bleed */}
+                            <Link href={`/${item.serviceType?.toLowerCase() === 'pooja' ? 'puja' : (item.serviceType || 'puja')}/${item.slug || item.serviceId}`} prefetch={true} className="relative h-[200px] w-full flex overflow-hidden group cursor-pointer block">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
                               <img
-                                src={item.image?.startsWith("http") ? item.image : `/${item.image}`}
-                                alt={item.name}
-                                className="absolute right-0 top-0 bottom-0 w-1/2 object-cover opacity-80"
+                                src={typeof item.image === "string" ? (item.image.startsWith("http") || item.image.startsWith("/") ? item.image : `/${item.image}`) : ((item.image as any)?.src || "/subrahmanya_swamy_hero.png")}
+                                alt={item.name || "Service Image"}
+                                className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                                onError={(e) => {
+                                  e.currentTarget.src = "/subrahmanya_swamy_hero.png";
+                                }}
                               />
-                              <div className="absolute inset-0 bg-gradient-to-r from-[#6e1e12] via-[#6e1e12]/80 to-transparent"></div>
 
                               {/* Heart Icon (Remove) */}
                               <button
-                                onClick={async () => {
+                                onClick={async (e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
                                   try {
                                     const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "https://priest-service.onrender.com";
                                     await fetch(`${baseUrl}/api/wishlist/updateWishlist`, {
@@ -1049,48 +1065,39 @@ function AccountPageContent() {
                                     console.error(error);
                                   }
                                 }}
-                                className="absolute top-3 right-3 z-20 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md cursor-pointer hover:bg-gray-50 text-[#069e5d]"
+                                className="absolute top-3 right-3 z-20 w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-md cursor-pointer hover:bg-white text-[#00b050]"
                               >
                                 <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
                                   <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
                                 </svg>
                               </button>
-
-                              {/* Image Content Overlay */}
-                              <div className="relative z-10 w-[65%]">
-                                <div className="inline-block bg-[#801314] border border-[#a42018] text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm text-center leading-[1.1] mb-2 max-w-full truncate whitespace-normal line-clamp-3">
-                                  {item.badge}
-                                </div>
-                                <div className="text-[#fad06a] font-serif font-bold text-sm leading-[1.15] drop-shadow-md mb-2 line-clamp-3">
-                                  {item.name}
-                                </div>
-                                <div className="inline-flex items-center bg-[#074f20] text-white text-[9px] font-bold px-2 py-1 rounded-full border border-[#0a7a30] shadow-sm">
-                                  BOOK NOW <span className="ml-1 text-[11px] leading-none">›</span>
-                                </div>
-                              </div>
-                            </div>
+                            </Link>
 
                             {/* Bottom Content Section */}
-                            <div className="p-4 flex flex-col min-h-[140px]">
-                              <h3 className="text-[13px] font-extrabold text-gray-900 leading-tight mb-2 line-clamp-2">
-                                {item.name}
-                              </h3>
+                            <div className="p-4 flex flex-col min-h-[150px]">
+                              <Link href={`/${item.serviceType?.toLowerCase() === 'pooja' ? 'puja' : (item.serviceType || 'puja')}/${item.slug || item.serviceId}`} prefetch={true} className="block mb-2">
+                                <h3 className="text-[14px] font-extrabold text-gray-900 leading-[1.3] line-clamp-2 hover:text-[#00b050] transition-colors">
+                                  {item.name}
+                                </h3>
+                              </Link>
 
-                              <div className="flex items-start gap-1.5 text-[11px] text-gray-500 font-medium mb-4">
-                                <svg className="w-3.5 h-3.5 shrink-0 mt-0.5 text-[#701a28]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                              <div className="flex items-start gap-1.5 text-[12px] text-gray-600 font-medium mb-4">
+                                <svg className="w-3.5 h-3.5 shrink-0 mt-[3px] text-[#8b2332]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                                 </svg>
-                                <span className="leading-snug line-clamp-2">{item.location}</span>
+                                <span className="leading-snug line-clamp-2">{item.location || 'Location details not provided'}</span>
                               </div>
 
-                              <div className="mt-auto flex items-center justify-between">
-                                <div className="text-[15px] font-extrabold text-gray-900">₹{item.price || 516}</div>
-                                <Link href={`/${item.serviceType}/${item.slug || item.serviceId}`} className="bg-[#069e5d] text-white text-[11px] font-bold px-4 py-2 rounded-full flex items-center gap-1.5 hover:bg-green-700 transition shadow-sm">
+                              <div className="mt-auto flex items-center justify-between pt-1">
+                                <div className="text-[16px] font-extrabold text-gray-900">₹{item.price || 516}</div>
+                                <Link href={`/${item.serviceType?.toLowerCase() === 'pooja' ? 'puja' : (item.serviceType || 'puja')}/${item.slug || item.serviceId}`} prefetch={true} className="bg-[#00b050] text-white text-[12px] font-bold pl-4 pr-1 py-1 rounded-full flex items-center gap-2 hover:bg-[#009b46] transition shadow-sm group">
                                   Book Now
-                                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                                  </svg>
+                                  <div className="w-6 h-6 rounded-full bg-white/25 flex items-center justify-center shrink-0 group-hover:translate-x-0.5 transition-transform">
+                                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                    </svg>
+                                  </div>
                                 </Link>
                               </div>
                             </div>
