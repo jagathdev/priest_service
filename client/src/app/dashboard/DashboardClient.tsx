@@ -64,8 +64,8 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
                   className="object-contain"
                 />
               </div>
-              <h3 className="font-serif font-bold text-[#F47820] text-sm sm:text-base leading-tight">
-                Choose Your Puja
+              <h3 className="font-serif font-bold text-[#221f20] text-sm sm:text-base leading-tight">
+                Choose Your<span className="text-[#F47820]"> Puja</span>
               </h3>
             </div>
 
@@ -86,8 +86,8 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
                   className="object-contain"
                 />
               </div>
-              <h3 className="font-serif font-bold text-[#F47820] text-sm sm:text-base leading-tight">
-                Share Your Details
+              <h3 className="font-serif font-bold text-[#221f20] text-sm sm:text-base leading-tight">
+                Share Your<span className="text-[#F47820]"> Details</span>
               </h3>
             </div>
 
@@ -108,8 +108,8 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
                   className="object-contain"
                 />
               </div>
-              <h3 className="font-serif font-bold text-[#F47820] text-sm sm:text-base leading-tight">
-                Puja Is Performed
+              <h3 className="font-serif font-bold text-[#221f20] text-sm sm:text-base leading-tight">
+                Puja Is <span className="text-[#F47820]"> Performed</span>
               </h3>
             </div>
 
@@ -130,8 +130,8 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
                   className="object-contain"
                 />
               </div>
-              <h3 className="font-serif font-bold text-[#F47820] text-sm sm:text-base leading-tight">
-                Receive Divine Blessings
+              <h3 className="font-serif font-bold text-[#221f20] text-sm sm:text-base leading-tight">
+                Receive <span className="text-[#F47820]">Divine Blessings</span>
               </h3>
             </div>
 
@@ -528,7 +528,7 @@ function PujaCard({ id, imageSrc, topTag, title, subtitle, location, date, price
   const cardUrl = slug ? `/puja/${slug}` : "/puja";
 
   return (
-    <div className="bg-white rounded-3xl border border-stone-200/80 p-2.5 sm:p-3 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col group text-left relative">
+    <div className="bg-white rounded-3xl border border-stone-200/80 p-2.5 sm:p-3 shadow-sm hover:shadow-lg hover:shadow-stone-900/15 transition-all duration-300 flex flex-col group text-left relative">
       <Link href={cardUrl} className="flex flex-col flex-1 cursor-pointer block">
         {/* Top Banner Image Container with Subtle Space */}
         <div className="relative w-full h-[260px] sm:h-[340px] md:h-[400px] lg:h-[450px] xl:h-[235px] rounded-2xl overflow-hidden mb-2 sm:mb-2.5 bg-stone-100 shrink-0">

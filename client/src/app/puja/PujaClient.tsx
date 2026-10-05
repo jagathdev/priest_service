@@ -458,7 +458,7 @@ export default function PujaClient({ initialPujas }: { initialPujas?: Puja[] }) 
 
   // -- Apply filters to get displayed pujas --
   const displayedPujas = allPujas.filter((p) => pujaMatchesFilters(p, filters, searchQuery));
- 
+
   return (
     <>
       <Navbar />
@@ -467,44 +467,59 @@ export default function PujaClient({ initialPujas }: { initialPujas?: Puja[] }) 
         onClose={() => setShareModalOpen(false)}
         pujaUrl={shareUrl}
       />
-      <main className="min-h-screen bg-[#faf8f5]">
-        {/* Hero Section */}
-        <div className="bg-[#fef8f4] py-16 text-center border-b border-[#fde8d4] relative">
-          <div className="absolute inset-0 opacity-40 bg-[radial-gradient(#f0d6c4_1px,transparent_1px)] [background-size:16px_16px]"></div>
-          <div className="relative z-10 px-4">
-            <h1 className="text-3xl md:text-4xl font-serif font-bold text-[#5c2424] mb-4">Discover Sacred Pujas & Divine Blessings</h1>
-            <p className="text-[#6b4c4c] text-sm md:text-base max-w-2xl mx-auto mb-10">
-              Find authentic temples, rituals performed by qualified priests and receive personalized sankalpam, puja videos, and divine blessings.
+      <main className="min-h-screen">
+        {/* Hero Section - Light Sacred Sandalwood Theme */}
+        <div className="bg-gradient-to-b from-[#fff6ef] via-[#fdeee0] to-[#f9e3d0] py-12 md:py-16 text-center border-b border-[#fcd5b5] relative overflow-hidden">
+          {/* Rotating Center Circular Dot Mandala Background (Inner 2 Circles Only) */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[380px] h-[380px] pointer-events-none opacity-35 flex items-center justify-center">
+            {/* Inner Rotating Dotted Rings */}
+            <svg className="w-full h-full animate-[spin_28s_linear_infinite]" viewBox="0 0 400 400" fill="none">
+              <circle cx="200" cy="200" r="145" stroke="#d95a2b" strokeWidth="2.5" strokeDasharray="4 14" strokeLinecap="round" />
+              <circle cx="200" cy="200" r="95" stroke="#f47820" strokeWidth="3" strokeDasharray="2 12" strokeLinecap="round" />
+            </svg>
+          </div>
+
+          <div className="relative z-10 max-w-[1350px] mx-auto px-4 sm:px-6 lg:px-10">
+            <h1 className="text-3xl sm:text-4xl md:text-[48px] font-serif font-extrabold tracking-tight mb-4 leading-tight text-[#2c1209]">
+              Book Authentic <span className="text-[#d95a2b]">Divine Pujas</span> Online
+            </h1>
+            <p className="text-stone-600 text-sm md:text-base max-w-2xl mx-auto mb-8 font-medium leading-relaxed">
+              Performed by certified Vedic Pandits in ancient temples across India. Receive live video streaming, personalized sankalpam, and sacred prasadam.
             </p>
 
-            {/* Search Bar + Filter */}
-            <div className="max-w-2xl mx-auto flex items-center gap-2">
+            {/* Light Search & Filter Container */}
+            <div className="max-w-2xl mx-auto bg-white/90 backdrop-blur-md rounded-2xl p-2.5 sm:p-3 shadow-xl shadow-orange-950/5 border border-[#fcd5b5] flex items-center gap-2">
               <div className="relative flex-1">
                 <input
                   type="text"
                   placeholder="What puja are you looking for?"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-6 pr-10 py-3.5 rounded-full border border-[#f0d6c4] shadow-sm text-sm outline-none focus:border-[#d95a2b]"
+                  className="w-full pl-5 pr-10 py-3 rounded-xl text-sm text-stone-800 outline-none placeholder:text-stone-400 font-medium bg-transparent"
                 />
-                <svg className="w-5 h-5 absolute right-4 top-1/2 -translate-y-1/2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-4.35-4.35M17 10a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                <svg className="w-5 h-5 absolute right-3.5 top-1/2 -translate-y-1/2 text-[#d95a2b]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.2" d="M21 21l-4.35-4.35M17 10a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
               </div>
               <button
                 onClick={() => setIsFilterModalOpen(true)}
-                className="bg-white border border-[#f0d6c4] text-[#d95a2b] w-12 h-12 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-50 shrink-0 relative"
+                className="bg-[#d95a2b] hover:bg-[#c24a1e] text-white px-6 py-3 rounded-xl flex items-center gap-2 text-xs sm:text-sm font-bold shadow-md transition-all shrink-0 active:scale-95 cursor-pointer"
               >
+                <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                </svg>
+                <span>Filter</span>
                 {hasActiveFilters && (
-                  <span className="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></span>
+                  <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span>
                 )}
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
               </button>
             </div>
           </div>
         </div>
 
-        <div className="mx-auto max-w-[1200px] px-4 md:px-8 py-10">
+        <div className="mx-auto max-w-[1350px] px-4 sm:px-6 lg:px-10 py-10 bg-[#ffffff]">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-serif font-bold text-[#5c2424]">Upcoming Online Pujas</h2>
+            <h2 className="text-4xl font-serif font-bold text-[#5c2424]">Upcoming Online Pujas</h2>
             {hasActiveFilters && (
               <button
                 type="button"
@@ -573,58 +588,58 @@ export default function PujaClient({ initialPujas }: { initialPujas?: Puja[] }) 
                   <div
                     key={puja._id}
                     onClick={() => router.push(`/puja/${puja.slug || slugify(puja.title)}`)}
-                    className="bg-white rounded-2xl shadow-sm border border-gray-200 flex flex-col overflow-hidden group hover:shadow-md transition-shadow relative cursor-pointer"
+                    className="bg-white rounded-2xl shadow-md border border-gray-200 flex flex-col overflow-hidden group hover:shadow-2xl hover:shadow-stone-900/15 hover:-translate-y-1.5 transition-all duration-300 relative cursor-pointer"
                   >
                     <div className="flex flex-col flex-1 block">
-                      <div className="relative h-[220px] w-full shrink-0">
+                      <div className="relative h-[260px] sm:h-[275px] w-full shrink-0 overflow-hidden">
                         <img
                           src={getPujaImageUrl(puja.imageUrl)}
                           alt={puja.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                          className="w-full h-full object-cover transition-transform duration-700"
                         />
                         {puja.badge && (
-                          <div className="absolute top-4 left-0 bg-[#d92b2b] text-white text-[11px] font-bold px-3 py-1 shadow-sm rounded-r-md">
+                          <div className="absolute top-4 left-0 bg-[#d92b2b] text-white text-[12px] font-extrabold px-3.5 py-1.5 shadow-md rounded-r-lg uppercase tracking-wider">
                             {puja.badge}
                           </div>
                         )}
                       </div>
 
-                      <div className="p-5 flex flex-col flex-1 text-left">
-                        <p className="text-[#d95a2b] text-[10px] font-bold uppercase tracking-widest mb-2 flex items-center gap-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-[#d95a2b]"></span>
-                          {puja.subtitle}
+                      <div className="p-6 flex flex-col flex-1 text-left">
+                        <p className="text-[#d95a2b] text-[11px] font-extrabold uppercase tracking-widest mb-2.5 flex items-center gap-1.5">
+                          <svg className="w-4 h-4 text-[#d95a2b] shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.5C12 2.5 7 9 7 14C7 16.76 9.24 19 12 19C14.76 19 17 16.76 17 14C17 9 12 2.5 12 2.5ZM12 17C10.34 17 9 15.66 9 14C9 11.2 12 7.2 12 7.2C12 7.2 15 11.2 15 14C15 15.66 13.66 17 12 17Z"/></svg>
+                          <span>{puja.subtitle}</span>
                         </p>
 
-                        <h3 className="text-[18px] font-bold text-gray-900 mb-2 leading-snug line-clamp-2">
+                        <h3 className="text-[20px] sm:text-[21px] font-serif font-extrabold text-gray-900 mb-2 leading-snug line-clamp-2">
                           {puja.title}
                         </h3>
 
-                        <p className="text-gray-500 text-[13px] leading-relaxed line-clamp-2 mb-4 flex-1">
+                        <p className="text-gray-600 text-[14px] leading-relaxed line-clamp-2 mb-5 flex-1">
                           {puja.description}
                         </p>
 
-                        <div className="border border-gray-100 rounded-lg p-3 space-y-2 mb-4 bg-gray-50/50">
-                          <div className="flex items-center gap-2.5 text-[12px] text-gray-600">
-                            <svg className="w-4 h-4 text-[#d95a2b] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                        <div className="border border-gray-150 rounded-xl p-3.5 space-y-2.5 mb-5 bg-gray-50/70">
+                          <div className="flex items-center gap-2.5 text-[13px] font-medium text-gray-700">
+                            <svg className="w-5 h-5 text-[#d95a2b] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                             <span className="line-clamp-1">{puja.location}</span>
                           </div>
-                          <div className="flex items-center gap-2.5 text-[12px] text-gray-600">
-                            <svg className="w-4 h-4 text-[#d95a2b] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                          <div className="flex items-center gap-2.5 text-[13px] font-medium text-gray-700">
+                            <svg className="w-5 h-5 text-[#d95a2b] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                             <span className="line-clamp-1">{puja.date}</span>
                           </div>
                         </div>
 
-                        <div className="flex items-center justify-between mt-auto">
+                        <div className="flex items-center justify-between mt-auto pt-2 border-t border-gray-100">
                           <div>
-                            {/* We will attempt to get a price, otherwise show a placeholder */}
-                            <div className="text-[18px] font-black text-gray-900">₹{(puja as any).packages?.[0]?.priceINR || (puja as any).packages?.[0]?.price || '516'}</div>
-                            <div className="text-[10px] text-gray-500 font-semibold uppercase">Per Booking</div>
+                            {/* Price display */}
+                            <div className="text-[20px] sm:text-[22px] font-black text-gray-900">₹{(puja as any).packages?.[0]?.priceINR || (puja as any).packages?.[0]?.price || '516'}</div>
+                            <div className="text-[11px] text-gray-500 font-bold uppercase tracking-wider">Per Booking</div>
                           </div>
                           <div
-                            className="bg-[#009e5b] text-white text-[13px] font-bold px-5 py-2.5 rounded-full hover:bg-[#008c51] transition-colors flex items-center gap-1.5 shadow-sm"
+                            className="bg-[#009e5b] text-white text-[14px] font-bold px-7 py-3 min-w-[130px] justify-center rounded-full hover:bg-[#008c51] transition-all duration-200 flex items-center gap-2 shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-95"
                           >
-                            Book Now
-                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7" /></svg>
+                            <span>Book Now</span>
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7" /></svg>
                           </div>
                         </div>
                       </div>

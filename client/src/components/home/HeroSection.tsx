@@ -187,7 +187,7 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
       />
 
       {/* Global Left/Right Arrow Buttons (Moved from image to section edges) */}
-      <button
+      {/* <button
         onClick={prevSlide}
         className="hidden xl:flex absolute left-2 top-1/2 -translate-y-1/2 z-40 w-12 h-12 bg-white hover:bg-stone-50 text-gray-800 rounded-full shadow-lg border border-stone-100 items-center justify-center transition-transform hover:scale-105"
         aria-label="Previous slide"
@@ -205,7 +205,7 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
         <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
         </svg>
-      </button>
+      </button> */}
 
       {/* ── Top Sub-header Badge (Above Hero Image on 1024px & Tablet < xl) ── */}
       <div className="xl:hidden flex items-center justify-center gap-2.5 mt-0.5 sm:mt-1 mb-2.5 sm:mb-3.5 z-10 relative">
@@ -335,7 +335,7 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
           {/* Pure Full-Bleed Banner Card (Image Only, No Wordings) */}
           <Link
             href={current.ctaLink}
-            className="w-full block relative rounded-3xl overflow-hidden shadow-2xl border border-stone-200 h-[300px] sm:h-[400px] md:h-[460px] lg:h-[500px] xl:h-[500px] shrink-0 transition-all duration-500 group cursor-pointer"
+            className="w-full block relative rounded-3xl overflow-hidden shadow-2xl border border-stone-200 bg-[#160802] h-[300px] sm:h-[400px] md:h-[460px] lg:h-[500px] xl:h-[500px] shrink-0 transition-all duration-500 group cursor-pointer"
           >
 
             {/* Ambient Blurred Background (Fills Card Seamlessly) */}
@@ -347,13 +347,13 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
               className="object-cover blur-2xl opacity-40 scale-110"
             />
 
-            {/* Full Uncropped Main Image (Fills Entire Card Box Edge-to-Edge) */}
+            {/* Full Uncropped Main Image (Preserves Left/Right Text & Edges) */}
             <Image
               key={current.id}
               src={current.image}
               alt={current.title}
               fill
-              className="object-fill relative z-10"
+              className="object-contain object-center relative z-10 drop-shadow-lg"
               priority
             />
 
