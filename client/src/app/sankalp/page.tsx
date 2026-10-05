@@ -255,11 +255,11 @@ function SankalpContent() {
   const handleProceedToStep2 = () => {
     setShowErrors(true);
     if (!formData.whatsapp.trim()) {
-      alert("Please enter a valid WhatsApp number.");
       return;
     }
-    if (!formData.participants[0]?.trim()) {
-      alert("Please provide at least one Participant Name.");
+
+    const emptyIdx = formData.participants.findIndex(p => !p.trim());
+    if (emptyIdx !== -1) {
       return;
     }
 
@@ -407,7 +407,7 @@ function SankalpContent() {
                   mobileNumber: userPhone,
                   whatsappNumber: formData.whatsapp,
                   participants: formData.participants.filter((p: string) => p.trim()).map((p: string) => ({ name: p.trim() })),
-                  gotra: formData.dontKnowGotra ? "Kashyapa" : formData.gotra,
+                  gotra: (formData.dontKnowGotra || !formData.gotra.trim()) ? "Kashyapa" : formData.gotra.trim(),
                   doesNotKnowGotra: formData.dontKnowGotra,
                   wish: formData.wish,
                   pricing: {
@@ -485,47 +485,53 @@ function SankalpContent() {
     <>
       <Navbar />
 
-      <main className="min-h-screen bg-white pb-20 font-sans">
+      <main className="min-h-screen bg-white pb-32 lg:pb-20 font-sans">
         {/* Header Bar */}
-        <header className="bg-white py-6 px-4 sm:px-12 flex items-center justify-between sticky top-0 z-40 mb-2">
+        <header className="bg-white py-4 sm:py-6 px-4 sm:px-12 flex items-center justify-between sticky top-0 z-40 mb-2">
           <button
             onClick={() => router.back()}
-            className="text-stone-400 hover:text-stone-800 transition-colors flex items-center gap-2 text-sm font-bold"
+            className="flex items-center gap-1 sm:gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full border border-stone-200 text-stone-600 hover:bg-stone-50 hover:text-stone-900 transition-colors bg-white shadow-sm text-xs sm:text-sm font-bold shrink-0"
           >
-            ← Back
+            <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" /></svg>
+            Back
           </button>
-          <h1 className="text-2xl sm:text-3xl font-serif font-medium text-stone-800 text-center flex-1">
+          <h1 className="text-xl sm:text-3xl font-serif font-medium text-stone-800 text-center flex-1 px-2">
             Fill your details for Puja
           </h1>
-          <div className="w-12" />
+          <div className="w-[88px] hidden sm:block shrink-0" /> {/* Spacer to balance the header */}
         </header>
 
         <div className="max-w-5xl mx-auto px-4 sm:px-6 mt-2">
           {/* Stepper Bar */}
           <div className="max-w-xl mx-auto mb-10">
             <div className="flex items-center justify-between relative">
-              <div className="absolute left-8 right-8 top-4 h-[2px] bg-stone-200 -z-10" />
-              <div className={`absolute left-8 top-4 h-[2px] bg-[#00b050] -z-10 transition-all duration-300 ${step === 2 ? 'right-1/2' : 'right-[85%]'}`} />
-
-              <div className="flex flex-col items-center gap-1.5 bg-white px-4">
-                <div className="h-8 w-8 rounded-full bg-[#00b050] text-white flex items-center justify-center font-bold text-sm shadow-sm">
-                  ✓
-                </div>
-                <span className="text-[13px] font-bold text-stone-500">Devotee Details</span>
+              <div className="absolute left-10 right-10 top-5 h-[3px] bg-[#e4dfd9] -z-10" />
+              <div className="absolute left-10 right-10 top-5 h-[3px] -z-10 flex justify-start">
+                <div className={`h-full bg-[#00b050] transition-all duration-300 ${step === 1 ? 'w-0' : step === 2 ? 'w-1/2' : 'w-full'}`} />
               </div>
 
-              <div className="flex flex-col items-center gap-1.5 bg-white px-4">
-                <div className={`h-8 w-8 rounded-full flex items-center justify-center font-bold text-sm transition-colors ${step === 2 ? 'bg-[#00b050] text-white shadow-sm' : 'bg-white border-2 border-[#00b050] text-[#00b050]'}`}>
-                  2
+              <div
+                className={`flex flex-col items-center gap-2 bg-white px-2 sm:px-4 ${step > 1 ? "cursor-pointer hover:opacity-80 transition-opacity" : ""}`}
+                onClick={() => { if (step > 1) setStep(1); }}
+              >
+                <div className={`h-10 w-10 rounded-full flex items-center justify-center font-bold text-base transition-all ${step >= 1 ? 'bg-[#00b050] text-white' : 'bg-white border-2 border-[#e4dfd9] text-stone-500'} ${step === 1 ? 'ring-4 ring-[#00b050]/10' : ''}`}>
+                  {step > 1 ? '✓' : '1'}
                 </div>
-                <span className={`text-[13px] font-bold ${step === 2 ? 'text-[#00b050]' : 'text-stone-400'}`}>Review</span>
+                <span className={`text-[13px] font-semibold text-center leading-tight ${step === 1 ? 'text-[#00b050]' : 'text-[#8b8276]'}`}>Devotee<br/>Details</span>
               </div>
 
-              <div className="flex flex-col items-center gap-1.5 bg-white px-4">
-                <div className="h-8 w-8 rounded-full bg-white border-2 border-stone-200 text-stone-400 flex items-center justify-center font-bold text-sm">
+              <div className="flex flex-col items-center gap-2 bg-white px-2 sm:px-4">
+                <div className={`h-10 w-10 rounded-full flex items-center justify-center font-bold text-base transition-all ${step >= 2 ? 'bg-[#00b050] text-white shadow-sm' : 'bg-white border-2 border-[#e4dfd9] text-stone-500'} ${step === 2 ? 'ring-4 ring-[#00b050]/10' : ''}`}>
+                  {step > 2 ? '✓' : '2'}
+                </div>
+                <span className={`text-[13px] font-semibold text-center leading-tight ${step === 2 ? 'text-[#00b050]' : 'text-[#8b8276]'}`}>Review</span>
+              </div>
+
+              <div className="flex flex-col items-center gap-2 bg-white px-2 sm:px-4">
+                <div className={`h-10 w-10 rounded-full flex items-center justify-center font-bold text-base transition-all ${step >= 3 ? 'bg-[#00b050] text-white shadow-sm' : 'bg-white border-2 border-[#e4dfd9] text-stone-500'} ${step === 3 ? 'ring-4 ring-[#00b050]/10' : ''}`}>
                   3
                 </div>
-                <span className="text-[13px] font-bold text-stone-400">Payment</span>
+                <span className={`text-[13px] font-semibold text-center leading-tight ${step === 3 ? 'text-[#00b050]' : 'text-[#8b8276]'}`}>Payment</span>
               </div>
             </div>
           </div>
@@ -556,12 +562,12 @@ function SankalpContent() {
                     <div>
                       <label className="flex items-center gap-2 text-stone-900 font-bold text-sm mb-3">
                         Your WhatsApp Number
-                        <svg className="w-3.5 h-3.5 text-[#00b050]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                        <svg className="w-4 h-4 text-[#25D366]" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 00-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" /></svg>
                       </label>
-                      <div className="border border-stone-200 rounded-xl flex items-center px-4 py-3 bg-[#fcfcfc] focus-within:border-[#00b050] transition shadow-sm">
+                      <div className={`border rounded-xl flex items-center px-4 py-3 transition shadow-sm ${showErrors && !formData.whatsapp.trim() ? "border-red-400 focus-within:border-red-400 bg-red-50/20" : "border-stone-200 focus-within:border-[#00b050] bg-white"}`}>
                         <div className="flex items-center gap-2 pr-3 border-r border-stone-200 mr-3">
-                          <span className="text-lg">🇮🇳</span>
-                          <span className="text-xs font-extrabold text-stone-800">+91 ▾</span>
+                          <span className="text-[13px] font-semibold text-[#1c2c5c]">IN</span>
+                          <span className="text-[13px] font-extrabold text-stone-900">+91</span>
                         </div>
                         <input
                           type="tel"
@@ -574,6 +580,11 @@ function SankalpContent() {
                           <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" /></svg>
                         </div>
                       </div>
+                      {showErrors && !formData.whatsapp.trim() && (
+                        <p className="text-[10px] sm:text-[11px] text-red-500 mt-2 font-semibold">
+                          Please enter a valid WhatsApp number.
+                        </p>
+                      )}
                       <p className="text-[11px] text-stone-500 mt-2 font-medium">
                         The puja video and blessing details will be sent to this number.
                       </p>
@@ -586,21 +597,27 @@ function SankalpContent() {
                       </label>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {formData.participants.map((p, idx) => (
-                          <input
-                            key={idx}
-                            type="text"
-                            value={p}
-                            onChange={(e) => {
-                              const newP = [...formData.participants];
-                              newP[idx] = e.target.value;
-                              setFormData({ ...formData, participants: newP });
-                            }}
-                            placeholder={`Participant Name ${idx + 1}`}
-                            className={`w-full border rounded-xl px-4 py-3 text-sm font-medium outline-none transition ${idx === 0 && showErrors && !p.trim()
-                              ? "border-red-400 bg-red-50/20"
-                              : "border-stone-200 focus:border-stone-300 bg-white"
-                              }`}
-                          />
+                          <div key={idx}>
+                            <input
+                              type="text"
+                              value={p}
+                              onChange={(e) => {
+                                const newP = [...formData.participants];
+                                newP[idx] = e.target.value;
+                                setFormData({ ...formData, participants: newP });
+                              }}
+                              placeholder={`Participant Name ${idx + 1}`}
+                              className={`w-full border rounded-xl px-4 py-3 text-sm font-medium outline-none transition ${showErrors && !p.trim()
+                                ? "border-red-400 bg-red-50/20"
+                                : "border-stone-200 focus:border-stone-300 bg-white"
+                                }`}
+                            />
+                            {showErrors && !p.trim() && (
+                              <p className="text-[10px] sm:text-[11px] text-red-500 mt-1.5 font-semibold">
+                                Please provide a name.
+                              </p>
+                            )}
+                          </div>
                         ))}
                       </div>
                       <div className="mt-4 flex items-center gap-3">
@@ -620,12 +637,7 @@ function SankalpContent() {
                           </button>
                         )}
                       </div>
-                      {showErrors && !formData.participants[0]?.trim() && (
-                        <p className="text-[10px] sm:text-[11px] text-red-500 mt-3 font-semibold">
-                          Provide at least one Participant Name 1: Please enter a name
-                        </p>
-                      )}
-                      <p className="text-[11px] text-stone-500 mt-1 font-medium">
+                      <p className="text-[11px] text-stone-500 mt-3 font-medium">
                         This name will be included in the sacred sankalpam during the puja.
                       </p>
                     </div>
@@ -829,8 +841,8 @@ function SankalpContent() {
                       </div>
                     )}
                     <div className="mt-3 flex justify-between border-t pt-3 text-sm font-bold">
-                        <span>Total</span>
-                        <span>₹{appliedPromo ? appliedPromo.finalAmount : finalPrice}</span>
+                      <span>Total</span>
+                      <span>₹{appliedPromo ? appliedPromo.finalAmount : finalPrice}</span>
                     </div>
                   </div>
 

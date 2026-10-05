@@ -72,49 +72,50 @@ export default function PromoCodeInput({
     };
 
     return (
-        <div className="w-full mt-6">
-            <div className="mb-2 font-semibold text-[#f16335]">
+        <div className="bg-white p-5 rounded-3xl border border-stone-200 shadow-sm mt-8">
+            <h3 className="text-base font-extrabold text-stone-900 mb-4">
                 Have a Promocode?
-            </div>
+            </h3>
 
             {!applied ? (
-                <div className="flex gap-2">
+                <div className="flex gap-2 sm:gap-3">
                     <input
                         value={code}
                         onChange={(e) => setCode(e.target.value.toUpperCase())}
                         placeholder="Enter Promocode"
-                        className="flex-1 rounded-md border border-gray-200 px-4 py-2.5 focus:outline-none focus:border-[#f16335]"
+                        className="flex-1 min-w-0 rounded-xl border border-stone-200 px-3 sm:px-4 py-3 text-sm font-medium outline-none transition focus:border-[#00b050] shadow-sm"
                     />
                     <button
                         type="button"
                         onClick={handleApply}
                         disabled={loading}
-                        className="rounded-md bg-[#00a850] px-8 py-2.5 font-bold text-white hover:bg-green-700 transition-colors disabled:opacity-50"
+                        className="shrink-0 rounded-xl bg-[#00b050] px-5 sm:px-8 py-3 text-sm font-bold text-white hover:bg-green-700 transition-colors disabled:opacity-50 shadow-sm"
                     >
                         {loading ? "..." : "Apply"}
                     </button>
                 </div>
             ) : (
-                <div className="flex items-center justify-between rounded-md border border-green-200 bg-green-50 px-4 py-3">
+                <div className="flex items-center justify-between rounded-xl border border-[#00b050]/30 bg-green-50/50 px-5 py-4 shadow-sm">
                     <div>
-                        <div className="font-semibold text-green-700">
-                            ✓ {code} applied
+                        <div className="font-extrabold text-[#00b050] flex items-center gap-2">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"></path></svg>
+                            {code} applied
                         </div>
-                        <div className="text-sm text-green-600">
-                            You saved ₹{discountAmount.toLocaleString("en-IN")}
+                        <div className="text-xs font-bold text-stone-600 mt-1">
+                            You saved <span className="text-[#00b050]">₹{discountAmount.toLocaleString("en-IN")}</span>
                         </div>
                     </div>
                     <button
                         type="button"
                         onClick={handleRemove}
-                        className="text-sm font-semibold text-red-600 hover:text-red-700 underline"
+                        className="text-xs font-bold text-red-500 hover:text-red-600 underline"
                     >
                         Remove
                     </button>
                 </div>
             )}
 
-            {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+            {error && <p className="mt-3 text-xs font-semibold text-red-500">{error}</p>}
         </div>
     );
 }
