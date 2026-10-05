@@ -188,10 +188,10 @@ function AccountPageContent() {
   };
 
   useEffect(() => {
-    if (activeTab === 'wishlist' && user) {
+    if (user) {
       fetchWishlist();
     }
-  }, [activeTab, user]);
+  }, [user]);
 
   const handleLogout = async () => {
     try {
