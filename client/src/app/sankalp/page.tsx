@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import PromoCodeInput from "@/components/PromoCodeInput";
 import { useUser } from "@/contexts/UserContext";
 
 interface RazorpayResponse {
@@ -52,6 +53,11 @@ function SankalpContent() {
   const [paymentMethod, setPaymentMethod] = useState("upi");
   const [isProcessing, setIsProcessing] = useState(false);
   const [loadingMsg, setLoadingMsg] = useState("");
+  const [appliedPromo, setAppliedPromo] = useState<{
+    promoCode: string;
+    discountAmount: number;
+    finalAmount: number;
+  } | null>(null);
 
   const profileFetchedRef = React.useRef(false);
 
@@ -319,7 +325,9 @@ function SankalpContent() {
           customerId: mongoUserId,
           currencyCode: "INR",
           shoppingCartId: 0,
-          totalamount: Number(finalPrice),
+          serviceId: pujaData?._id || pujaData?.id,
+          packageId: selectedPackage?.id || pkgId,
+          promoCode: appliedPromo?.promoCode || "",
           contactId: 1367254,
           localeId: 1,
           trackingCode1: "",
@@ -336,7 +344,8 @@ function SankalpContent() {
             Country: userCountry,
             Pincode: userPincode,
             Phone: userPhone
-          }
+          },
+          totalamount: appliedPromo ? appliedPromo.finalAmount : finalPrice
         })
       });
 
@@ -730,13 +739,14 @@ function SankalpContent() {
                     </div>
 
                     {/* Promocode */}
-                    <div>
-                      <h3 className="text-sm font-extrabold text-[#f15a29] mb-3">Have a Promocode?</h3>
-                      <div className="flex items-center gap-3">
-                        <input type="text" placeholder="Enter Promocode" className="flex-1 border border-stone-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-[#00b050] transition-colors" />
-                        <button className="bg-[#00b050] text-white font-bold px-8 py-3 rounded-xl hover:bg-[#009b46] transition-colors">Apply</button>
-                      </div>
-                    </div>
+                    <PromoCodeInput
+                      orderAmount={finalPrice}
+                      serviceType={itemType === "homa" ? "HOMA" : "POOJA"}
+                      packageId={selectedPackage?.id || pkgId}
+                      userId={user?._id || user?.id}
+                      onApplied={setAppliedPromo}
+                      onRemoved={() => setAppliedPromo(null)}
+                    />
                   </>
                 )}
               </div>
@@ -811,6 +821,16 @@ function SankalpContent() {
                         <span className="text-[#980000] line-through font-medium text-[11px]">₹500</span>
                         <span className="font-extrabold text-stone-900">Free</span>
                       </div>
+                    </div>
+                    {appliedPromo && (
+                      <div className="flex justify-between items-center text-[#00b050]">
+                        <span className="font-medium">Promo ({appliedPromo.promoCode})</span>
+                        <span className="font-extrabold">-₹{appliedPromo.discountAmount}</span>
+                      </div>
+                    )}
+                    <div className="mt-3 flex justify-between border-t pt-3 text-sm font-bold">
+                        <span>Total</span>
+                        <span>₹{appliedPromo ? appliedPromo.finalAmount : finalPrice}</span>
                     </div>
                   </div>
 

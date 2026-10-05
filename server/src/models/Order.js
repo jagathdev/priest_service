@@ -142,7 +142,26 @@ const orderSchema = new mongoose.Schema(
                 type: mongoose.Schema.Types.Mixed, // Stores the raw response from the payment gateway
             },
         },
+        promoCode: {
+            type: String,
+            default: "",
+        },
 
+        promoCodeId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "PromoCode",
+            default: null,
+        },
+
+        originalAmount: {
+            type: Number,
+            default: 0,
+        },
+
+        discountAmount: {
+            type: Number,
+            default: 0,
+        },
         paymentStatus: {
             type: String,
             enum: [

@@ -523,7 +523,8 @@ export const normalizePuja = (homa: any, offeringsMap: Record<string, any> = {})
 
 export async function getAllHomas() {
   try {
-    const res = await fetch('https://priest-service.onrender.com/api/homas', { cache: 'no-store' });
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000';
+    const res = await fetch(`${baseUrl}/api/homas`, { cache: 'no-store' });
     if (res.ok) {
       const resData = await res.json();
       const list = resData?.data && Array.isArray(resData.data) ? resData.data : Array.isArray(resData) ? resData : [];

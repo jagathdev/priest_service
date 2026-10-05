@@ -14,6 +14,7 @@ import paymentRoutes from './routes/payment.routes.js';
 import heroBannerRoutes from './routes/heroBannerRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import setupAdmin from './config/setupAdmin.js';
+import promoCodeRoutes from "./routes/promoCode.routes.js";
 
 const app = express();
 
@@ -37,6 +38,7 @@ app.use("/api/wishlist", wishlistRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/customerQueries", customerQueryRoutes);
 app.use("/api/payments", paymentRoutes);
+app.use("/api/promos", promoCodeRoutes);
 
 const PORT = process.env.PORT || 5000;
 
