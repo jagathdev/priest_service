@@ -335,7 +335,7 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
           {/* Pure Full-Bleed Banner Card (Image Only, No Wordings) */}
           <Link
             href={current.ctaLink}
-            className="w-full block relative rounded-3xl overflow-hidden shadow-2xl border border-stone-200 bg-[#160802] h-[300px] sm:h-[400px] md:h-[460px] lg:h-[500px] xl:h-[500px] shrink-0 transition-all duration-500 group cursor-pointer"
+            className="w-full block relative rounded-3xl overflow-hidden shadow-2xl border border-stone-200 h-[300px] sm:h-[400px] md:h-[460px] lg:h-[500px] xl:h-[500px] shrink-0 transition-all duration-500 group cursor-pointer"
           >
 
             {/* Ambient Blurred Background (Fills Card Seamlessly) */}
@@ -347,13 +347,13 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
               className="object-cover blur-2xl opacity-40 scale-110"
             />
 
-            {/* Full Uncropped Main Image (Preserves Left/Right Text & Edges) */}
+            {/* Full Uncropped Main Image (Fills Entire Card Box Edge-to-Edge) */}
             <Image
               key={current.id}
               src={current.image}
               alt={current.title}
               fill
-              className="object-contain object-center relative z-10 drop-shadow-lg"
+              className="object-fill relative z-10"
               priority
             />
 
