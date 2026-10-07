@@ -44,6 +44,33 @@ export const getAdminOrders = async (req, res) => {
   }
 };
 
+export const updateAdminOrder = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { orderStatus, scheduledDate, videoLink } = req.body;
+
+    const updateData = {};
+    if (orderStatus !== undefined) updateData.orderStatus = orderStatus;
+    if (scheduledDate !== undefined) updateData.scheduledDate = scheduledDate ? new Date(scheduledDate) : null;
+    if (videoLink !== undefined) updateData.videoLink = videoLink;
+
+    const updatedOrder = await Order.findByIdAndUpdate(
+      id,
+      { $set: updateData },
+      { new: true }
+    );
+
+    if (!updatedOrder) {
+      return res.status(404).json({ success: false, message: "Order not found" });
+    }
+
+    return res.status(200).json({ success: true, message: "Order updated successfully", data: updatedOrder });
+  } catch (error) {
+    console.error("Error updating admin order:", error);
+    return res.status(500).json({ success: false, message: "Failed to update order" });
+  }
+};
+
 export const getAdminStats = async (req, res) => {
   try {
     const pujaCount = await Puja.countDocuments({ status: "active" });
@@ -83,7 +110,7 @@ export const getAdminStats = async (req, res) => {
 export const getAdminPayments = async (req, res) => {
   try {
     const orders = await Order.find({}).sort({ createdAt: -1 }).populate("customer");
-    
+
     let totalRevenue = 0;
     let monthlyRevenue = 0;
     let successfulPayments = 0;
@@ -96,7 +123,7 @@ export const getAdminPayments = async (req, res) => {
       if (ord.paymentStatus === "paid") {
         totalRevenue += (ord.pricing?.total || 0);
         successfulPayments++;
-        
+
         const orderDate = new Date(ord.createdAt);
         if (orderDate.getMonth() === currentMonth && orderDate.getFullYear() === currentYear) {
           monthlyRevenue += (ord.pricing?.total || 0);

@@ -1,4 +1,6 @@
-import React from "react";
+"use client";
+
+import React, { useEffect, useState } from "react";
 
 interface Order {
   _id: string;
@@ -19,29 +21,76 @@ interface Order {
   };
   paymentStatus: string;
   orderStatus: string;
+  scheduledDate?: string;
   bookingDate: string;
   createdAt: string;
 }
 
-export default async function AdminOrdersPage() {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
-  let orders: Order[] = [];
+export default function AdminOrdersPage() {
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  try {
-    const res = await fetch(`${baseUrl}/api/admin/orders`, { cache: "no-store" });
-    if (res.ok) {
-      const result = await res.json();
-      if (result.success && Array.isArray(result.data)) {
-        orders = result.data;
-      } else if (Array.isArray(result)) {
-        orders = result;
+  const fetchOrders = async () => {
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
+      const res = await fetch(`${baseUrl}/api/admin/orders`, { cache: "no-store" });
+      if (res.ok) {
+        const result = await res.json();
+        if (result.success && Array.isArray(result.data)) {
+          setOrders(result.data);
+        } else if (Array.isArray(result)) {
+          setOrders(result);
+        }
       }
+    } catch (err) {
+      console.error("Error fetching admin orders:", err);
+    } finally {
+      setLoading(false);
     }
-  } catch (err) {
-    console.error("Error fetching admin orders:", err);
-  }
+  };
 
-  // Fallback demo orders removed as requested
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
+  const handleStatusChange = async (orderId: string, newStatus: string) => {
+    let newScheduledDate = null;
+    
+    if (newStatus === "scheduled" || newStatus === "performed" || newStatus === "completed") {
+      newScheduledDate = new Date().toISOString();
+    }
+
+    // Optimistically update UI
+    setOrders(orders.map(ord => {
+      if (ord._id === orderId) {
+        return { ...ord, orderStatus: newStatus, scheduledDate: newScheduledDate || "" };
+      }
+      return ord;
+    }));
+
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
+      const res = await fetch(`${baseUrl}/api/admin/orders/${orderId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          orderStatus: newStatus, 
+          scheduledDate: newScheduledDate 
+        })
+      });
+      if (!res.ok) {
+        // Revert on failure
+        fetchOrders();
+      }
+    } catch (err) {
+      console.error("Failed to update status:", err);
+      fetchOrders();
+    }
+  };
+
+  if (loading) {
+    return <div className="p-8 text-center text-gray-500">Loading orders...</div>;
+  }
 
   return (
     <div className="space-y-6">
@@ -65,7 +114,7 @@ export default async function AdminOrdersPage() {
                 <th className="px-6 py-4">Devotee Details</th>
                 <th className="px-6 py-4">Amount</th>
                 <th className="px-6 py-4">Status</th>
-                <th className="px-6 py-4">Date</th>
+                <th className="px-6 py-4 text-center">Schedule Puja</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 font-medium">
@@ -83,9 +132,9 @@ export default async function AdminOrdersPage() {
 
                   const serviceName = ord.itemName || poojaObjName || poojaStrName || "Sacred Ritual";
                   const devoteeName = ord.customerName || (ord.participants && ord.participants.length > 0 ? ord.participants[0].name : "Devotee");
-                  const dateStr = ord.createdAt ? new Date(ord.createdAt).toISOString().split('T')[0] : "Today";
                   const isPaid = ord.paymentStatus === "paid";
                   const statusText = ord.orderStatus || ord.paymentStatus || "pending";
+                  const isScheduled = statusText === "scheduled" || statusText === "performed" || statusText === "completed";
 
                   return (
                     <tr key={ord._id} className="hover:bg-gray-50/80 transition">
@@ -100,14 +149,27 @@ export default async function AdminOrdersPage() {
                       </td>
                       <td className="px-6 py-4 font-extrabold text-gray-900">₹{ord.pricing?.total || 0}</td>
                       <td className="px-6 py-4">
-                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase ${statusText === "completed" || statusText === "paid"
+                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase ${statusText === "completed" || statusText === "paid" || statusText === "scheduled"
                           ? "bg-green-100 text-green-700"
                           : "bg-blue-100 text-blue-700"
                           }`}>
                           {statusText}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-gray-500 text-xs">{dateStr}</td>
+                      <td className="px-6 py-4 text-center">
+                        <select 
+                          className="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2"
+                          value={ord.orderStatus || ord.paymentStatus || "created"}
+                          onChange={(e) => handleStatusChange(ord._id, e.target.value)}
+                        >
+                          <option value="created">Created</option>
+                          <option value="confirmed">Booked (Confirmed)</option>
+                          <option value="scheduled">Scheduled</option>
+                          <option value="performed">Performed</option>
+                          <option value="completed">Completed</option>
+                          <option value="cancelled">Cancelled</option>
+                        </select>
+                      </td>
                     </tr>
                   );
                 })
