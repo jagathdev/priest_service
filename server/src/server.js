@@ -22,8 +22,17 @@ const app = express();
 connectDB().then(() => {
     setupAdmin();
 });
-// Middleware
-app.use(cors());
+app.use(
+    cors({
+        origin: [
+            "https://priestservices.astroved.com",
+            "http://localhost:8565",
+        ],
+        methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+        allowedHeaders: ["Content-Type", "Authorization"],
+        credentials: true,
+    })
+);
 app.use(express.json());
 
 // Routes
@@ -40,7 +49,7 @@ app.use("/api/customerQueries", customerQueryRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/promos", promoCodeRoutes);
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 8564;
 
 app.listen(PORT, () => {
     console.log(`Server is Running on http://localhost:${PORT}`);

@@ -2,7 +2,7 @@
 
 This document provides a comprehensive list of all API endpoints referenced in `server.js`, including full sample payloads and responses.
 
-Base URL: `https://priest-service.onrender.com`
+Base URL: `https://priestservices.astroved.com`
 
 ---
 

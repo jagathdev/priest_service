@@ -24,7 +24,7 @@ interface Order {
 }
 
 export default async function AdminOrdersPage() {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priest-service.onrender.com";
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
   let orders: Order[] = [];
 
   try {
@@ -56,66 +56,66 @@ export default async function AdminOrdersPage() {
       </div>
 
       <div className="bg-white rounded-2xl border border-gray-200 shadow-xs overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs sm:text-sm">
-              <thead className="bg-gray-50 border-b border-gray-100 text-gray-400 uppercase text-[11px] font-bold tracking-wider">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs sm:text-sm">
+            <thead className="bg-gray-50 border-b border-gray-100 text-gray-400 uppercase text-[11px] font-bold tracking-wider">
+              <tr>
+                <th className="px-6 py-4">Order ID</th>
+                <th className="px-6 py-4">Service</th>
+                <th className="px-6 py-4">Devotee Details</th>
+                <th className="px-6 py-4">Amount</th>
+                <th className="px-6 py-4">Status</th>
+                <th className="px-6 py-4">Date</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100 font-medium">
+              {orders.length === 0 ? (
                 <tr>
-                  <th className="px-6 py-4">Order ID</th>
-                  <th className="px-6 py-4">Service</th>
-                  <th className="px-6 py-4">Devotee Details</th>
-                  <th className="px-6 py-4">Amount</th>
-                  <th className="px-6 py-4">Status</th>
-                  <th className="px-6 py-4">Date</th>
+                  <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
+                    No orders found in the database.
+                  </td>
                 </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100 font-medium">
-                {orders.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
-                      No orders found in the database.
-                    </td>
-                  </tr>
-                ) : (
-                  orders.map((ord) => {
-                    const isPoojaId = typeof ord.pooja === 'string' && /^[a-fA-F0-9]{24}$/.test(ord.pooja);
-                    const poojaObjName = typeof ord.pooja === 'object' && ord.pooja !== null ? ord.pooja.title : null;
-                    const poojaStrName = typeof ord.pooja === 'string' && !isPoojaId ? ord.pooja : null;
-                    
-                    const serviceName = ord.itemName || poojaObjName || poojaStrName || "Sacred Ritual";
-                    const devoteeName = ord.customerName || (ord.participants && ord.participants.length > 0 ? ord.participants[0].name : "Devotee");
-                    const dateStr = ord.createdAt ? new Date(ord.createdAt).toISOString().split('T')[0] : "Today";
-                    const isPaid = ord.paymentStatus === "paid";
-                    const statusText = ord.orderStatus || ord.paymentStatus || "pending";
+              ) : (
+                orders.map((ord) => {
+                  const isPoojaId = typeof ord.pooja === 'string' && /^[a-fA-F0-9]{24}$/.test(ord.pooja);
+                  const poojaObjName = typeof ord.pooja === 'object' && ord.pooja !== null ? ord.pooja.title : null;
+                  const poojaStrName = typeof ord.pooja === 'string' && !isPoojaId ? ord.pooja : null;
 
-                    return (
-                      <tr key={ord._id} className="hover:bg-gray-50/80 transition">
-                        <td className="px-6 py-4 font-mono font-bold text-gray-900">{ord.orderNumber}</td>
-                        <td className="px-6 py-4">
-                          <span className="font-bold text-gray-900 block">{serviceName}</span>
-                          <span className="text-[10px] uppercase font-bold text-[#069e5d]">PUJA</span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className="font-bold text-gray-800 block">{devoteeName}</span>
-                          <span className="text-xs text-gray-400">Gotra: {ord.gotra || "Not Provided"}</span>
-                        </td>
-                        <td className="px-6 py-4 font-extrabold text-gray-900">₹{ord.pricing?.total || 0}</td>
-                        <td className="px-6 py-4">
-                          <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase ${statusText === "completed" || statusText === "paid"
-                            ? "bg-green-100 text-green-700"
-                            : "bg-blue-100 text-blue-700"
-                            }`}>
-                            {statusText}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-gray-500 text-xs">{dateStr}</td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
-          </div>
+                  const serviceName = ord.itemName || poojaObjName || poojaStrName || "Sacred Ritual";
+                  const devoteeName = ord.customerName || (ord.participants && ord.participants.length > 0 ? ord.participants[0].name : "Devotee");
+                  const dateStr = ord.createdAt ? new Date(ord.createdAt).toISOString().split('T')[0] : "Today";
+                  const isPaid = ord.paymentStatus === "paid";
+                  const statusText = ord.orderStatus || ord.paymentStatus || "pending";
+
+                  return (
+                    <tr key={ord._id} className="hover:bg-gray-50/80 transition">
+                      <td className="px-6 py-4 font-mono font-bold text-gray-900">{ord.orderNumber}</td>
+                      <td className="px-6 py-4">
+                        <span className="font-bold text-gray-900 block">{serviceName}</span>
+                        <span className="text-[10px] uppercase font-bold text-[#069e5d]">PUJA</span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="font-bold text-gray-800 block">{devoteeName}</span>
+                        <span className="text-xs text-gray-400">Gotra: {ord.gotra || "Not Provided"}</span>
+                      </td>
+                      <td className="px-6 py-4 font-extrabold text-gray-900">₹{ord.pricing?.total || 0}</td>
+                      <td className="px-6 py-4">
+                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase ${statusText === "completed" || statusText === "paid"
+                          ? "bg-green-100 text-green-700"
+                          : "bg-blue-100 text-blue-700"
+                          }`}>
+                          {statusText}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-gray-500 text-xs">{dateStr}</td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
         </div>
+      </div>
     </div>
   );
 }

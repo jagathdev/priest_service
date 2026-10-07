@@ -45,7 +45,7 @@ export default function AdminProfilePage() {
 
   const fetchProfile = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "https://priest-service.onrender.com"}/api/admin/profile`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "https://priestservices.astroved.com"}/api/admin/profile`);
       const data = await res.json();
       if (res.ok) {
         setFormData((prev) => ({

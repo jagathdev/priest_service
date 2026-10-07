@@ -5,8 +5,8 @@ export default async function DashboardPage() {
   let initialHeroBanners = [];
 
   try {
-    const expressBase = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priest-service.onrender.com";
-    
+    const expressBase = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
+
     // Fetch both simultaneously for maximum performance
     const [pujasRes, bannersRes] = await Promise.all([
       fetch(`${expressBase}/api/pujas`, { cache: 'no-store' }),

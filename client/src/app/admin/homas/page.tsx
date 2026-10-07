@@ -178,7 +178,7 @@ export default function AdminHomasPage() {
       name: "recommendedPujaIds",
       label: "Select Recommended Pujas",
       type: "reference-array",
-      referenceEndpoint: "https://priest-service.onrender.com/api/pujas",
+      referenceEndpoint: "https://priestservices.astroved.comapi/pujas",
       referenceLabelField: "title"
     },
     {

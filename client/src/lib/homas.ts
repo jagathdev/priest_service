@@ -523,7 +523,7 @@ export const normalizePuja = (homa: any, offeringsMap: Record<string, any> = {})
 
 export async function getAllHomas() {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000';
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || 'https://priestservices.astroved.com';
     const res = await fetch(`${baseUrl}/api/homas`, { cache: 'no-store' });
     if (res.ok) {
       const resData = await res.json();

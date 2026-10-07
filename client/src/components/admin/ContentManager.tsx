@@ -166,7 +166,7 @@ export default function ContentManager({
     // Fetch currency settings
     // API removed based on user request
     /*
-    fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "https://priest-service.onrender.com"}/api/admin/content?type=currency`)
+    fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "https://priestservices.astroved.com"}/api/admin/content?type=currency`)
       .then(async (res) => {
         if (!res.ok) return null;
         const text = await res.text();
@@ -205,7 +205,7 @@ export default function ContentManager({
   }, [type]);
 
   const getEndpoint = (itemType: string, id?: string | null): string => {
-    let expressBase = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priest-service.onrender.com";
+    let expressBase = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
     if (!expressBase.endsWith('/api')) {
       expressBase += '/api';
     }
@@ -436,7 +436,7 @@ export default function ContentManager({
 
     setSubmitting(true);
     try {
-      let expressBase = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priest-service.onrender.com";
+      let expressBase = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
       if (!expressBase.endsWith('/api')) {
         expressBase += '/api';
       }
@@ -1056,7 +1056,7 @@ export default function ContentManager({
                 onClick={async () => {
                   const nextStatus = viewingReview.approved ? false : true;
                   const payload = { ...viewingReview, approved: nextStatus }; delete payload._id;
-                  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "https://priest-service.onrender.com"}/api/admin/content?type=${type}&id=${viewingReview._id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+                  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "https://priestservices.astroved.com"}/api/admin/content?type=${type}&id=${viewingReview._id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
                   if (res.ok) { fetchItems(); setViewingReview({ ...viewingReview, approved: nextStatus }); }
                 }}
                 className={`rounded-md border px-4 py-1.5 text-sm font-semibold ${viewingReview.approved ? "border-red-300 text-red-600 hover:bg-red-50" : "border-green-400 text-green-700 hover:bg-green-50"

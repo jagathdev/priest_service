@@ -71,7 +71,7 @@ function SankalpContent() {
       if (uId && !profileFetchedRef.current) {
         profileFetchedRef.current = true;
         try {
-          const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priest-service.onrender.com";
+          const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
           const res = await fetch(`${baseUrl}/api/users/profile/${uId}`);
           if (res.ok) {
             const data = await res.json();
@@ -120,7 +120,7 @@ function SankalpContent() {
       setLoading(true);
       setError(null);
 
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priest-service.onrender.com";
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
       const targetId = pujaId || slug;
 
       try {
@@ -266,7 +266,7 @@ function SankalpContent() {
     // Call updateProfile API to sync devotee profile details to backend database
     const uId = user?.id || user?._id;
     if (uId) {
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priest-service.onrender.com";
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
       const nameToSave = formData.participants[0]?.trim() || user?.name || "Devotee";
       fetch(`${baseUrl}/api/users/updateProfile`, {
         method: "PUT",
@@ -296,7 +296,7 @@ function SankalpContent() {
     setError(null);
     setLoadingMsg("Initializing secure payment gateway...");
     try {
-      const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priest-service.onrender.com";
+      const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
 
       const userName = formData.participants[0]?.trim() || user?.name || "Devotee";
       const userPhone = formData.whatsapp || user?.whatsapp || user?.mobileNumber || user?.phone || "";
@@ -517,7 +517,7 @@ function SankalpContent() {
                 <div className={`h-10 w-10 rounded-full flex items-center justify-center font-bold text-base transition-all ${step >= 1 ? 'bg-[#00b050] text-white' : 'bg-white border-2 border-[#e4dfd9] text-stone-500'} ${step === 1 ? 'ring-4 ring-[#00b050]/10' : ''}`}>
                   {step > 1 ? '✓' : '1'}
                 </div>
-                <span className={`text-[13px] font-semibold text-center leading-tight ${step === 1 ? 'text-[#00b050]' : 'text-[#8b8276]'}`}>Devotee<br/>Details</span>
+                <span className={`text-[13px] font-semibold text-center leading-tight ${step === 1 ? 'text-[#00b050]' : 'text-[#8b8276]'}`}>Devotee<br />Details</span>
               </div>
 
               <div className="flex flex-col items-center gap-2 bg-white px-2 sm:px-4">

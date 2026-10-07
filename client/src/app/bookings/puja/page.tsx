@@ -34,7 +34,7 @@ export default function MyPujaBookings() {
   const [filter, setFilter] = useState("All");
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "https://priest-service.onrender.com"}/api/bookings/me?type=puja`)
+    fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "https://priestservices.astroved.com"}/api/bookings/me?type=puja`)
       .then((res) => res.json())
       .then((data) => {
         if (data.success) {
@@ -55,7 +55,7 @@ export default function MyPujaBookings() {
 
   const handleLogout = async () => {
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "https://priest-service.onrender.com"}/api/auth/logout`, { method: "POST" });
+      await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "https://priestservices.astroved.com"}/api/auth/logout`, { method: "POST" });
     } catch {
       // ignore
     }

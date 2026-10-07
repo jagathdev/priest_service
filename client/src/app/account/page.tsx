@@ -78,7 +78,7 @@ function AccountPageContent() {
   useEffect(() => {
     const userId = user?._id || user?.id;
     if (userId) {
-      const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "https://priest-service.onrender.com";
+      const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "https://priestservices.astroved.com";
       fetch(`${backendUrl}/api/orders/user/${userId}`)
         .then(res => res.json())
         .then(data => {
@@ -125,7 +125,7 @@ function AccountPageContent() {
     }
     setIsSubmittingHelp(true);
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "https://priest-service.onrender.com";
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "https://priestservices.astroved.com";
 
       const res = await fetch(`${baseUrl}/api/customerQueries`, {
         method: "POST",
@@ -174,7 +174,7 @@ function AccountPageContent() {
     if (!user || (!user.id && !user._id)) return;
     setLoadingWishlist(true);
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "https://priest-service.onrender.com";
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "https://priestservices.astroved.com";
       const res = await fetch(`${baseUrl}/api/wishlist/${user.id || user._id}`);
       const data = await res.json();
       if (data.success && data.data) {
@@ -195,7 +195,7 @@ function AccountPageContent() {
 
   const handleLogout = async () => {
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "https://priest-service.onrender.com"}/api/auth/logout`, { method: "POST" });
+      await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "https://priestservices.astroved.com"}/api/auth/logout`, { method: "POST" });
     } catch {
       // ignore
     }
@@ -208,7 +208,7 @@ function AccountPageContent() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "https://priest-service.onrender.com";
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "https://priestservices.astroved.com";
 
       const res = await fetch(`${baseUrl}/api/users/updateProfile`, {
         method: "PUT",
@@ -243,7 +243,7 @@ function AccountPageContent() {
   const handleSaveAddress = async () => {
     if (!user) return;
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "https://priest-service.onrender.com";
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "https://priestservices.astroved.com";
 
       const newAddress = {
         type: addressFormData.type,
@@ -308,7 +308,7 @@ function AccountPageContent() {
     if (!window.confirm("Are you sure to delete the address?")) return;
 
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "https://priest-service.onrender.com";
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "https://priestservices.astroved.com";
 
       const updatedAddresses = (user.addresses || []).filter((a: Address) => a._id !== addressId && a.id !== addressId);
 
@@ -1054,7 +1054,7 @@ function AccountPageContent() {
                                   e.preventDefault();
                                   e.stopPropagation();
                                   try {
-                                    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "https://priest-service.onrender.com";
+                                    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "https://priestservices.astroved.com";
                                     await fetch(`${baseUrl}/api/wishlist/updateWishlist`, {
                                       method: "POST",
                                       headers: { "Content-Type": "application/json" },

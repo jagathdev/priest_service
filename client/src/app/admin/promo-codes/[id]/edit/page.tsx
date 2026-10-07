@@ -10,9 +10,9 @@ interface PageProps {
 
 export default async function EditPromoCodePage({ params }: PageProps) {
     const { id } = await params;
-    
+
     // In server components, always provide an absolute URL or use standard fetch from the API URL
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:5000";
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://priestservices.astroved.com";
     const response = await fetch(`${baseUrl}/api/promos/${id}`, {
         cache: "no-store",
     });

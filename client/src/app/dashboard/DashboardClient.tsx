@@ -22,7 +22,33 @@ import ReviewsSection from "@/components/common/ReviewsSection";
 export default function DashboardClient({ initialHeroBanners, initialPujas }: { initialHeroBanners?: any[], initialPujas?: any[] }) {
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
   const [pujas, setPujas] = useState<any[]>(initialPujas || []);
-  const [fetchedPujas, setFetchedPujas] = useState(true);
+  const [fetchedPujas, setFetchedPujas] = useState(initialPujas && initialPujas.length > 0);
+
+  useEffect(() => {
+    async function fetchPujas() {
+      if (!initialPujas || initialPujas.length === 0) {
+        try {
+          const expressBase = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
+          const res = await fetch(`${expressBase}/api/pujas`);
+          if (res.ok) {
+            const data = await res.json();
+            const rawList = data?.data && Array.isArray(data.data)
+              ? data.data
+              : Array.isArray(data)
+                ? data
+                : [];
+            const activeList = rawList.filter((item: any) => !item.status || item.status === "active");
+            setPujas(activeList.slice(0, 6));
+          }
+        } catch (err) {
+          console.error("Failed to fetch pujas on client:", err);
+        } finally {
+          setFetchedPujas(true);
+        }
+      }
+    }
+    fetchPujas();
+  }, [initialPujas]);
 
   return (
     <main className="min-h-screen bg-white text-[#1f1f1f] font-sans">

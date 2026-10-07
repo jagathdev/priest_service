@@ -58,7 +58,7 @@ function PaymentContent() {
       const firstName = nameParts[0] || "";
       const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
 
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priest-service.onrender.com";
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
 
       // 2. Call local Express API to create order
       setLoadingMsg("Creating order securely...");

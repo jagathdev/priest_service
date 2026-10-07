@@ -1,6 +1,6 @@
 import type { PromoCode } from "@/types/promoCode";
 
-const API_URL = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:5000";
+const API_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://priestservices.astroved.com";
 
 export async function getPromoCodes() {
     const response = await fetch(`${API_URL}/api/promos`, { cache: "no-store" });

@@ -13,7 +13,7 @@ export default function BookingsTab() {
     async function fetchOrders() {
       if (!user?._id && !user?.id) return;
       try {
-        const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priest-service.onrender.com";
+        const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
         const res = await fetch(`${baseUrl}/api/orders/user/${user._id || user.id}`);
         const data = await res.json();
         if (data.success) {
@@ -51,7 +51,7 @@ export default function BookingsTab() {
           <div className="absolute top-0 right-0 p-4">
             <span className="bg-[#5c1b1c] text-white text-[10px] font-extrabold px-3 py-1.5 rounded-full uppercase tracking-wider">{selectedOrder.orderStatus || 'ONGOING'}</span>
           </div>
-          
+
           <div className="mb-6">
             <span className="text-[10px] font-extrabold text-[#f15a29] bg-orange-100 px-2.5 py-1 rounded-md uppercase tracking-wider mb-3 inline-block">• In Progress</span>
             <h3 className="text-xl font-bold text-[#5c1b1c] font-serif">{selectedOrder.itemName || selectedOrder.pooja}</h3>
@@ -76,7 +76,7 @@ export default function BookingsTab() {
               </div>
             </div>
           </div>
-          
+
           <div className="mt-6">
             <span className="inline-flex items-center text-xs font-bold text-stone-600 bg-white border border-stone-200 rounded-full px-4 py-2 shadow-sm">
               Video available after the puja
@@ -123,9 +123,9 @@ export default function BookingsTab() {
             </div>
             <h4 className="font-bold text-stone-800">Puja Journey</h4>
           </div>
-          
+
           <div className="space-y-8 relative before:absolute before:inset-0 before:ml-4 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-[#00b050] before:via-stone-200 before:to-stone-200">
-            
+
             <div className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
               <div className="flex items-center justify-center w-8 h-8 rounded-full border-4 border-white bg-[#00b050] text-white shadow shrink-0 z-10">
                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
@@ -158,7 +158,7 @@ export default function BookingsTab() {
                 <p className="text-xs text-stone-500 font-medium mt-1">Muhurat - {new Date(selectedOrder.bookingDate).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
               </div>
             </div>
-            
+
             <div className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group">
               <div className="flex items-center justify-center w-8 h-8 rounded-full border-4 border-white bg-white shadow shrink-0 z-10">
                 <div className="w-2.5 h-2.5 rounded-full bg-stone-300"></div>
@@ -207,10 +207,10 @@ export default function BookingsTab() {
           {orders.map((order, idx) => {
             const bookingDate = new Date(order.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
             const scheduledDate = new Date(order.bookingDate || order.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
-            
+
             return (
-              <div 
-                key={idx} 
+              <div
+                key={idx}
                 onClick={() => setSelectedOrder(order)}
                 className="border border-stone-200 rounded-xl overflow-hidden hover:shadow-md transition-all cursor-pointer group"
               >
@@ -223,7 +223,7 @@ export default function BookingsTab() {
                     Booking: <span className="text-[#3b82f6]">#{order.orderNumber || order._id.slice(-6).toUpperCase()}</span>
                   </div>
                 </div>
-                
+
                 <div className="p-6">
                   <div className="flex gap-4">
                     <div className="w-20 h-16 bg-orange-50 rounded-lg overflow-hidden shrink-0 border border-orange-100 flex items-center justify-center relative">
@@ -248,7 +248,7 @@ export default function BookingsTab() {
                   </div>
 
                   <div className="mt-8 flex items-center gap-4 relative before:absolute before:top-1/2 before:left-0 before:w-full before:h-0.5 before:-translate-y-1/2 before:bg-gradient-to-r before:from-[#00b050] before:via-stone-200 before:to-stone-200 before:-z-10">
-                    
+
                     <div className="flex flex-col items-center text-center w-1/3 bg-white">
                       <div className="w-8 h-8 bg-green-50 rounded-full flex items-center justify-center border-2 border-[#00b050] mb-2 shadow-sm">
                         <svg className="w-4 h-4 text-[#00b050]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
