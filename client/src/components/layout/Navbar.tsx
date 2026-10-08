@@ -230,7 +230,7 @@ export default function Navbar() {
       <LoginModal isOpen={loginModalOpen} onClose={() => setLoginModalOpen(false)} onSuccess={handleLoginSuccess} />
 
       <header className="sticky top-0 z-50 border-b border-gray-100 bg-white shadow-sm">
-        <div className="mx-auto flex max-w-[1350px] items-center justify-between px-4 py-3 sm:py-3.5 sm:px-6 lg:px-10 xl:py-5.5">
+        <div className="mx-auto flex max-w-[1350px] items-center justify-between px-4 py-3 sm:py-3.5 sm:px-6 lg:px-10 xl:py-4">
 
           {/* ── Logo ── */}
           <Link href="/" className="flex items-center gap-2 shrink-0" aria-label="AstroVed Home">

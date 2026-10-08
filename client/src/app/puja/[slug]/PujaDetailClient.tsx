@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useRef } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
@@ -9,6 +9,7 @@ import LoginModal from "@/components/auth/LoginModal";
 import { checkAuthStatus } from "@/lib/authCheck";
 import { CheckIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import WishlistButton from "@/components/common/WishlistButton";
+import PujaCountdownCard from "@/components/common/PujaCountdownCard";
 
 interface PujaPackage {
   id: string;
@@ -122,6 +123,30 @@ export default function PujaDetailClient({
   const [pendingSankalpUrl, setPendingSankalpUrl] = useState<string | null>(null);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [shareSuccess, setShareSuccess] = useState(false);
+  const [showStickyBar, setShowStickyBar] = useState(false);
+  const heroCtaRef = useRef<HTMLButtonElement | null>(null);
+
+  // Scroll observer to show bottom sticky bar only when hero CTA button scrolls out of view
+  useEffect(() => {
+    const el = heroCtaRef.current;
+    if (!el) {
+      const handleScroll = () => {
+        setShowStickyBar(window.scrollY > 450);
+      };
+      window.addEventListener("scroll", handleScroll, { passive: true });
+      return () => window.removeEventListener("scroll", handleScroll);
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setShowStickyBar(!entry.isIntersecting);
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [loading]);
 
   // Fetch Puja details by slug
   useEffect(() => {
@@ -199,13 +224,24 @@ export default function PujaDetailClient({
 
   // Compute normalized package list from Admin data or defaults
   const packagesList = useMemo(() => {
+    const normalizePackageName = (rawName: string, idx: number) => {
+      const lower = (rawName || "").toLowerCase();
+      if (lower.includes("individual")) return "Individual Puja";
+      if (lower.includes("couple")) return "Couple Puja";
+      if (lower.includes("family")) return "Family Puja";
+      if (idx === 0) return "Individual Puja";
+      if (idx === 1) return "Couple Puja";
+      if (idx === 2) return "Family Puja";
+      return rawName || `Package ${idx + 1}`;
+    };
+
     if (puja?.packages && puja.packages.length > 0) {
       return puja.packages.map((pkg: any, idx: number) => {
         const basePrice = pkg.priceINR ?? pkg.price ?? puja.price ?? 501;
         const defaultDevotees = idx === 0 ? "1 Devotee" : idx === 1 ? "2 Devotees" : idx === 2 ? "4 Devotees" : "Multiple Devotees";
         return {
           id: pkg.id || pkg._id || `pkg-${idx + 1}`,
-          name: pkg.name || `Package ${idx + 1}`,
+          name: normalizePackageName(pkg.name, idx),
           devoteeCount: pkg.devoteeCount || pkg.devotees || defaultDevotees,
           priceINR: basePrice,
           priceUSD: pkg.priceUSD,
@@ -446,59 +482,64 @@ export default function PujaDetailClient({
       <Navbar />
 
       {/* ── 1. Top Hero Section ── */}
-      <section className="bg-[#faf9f6] border-b border-[#f0e4d0] py-8 sm:py-12">
+      <section className="bg-[#ffffff] border-b border-[#f0e4d0] py-8 sm:py-12">
         <div className="max-w-[1350px] mx-auto px-4 sm:px-6 lg:px-10">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 
-            {/* Left 6 Cols: Main Banner Image (Wider Layout) */}
+            {/* Left 6 Cols: Main Banner Image (Slightly Increased Width) */}
             <div className="lg:col-span-6 flex flex-col">
-              <div className="relative w-full h-[320px] sm:h-[400px] md:h-[450px] lg:h-[480px] rounded-3xl overflow-hidden border border-stone-200/90 shadow-md group">
+              <div className="relative w-full h-[280px] sm:h-[350px] md:h-[390px] lg:h-[410px] rounded-xl overflow-hidden border border-stone-200/90 shadow-md group">
                 <img
                   src={getPujaImageUrl(puja.imageUrl)}
                   alt={puja.title}
                   className="w-full h-full object-cover object-center"
                 />
-
-                {/* Bottom Temple Overlay Banner */}
-                {templeVenueText && (
-                  <div className="absolute bottom-0 inset-x-0 bg-gradient-to-r from-[#902400] via-[#b83808] to-[#902400] border-t-2 border-white py-2.5 px-4 flex items-center justify-center gap-2 text-white font-serif font-bold text-xs sm:text-sm tracking-wide z-10 shadow-md">
-                    <span className="text-amber-300 text-sm sm:text-base">🛕</span>
-                    <span className="truncate">{templeVenueText}</span>
-                  </div>
-                )}
               </div>
 
-              {/* Ratings / Stat & Action Strip Under Image */}
-              <div className="flex flex-wrap sm:flex-nowrap items-center justify-between gap-2 sm:gap-3 bg-white border border-stone-200/90 rounded-2xl p-3 sm:p-3.5 mt-4 shadow-xs">
+              {/* Carousel Dots */}
+              <div className="flex items-center justify-center gap-2 mt-3 mb-1">
+                <div className="w-7 h-2 bg-[#00b050] rounded-full transition-all" />
+                <div className="w-2.5 h-2.5 bg-stone-300 rounded-full" />
+                <div className="w-2.5 h-2.5 bg-stone-300 rounded-full" />
+                <div className="w-2.5 h-2.5 bg-stone-300 rounded-full" />
+              </div>
+
+              {/* Frameless Ratings / Stat & Action Strip Under Image (Fits exact image width) */}
+              <div className="flex items-center justify-between gap-1.5 sm:gap-2 mt-2.5 w-full px-0.5">
                 {/* Stat 1: Ratings */}
-                <div className="text-center flex-1 min-w-[65px]">
-                  <span className="block text-sm sm:text-base font-extrabold text-[#1f1a17] leading-tight">4.17L+</span>
-                  <span className="text-[11px] text-stone-500 font-medium block">ratings</span>
+                <div className="text-center flex-1 min-w-0">
+                  <span className="block text-sm sm:text-base lg:text-lg font-extrabold text-[#1f1a17] leading-none">4.36L+</span>
+                  <span className="text-[10px] sm:text-xs text-stone-500 font-medium block mt-1 leading-none">ratings</span>
                 </div>
 
-                <div className="w-[1px] h-7 bg-stone-200 shrink-0 hidden sm:block" />
+                <div className="w-[1px] h-5 sm:h-6 bg-stone-300/80 shrink-0" />
 
                 {/* Stat 2: Pujas Conducted */}
-                <div className="text-center flex-1 min-w-[95px]">
-                  <span className="block text-sm sm:text-base font-extrabold text-[#1f1a17] leading-tight">22.92L+</span>
-                  <span className="text-[11px] text-stone-500 font-medium block whitespace-nowrap">pujas conducted</span>
+                <div className="text-center flex-1 min-w-0">
+                  <span className="block text-sm sm:text-base lg:text-lg font-extrabold text-[#1f1a17] leading-none">24L+</span>
+                  <span className="text-[10px] sm:text-xs text-stone-500 font-medium block whitespace-nowrap mt-1 leading-none">pujas conducted</span>
                 </div>
 
-                <div className="w-[1px] h-7 bg-stone-200 shrink-0 hidden sm:block" />
+                <div className="w-[1px] h-5 sm:h-6 bg-stone-300/80 shrink-0" />
 
                 {/* Stat 3: Average Ratings */}
-                <div className="text-center flex-1 min-w-[90px]">
-                  <div className="flex items-center justify-center gap-1">
-                    <span className="text-sm sm:text-base font-extrabold text-[#1f1a17] leading-tight">4.9/5</span>
+                <div className="text-center flex-1 min-w-0">
+                  <div className="flex items-center justify-center gap-0.5 sm:gap-1 leading-none">
+                    <span className="text-sm sm:text-base lg:text-lg font-extrabold text-[#1f1a17]">4.9/5</span>
                     <span className="text-amber-400 text-xs sm:text-sm">⭐</span>
                   </div>
-                  <span className="text-[11px] text-stone-500 font-medium block whitespace-nowrap">Average ratings</span>
+                  <span className="text-[10px] sm:text-xs text-stone-500 font-medium block whitespace-nowrap mt-1 leading-none">Average ratings</span>
                 </div>
 
                 {/* Action Buttons: Wishlist & Share */}
-                <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-center mt-2 sm:mt-0">
+                <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
                   {/* Wishlist Button */}
-                  <WishlistButton itemId={puja._id} text="Wishlist" />
+                  <WishlistButton
+                    itemId={puja._id}
+                    text="Wishlist"
+                    className="border border-stone-400/90 hover:border-stone-700 bg-white text-stone-800 font-medium text-xs sm:text-sm px-3 sm:px-4 py-1.5 rounded-full flex items-center justify-center gap-1 sm:gap-1.5 transition-all active:scale-95 shrink-0"
+                    iconClassName="w-3.5 h-3.5 sm:w-4 sm:h-4"
+                  />
 
                   {/* Share Button */}
                   <button
@@ -512,9 +553,9 @@ export default function PujaDetailClient({
                         setTimeout(() => setShareSuccess(false), 2000);
                       }
                     }}
-                    className="border border-stone-300 hover:border-stone-400 bg-white text-stone-700 rounded-full px-3.5 py-1.5 flex items-center justify-center gap-1.5 font-bold text-xs transition-all active:scale-95 shadow-xs"
+                    className="border border-stone-400/90 hover:border-stone-700 bg-white text-stone-800 font-medium text-xs sm:text-sm px-3 sm:px-4 py-1.5 rounded-full flex items-center justify-center gap-1 sm:gap-1.5 transition-all active:scale-95 shrink-0"
                   >
-                    <svg className="w-3.5 h-3.5 fill-none stroke-current" strokeWidth="2" viewBox="0 0 24 24">
+                    <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-none stroke-current" strokeWidth="2" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
                     </svg>
                     <span>{shareSuccess ? "Copied!" : "Share"}</span>
@@ -524,7 +565,7 @@ export default function PujaDetailClient({
             </div>
 
             {/* Right 6 Cols: Details & CTA */}
-            <div className="lg:col-span-6 flex flex-col">
+            <div className="lg:col-span-6 flex flex-col lg:pl-[10px]">
               {/* Filigree Subtag */}
               <div className="flex items-center gap-2 mb-2">
                 <div className="w-8 h-[1px] bg-[#F47820]/40" />
@@ -544,28 +585,20 @@ export default function PujaDetailClient({
                 {descriptionText}
               </p>
 
-              {/* Temple Location & Date Details Box */}
-              <div className="bg-stone-50 border border-stone-200/90 rounded-2xl p-4 mb-5 space-y-3 text-xs sm:text-sm font-bold text-stone-800">
-                <div className="flex items-start gap-3">
-                  <svg className="w-5 h-5 text-[#F47820] shrink-0 mt-0.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L9 6H15L12 2ZM8 7L6 11H18L16 7H8ZM5 12L3 17H21L19 12H5ZM2 18V21H22V18H2Z" /></svg>
-                  <span>{templeLocationText}</span>
-                </div>
-                <div className="w-full h-[1px] bg-stone-200/70" />
-                <div className="flex items-center gap-3">
-                  <svg className="w-5 h-5 text-[#F47820] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
-                  <span>{puja.date || "Available Daily"}</span>
-                </div>
-              </div>
+              {/* Dynamic Countdown & Temple Card fetched from Dashboard */}
+              <PujaCountdownCard
+                templeVenue={templeVenueText || "Kamrup Teerth Kshetra"}
+                location={puja.location || puja.templeLocation || "Guwahati, Assam"}
+                dateText={puja.date || "Saturday, 10 October"}
+                occasionText={puja.subtitle || puja.badge || (puja as any).tithis || "Mahalaya Amavasya"}
+                eventDateTime={puja.eventDateTime}
+                title="Reserve your sankalp"
+                badgeLabel="MUHURAT ENDS IN"
+                className="mb-5"
+              />
 
-              {/* Package Selection Cards Grid */}
-              <div className="bg-white border border-stone-200/90 rounded-2xl p-4 sm:p-5 mb-5 shadow-xs space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-extrabold tracking-wider text-stone-500 uppercase">Reserve your sankalp</span>
-                  <span className="text-[11px] font-bold text-[#00b050] bg-green-50 px-2.5 py-0.5 rounded-full border border-green-200/60">
-                    Verified Pandits
-                  </span>
-                </div>
-
+              {/* Package Selection Cards Grid (Border & top header removed) */}
+              <div className="mb-5">
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   {packagesList.map((pkg, idx) => {
                     const isSelected = selectedPackage?.id === pkg.id;
@@ -603,13 +636,13 @@ export default function PujaDetailClient({
 
               {/* Primary Participate / Book Now CTA Button */}
               <button
+                ref={heroCtaRef}
                 onClick={handleAddPujaToCart}
-                className="w-full bg-[#00b050] hover:bg-[#009644] active:scale-95 text-white font-extrabold text-lg py-4 px-6 rounded-2xl shadow-lg shadow-green-600/20 transition-all flex items-center justify-center gap-2 mb-4"
+                className="w-full bg-[#00b050] hover:bg-[#009644] active:scale-95 text-white font-extrabold text-base sm:text-lg py-3 px-6 rounded-full shadow-md transition-all flex items-center justify-center gap-2.5 mb-3.5"
               >
-                <span>₹{priceVal}</span>
-                <span className="opacity-40 font-normal">|</span>
+                <span>₹{priceVal.toLocaleString("en-IN")}</span>
+                <span className="opacity-60 font-light">|</span>
                 <span>Book Now</span>
-                <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
               </button>
 
               {/* Secondary WhatsApp & Call Buttons */}
@@ -618,15 +651,21 @@ export default function PujaDetailClient({
                   href="https://wa.me/9677391109"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex-1 min-w-[160px] inline-flex items-center justify-center gap-2 bg-white border border-stone-300 text-stone-700 hover:border-stone-400 font-extrabold text-xs sm:text-sm py-3 px-4 rounded-full transition-colors shadow-xs"
+                  className="flex-1 min-w-[150px] inline-flex items-center justify-center gap-2 bg-white border border-[#00b050] text-[#009644] hover:bg-green-50/60 font-extrabold text-xs sm:text-sm py-2.5 px-4 rounded-full transition-colors shadow-xs"
                 >
-                  <span className="text-[#25D366] text-base">💬</span> Book via WhatsApp
+                  <svg className="w-5 h-5 shrink-0 fill-[#25D366]" viewBox="0 0 24 24">
+                    <path d="M12.012 2c-5.506 0-9.989 4.478-9.99 9.984 0 1.758.459 3.474 1.33 4.982L2 22l5.144-1.348c1.455.793 3.097 1.21 4.864 1.21 5.505 0 9.989-4.478 9.99-9.985 0-5.506-4.484-9.984-9.986-9.984zm5.794 14.15c-.244.686-1.437 1.344-1.982 1.393-.526.048-1.018.257-3.418-.686-2.905-1.141-4.757-4.088-4.901-4.281-.144-.193-1.177-1.564-1.177-2.984 0-1.42.747-2.119 1.011-2.408.264-.289.576-.361.769-.361.192 0 .385.001.552.009.178.008.417-.067.653.498.243.582.83 2.023.902 2.168.072.144.12.312.024.504-.096.192-.144.312-.288.48-.144.168-.303.376-.432.504-.144.144-.294.302-.126.59.168.289.747 1.233 1.603 1.996 1.101.98 2.03 1.285 2.318 1.429.288.144.456.12.624-.072.168-.192.721-.84.913-1.128.192-.288.384-.24.648-.144.264.096 1.677.791 1.965.935.288.144.48.216.552.336.072.12.072.696-.172 1.382z" />
+                  </svg>
+                  <span>Book via WhatsApp</span>
                 </a>
                 <a
                   href="tel:+919677391108"
-                  className="flex-1 min-w-[160px] inline-flex items-center justify-center gap-2 bg-white border border-stone-300 text-stone-700 hover:border-stone-400 font-extrabold text-xs sm:text-sm py-3 px-4 rounded-full transition-colors shadow-xs"
+                  className="flex-1 min-w-[150px] inline-flex items-center justify-center gap-2 bg-white border border-[#2563eb] text-[#2563eb] hover:bg-blue-50/60 font-extrabold text-xs sm:text-sm py-2.5 px-4 rounded-full transition-colors shadow-xs"
                 >
-                  <span className="text-stone-600 text-base">📞</span> Book via Call
+                  <svg className="w-4 h-4 min-w-[16px] min-h-[16px] fill-none stroke-[#2563eb]" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                  </svg>
+                  <span>Book via Call</span>
                 </a>
               </div>
 
@@ -647,7 +686,7 @@ export default function PujaDetailClient({
       </div>
 
       {/* ── 3. Sticky Sub-navigation Tabs Bar ── */}
-      <div className="sticky top-[60px] z-30 bg-white border-b border-stone-200 shadow-xs">
+      <div className="sticky top-[76px] z-30 bg-white/95 backdrop-blur-md border-b border-stone-200/90 shadow-xs pt-2 sm:pt-3">
         <div className="max-w-[1350px] mx-auto px-4 sm:px-6 lg:px-10 flex overflow-x-auto no-scrollbar gap-6 text-xs sm:text-sm font-bold text-stone-600">
           {[
             { id: "about", label: "About puja" },
@@ -666,12 +705,12 @@ export default function PujaDetailClient({
                 setActiveTab(tab.id);
                 const el = document.getElementById(tab.id);
                 if (el) {
-                  const yOffset = -120;
+                  const yOffset = -150;
                   const y = el.getBoundingClientRect().top + window.pageYOffset + yOffset;
                   window.scrollTo({ top: y, behavior: "smooth" });
                 }
               }}
-              className={`py-4 border-b-2 transition-colors whitespace-nowrap ${activeTab === tab.id
+              className={`py-3 sm:py-3.5 border-b-2 transition-colors whitespace-nowrap ${activeTab === tab.id
                 ? "border-[#00b050] text-[#00b050]"
                 : "border-transparent hover:text-stone-900"
                 }`}
@@ -689,7 +728,7 @@ export default function PujaDetailClient({
         <div className="lg:col-span-8 space-y-12">
 
           {/* Section: About Puja */}
-          <section id="about" className="scroll-mt-32">
+          <section id="about" className="scroll-mt-36">
             <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1f1a17] mb-6">About puja</h2>
 
             <div className="bg-[#fdfbf7] border border-[#f0e4d0] rounded-3xl p-6 sm:p-8 relative overflow-hidden mb-8">
@@ -714,7 +753,7 @@ export default function PujaDetailClient({
             </div>
 
             {/* Benefits Cards Grid */}
-            <div id="benefits" className="scroll-mt-32 pt-2">
+            <div id="benefits" className="scroll-mt-36 pt-2">
               <h3 className="text-xl font-serif font-bold text-[#1f1a17] mb-4">Puja Benefits</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                 {benefitsList.map((b, idx) => (
@@ -733,7 +772,7 @@ export default function PujaDetailClient({
           </section>
 
           {/* Section: Puja Procedure */}
-          <section id="process" className="scroll-mt-32">
+          <section id="process" className="scroll-mt-36">
             <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1f1a17] mb-6">Puja Procedure</h2>
             <div className="space-y-4">
               {processList.map((step, idx) => (
@@ -751,7 +790,7 @@ export default function PujaDetailClient({
           </section>
 
           {/* Section: Temple Details */}
-          <section id="temple" className="scroll-mt-32">
+          <section id="temple" className="scroll-mt-36">
             <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1f1a17] mb-6">Temple Details</h2>
             <div className="bg-white border border-stone-200/90 rounded-3xl p-6 sm:p-8 flex flex-col md:flex-row gap-6 items-center shadow-xs">
               {templeImage && (
@@ -776,7 +815,7 @@ export default function PujaDetailClient({
           </section>
 
           {/* Section: What will you receive */}
-          <section id="receive" className="scroll-mt-32">
+          <section id="receive" className="scroll-mt-36">
             <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1f1a17] mb-6">What will you receive</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
               {inclusionsList.map((inc: any, idx: number) => {
@@ -798,7 +837,7 @@ export default function PujaDetailClient({
           </section>
 
           {/* Section: Frequently Asked Questions (FAQs) */}
-          <section id="faqs" className="scroll-mt-32">
+          <section id="faqs" className="scroll-mt-36">
             <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1f1a17] mb-6">Frequently Asked Questions (FAQs)</h2>
             <div className="space-y-3">
               {faqList.map((faq, idx) => (
@@ -825,9 +864,9 @@ export default function PujaDetailClient({
 
           {/* Section: Puja Gallery */}
           {galleryList.length > 0 && (
-            <section id="gallery" className="scroll-mt-32">
+            <section id="gallery" className="scroll-mt-36">
               <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1f1a17] mb-6">Puja Gallery</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                 {galleryList.map((img: string, idx: number) => (
                   <div key={idx} className="h-48 rounded-2xl overflow-hidden border border-stone-200 shadow-xs">
                     <img
@@ -844,10 +883,10 @@ export default function PujaDetailClient({
         </div>
 
         {/* Right Sidebar Column (4 cols) */}
-        <div className="lg:col-span-4 space-y-6">
+        <div className="lg:col-span-4 space-y-6 pt-2 sm:pt-4">
 
           {/* Dedicated Vedic Puja Sticky Card */}
-          <div className="bg-[#fdfbf7] border border-[#f0e4d0] rounded-3xl p-6 shadow-xs sticky top-28 space-y-6">
+          <div className="bg-[#fdfbf7] border border-[#f0e4d0] rounded-3xl p-6 shadow-xs sticky top-[164px] space-y-6">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-[#800000] text-white flex items-center justify-center font-bold">🔥</div>
               <div>
@@ -887,11 +926,16 @@ export default function PujaDetailClient({
 
       </div>
 
-      {/* ── 5. Sticky Floating Action Bar at Bottom ── */}
-      <div className="fixed bottom-[80px] lg:bottom-6 left-1/2 -translate-x-1/2 z-40 w-[95%] max-w-[1100px]">
+      {/* ── 5. Sticky Floating Action Bar at Bottom (Only shows when hero Book Now button scrolls out of view) ── */}
+      <div
+        className={`fixed bottom-3 sm:bottom-6 left-1/2 -translate-x-1/2 z-40 w-[95%] max-w-[1100px] transition-all duration-300 transform ${showStickyBar
+          ? "translate-y-0 opacity-100 pointer-events-auto"
+          : "translate-y-12 opacity-0 pointer-events-none"
+          }`}
+      >
         <div className="bg-[#00b050] text-white rounded-full p-2 sm:p-3 sm:px-6 flex items-center justify-between shadow-2xl shadow-green-900/40 border border-green-400/30 backdrop-blur-md overflow-hidden">
           <div className="flex items-center gap-2 sm:gap-3 pl-1 sm:pl-2 flex-1 min-w-0 pr-2">
-            <span className="bg-white text-[#00b050] rounded-full flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 text-sm shrink-0">🔥</span>
+            <span className="bg-white text-[#00b050] rounded-full flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 text-sm shrink-0 shadow-sm">🔥</span>
             <div className="flex-1 min-w-0">
               <span className="font-serif font-bold text-xs sm:text-sm block truncate w-full">{puja.title}</span>
               <span className="font-extrabold text-base sm:text-xl block leading-none mt-0.5">₹{priceVal}</span>
@@ -899,10 +943,10 @@ export default function PujaDetailClient({
           </div>
           <button
             onClick={() => setShowPackageModal(true)}
-            className="bg-white text-[#00b050] hover:bg-green-50 active:scale-95 font-extrabold text-[11px] sm:text-sm px-4 sm:px-6 py-2 sm:py-2.5 rounded-full shadow-md transition-all flex items-center gap-1 sm:gap-1.5 shrink-0 whitespace-nowrap mr-1 sm:mr-0"
+            className="bg-white text-[#00b050] hover:bg-green-50 active:scale-95 font-extrabold text-xs sm:text-sm px-4 sm:px-6 py-2 sm:py-2.5 rounded-full shadow-md transition-all flex items-center gap-1 sm:gap-1.5 shrink-0 whitespace-nowrap mr-1 sm:mr-0"
           >
             <span>Participate</span>
-            <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
           </button>
         </div>
       </div>

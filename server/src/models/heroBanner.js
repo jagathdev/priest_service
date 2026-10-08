@@ -49,6 +49,26 @@ const heroBannerSchema = new mongoose.Schema(
             type: Number,
             default: 0,
         },
+
+        eventDateTime: {
+            type: String,
+            default: "",
+        },
+
+        location: {
+            type: String,
+            default: "",
+        },
+
+        templeVenue: {
+            type: String,
+            default: "",
+        },
+
+        eventDateText: {
+            type: String,
+            default: "",
+        },
     },
     {
         timestamps: true,

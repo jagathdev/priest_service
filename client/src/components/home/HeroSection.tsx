@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import PujaCountdownCard from "@/components/common/PujaCountdownCard";
 
 interface BannerSlide {
   id: string;
@@ -18,6 +19,9 @@ interface BannerSlide {
   image: string;
   ctaText: string;
   ctaLink: string;
+  eventDateTime?: string;
+  templeVenue?: string;
+  eventDateText?: string;
 }
 
 const DEFAULT_IMAGE = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='400'%3E%3Crect width='800' height='400' fill='%23cccccc'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='24' fill='%23333333'%3ENo Image Available%3C/text%3E%3C/svg%3E`;
@@ -45,10 +49,13 @@ const mapBanners = (list: any[]): BannerSlide[] => {
       bannerLine2: "",
       bannerLine3: "",
       bannerLine4: "",
-      location: "",
+      location: item.location || "",
       image: safeImage || DEFAULT_IMAGE,
       ctaText: item.cta?.text || "Book Puja Now",
       ctaLink: item.cta?.url || "/puja",
+      eventDateTime: item.eventDateTime || "",
+      templeVenue: item.templeVenue || "",
+      eventDateText: item.eventDateText || "",
     };
   });
 };
@@ -128,7 +135,7 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
     return (
       <section className="relative w-full max-w-[1350px] mx-auto px-4 sm:px-6 lg:px-10 pt-2 sm:pt-3 lg:pt-4 pb-8 md:pb-12 xl:py-12 bg-white my-0 sm:my-1 xl:my-2 overflow-hidden flex flex-col xl:flex-row items-center justify-between gap-6 lg:gap-8 xl:gap-14 animate-pulse">
         {/* Skeleton Left Content */}
-        <div className="flex-1 w-full max-w-[640px] pt-2 pb-1 flex flex-col justify-between h-auto xl:min-h-[500px]">
+        <div className="flex-1 w-full max-w-[640px] pt-2 pb-1 flex flex-col justify-start items-center xl:items-start h-auto xl:min-h-[500px]">
           <div className="flex flex-col items-center xl:items-start w-full">
             {/* Top Badge */}
             <div className="w-32 h-6 bg-stone-200 rounded-full mb-5 hidden xl:block" />
@@ -143,7 +150,7 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
             <div className="w-[80%] sm:w-[60%] h-4 sm:h-5 bg-stone-100 rounded-full mb-8" />
           </div>
 
-          <div className="mt-auto pt-4 lg:pt-6 flex flex-col items-center xl:items-start w-full">
+          <div className="mt-8 sm:mt-10 xl:mt-12 flex flex-col items-center xl:items-start w-full">
             {/* CTA Button */}
             <div className="w-full max-w-[500px] sm:max-w-[540px] xl:max-w-[420px] h-14 sm:h-16 bg-[#00b050]/20 rounded-full mb-6" />
 
@@ -229,7 +236,7 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
         {/* Arrows moved down to the image section for perfect centering on mobile & desktop */}
 
         {/* ── Left Content (Text & CTA) ── Fixed starting point at top, space left above CTA button */}
-        <div className="flex-1 text-center xl:text-left flex flex-col justify-between items-center xl:items-start h-auto min-h-0 xl:min-h-[500px] w-full max-w-[640px] pt-2 pb-1">
+        <div className="flex-1 text-center xl:text-left flex flex-col justify-start items-center xl:items-start h-auto min-h-0 xl:min-h-[500px] w-full max-w-[640px] pt-2 pb-1">
 
           {/* Top Block: Always starts at fixed top position */}
           <div className="flex flex-col items-center xl:items-start text-center xl:text-left w-full">
@@ -254,10 +261,25 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
             <p className="text-stone-600 text-xs sm:text-sm lg:text-base xl:text-[18px] leading-normal lg:leading-relaxed xl:leading-relaxed max-w-[580px] mx-auto xl:mx-0">
               {current.subtitle}
             </p>
+
+            {/* Dynamic Countdown & Temple Details fetched from Dashboard */}
+            {(current.eventDateTime || current.templeVenue) && (
+              <div className="w-full mt-4 max-w-[580px]">
+                <PujaCountdownCard
+                  templeVenue={current.templeVenue || "Kamrup Teerth Kshetra"}
+                  location={current.location || "Guwahati, Assam"}
+                  dateText={current.eventDateText || "Saturday, 10 October"}
+                  occasionText={current.badge || "Mahalaya Amavasya"}
+                  eventDateTime={current.eventDateTime}
+                  title="Reserve your sankalp"
+                  badgeLabel="MUHURAT ENDS IN"
+                />
+              </div>
+            )}
           </div>
 
           {/* Bottom Block: CTA Button & Social Proof Banner */}
-          <div className="mt-auto pt-4 lg:pt-6 flex flex-col items-center xl:items-start text-center xl:text-left w-full">
+          <div className="mt-8 sm:mt-10 xl:mt-12 flex flex-col items-center xl:items-start text-center xl:text-left w-full">
             {/* CTA Button - Full width on 1024px & Tablet */}
             <div className="mb-4 sm:mb-5 xl:mb-6 w-full flex justify-center xl:justify-start">
               <Link
@@ -309,7 +331,7 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
         </div>
 
         {/* ── Right Content (Hero Banner Card) ── 100% Full width on 1024px & Tablet, fixed width on XL desktop ── */}
-        <div className="w-full max-w-full lg:w-full xl:w-[650px] 2xl:w-[720px] shrink-0 flex flex-col items-center relative">
+        <div className="w-full max-w-full lg:w-full xl:w-[670px] 2xl:w-[730px] shrink-0 flex flex-col items-center relative">
 
           {/* Left/Right Arrow Buttons (Mobile/Tablet only, since desktop uses global edges) */}
           <button
