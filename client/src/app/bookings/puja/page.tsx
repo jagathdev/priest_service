@@ -25,6 +25,9 @@ interface Booking {
   bookingType: string;
   title?: string;
   items?: BookingItem[];
+  orderStatus?: string;
+  scheduledDate?: string;
+  videoLink?: string;
 }
 
 export default function MyPujaBookings() {
@@ -34,14 +37,21 @@ export default function MyPujaBookings() {
   const [filter, setFilter] = useState("All");
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "https://priestservices.astroved.com"}/api/bookings/me?type=puja`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success) {
-          setBookings(data.bookings);
-        }
-      })
-      .finally(() => setFetched(true));
+    const fetchBookings = () => {
+      fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "https://priestservices.astroved.com"}/api/bookings/me?type=puja`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success) {
+            setBookings(data.bookings);
+          }
+        })
+        .finally(() => setFetched(true));
+    };
+
+    fetchBookings();
+    const intervalId = setInterval(fetchBookings, 5000);
+
+    return () => clearInterval(intervalId);
   }, []);
 
   const formatDate = (dateStr: string) => {
@@ -75,8 +85,8 @@ export default function MyPujaBookings() {
 
   const filteredBookings = bookings.filter((b) => {
     if (filter === "All") return true;
-    if (filter === "Ongoing") return b.status !== "Completed" && b.status !== "Cancelled";
-    if (filter === "Complete") return b.status === "Completed";
+    if (filter === "Ongoing") return b.orderStatus !== "completed" && b.orderStatus !== "cancelled";
+    if (filter === "Complete") return b.orderStatus === "completed";
     return true;
   });
 
@@ -188,10 +198,10 @@ export default function MyPujaBookings() {
                 <div className="flex items-center gap-3">
                   <button
                     onClick={() => setFilter("All")}
-                    className={`px-5 py-2 rounded-full text-sm font-bold flex items-center gap-2 border ${filter === "All"
+                    className={`px-5 py-2 rounded-full text-sm font-bold flex items-center gap-2 border transition ${filter === "All"
                       ? "border-[#069e5d] text-[#069e5d] bg-white"
                       : "border-transparent text-gray-700 bg-[#ebebeb] hover:bg-[#e0e0e0]"
-                      } transition`}
+                      }`}
                   >
                     All
                     {filter === "All" && (
@@ -204,19 +214,19 @@ export default function MyPujaBookings() {
                   </button>
                   <button
                     onClick={() => setFilter("Ongoing")}
-                    className={`px-5 py-2 rounded-full text-sm font-bold flex items-center gap-2 border ${filter === "Ongoing"
-                      ? "border-[#069e5d] text-[#069e5d] bg-white"
-                      : "border-transparent text-gray-700 bg-[#ebebeb] hover:bg-[#e0e0e0]"
-                      } transition`}
+                    className={`px-5 py-2 rounded-full text-sm font-bold flex items-center gap-2 border transition ${filter === "Ongoing"
+                      ? "border-2 border-black text-[#1d3557] bg-[#e5e7eb]"
+                      : "border-2 border-transparent text-gray-700 bg-[#ebebeb] hover:bg-[#e0e0e0]"
+                      }`}
                   >
                     Ongoing
                   </button>
                   <button
                     onClick={() => setFilter("Complete")}
-                    className={`px-5 py-2 rounded-full text-sm font-bold flex items-center gap-2 border ${filter === "Complete"
-                      ? "border-[#069e5d] text-[#069e5d] bg-white"
-                      : "border-transparent text-gray-700 bg-[#ebebeb] hover:bg-[#e0e0e0]"
-                      } transition`}
+                    className={`px-5 py-2 rounded-full text-sm font-bold flex items-center gap-2 border transition ${filter === "Complete"
+                      ? "border-2 border-black text-[#1d3557] bg-[#e5e7eb]"
+                      : "border-2 border-transparent text-gray-700 bg-[#ebebeb] hover:bg-[#e0e0e0]"
+                      }`}
                   >
                     Complete
                   </button>
@@ -244,7 +254,7 @@ export default function MyPujaBookings() {
                 </div>
               ) : (
                 <>
-                  <div className="flex flex-col gap-6 w-full">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 w-full mb-8">
                     {filteredBookings.map((booking) => {
                       const items: BookingItem[] =
                         booking.items && booking.items.length > 0
@@ -305,8 +315,8 @@ export default function MyPujaBookings() {
                           {/* Progress Tracker */}
                           <div className="relative max-w-[380px] mt-8 pb-2">
                             {/* Background lines */}
-                            <div className="absolute top-6 left-12 right-1/2 h-[3px] bg-[#eadecd] -z-10"></div>
-                            <div className="absolute top-6 left-1/2 right-14 h-[3px] bg-[#eadecd] -z-10"></div>
+                            <div className={`absolute top-6 left-12 right-1/2 h-[3px] -z-10 ${booking.orderStatus === 'scheduled' || booking.orderStatus === 'performed' || booking.orderStatus === 'completed' ? 'bg-[#069e5d]' : 'bg-[#eadecd]'}`}></div>
+                            <div className={`absolute top-6 left-1/2 right-14 h-[3px] -z-10 ${booking.orderStatus === 'performed' || booking.orderStatus === 'completed' ? 'bg-[#069e5d]' : 'bg-[#eadecd]'}`}></div>
 
                             <div className="flex justify-between items-start text-center">
                               {/* Step 1 */}
@@ -331,27 +341,42 @@ export default function MyPujaBookings() {
 
                               {/* Step 2 */}
                               <div className="flex flex-col items-center w-24">
-                                <div className="w-12 h-12 rounded-full bg-[#fae8e3] flex items-center justify-center mb-2 z-10 shadow-[0_0_0_4px_white]">
+                                <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 z-10 shadow-[0_0_0_4px_white] ${booking.orderStatus === 'scheduled' || booking.orderStatus === 'performed' || booking.orderStatus === 'completed' ? 'border-[2px] border-[#069e5d] bg-white' : 'bg-[#fae8e3]'}`}>
                                   {/* diya icon */}
-                                  <svg className="w-6 h-6 text-[#a3948e]" fill="currentColor" viewBox="0 0 24 24">
+                                  <svg className={`w-6 h-6 ${booking.orderStatus === 'scheduled' || booking.orderStatus === 'performed' || booking.orderStatus === 'completed' ? 'text-[#069e5d]' : 'text-[#a3948e]'}`} fill="currentColor" viewBox="0 0 24 24">
                                     <path d="M12 2C8 2 8 8 8 8s-4 0-4 4c0 3 4 5 8 8 4-3 8-5 8-8 0-4-4-4-4-4s0-6-4-6zm0 13c-2 0-4-1-5-2 1 1 3 2 5 2s4-1 5-2c-1 1-3 2-5 2z" />
                                   </svg>
                                 </div>
-                                <p className="text-[12px] font-bold text-[#a8a19d] leading-tight">Puja Scheduled</p>
-                                <p className="text-[11px] font-bold text-[#a8a19d] mt-0.5">on {getScheduledDate(booking.bookingDate)}</p>
+                                <p className={`text-[12px] font-bold leading-tight ${booking.orderStatus === 'scheduled' || booking.orderStatus === 'performed' || booking.orderStatus === 'completed' ? 'text-gray-900' : 'text-[#a8a19d]'}`}>Puja Scheduled</p>
+                                <p className={`text-[11px] font-bold mt-0.5 ${booking.orderStatus === 'scheduled' || booking.orderStatus === 'performed' || booking.orderStatus === 'completed' ? 'text-gray-600' : 'text-[#a8a19d]'}`}>
+                                  {booking.scheduledDate ? `on ${formatDate(booking.scheduledDate)}` : `on ${getScheduledDate(booking.bookingDate)}`}
+                                </p>
                               </div>
 
                               {/* Step 3 */}
                               <div className="flex flex-col items-center w-28">
                                 <div className="h-12 flex items-center justify-center mb-2 z-10 shadow-[0_0_0_4px_white]">
-                                  <div className="px-4 py-1.5 rounded-full bg-[#edeae8] text-[#a09691] font-bold text-[12px] flex items-center gap-1.5">
-                                    <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 24 24">
-                                      <path d="M8 5v14l11-7z" />
-                                    </svg>
-                                    Puja Video
-                                  </div>
+                                  {booking.orderStatus === 'performed' || booking.orderStatus === 'completed' ? (
+                                    <a href={booking.videoLink || "#"} target="_blank" rel="noreferrer" className="px-4 py-1.5 rounded-full bg-[#069e5d] text-white font-bold text-[12px] flex items-center gap-1.5 hover:bg-green-700 transition">
+                                      <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M8 5v14l11-7z" />
+                                      </svg>
+                                      Puja Video
+                                    </a>
+                                  ) : (
+                                    <div className="px-4 py-1.5 rounded-full bg-[#edeae8] text-[#a09691] font-bold text-[12px] flex items-center gap-1.5">
+                                      <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M8 5v14l11-7z" />
+                                      </svg>
+                                      Puja Video
+                                    </div>
+                                  )}
                                 </div>
-                                <p className="text-[10px] font-bold text-[#a8a19d] leading-tight px-1">Available only after puja performed</p>
+                                {booking.orderStatus === 'performed' || booking.orderStatus === 'completed' ? (
+                                  <p className="text-[10px] font-bold text-gray-900 leading-tight px-1">Watch your sacred ritual</p>
+                                ) : (
+                                  <p className="text-[10px] font-bold text-[#a8a19d] leading-tight px-1">Available only after puja performed</p>
+                                )}
                               </div>
                             </div>
                           </div>

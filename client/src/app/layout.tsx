@@ -12,11 +12,11 @@ export const metadata: Metadata = {
   description: "Book authentic Vedic pujas, homas, and ritual services online. Expert priests for your spiritual and religious needs.",
   keywords: "Priest services, Vedic puja online, Homa booking, Expert Hindu priests, Online rituals, AstroVed priest services, Authentic Vedic rituals",
   alternates: {
-    canonical: "https://www.astroved.com/priest-services/",
+    canonical: "https://www.priestservices.astroved.com/",
   },
   openGraph: {
     type: "website",
-    url: "https://www.astroved.com/priest-services/",
+    url: "https://www.priestservices.astroved.com/",
     title: "Priest Services | Sacred Pujas & Rituals by AstroVed",
     description: "Book authentic Vedic pujas, homas, and ritual services online. Expert priests for your spiritual and religious needs.",
     images: ["https://www.astroved.com/images/assets/priest-services-og-image.jpg"],
@@ -139,7 +139,6 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         <noscript>
           <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-TRS65PJ" height="0" width="0" style={{ display: "none", visibility: "hidden" }}></iframe>
         </noscript>
-        <Script src="https://code.jquery.com/jquery-3.7.1.min.js" strategy="beforeInteractive" />
         <Providers serverUser={serverUser}>
           <div className="flex-1">
             {children}

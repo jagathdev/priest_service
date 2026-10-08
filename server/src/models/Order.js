@@ -178,10 +178,20 @@ const orderSchema = new mongoose.Schema(
             enum: [
                 "created",
                 "confirmed",
+                "scheduled",
+                "performed",
                 "completed",
                 "cancelled",
             ],
             default: "created",
+        },
+        scheduledDate: {
+            type: Date,
+            default: null,
+        },
+        videoLink: {
+            type: String,
+            default: "",
         },
     },
     {
