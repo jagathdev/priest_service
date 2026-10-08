@@ -36,8 +36,62 @@ export const adminLogin = async (req, res) => {
 
 export const getAdminOrders = async (req, res) => {
   try {
-    const orders = await Order.find({}).sort({ createdAt: -1 }).populate("pooja", "title name imageUrl");
-    return res.status(200).json({ success: true, data: orders });
+    const { page = 1, limit = 5, service = "All", status = "All", search = "" } = req.query;
+    const limitNum = parseInt(limit, 10) || 5;
+    const skip = (Math.max(1, parseInt(page, 10)) - 1) * limitNum;
+
+    const query = {};
+    const andConditions = [];
+
+    if (service !== "All") {
+      andConditions.push({ $or: [{ itemName: service }, { pooja: service }] });
+    }
+    if (status !== "All") {
+      query.orderStatus = new RegExp(`^${status}$`, "i");
+    }
+    if (search) {
+      const searchRegex = new RegExp(search, "i");
+      andConditions.push({
+        $or: [
+          { customerName: searchRegex },
+          { "participants.name": searchRegex },
+          { orderNumber: searchRegex }
+        ]
+      });
+    }
+
+    if (andConditions.length > 0) {
+      query.$and = andConditions;
+    }
+
+    const [totalOrders, orders, itemNames, poojaNames, statusesRaw] = await Promise.all([
+      Order.countDocuments(query),
+      Order.find(query)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limitNum)
+        .populate("pooja", "title name imageUrl"),
+      Order.distinct("itemName"),
+      Order.distinct("pooja"),
+      Order.distinct("orderStatus")
+    ]);
+
+    const formattedOrders = orders.map(ord => ({
+      ...ord.toObject(),
+      serviceName: ord.itemName || ord.pooja?.title || ord.pooja?.name || ord.pooja || "Sacred Ritual",
+      devoteeName: ord.customerName || ord.participants?.[0]?.name || "Devotee"
+    }));
+
+    return res.status(200).json({
+      success: true,
+      data: formattedOrders,
+      totalOrders,
+      totalPages: Math.max(1, Math.ceil(totalOrders / limitNum)),
+      currentPage: parseInt(page, 10),
+      limit: limitNum,
+      services: ["All", ...new Set([...itemNames, ...poojaNames].filter(Boolean))],
+      statuses: ["All", ...new Set(statusesRaw.filter(Boolean))]
+    });
   } catch (error) {
     console.error("Error fetching admin orders:", error);
     return res.status(500).json({ success: false, message: "Failed to fetch orders" });
@@ -155,5 +209,33 @@ export const getAdminPayments = async (req, res) => {
   } catch (error) {
     console.error("Error fetching admin payments:", error);
     return res.status(500).json({ success: false, message: "Failed to fetch payments" });
+  }
+};
+
+export const bulkScheduleOrders = async (req, res) => {
+  try {
+    const { service, scheduledDate } = req.body;
+    if (!service || service === "All" || !scheduledDate) {
+      return res.status(400).json({ success: false, message: "Valid service name and scheduledDate are required." });
+    }
+
+    const selectedDate = new Date(scheduledDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const newStatus = selectedDate < today ? "completed" : "scheduled";
+    const query = { $or: [{ itemName: service }, { pooja: service }] };
+
+    const result = await Order.updateMany(query, {
+      $set: {
+        orderStatus: newStatus,
+        scheduledDate: selectedDate.toISOString()
+      }
+    });
+
+    return res.status(200).json({ success: true, message: `Successfully updated ${result.modifiedCount} orders.`, count: result.modifiedCount });
+  } catch (error) {
+    console.error("Error bulk updating orders:", error);
+    return res.status(500).json({ success: false, message: "Failed to bulk update orders" });
   }
 };
