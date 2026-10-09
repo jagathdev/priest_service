@@ -1,0 +1,47 @@
+<svg width="840" height="640" viewBox="0 0 840 640" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="140" y1="70" x2="680" y2="580" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF8EA"/>
+      <stop offset="0.52" stop-color="#FFE7C1"/>
+      <stop offset="1" stop-color="#FFCD93"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(420 320) rotate(90) scale(210 210)">
+      <stop stop-color="#FFFDF7" stop-opacity="0.95"/>
+      <stop offset="1" stop-color="#FFFDF7" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect x="18" y="18" width="804" height="604" rx="54" fill="url(#bg)"/>
+  <rect x="38" y="38" width="764" height="564" rx="42" stroke="#D9A15E" stroke-width="3" stroke-dasharray="10 12" opacity="0.55"/>
+  <circle cx="420" cy="320" r="210" fill="url(#glow)"/>
+  <circle cx="420" cy="320" r="168" fill="#FFF6E8" stroke="#C9822E" stroke-width="6"/>
+  <circle cx="420" cy="320" r="126" fill="#FFFDF9" stroke="#E3B06E" stroke-width="4"/>
+  <g stroke="#C9822E" stroke-width="5" stroke-linecap="round">
+    <path d="M420 132V98"/>
+    <path d="M420 542V508"/>
+    <path d="M632 320H666"/>
+    <path d="M174 320H208"/>
+    <path d="M571 169L595 145"/>
+    <path d="M245 495L269 471"/>
+    <path d="M571 471L595 495"/>
+    <path d="M245 145L269 169"/>
+  </g>
+  <g fill="#DA8D2A">
+    <circle cx="420" cy="320" r="54" fill="#FFE1B1" stroke="#C9822E" stroke-width="5"/>
+    <path d="M420 236C440 266 448 285 448 303C448 324 434 340 420 340C406 340 392 324 392 303C392 285 400 266 420 236Z"/>
+    <path d="M420 248C431 267 436 280 436 293C436 306 428 317 420 317C412 317 404 306 404 293C404 280 409 267 420 248Z" fill="#FFF5DA"/>
+  </g>
+  <g fill="#E5B35D">
+    <circle cx="420" cy="320" r="4"/>
+    <circle cx="420" cy="194" r="10"/>
+    <circle cx="420" cy="446" r="10"/>
+    <circle cx="294" cy="320" r="10"/>
+    <circle cx="546" cy="320" r="10"/>
+  </g>
+  <g stroke="#C9822E" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" opacity="0.9">
+    <path d="M420 188C447 188 468 209 468 236C468 250 463 262 455 271"/>
+    <path d="M420 452C393 452 372 431 372 404C372 390 377 378 385 369"/>
+    <path d="M286 320C286 293 307 272 334 272C348 272 360 277 369 285"/>
+    <path d="M554 320C554 347 533 368 506 368C492 368 480 363 471 355"/>
+  </g>
+  <text x="420" y="575" text-anchor="middle" fill="#99611B" font-size="32" font-family="Georgia, serif" font-weight="700">Om Shanti</text>
+</svg>

@@ -1,0 +1,196 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+:root {
+  --brand-violet: #1f1f1f;
+  --brand-orange: #F47820;
+  --brand-orange-dark: #d95f13;
+  --brand-ink: #241a46;
+  --brand-surface: #fff8f0;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+}
+
+body {
+  background: #ffffff;
+  color: var(--brand-ink);
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 40s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.no-scrollbar::-webkit-scrollbar,
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.no-scrollbar,
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.astroved-phone {
+  width: 100%;
+  --react-international-phone-border-radius: 0;
+  --react-international-phone-border-color: transparent;
+  --react-international-phone-background-color: transparent;
+  --react-international-phone-text-color: #342151;
+  --react-international-phone-font-size: 16px;
+}
+
+.astroved-phone .react-international-phone-country-selector-button,
+.astroved-phone .react-international-phone-input {
+  border: 0;
+  background: transparent;
+  height: 36px;
+}
+
+.astroved-phone .react-international-phone-country-selector-button {
+  padding: 0 10px 0 0;
+}
+
+.astroved-phone .react-international-phone-input {
+  width: 100%;
+  color: #342151;
+  font-size: 16px;
+}
+
+.astroved-phone .react-international-phone-input:focus {
+  outline: none;
+}
+
+.astroved-phone .react-international-phone-country-selector-dropdown {
+  background-color: white !important;
+  z-index: 50 !important;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  padding: 4px;
+}
+
+/* Hide browser default password reveal icons (Edge/IE) */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none;
+}
+
+body.puja-checkout-active footer,
+body.puja-checkout-active [data-global-chrome="assistant"] {
+  display: none;
+}
+
+@media (max-width: 1023px) {
+  body.has-mobile-nav {
+    padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* Beautiful and clean custom autofill styles that blend with theme */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active {
+  -webkit-text-fill-color: #342151 !important;
+  box-shadow: 0 0 0px 1000px #fcfaff inset !important;
+  -webkit-box-shadow: 0 0 0px 1000px #fcfaff inset !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+input[type="password"]:-webkit-autofill,
+input[type="password"]:-webkit-autofill:hover, 
+input[type="password"]:-webkit-autofill:focus, 
+input[type="password"]:-webkit-autofill:active {
+  -webkit-text-fill-color: #342151 !important;
+  box-shadow: 0 0 0px 1000px #faf8ff inset !important;
+  -webkit-box-shadow: 0 0 0px 1000px #faf8ff inset !important;
+}
+/* Sleek modern custom scrollbar - visible only on hover */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Hide thumb by default */
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 10px;
+  transition: background 0.2s ease;
+}
+
+/* Show thumb on hover */
+.custom-scrollbar:hover::-webkit-scrollbar-thumb {
+  background: #ddd6fe; /* violet-200 to match theme */
+}
+
+/* Hover style for thumb itself */
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #b9abff; /* violet-300 on hover */
+}
+
+/* Firefox compatibility */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+  transition: scrollbar-color 0.2s ease;
+}
+
+.custom-scrollbar:hover {
+  scrollbar-color: #ddd6fe transparent;
+}
+
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInScale {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-fade-in-scale {
+  animation: fadeInScale 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}

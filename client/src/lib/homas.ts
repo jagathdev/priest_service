@@ -1,0 +1,572 @@
+
+
+export type PujaPackage = {
+  id: string;
+  name: string;
+  price: number;
+  priceINR?: number;
+  priceUSD?: number;
+  priceMYR?: number;
+  description: string;
+  imageUrl?: string;
+};
+
+export type PujaStat = {
+  label: string;
+  value: string;
+  detail?: string;
+};
+
+export type PujaSection = {
+  title: string;
+  description: string;
+};
+
+export type PujaFaq = {
+  question: string;
+  answer: string;
+};
+
+export type PujaDetails = {
+  heroTitle: string;
+  heroSubtitle: string;
+  strengthFor: string;
+  ritualSummary: string;
+  templeName: string;
+  templeLocation: string;
+  templeNote?: string;
+  about: string;
+  stats: PujaStat[];
+  benefits: PujaSection[];
+  process: PujaSection[];
+  inclusions: string[];
+  faq: PujaFaq[];
+};
+
+export type PujaOffering = {
+  id: string;
+  name: string;
+  price: number;
+  priceINR?: number;
+  priceUSD?: number;
+  priceMYR?: number;
+  description: string;
+  imageUrl?: string;
+  productId?: number;
+};
+
+export type PujaRecord = {
+  _id?: string;
+  title: string;
+  subtitle?: string;
+  description?: string;
+  imageUrl?: string;
+  additionalImages?: string[];
+  badge?: string;
+  shortTitle?: string;
+  buttonText?: string;
+  location?: string;
+  date?: string;
+  eventDateTime?: string;
+  templeVenue?: string;
+  templeNote?: string;
+  slug?: string;
+  gallery?: string[];
+  details?: PujaDetails;
+  packages?: PujaPackage[];
+  offerings?: PujaOffering[];
+  metaTitle?: string;
+  metaDescription?: string;
+  metaKeywords?: string;
+  [key: string]: unknown;
+};
+
+const normalizeOfferings = (items: unknown) => {
+  if (!Array.isArray(items) || items.length === 0) {
+    return [
+      { id: "e1", name: "Vastra Daan", price: 501, priceINR: 501, priceUSD: 6, priceMYR: 26, description: "Offer sacred clothes to the deity", imageUrl: "https://cdn.AstroVed.com/images/homa/vastra-daan.jpg", productId: 36 },
+      { id: "e2", name: "Anna Daan", price: 1101, priceINR: 1101, priceUSD: 14, priceMYR: 57, description: "Feed the needy in your name", imageUrl: "https://cdn.AstroVed.com/images/homa/anna-daan.jpg", productId: 36 },
+      { id: "e3", name: "Deep Daan", price: 251, priceINR: 251, priceUSD: 3, priceMYR: 13, description: "Lighting lamps for prosperity", imageUrl: "https://cdn.AstroVed.com/images/homa/deep-daan.jpg", productId: 36 },
+      { id: "e4", name: "Gau Seva", price: 501, priceINR: 501, priceUSD: 6, priceMYR: 26, description: "Feeding sacred cows", imageUrl: "https://cdn.AstroVed.com/images/homa/gau-seva.jpg", productId: 36 },
+    ];
+  }
+  return items.map((item, index) => {
+    const off = item as Partial<PujaOffering> & { productId?: number };
+    const priceSource = off.priceINR ?? off.price ?? 0;
+    const numericPrice = typeof priceSource === 'number' ? priceSource : Number(priceSource);
+    return {
+      id: off.id || `extra-${index + 1}`,
+      name: off.name || "Special Offering",
+      price: numericPrice,
+      priceINR: typeof off.priceINR === 'number' ? off.priceINR : Number(off.priceINR || numericPrice),
+      priceUSD: typeof off.priceUSD === 'number' ? off.priceUSD : Number(off.priceUSD || 0),
+      priceMYR: typeof off.priceMYR === 'number' ? off.priceMYR : Number(off.priceMYR || 0),
+      description: off.description || "Divine offering for the deity",
+      imageUrl: off.imageUrl || "https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&w=200&q=80",
+      productId: off.productId !== undefined ? off.productId : 36
+    };
+  });
+};
+
+const slugify = (value: any) =>
+  String(value || '')
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-');
+
+const normalizeSections = (items: unknown, fallback: PujaSection[]) => {
+  if (!Array.isArray(items) || items.length === 0) {
+    return fallback;
+  }
+
+  return items.map((item) => {
+    if (typeof item === 'string') {
+      return { title: item, description: item };
+    }
+
+    if (item && typeof item === 'object') {
+      const section = item as Partial<PujaSection>;
+      return {
+        title: section.title || section.description || fallback[0].title,
+        description: section.description || section.title || fallback[0].description,
+      };
+    }
+
+    return fallback[0];
+  });
+};
+
+const normalizeFaq = (items: unknown, fallback: PujaFaq[]) => {
+  if (!Array.isArray(items) || items.length === 0) {
+    return fallback;
+  }
+
+  return items.map((item) => {
+    if (typeof item === 'string') {
+      return { question: item, answer: item };
+    }
+
+    if (item && typeof item === 'object') {
+      const faq = item as Partial<PujaFaq>;
+      return {
+        question: faq.question || fallback[0].question,
+        answer: faq.answer || faq.question || fallback[0].answer,
+      };
+    }
+
+    return fallback[0];
+  });
+};
+
+const normalizePackages = (items: unknown, fallback: PujaPackage[]) => {
+  if (!Array.isArray(items) || items.length === 0) {
+    return fallback;
+  }
+
+  const parsed = items
+    .map((item, index) => {
+      if (!item || typeof item !== 'object') {
+        return null;
+      }
+
+      const pkg = item as Partial<PujaPackage> & { title?: string; amount?: number | string; priceINR?: number | string; priceUSD?: number | string; priceMYR?: number | string };
+      const name = typeof pkg.name === 'string' && pkg.name.trim() ? pkg.name.trim() : pkg.title;
+      const priceSource = pkg.priceINR ?? pkg.price ?? pkg.amount;
+      const numericPrice = typeof priceSource === 'number' ? priceSource : Number(priceSource);
+
+      if (!name || Number.isNaN(numericPrice)) {
+        return null;
+      }
+
+      const safeId =
+        typeof pkg.id === 'string' && pkg.id.trim().length > 0
+          ? pkg.id.trim()
+          : slugify(`${name}-${index + 1}`);
+
+      return {
+        id: safeId,
+        name,
+        price: numericPrice,
+        priceINR: typeof pkg.priceINR === 'number' ? pkg.priceINR : Number(pkg.priceINR || 0),
+        priceUSD: typeof pkg.priceUSD === 'number' ? pkg.priceUSD : Number(pkg.priceUSD || 0),
+        priceMYR: typeof pkg.priceMYR === 'number' ? pkg.priceMYR : Number(pkg.priceMYR || 0),
+        description:
+          typeof pkg.description === 'string' && pkg.description.trim().length > 0
+            ? pkg.description.trim()
+            : `Recommended for ${name.toLowerCase()} devotees.`,
+        imageUrl: typeof pkg.imageUrl === 'string' && pkg.imageUrl.trim().length > 0
+          ? pkg.imageUrl.trim()
+          : fallback[index]?.imageUrl,
+      } as PujaPackage;
+    })
+    .filter((item): item is NonNullable<typeof item> => item !== null);
+
+  return parsed.length > 0 ? parsed : fallback;
+};
+
+const getStringField = (record: PujaRecord, key: string) => {
+  const value = record[key];
+  return typeof value === 'string' && value.trim().length > 0 ? value.trim() : undefined;
+};
+
+const getNumberField = (record: PujaRecord, key: string) => {
+  const value = record[key];
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  if (typeof value === 'string' && value.trim().length > 0) {
+    const parsed = Number(value);
+    return Number.isNaN(parsed) ? undefined : parsed;
+  }
+  return undefined;
+};
+
+const buildFlatPackages = (homa: PujaRecord): PujaPackage[] | undefined => {
+  const defaultNames = ['Individual Package', 'Partner Package', 'Family + Bhog', 'Joint Family'];
+  const result: PujaPackage[] = [];
+
+  for (let i = 1; i <= 4; i += 1) {
+    const name = getStringField(homa, `package${i}Name`) || defaultNames[i - 1];
+    const price = getNumberField(homa, `package${i}Price`);
+    const description =
+      getStringField(homa, `package${i}Description`) || `Recommended for ${name.toLowerCase()} devotees.`;
+    const imageUrl = getStringField(homa, `package${i}ImageUrl`);
+
+    if (price === undefined) continue;
+
+    result.push({
+      id: slugify(`${name}-${i}`),
+      name,
+      price,
+      description,
+      ...(imageUrl && { imageUrl }),
+    });
+  }
+
+  return result.length > 0 ? result : undefined;
+};
+
+const buildSectionsFromFlatFields = (
+  homa: PujaRecord,
+  prefix: 'benefit' | 'process',
+  fallback: PujaSection[]
+) => {
+  const sections: PujaSection[] = [];
+
+  for (let i = 1; i <= 4; i += 1) {
+    const title = getStringField(homa, `${prefix}${i}Title`);
+    const description = getStringField(homa, `${prefix}${i}Description`);
+    if (!title && !description) continue;
+
+    sections.push({
+      title: title || fallback[Math.min(i - 1, fallback.length - 1)].title,
+      description: description || fallback[Math.min(i - 1, fallback.length - 1)].description,
+    });
+  }
+
+  return sections.length > 0 ? sections : undefined;
+};
+
+const buildStatsFromFlatFields = (homa: PujaRecord) => {
+  const stats: PujaStat[] = [];
+
+  for (let i = 1; i <= 4; i += 1) {
+    const label = getStringField(homa, `stat${i}Label`);
+    const value = getStringField(homa, `stat${i}Value`);
+    const detail = getStringField(homa, `stat${i}Detail`);
+    if (!label && !value && !detail) continue;
+
+    stats.push({
+      label: label || defaultDetails.stats[Math.min(i - 1, defaultDetails.stats.length - 1)].label,
+      value: value || defaultDetails.stats[Math.min(i - 1, defaultDetails.stats.length - 1)].value,
+      detail,
+    });
+  }
+
+  return stats.length > 0 ? stats : undefined;
+};
+
+const buildInclusionsFromFlatFields = (homa: PujaRecord) => {
+  const inclusions: string[] = [];
+
+  for (let i = 1; i <= 5; i += 1) {
+    const inclusion = getStringField(homa, `inclusion${i}`);
+    if (inclusion) inclusions.push(inclusion);
+  }
+
+  return inclusions.length > 0 ? inclusions : undefined;
+};
+
+const buildOfferingsFromFlatFields = (homa: PujaRecord): PujaOffering[] | undefined => {
+  const offerings: PujaOffering[] = [];
+
+  for (let i = 1; i <= 5; i += 1) {
+    const name = getStringField(homa, `offering${i}Name`);
+    const price = getNumberField(homa, `offering${i}Price`);
+    const description = getStringField(homa, `offering${i}Description`);
+    const imageUrl = getStringField(homa, `offering${i}ImageUrl`);
+
+    if (name && price !== undefined) {
+      offerings.push({
+        id: slugify(`${name}-${i}`),
+        name,
+        price,
+        description: description || `Recommended offering for ${name.toLowerCase()}.`,
+        imageUrl: imageUrl || "https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&w=200&q=80"
+      });
+    }
+  }
+
+  return offerings.length > 0 ? offerings : undefined;
+};
+
+const buildFaqFromFlatFields = (homa: PujaRecord) => {
+  const faqs: PujaFaq[] = [];
+
+  for (let i = 1; i <= 3; i += 1) {
+    const question = getStringField(homa, `faq${i}Question`);
+    const answer = getStringField(homa, `faq${i}Answer`);
+    if (!question && !answer) continue;
+
+    faqs.push({
+      question: question || defaultDetails.faq[Math.min(i - 1, defaultDetails.faq.length - 1)].question,
+      answer: answer || defaultDetails.faq[Math.min(i - 1, defaultDetails.faq.length - 1)].answer,
+    });
+  }
+
+  return faqs.length > 0 ? faqs : undefined;
+};
+
+export const defaultPackages: PujaPackage[] = [
+  {
+    id: 'individual-package',
+    name: 'Individual Package',
+    price: 51,
+    description: 'Best for one devotee with sankalp, mantra jaap and prasadam blessings.',
+    imageUrl: 'https://cdn.create.vista.com/api/media/small/114995436/stock-photo-indian-woman-performing-homa-indian-girl-with-pooja-thali-or-homa-thali-portrait-of-a',
+  },
+  {
+    id: 'partner-package',
+    name: 'Partner Package',
+    price: 81,
+    description: 'For a couple or two devotees joining the homa together.',
+    imageUrl: 'https://tse2.mm.bing.net/th/id/OIP.YT0kNhRDE0kIfg6BYzurBwAAAA?cb=thfc1falcon2&pid=ImgDet&w=419&h=608&rs=1&o=7&rm=3'
+  },
+  {
+    id: 'family-bhog',
+    name: 'Family + Bhog',
+    price: 151,
+    description: 'Family sankalp with bhog offering and temple archana included.',
+    imageUrl: 'https://www.srimandir.com/_next/image?url=https%3A%2F%2Fsrm-cdn.a4b.io%2Fyoda%2F1742742465008.svg&w=640&q=75',
+  },
+  {
+    id: 'joint-family',
+    name: 'Joint Family',
+    price: 221,
+    description: 'Ideal for larger families seeking collective blessings and sankalp.',
+    imageUrl: 'https://www.bing.com/th/id/OIP.qEZjsTuYnfH854fbC8ozVgHaEK?w=180&h=135&c=8&rs=1&qlt=90&o=6&dpr=1.3&pid=3.1&rm=2',
+  },
+];
+
+export const defaultDetails: PujaDetails = {
+  heroTitle: '11,00,000 Lakshmi Beej Mantra Jaap',
+  heroSubtitle: '11,00,000 Lakshmi Beej Mantra Jaap, 1,10,000 Dashansh Havan and 108 Narvial Gola Purnahuti',
+  strengthFor: 'For relief from financial obstacles, prosperity and stable wealth growth.',
+  ritualSummary:
+    'This grand mahapuja includes mantra chanting, dashansh havan, homa offerings and a special purnahuti performed by experienced pandits.',
+  templeName: 'Shri Gajalakshmi Temple',
+  templeLocation: 'Ujjain, Madhya Pradesh',
+  templeNote: 'A revered spiritual center for prosperity and positive energy rituals.',
+  about:
+    'This homa is performed at a powerful Lakshmi kshetra to invoke abundance, prosperity, career growth and positive opportunities for devotees and their families.',
+  stats: [
+    { label: 'Mantra Jaap', value: '11,00,000', detail: 'Lakshmi Beej Mantra' },
+    { label: 'Dashansh Havan', value: '1,10,000', detail: 'Special fire ritual' },
+    { label: 'Purnahuti', value: '108', detail: 'Narvial Gola offering' },
+    { label: 'Rating', value: '4.9/5', detail: 'Trusted by devotees' },
+  ],
+  benefits: [
+    {
+      title: 'Economic growth and stable wealth flow',
+      description: 'Supports income stability, savings and long-term prosperity.',
+    },
+    {
+      title: 'Career and business success',
+      description: 'Encourages progress, recognition and new opportunities.',
+    },
+    {
+      title: 'Removal of financial obstacles',
+      description: 'Helps reduce hidden blocks, delays and recurring monetary stress.',
+    },
+    {
+      title: 'Peace and positive energy',
+      description: 'Creates a more balanced and auspicious home environment.',
+    },
+  ],
+  process: [
+    {
+      title: 'Select homa',
+      description: 'Choose the package that matches your family or personal sankalp.',
+    },
+    {
+      title: 'Add Offerings',
+      description: 'Include offerings like flowers, bhog or special homa dravyas if needed.',
+    },
+    {
+      title: 'Provide Sankalp Details',
+      description: 'Enter your name and gothra so the homa is performed in your name.',
+    },
+    {
+      title: 'homa Updates and Video',
+      description: 'Receive updates along with a homa video and completion details.',
+    },
+  ],
+  inclusions: [
+    'Experienced pandit-led ritual at the temple',
+    'Your sankalp performed in your name',
+    'Special mantra chanting and havan',
+    'homa update with completion details',
+    'Prasadam or bhog as per selected package',
+  ],
+  faq: [
+    {
+      question: 'Do I need to be present in the temple?',
+      answer: 'No. The homa is performed on your behalf and you receive the completion update remotely.',
+    },
+    {
+      question: 'Can I book for my family?',
+      answer: 'Yes. The package options include individual, partner, family + bhog and joint family options.',
+    },
+    {
+      question: 'Will I receive a homa video?',
+      answer: 'Yes. A homa update or video is shared after completion depending on the package and booking flow.',
+    },
+  ],
+};
+
+
+const parseStringArray = (val: unknown): string[] => {
+  if (!val) return [];
+  if (Array.isArray(val)) {
+    return val
+      .flatMap((item) => (typeof item === 'string' ? item.split(/[\n,]+/) : []))
+      .map((s) => s.trim())
+      .filter(Boolean);
+  }
+  if (typeof val === 'string') {
+    return val
+      .split(/[\n,]+/)
+      .map((s) => s.trim())
+      .filter(Boolean);
+  }
+  return [];
+};
+
+export const normalizePuja = (homa: any, offeringsMap: Record<string, any> = {}) => {
+  const record = homa as PujaRecord;
+  const parsedAdditional = parseStringArray(record.additionalImages || (record as any).additionalImageUrls);
+  const parsedGallery = parseStringArray(record.gallery || (record as any).galleryUrl);
+
+  return {
+    ...record,
+    title: record.title || 'Untitled homa',
+    _id: record._id ? String(record._id) : slugify(record.title || 'Untitled homa'),
+    buttonText: record.buttonText || 'Participate',
+    imageUrl: typeof record.imageUrl === 'string' ? record.imageUrl.trim() : '',
+    additionalImages: parsedAdditional.length > 0 ? parsedAdditional : undefined,
+    gallery: parsedGallery.length > 0 ? parsedGallery : undefined,
+    slug: record.slug || slugify(record.title || 'Untitled homa'),
+    eventDateTime: getStringField(record, 'eventDateTime') || undefined,
+    details: (() => {
+      const flatDetails = {
+        heroTitle: getStringField(record, 'heroTitle'),
+        heroSubtitle: getStringField(record, 'heroSubtitle'),
+        strengthFor: getStringField(record, 'strengthFor'),
+        ritualSummary: getStringField(record, 'ritualSummary'),
+        about: getStringField(record, 'about'),
+        templeName: getStringField(record, 'templeVenue') || getStringField(record, 'templeName'),
+        templeLocation: getStringField(record, 'templeLocation') || record.location,
+        templeNote: getStringField(record, 'templeNote'),
+        stats: buildStatsFromFlatFields(record),
+        benefits: buildSectionsFromFlatFields(record, 'benefit', []),
+        process: buildSectionsFromFlatFields(record, 'process', []),
+        inclusions: buildInclusionsFromFlatFields(record),
+        faq: buildFaqFromFlatFields(record),
+      };
+
+      const recordDetails = (record.details || {}) as Partial<PujaDetails>;
+
+      return {
+        ...recordDetails,
+        ...Object.fromEntries(Object.entries(flatDetails).filter(([, value]) => value !== undefined)),
+        benefits: normalizeSections(record.benefits ?? flatDetails.benefits ?? recordDetails.benefits, []),
+        process: normalizeSections(record.process ?? flatDetails.process ?? recordDetails.process, []),
+        faq: normalizeFaq(record.faq ?? flatDetails.faq ?? recordDetails.faq, []),
+        inclusions:
+          Array.isArray(record.inclusions) && record.inclusions.length > 0
+            ? record.inclusions
+            : Array.isArray(flatDetails.inclusions) && flatDetails.inclusions.length > 0
+              ? flatDetails.inclusions
+              : Array.isArray(recordDetails.inclusions) && recordDetails.inclusions.length > 0
+                ? recordDetails.inclusions.filter((item): item is string => typeof item === 'string' && item.trim().length > 0)
+                : [],
+        stats:
+          Array.isArray(record.stats) && record.stats.length > 0
+            ? record.stats
+            : Array.isArray(flatDetails.stats) && flatDetails.stats.length > 0
+              ? flatDetails.stats
+              : Array.isArray(recordDetails.stats) && recordDetails.stats.length > 0
+                ? recordDetails.stats
+                : [],
+        templeName:
+          flatDetails.templeName || recordDetails.templeName || record.templeVenue || record.location || '',
+        templeLocation:
+          flatDetails.templeLocation || recordDetails.templeLocation || record.location || '',
+        templeNote: flatDetails.templeNote || recordDetails.templeNote || record.templeNote || '',
+      };
+    })(),
+    packages: normalizePackages(Array.isArray(record.packages) && record.packages.length > 0 ? record.packages : buildFlatPackages(record), defaultPackages),
+    offerings: Array.isArray(record.offeringIds) && record.offeringIds.length > 0
+      ? record.offeringIds.map((id: string) => offeringsMap[id]).filter(Boolean).map((o: any) => ({
+        id: String(o._id),
+        name: o.name,
+        price: o.priceINR || o.price || 0,
+        priceINR: o.priceINR,
+        priceUSD: o.priceUSD,
+        priceMYR: o.priceMYR,
+        badge: o.badge,
+        description: o.description,
+        imageUrl: o.imageUrl,
+        productId: o.productId !== undefined ? Number(o.productId) : 36
+      }))
+      : normalizeOfferings(Array.isArray(record.offerings) && record.offerings.length > 0 ? record.offerings : buildOfferingsFromFlatFields(record)),
+  };
+};
+
+export async function getAllHomas() {
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || 'https://priestservices.astroved.com';
+    const res = await fetch(`${baseUrl}/api/homas`, { cache: 'no-store' });
+    if (res.ok) {
+      const resData = await res.json();
+      const list = resData?.data && Array.isArray(resData.data) ? resData.data : Array.isArray(resData) ? resData : [];
+      if (list.length > 0) {
+        return list
+          .filter((item: any) => String(item.status || "active").toLowerCase() !== "inactive")
+          .map((p: any) => normalizePuja(p, {}));
+      }
+    }
+  } catch (err) {
+    // Fallback if API fetch fails
+    console.error("Failed to fetch homas from API", err);
+  }
+
+  return [];
+}
+
+export async function getHomaBySlug(slug: string) {
+  const allHomas = await getAllHomas();
+  const targetSlug = slugify(slug);
+  const found = allHomas.find((p: any) => p.slug === slug || slugify(p.slug || p.title) === targetSlug || p._id === slug);
+  return found || null;
+}
