@@ -27,7 +27,7 @@ app.use(
         origin: [
             "https://priestservices.astroved.com",
             "http://localhost:8565",
-            "https://priest-service.onrender.com"
+            "https://priest-service.vercel.app"
         ],
         methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
         allowedHeaders: ["Content-Type", "Authorization"],
