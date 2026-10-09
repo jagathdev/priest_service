@@ -15,7 +15,6 @@ import heroBannerRoutes from './routes/heroBannerRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import setupAdmin from './config/setupAdmin.js';
 import promoCodeRoutes from "./routes/promoCode.routes.js";
-import whatsappRoutes from './routes/whatsapp.routes.js';
 
 const app = express();
 
@@ -50,10 +49,10 @@ app.use("/api/users", userRoutes);
 app.use("/api/customerQueries", customerQueryRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/promos", promoCodeRoutes);
-app.use("/api/whatsapp", whatsappRoutes);
 
 const PORT = process.env.PORT || 8564;
 
 app.listen(PORT, () => {
     console.log(`Server is Running on http://localhost:${PORT}`);
 });
+
