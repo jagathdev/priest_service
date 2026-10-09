@@ -50,6 +50,7 @@ const homaSchema = new mongoose.Schema(
     badge: { type: String, default: "" },
     description: { type: String, default: "" },
     imageUrl: { type: String, default: "" },
+    additionalImages: [{ type: String }],
     location: { type: String, default: "" },
     templeVenue: { type: String, default: "" },
     templeNote: { type: String, default: "" },

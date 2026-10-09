@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import Navbar from "@/components/layout/Navbar";
 import { SparklesIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
@@ -48,68 +48,10 @@ const getPujaImageUrl = (imageUrl?: string): string => {
   return `/${trimmed}`;
 };
 
-// --- filter config ------------------------------------------------------------
-// Each option has a `value` (what we store) and `keywords` (matched against puja text)
-const filterGroups = [
-  {
-    label: "Deity",
-    options: [
-      { value: "All", keywords: [] },
-      { value: "Ganapathi", keywords: ["ganapathi", "ganesh", "ganesha", "vinayaka"] },
-      { value: "Lakshmi", keywords: ["lakshmi", "laxmi"] },
-      { value: "Shiva", keywords: ["shiva", "shiv", "mahadev", "shankar"] },
-      { value: "Vishnu", keywords: ["vishnu", "narayan", "narayana"] },
-      { value: "Hanuman", keywords: ["hanuman", "anjaneya", "maruti"] },
-      { value: "Durga", keywords: ["durga", "devi", "kali", "ambika"] },
-      { value: "Saraswati", keywords: ["saraswati", "saraswathi"] },
-    ],
-  },
-  {
-    label: "Tithis",
-    options: [
-      { value: "All", keywords: [] },
-      { value: "Ekadashi", keywords: ["ekadashi"] },
-      { value: "Purnima", keywords: ["purnima", "poornima", "full moon"] },
-      { value: "Amavasya", keywords: ["amavasya", "new moon"] },
-      { value: "Pradosh", keywords: ["pradosh", "pradosham"] },
-      { value: "Navami", keywords: ["navami"] },
-    ],
-  },
-  {
-    label: "Dosha",
-    options: [
-      { value: "All", keywords: [] },
-      { value: "Mangal Dosha", keywords: ["mangal", "manglik"] },
-      { value: "Kala Sarpa", keywords: ["kala sarpa", "kalasarpa", "kalsarpa"] },
-      { value: "Pitru Dosha", keywords: ["pitru", "pitra", "ancestor"] },
-      { value: "Shani Dosha", keywords: ["shani", "saturn", "sade sati"] },
-    ],
-  },
-  {
-    label: "Benefits",
-    options: [
-      { value: "All", keywords: [] },
-      { value: "Prosperity", keywords: ["prosperity", "wealth", "financial", "money", "abundance", "lakshmi"] },
-      { value: "Protection", keywords: ["protection", "shield", "guard", "safety"] },
-      { value: "Peace", keywords: ["peace", "shanti", "calm", "harmony"] },
-      { value: "Health", keywords: ["health", "healing", "disease", "wellness"] },
-      { value: "Career", keywords: ["career", "job", "business", "success", "growth"] },
-      { value: "Marriage", keywords: ["marriage", "wedding", "vivah", "spouse"] },
-    ],
-  },
-  {
-    label: "Location",
-    options: [
-      { value: "All", keywords: [] },
-      { value: "Tamil Nadu", keywords: ["tamil nadu", "tamilnadu"] },
-      { value: "Karnataka", keywords: ["karnataka", "bangalore", "bengaluru", "mysore"] },
-      { value: "Kerala", keywords: ["kerala"] },
-      { value: "Uttar Pradesh", keywords: ["uttar pradesh", "varanasi", "kashi", "mathura", "vrindavan", "ujjain"] },
-      { value: "Andhra Pradesh", keywords: ["andhra", "tirupati", "hyderabad"] },
-      { value: "Rajasthan", keywords: ["rajasthan", "jaipur", "pushkar"] },
-    ],
-  },
-];
+interface FilterGroup {
+  label: string;
+  options: { value: string }[];
+}
 
 type FilterState = Record<string, string[]>; // label -> array of selected values
 
@@ -121,44 +63,18 @@ const defaultFilters: FilterState = {
   Location: [],
 };
 
-const filterOptionImages: Record<string, string> = {
-  Ganapathi: "/images/Ganesh-Chaturthi-Mahapuja.jpg",
-  Lakshmi: "/images/Lakshmi-Homam.jpg",
-  Shiva: "/images/Navagraha-Shanti-Puja.jpg",
-  Vishnu: "/images/Lakshmi-Beej-Mantra.jpg",
-  Hanuman: "/images/Navagraha-Shanti-Puja.jpg",
-  Durga: "/images/maa-kali.jpg",
-  Saraswati: "/images/Maa-saraswathi.jpg",
-  Ekadashi: "/images/Lakshmi-Beej-Mantra.jpg",
-  Purnima: "/images/Maa-saraswathi.jpg",
-  Amavasya: "/images/maa-kali.jpg",
-  Pradosh: "/images/Navagraha-Shanti-Puja.jpg",
-  Navami: "/images/Ganesh-Chaturthi-Mahapuja.jpg",
-  "Mangal Dosha": "/images/Navagraha-Shanti-Puja.jpg",
-  "Kala Sarpa": "/images/maa-kali.jpg",
-  "Pitru Dosha": "/images/Lakshmi-Homam.jpg",
-  "Shani Dosha": "/images/Navagraha-Shanti-Puja.jpg",
-  Prosperity: "/images/Lakshmi-Homam.jpg",
-  Protection: "/images/maa-kali.jpg",
-  Peace: "/images/Maa-saraswathi.jpg",
-  Health: "/images/Lakshmi-Beej-Mantra.jpg",
-  Career: "/images/Ganesh-Chaturthi-Mahapuja.jpg",
-  Marriage: "/images/Lakshmi-Homam.jpg",
-  "Tamil Nadu": "/images/Maa-saraswathi.jpg",
-  Karnataka: "/images/Ganesh-Chaturthi-Mahapuja.jpg",
-  Kerala: "/images/Lakshmi-Beej-Mantra.jpg",
-  "Uttar Pradesh": "/images/Navagraha-Shanti-Puja.jpg",
-  "Andhra Pradesh": "/images/Lakshmi-Homam.jpg",
-  Rajasthan: "/images/maa-kali.jpg",
-};
-
 /** Returns true if the puja matches ALL active filters */
-function pujaMatchesFilters(puja: Puja, filters: FilterState, searchQuery: string): boolean {
+function pujaMatchesFilters(
+  puja: Puja,
+  filters: FilterState,
+  searchQuery: string,
+  filterGroups: FilterGroup[]
+): boolean {
   if (searchQuery.trim()) {
     const q = searchQuery.toLowerCase();
     const searchMatches = [puja.title, puja.subtitle, puja.description, puja.location, puja.badge]
       .filter(Boolean)
-      .some(text => text?.toLowerCase().includes(q));
+      .some((text) => text?.toLowerCase().includes(q));
     if (!searchMatches) return false;
   }
 
@@ -170,19 +86,6 @@ function pujaMatchesFilters(puja: Puja, filters: FilterState, searchQuery: strin
     Location: "filterLocation",
   };
 
-  const searchText = [
-    puja.title,
-    puja.subtitle,
-    puja.description,
-    puja.location,
-    puja.badge,
-    ...(puja.details?.benefits?.map((b) => `${b.title} ${b.description}`) ?? []),
-    puja.details?.templeLocation,
-  ]
-    .filter(Boolean)
-    .join(" ")
-    .toLowerCase();
-
   for (const group of filterGroups) {
     const selectedValues = filters[group.label];
     if (!selectedValues || selectedValues.length === 0) continue;
@@ -192,12 +95,18 @@ function pujaMatchesFilters(puja: Puja, filters: FilterState, searchQuery: strin
       const savedValue = fieldName ? puja[fieldName] : undefined;
 
       if (typeof savedValue === "string" && savedValue.trim()) {
-        return savedValue.trim().toLowerCase() === selectedValue.toLowerCase();
+        if (savedValue.trim().toLowerCase() === selectedValue.toLowerCase()) {
+          return true;
+        }
       }
 
-      const optionConfig = group.options.find((o) => o.value === selectedValue);
-      if (!optionConfig || optionConfig.keywords.length === 0) return false;
-      return optionConfig.keywords.some((kw) => searchText.includes(kw));
+      if (group.label === "Location" && puja.location) {
+        if (puja.location.toLowerCase().includes(selectedValue.toLowerCase())) {
+          return true;
+        }
+      }
+
+      return false;
     });
 
     if (!groupMatches) return false;
@@ -205,20 +114,27 @@ function pujaMatchesFilters(puja: Puja, filters: FilterState, searchQuery: strin
   return true;
 }
 
-
 function PujaFilterModal({
   filters,
+  filterGroups,
+  initialTab,
   onClose,
   onApply,
   onClear,
 }: {
   filters: FilterState;
+  filterGroups: FilterGroup[];
+  initialTab?: string;
   onClose: () => void;
   onApply: (filters: FilterState) => void;
   onClear: () => void;
 }) {
   const [draftFilters, setDraftFilters] = useState<FilterState>(filters);
-  const [activeTab, setActiveTab] = useState<string>(filterGroups[0].label);
+  const [activeTab, setActiveTab] = useState<string>(
+    (initialTab && filterGroups.some((g) => g.label === initialTab))
+      ? initialTab
+      : filterGroups[0]?.label || ""
+  );
   const [searchQuery, setSearchQuery] = useState("");
 
   const selectFilter = (label: string, value: string) => {
@@ -233,9 +149,13 @@ function PujaFilterModal({
   };
 
   const activeGroup = filterGroups.find((g) => g.label === activeTab) || filterGroups[0];
-  const filteredOptions = activeGroup.options.filter(
-    (o) => o.value !== "All" && o.value.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredOptions = activeGroup
+    ? activeGroup.options.filter((o) =>
+        o.value.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : [];
+
+  if (filterGroups.length === 0) return null;
 
   return (
     <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm transition-opacity duration-300">
@@ -424,10 +344,16 @@ export default function PujaClient({ initialPujas }: { initialPujas?: Puja[] }) 
   const [fetched, setFetched] = useState(true);
   const [filters, setFilters] = useState<FilterState>(defaultFilters);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [filterModalInitialTab, setFilterModalInitialTab] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [shareUrl, setShareUrl] = useState("");
   const router = useRouter();
+
+  const openFilterModal = (tabLabel?: string) => {
+    setFilterModalInitialTab(tabLabel || "");
+    setIsFilterModalOpen(true);
+  };
 
   const openShareModal = (url: string) => {
     setShareUrl(url);
@@ -456,8 +382,71 @@ export default function PujaClient({ initialPujas }: { initialPujas?: Puja[] }) 
 
   const hasActiveFilters = Object.values(filters).some((arr) => arr && arr.length > 0);
 
+  // Compute dynamic filter groups ONLY from values actually present in saved pujas
+  const dynamicFilterGroups = useMemo(() => {
+    const extractValues = (key: keyof Puja, altKey?: keyof Puja) => {
+      const set = new Set<string>();
+      allPujas.forEach((p) => {
+        const val1 = p[key];
+        if (typeof val1 === "string" && val1.trim()) {
+          set.add(val1.trim());
+        }
+        if (altKey) {
+          const val2 = p[altKey];
+          if (typeof val2 === "string" && val2.trim()) {
+            set.add(val2.trim());
+          }
+        }
+      });
+      return Array.from(set).sort();
+    };
+
+    const deities = extractValues("deity");
+    const tithis = extractValues("tithis");
+    const doshas = extractValues("dosha");
+    const benefits = extractValues("benefit");
+    const locations = extractValues("filterLocation", "location");
+
+    const groups: FilterGroup[] = [];
+
+    if (deities.length > 0) {
+      groups.push({
+        label: "Deity",
+        options: deities.map((v) => ({ value: v })),
+      });
+    }
+    if (tithis.length > 0) {
+      groups.push({
+        label: "Tithis",
+        options: tithis.map((v) => ({ value: v })),
+      });
+    }
+    if (doshas.length > 0) {
+      groups.push({
+        label: "Dosha",
+        options: doshas.map((v) => ({ value: v })),
+      });
+    }
+    if (benefits.length > 0) {
+      groups.push({
+        label: "Benefits",
+        options: benefits.map((v) => ({ value: v })),
+      });
+    }
+    if (locations.length > 0) {
+      groups.push({
+        label: "Location",
+        options: locations.map((v) => ({ value: v })),
+      });
+    }
+
+    return groups;
+  }, [allPujas]);
+
   // -- Apply filters to get displayed pujas --
-  const displayedPujas = allPujas.filter((p) => pujaMatchesFilters(p, filters, searchQuery));
+  const displayedPujas = useMemo(() => {
+    return allPujas.filter((p) => pujaMatchesFilters(p, filters, searchQuery, dynamicFilterGroups));
+  }, [allPujas, filters, searchQuery, dynamicFilterGroups]);
 
   return (
     <>
@@ -470,13 +459,23 @@ export default function PujaClient({ initialPujas }: { initialPujas?: Puja[] }) 
       <main className="min-h-screen">
         {/* Hero Section - Light Sacred Sandalwood Theme */}
         <div className="bg-gradient-to-b from-[#fff6ef] via-[#fdeee0] to-[#f9e3d0] py-12 md:py-16 text-center border-b border-[#fcd5b5] relative overflow-hidden">
-          {/* Rotating Center Circular Dot Mandala Background (Inner 2 Circles Only) */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[380px] h-[380px] pointer-events-none opacity-35 flex items-center justify-center">
-            {/* Inner Rotating Dotted Rings */}
-            <svg className="w-full h-full animate-[spin_28s_linear_infinite]" viewBox="0 0 400 400" fill="none">
-              <circle cx="200" cy="200" r="145" stroke="#d95a2b" strokeWidth="2.5" strokeDasharray="4 14" strokeLinecap="round" />
-              <circle cx="200" cy="200" r="95" stroke="#f47820" strokeWidth="3" strokeDasharray="2 12" strokeLinecap="round" />
-            </svg>
+          {/* Left Inverted Mandala Decoration */}
+          <div className="absolute left-0 top-0 bottom-0 h-full pointer-events-none opacity-50 z-0 hidden sm:flex items-center">
+            <img
+              src="/images/mandala.png"
+              alt="Mandala Left"
+              className="h-full w-auto object-contain -scale-x-100"
+              style={{ transform: "scaleX(-1)" }}
+            />
+          </div>
+
+          {/* Right Mandala Decoration */}
+          <div className="absolute right-0 top-0 bottom-0 h-full pointer-events-none opacity-50 z-0 hidden sm:flex items-center">
+            <img
+              src="/images/mandala.png"
+              alt="Mandala Right"
+              className="h-full w-auto object-contain"
+            />
           </div>
 
           <div className="relative z-10 max-w-[1350px] mx-auto px-4 sm:px-6 lg:px-10">
@@ -501,18 +500,20 @@ export default function PujaClient({ initialPujas }: { initialPujas?: Puja[] }) 
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.2" d="M21 21l-4.35-4.35M17 10a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
               </div>
-              <button
-                onClick={() => setIsFilterModalOpen(true)}
-                className="bg-[#d95a2b] hover:bg-[#c24a1e] text-white px-6 py-3 rounded-xl flex items-center gap-2 text-xs sm:text-sm font-bold shadow-md transition-all shrink-0 active:scale-95 cursor-pointer"
-              >
-                <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-                </svg>
-                <span>Filter</span>
-                {hasActiveFilters && (
-                  <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span>
-                )}
-              </button>
+              {dynamicFilterGroups.length > 0 && (
+                <button
+                  onClick={() => openFilterModal()}
+                  className="bg-[#d95a2b] hover:bg-[#c24a1e] text-white px-6 py-3 rounded-xl flex items-center gap-2 text-xs sm:text-sm font-bold shadow-md transition-all shrink-0 active:scale-95 cursor-pointer"
+                >
+                  <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                  </svg>
+                  <span>Filter</span>
+                  {hasActiveFilters && (
+                    <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span>
+                  )}
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -532,28 +533,32 @@ export default function PujaClient({ initialPujas }: { initialPujas?: Puja[] }) 
           </div>
 
           {/* Quick Categories Filter row */}
-          <div className="flex overflow-x-auto gap-2.5 pb-4 no-scrollbar mb-6">
-            <button
-              onClick={clearFilters}
-              className={`shrink-0 rounded-full px-5 py-2 text-sm font-bold transition-colors ${!hasActiveFilters ? "bg-[#d95a2b] text-white" : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50"}`}
-            >
-              All
-            </button>
-            {filterGroups.map(group => (
+          {dynamicFilterGroups.length > 0 && (
+            <div className="flex overflow-x-auto gap-2.5 pb-4 no-scrollbar mb-6">
               <button
-                key={group.label}
-                onClick={() => setIsFilterModalOpen(true)}
-                className={`shrink-0 rounded-full px-5 py-2 text-sm font-bold transition-colors border ${filters[group.label]?.length > 0 ? "bg-[#d95a2b] text-white border-[#d95a2b]" : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"}`}
+                onClick={clearFilters}
+                className={`shrink-0 rounded-full px-5 py-2 text-sm font-bold transition-colors ${!hasActiveFilters ? "bg-[#d95a2b] text-white" : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50"}`}
               >
-                {group.label}
+                All
               </button>
-            ))}
-          </div>
+              {dynamicFilterGroups.map((group: FilterGroup) => (
+                <button
+                  key={group.label}
+                  onClick={() => openFilterModal(group.label)}
+                  className={`shrink-0 rounded-full px-5 py-2 text-sm font-bold transition-colors border ${filters[group.label]?.length > 0 ? "bg-[#d95a2b] text-white border-[#d95a2b]" : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"}`}
+                >
+                  {group.label}
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* Filter Modal */}
-          {isFilterModalOpen && (
+          {isFilterModalOpen && dynamicFilterGroups.length > 0 && (
             <PujaFilterModal
               filters={filters}
+              filterGroups={dynamicFilterGroups}
+              initialTab={filterModalInitialTab}
               onClose={() => setIsFilterModalOpen(false)}
               onApply={applyFilters}
               onClear={clearFilters}
@@ -582,7 +587,7 @@ export default function PujaClient({ initialPujas }: { initialPujas?: Puja[] }) 
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:gap-8 lg:grid-cols-3">
-              {displayedPujas.map((puja) => {
+              {displayedPujas.map((puja: Puja) => {
                 const fullUrl = typeof window !== 'undefined' ? `${window.location.origin}/puja/${puja.slug || slugify(puja.title)}` : '';
                 return (
                   <div
@@ -605,10 +610,14 @@ export default function PujaClient({ initialPujas }: { initialPujas?: Puja[] }) 
                       </div>
 
                       <div className="p-6 flex flex-col flex-1 text-left">
-                        <p className="text-[#d95a2b] text-[11px] font-extrabold uppercase tracking-widest mb-2.5 flex items-center gap-1.5">
-                          <svg className="w-4 h-4 text-[#d95a2b] shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.5C12 2.5 7 9 7 14C7 16.76 9.24 19 12 19C14.76 19 17 16.76 17 14C17 9 12 2.5 12 2.5ZM12 17C10.34 17 9 15.66 9 14C9 11.2 12 7.2 12 7.2C12 7.2 15 11.2 15 14C15 15.66 13.66 17 12 17Z"/></svg>
-                          <span>{puja.subtitle}</span>
-                        </p>
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="w-8 h-[1px] bg-[#F47820]/40" />
+                          <span className="text-[#F47820] font-serif font-extrabold text-xs sm:text-[13px] tracking-wider uppercase flex items-center gap-1.5">
+                            <span className="text-[10px]">♦</span> {puja.subtitle} <span className="text-[10px]">♦</span>
+                          </span>
+                          <div className="w-8 h-[1px] bg-[#F47820]/40" />
+                        </div>
+
 
                         <h3 className="text-[20px] sm:text-[21px] font-serif font-extrabold text-gray-900 mb-2 leading-snug line-clamp-2">
                           {puja.title}

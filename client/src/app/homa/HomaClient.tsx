@@ -91,10 +91,7 @@ export default function HomaClient({ initialHomas }: { initialHomas?: Homa[] }) 
       // Deity filter
       if (selectedDeities.length > 0) {
         const matchedDeity = selectedDeities.some(
-          (d) =>
-            (homa.deity && homa.deity.toLowerCase() === d.toLowerCase()) ||
-            homa.title.toLowerCase().includes(d.toLowerCase()) ||
-            (homa.description && homa.description.toLowerCase().includes(d.toLowerCase()))
+          (d) => homa.deity && homa.deity.trim().toLowerCase() === d.trim().toLowerCase()
         );
         if (!matchedDeity) return false;
       }
@@ -102,11 +99,7 @@ export default function HomaClient({ initialHomas }: { initialHomas?: Homa[] }) 
       // Dosha filter
       if (selectedDoshas.length > 0) {
         const matchedDosha = selectedDoshas.some(
-          (d) =>
-            (homa.dosha && homa.dosha.toLowerCase() === d.toLowerCase()) ||
-            homa.title.toLowerCase().includes(d.toLowerCase()) ||
-            (homa.subtitle && homa.subtitle.toLowerCase().includes(d.toLowerCase())) ||
-            (homa.description && homa.description.toLowerCase().includes(d.toLowerCase()))
+          (d) => homa.dosha && homa.dosha.trim().toLowerCase() === d.trim().toLowerCase()
         );
         if (!matchedDosha) return false;
       }
@@ -115,24 +108,67 @@ export default function HomaClient({ initialHomas }: { initialHomas?: Homa[] }) 
     });
   }, [allHomas, searchQuery, selectedType, selectedDeities, selectedDoshas]);
 
-  const homaTypeOptions = [
-    { label: "All Homas", count: allHomas.length },
-    { label: "Daily Homa", count: allHomas.filter((h) => h.homaType === "Daily Homa").length },
-    { label: "Weekly Homa", count: allHomas.filter((h) => h.homaType === "Weekly Homa").length },
-    { label: "Monthly Homa", count: allHomas.filter((h) => h.homaType === "Monthly Homa").length },
-    { label: "Special Homa", count: allHomas.filter((h) => h.homaType === "Special Homa").length },
-  ];
+  const dynamicHomaTypes = useMemo(() => {
+    const set = new Set<string>();
+    allHomas.forEach((h) => {
+      if (h.homaType && h.homaType.trim()) set.add(h.homaType.trim());
+    });
+    return Array.from(set).sort();
+  }, [allHomas]);
 
-  const deityOptions = ["Shiva", "Hanuman", "Subramanya", "Venkateswara", "Navagraha", "Lakshmi"];
-  const doshaOptions = ["Rahu Dosham", "Pitru Dosha", "Mangal Dosha", "Shani Dosha"];
+  const homaTypeOptions = useMemo(() => {
+    const list = [{ label: "All Homas", count: allHomas.length }];
+    dynamicHomaTypes.forEach((t) => {
+      list.push({
+        label: t,
+        count: allHomas.filter((h) => h.homaType === t).length,
+      });
+    });
+    return list;
+  }, [allHomas, dynamicHomaTypes]);
+
+  const deityOptions = useMemo(() => {
+    const set = new Set<string>();
+    allHomas.forEach((h) => {
+      if (h.deity && h.deity.trim()) set.add(h.deity.trim());
+    });
+    return Array.from(set).sort();
+  }, [allHomas]);
+
+  const doshaOptions = useMemo(() => {
+    const set = new Set<string>();
+    allHomas.forEach((h) => {
+      if (h.dosha && h.dosha.trim()) set.add(h.dosha.trim());
+    });
+    return Array.from(set).sort();
+  }, [allHomas]);
 
   return (
     <>
       <Navbar />
       <main className="min-h-screen bg-[#fafafc] pb-16 font-sans">
         {/* ── Top Header Hero Banner ── */}
-        <section className="bg-gradient-to-b from-[#fff7f8] via-[#ffffff] to-[#fafafc] pt-12 pb-10 text-center border-b border-gray-150">
-          <div className="mx-auto max-w-4xl px-4">
+        <section className="bg-gradient-to-b from-[#fff7f8] via-[#ffffff] to-[#fafafc] pt-12 pb-10 text-center border-b border-gray-150 relative overflow-hidden">
+          {/* Left Inverted Mandala Decoration */}
+          <div className="absolute left-0 top-0 bottom-0 h-full pointer-events-none opacity-40 z-0 hidden sm:flex items-center">
+            <img
+              src="/images/mandala.png"
+              alt="Mandala Left"
+              className="h-full w-auto object-contain -scale-x-100"
+              style={{ transform: "scaleX(-1)" }}
+            />
+          </div>
+
+          {/* Right Mandala Decoration */}
+          <div className="absolute right-0 top-0 bottom-0 h-full pointer-events-none opacity-40 z-0 hidden sm:flex items-center">
+            <img
+              src="/images/mandala.png"
+              alt="Mandala Right"
+              className="h-full w-auto object-contain"
+            />
+          </div>
+
+          <div className="mx-auto max-w-4xl px-4 relative z-10">
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-[#5b1422] tracking-tight leading-tight font-serif">
               Discover Sacred Pujas &amp; Divine Blessings
             </h1>
@@ -171,93 +207,100 @@ export default function HomaClient({ initialHomas }: { initialHomas?: Homa[] }) 
         <div className="mx-auto max-w-[1360px] px-4 sm:px-6 lg:px-8 pt-10">
           <div className="flex flex-col lg:flex-row gap-8 items-start">
             {/* ── Left Sidebar Filter Card ── */}
-            <aside className="w-full lg:w-[270px] shrink-0 bg-white rounded-2xl border border-gray-200 shadow-xs p-5 space-y-6">
-              {/* Section 1: Homa Type */}
-              <div>
-                <h3 className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">Homa type</h3>
-                <div className="space-y-1">
-                  {homaTypeOptions.map((item) => {
-                    const isSelected = selectedType === item.label;
-                    return (
-                      <button
-                        key={item.label}
-                        type="button"
-                        onClick={() => setSelectedType(item.label)}
-                        className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all ${isSelected
-                          ? "bg-[#e8f5e9] text-[#069e5d] font-bold"
-                          : "text-gray-700 hover:bg-gray-50"
-                          }`}
-                      >
-                        <span className="flex items-center gap-2">
-                          {isSelected && (
-                            <svg className="w-4 h-4 text-[#069e5d]" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                            </svg>
-                          )}
-                          <span>{item.label}</span>
-                        </span>
-                        <span className={`text-xs px-2 py-0.5 rounded-full ${isSelected ? "bg-[#069e5d]/10 text-[#069e5d] font-bold" : "text-gray-400 font-mono"}`}>
-                          {item.count}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
+            {(homaTypeOptions.length > 1 || deityOptions.length > 0 || doshaOptions.length > 0) && (
+              <aside className="w-full lg:w-[270px] shrink-0 bg-white rounded-2xl border border-gray-200 shadow-xs p-5 space-y-6">
+                {/* Section 1: Homa Type */}
+                {homaTypeOptions.length > 1 && (
+                  <div>
+                    <h3 className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">Homa type</h3>
+                    <div className="space-y-1">
+                      {homaTypeOptions.map((item) => {
+                        const isSelected = selectedType === item.label;
+                        return (
+                          <button
+                            key={item.label}
+                            type="button"
+                            onClick={() => setSelectedType(item.label)}
+                            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all ${isSelected
+                              ? "bg-[#e8f5e9] text-[#069e5d] font-bold"
+                              : "text-gray-700 hover:bg-gray-50"
+                              }`}
+                          >
+                            <span className="flex items-center gap-2">
+                              {isSelected && (
+                                <svg className="w-4 h-4 text-[#069e5d]" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                </svg>
+                              )}
+                              <span>{item.label}</span>
+                            </span>
+                            <span className={`text-xs px-2 py-0.5 rounded-full ${isSelected ? "bg-[#069e5d]/10 text-[#069e5d] font-bold" : "text-gray-400 font-mono"}`}>
+                              {item.count}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
 
-              <hr className="border-gray-100" />
+                {homaTypeOptions.length > 1 && (deityOptions.length > 0 || doshaOptions.length > 0) && <hr className="border-gray-100" />}
 
-              {/* Section 2: Deity */}
-              <div>
-                <h3 className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">Deity</h3>
-                <div className="space-y-2.5">
-                  {deityOptions.map((deity) => {
-                    const isChecked = selectedDeities.includes(deity);
-                    return (
-                      <label key={deity} className="flex items-center gap-3 text-xs sm:text-sm text-gray-700 font-medium cursor-pointer hover:text-gray-900 select-none">
-                        <input
-                          type="checkbox"
-                          checked={isChecked}
-                          onChange={() => toggleDeity(deity)}
-                          className="w-4 h-4 rounded text-[#069e5d] focus:ring-[#069e5d] border-gray-300"
-                        />
-                        <span>{deity}</span>
-                      </label>
-                    );
-                  })}
-                </div>
-              </div>
+                {/* Section 2: Deity */}
+                {deityOptions.length > 0 && (
+                  <div>
+                    <h3 className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">Deity</h3>
+                    <div className="space-y-2.5">
+                      {deityOptions.map((deity) => {
+                        const isChecked = selectedDeities.includes(deity);
+                        return (
+                          <label key={deity} className="flex items-center gap-3 text-xs sm:text-sm text-gray-700 font-medium cursor-pointer hover:text-gray-900 select-none">
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              onChange={() => toggleDeity(deity)}
+                              className="w-4 h-4 rounded text-[#069e5d] focus:ring-[#069e5d] border-gray-300"
+                            />
+                            <span>{deity}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
 
-              <hr className="border-gray-100" />
+                {deityOptions.length > 0 && doshaOptions.length > 0 && <hr className="border-gray-100" />}
 
-              {/* Section 3: Dosha */}
-              <div>
-                <h3 className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">Dosha</h3>
-                <div className="space-y-2.5">
-                  {doshaOptions.map((dosha) => {
-                    const isChecked = selectedDoshas.includes(dosha);
-                    return (
-                      <label key={dosha} className="flex items-center gap-3 text-xs sm:text-sm text-gray-700 font-medium cursor-pointer hover:text-gray-900 select-none">
-                        <input
-                          type="checkbox"
-                          checked={isChecked}
-                          onChange={() => toggleDosha(dosha)}
-                          className="w-4 h-4 rounded text-[#069e5d] focus:ring-[#069e5d] border-gray-300"
-                        />
-                        <span>{dosha}</span>
-                      </label>
-                    );
-                  })}
-                </div>
-              </div>
+                {/* Section 3: Dosha */}
+                {doshaOptions.length > 0 && (
+                  <div>
+                    <h3 className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">Dosha</h3>
+                    <div className="space-y-2.5">
+                      {doshaOptions.map((dosha) => {
+                        const isChecked = selectedDoshas.includes(dosha);
+                        return (
+                          <label key={dosha} className="flex items-center gap-3 text-xs sm:text-sm text-gray-700 font-medium cursor-pointer hover:text-gray-900 select-none">
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              onChange={() => toggleDosha(dosha)}
+                              className="w-4 h-4 rounded text-[#069e5d] focus:ring-[#069e5d] border-gray-300"
+                            />
+                            <span>{dosha}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
 
-              {(selectedDeities.length > 0 || selectedDoshas.length > 0 || selectedType !== "All Homas" || searchQuery) && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedType("All Homas");
-                    setSelectedDeities([]);
-                    setSelectedDoshas([]);
+                {(selectedDeities.length > 0 || selectedDoshas.length > 0 || selectedType !== "All Homas" || searchQuery) && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedType("All Homas");
+                      setSelectedDeities([]);
+                      setSelectedDoshas([]);
                     setSearchQuery("");
                   }}
                   className="w-full py-2.5 text-xs font-bold text-red-500 hover:bg-red-50 rounded-xl transition border border-red-100 mt-2"
@@ -265,7 +308,8 @@ export default function HomaClient({ initialHomas }: { initialHomas?: Homa[] }) 
                   Clear All Filters
                 </button>
               )}
-            </aside>
+              </aside>
+            )}
 
             {/* ── Right Content Area ── */}
             <div className="flex-1 w-full">

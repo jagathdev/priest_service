@@ -61,6 +61,7 @@ export type PujaRecord = {
   subtitle?: string;
   description?: string;
   imageUrl?: string;
+  additionalImages?: string[];
   badge?: string;
   shortTitle?: string;
   buttonText?: string;
@@ -444,16 +445,37 @@ export const defaultDetails: PujaDetails = {
 };
 
 
+const parseStringArray = (val: unknown): string[] => {
+  if (!val) return [];
+  if (Array.isArray(val)) {
+    return val
+      .flatMap((item) => (typeof item === 'string' ? item.split(/[\n,]+/) : []))
+      .map((s) => s.trim())
+      .filter(Boolean);
+  }
+  if (typeof val === 'string') {
+    return val
+      .split(/[\n,]+/)
+      .map((s) => s.trim())
+      .filter(Boolean);
+  }
+  return [];
+};
+
 export const normalizePuja = (homa: any, offeringsMap: Record<string, any> = {}) => {
   const record = homa as PujaRecord;
+  const parsedAdditional = parseStringArray(record.additionalImages || (record as any).additionalImageUrls);
+  const parsedGallery = parseStringArray(record.gallery || (record as any).galleryUrl);
+
   return {
     ...record,
     title: record.title || 'Untitled homa',
     _id: record._id ? String(record._id) : slugify(record.title || 'Untitled homa'),
     buttonText: record.buttonText || 'Participate',
     imageUrl: typeof record.imageUrl === 'string' ? record.imageUrl.trim() : '',
+    additionalImages: parsedAdditional.length > 0 ? parsedAdditional : undefined,
+    gallery: parsedGallery.length > 0 ? parsedGallery : undefined,
     slug: record.slug || slugify(record.title || 'Untitled homa'),
-    gallery: Array.isArray(record.gallery) && record.gallery.length > 0 ? record.gallery : undefined,
     eventDateTime: getStringField(record, 'eventDateTime') || undefined,
     details: (() => {
       const flatDetails = {

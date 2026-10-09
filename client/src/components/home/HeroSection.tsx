@@ -284,7 +284,7 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
             <div className="mb-4 sm:mb-5 xl:mb-6 w-full flex justify-center xl:justify-start">
               <Link
                 href={current.ctaLink}
-                className="inline-flex items-center justify-between gap-4 sm:gap-6 bg-[#00b050] hover:bg-[#009b46] active:scale-95 text-white font-extrabold text-lg sm:text-xl xl:text-2xl px-6 sm:px-9 py-3.5 sm:py-4 rounded-full shadow-xl shadow-green-600/25 transition-all duration-200 group w-full max-w-[500px] sm:max-w-[540px] xl:max-w-[420px]"
+                className="inline-flex items-center justify-between gap-4 sm:gap-6 bg-[#00b050] hover:bg-[#009b46] active:scale-95 text-white font-extrabold text-lg sm:text-xl xl:text-2xl px-6 sm:px-9 py-3.5 sm:py-4 rounded-full shadow-green-600/25 transition-all duration-200 group w-full max-w-[500px] sm:max-w-[540px] xl:max-w-[420px]"
               >
                 <span>{current.ctaText}</span>
                 <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white text-[#00b050] flex items-center justify-center shadow-md group-hover:translate-x-0.5 transition-transform shrink-0">
@@ -369,13 +369,13 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
               className="object-cover blur-2xl opacity-40 scale-110"
             />
 
-            {/* Full Uncropped Main Image (Preserves Left/Right Text & Edges) */}
+            {/* Full Main Image (Fills container seamlessly) */}
             <Image
               key={current.id}
               src={current.image}
               alt={current.title}
               fill
-              className="object-contain object-center relative z-10 drop-shadow-lg"
+              className="object-cover object-center relative z-10 drop-shadow-lg"
               priority
             />
 

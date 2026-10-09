@@ -60,7 +60,13 @@ export default function AdminPujasPage() {
     { name: "subtitle", label: "Subtitle (Pink Text)", type: "text" },
     { name: "badge", label: "Badge (e.g. Special Event)", type: "text" },
     { name: "description", label: "Description", type: "textarea" },
-    { name: "imageUrl", label: "Image URL", type: "url" },
+    { name: "imageUrl", label: "Main Image URL", type: "url" },
+    {
+      name: "additionalImages",
+      label: "Additional Banner Image URLs (Carousel)",
+      type: "array-string",
+      placeholder: "https://example.com/banner-extra.jpg"
+    },
     { name: "location", label: "Temple/Location", type: "text" },
     { name: "templeVenue", label: "Temple Venue Name", type: "text", placeholder: "Shri Gajalakshmi Temple" },
     { name: "templeImage", label: "Temple Image URL (optional)", type: "url", placeholder: "https://example.com/temple.jpg" },

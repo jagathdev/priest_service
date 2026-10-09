@@ -561,7 +561,7 @@ function PujaCard({ id, imageSrc, topTag, title, subtitle, location, date, price
           <img
             src={typeof imageSrc === "string" ? imageSrc : (imageSrc as any)?.src}
             alt={title}
-            className="w-full h-full object-cover object-center"
+            className="w-full h-full object-fit object-center"
           />
         </div>
 

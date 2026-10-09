@@ -292,50 +292,50 @@ export default function NewPujaDetailClient({ initialPuja, recommendations }: Pr
 
                 <div className="grid grid-cols-3 gap-2">
                   {/* Package Option 1 */}
-                  <div className="border border-gray-200 bg-white rounded-2xl p-3 text-center cursor-pointer hover:border-gray-300 transition-colors flex flex-col items-center justify-between">
-                    <div className="w-8 h-8 mx-auto bg-gray-50 rounded-full flex items-center justify-center mb-1 text-sm">
-                      👤
+                  <div className="border border-gray-200 bg-white rounded-2xl py-4 sm:py-5 px-3 text-center cursor-pointer hover:border-gray-300 transition-colors flex flex-col items-center justify-between min-h-[105px]">
+                    <div className="w-12 h-12 sm:w-14 sm:h-14 mx-auto rounded-full overflow-hidden border border-gray-200 bg-white mb-1.5 shrink-0 shadow-2xs">
+                      <img src="/images/package_individual.webp" alt="Individual" className="w-full h-full object-cover" />
                     </div>
-                    <div>
-                      <p className="text-[11px] font-bold text-gray-800 leading-tight">Individual</p>
-                      <p className="text-[9px] text-gray-500 mb-1">1 Person</p>
+                    <div className="space-y-0.5">
+                      <p className="text-[12px] font-bold text-gray-800 leading-tight">Individual</p>
+                      <p className="text-[10px] text-gray-500 mb-1">1 Person</p>
                     </div>
-                    <p className="text-sm font-bold text-gray-900">₹851</p>
+                    <p className="text-base font-bold text-gray-900">₹851</p>
                   </div>
 
                   {/* Package Option 2 */}
-                  <div className="border-2 border-green-500 bg-green-50/50 rounded-2xl p-3 text-center cursor-pointer relative shadow-sm flex flex-col items-center justify-between">
+                  <div className="border-2 border-green-500 bg-green-50/50 rounded-2xl py-4 sm:py-5 px-3 text-center cursor-pointer relative shadow-sm flex flex-col items-center justify-between min-h-[105px]">
                     <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-green-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap shadow-sm">
                       Recommended
                     </div>
-                    <div className="w-8 h-8 mx-auto bg-white rounded-full flex items-center justify-center shadow-sm mb-1 text-sm">
-                      💑
+                    <div className="w-12 h-12 sm:w-14 sm:h-14 mx-auto rounded-full overflow-hidden border border-gray-200 bg-white mb-1.5 shrink-0 shadow-2xs">
+                      <img src="/images/partner.webp" alt="Couple Puja" className="w-full h-full object-cover" />
                     </div>
-                    <div>
-                      <p className="text-[11px] font-bold text-gray-800 leading-tight">Couple Puja</p>
-                      <p className="text-[9px] text-gray-500 mb-1">2 Persons</p>
+                    <div className="space-y-0.5">
+                      <p className="text-[12px] font-bold text-gray-800 leading-tight">Couple Puja</p>
+                      <p className="text-[10px] text-gray-500 mb-1">2 Persons</p>
                     </div>
-                    <p className="text-sm font-bold text-green-700">₹1,251</p>
+                    <p className="text-base font-bold text-green-700">₹1,251</p>
                   </div>
 
                   {/* Package Option 3 */}
-                  <div className="border border-gray-200 bg-white rounded-2xl p-3 text-center cursor-pointer hover:border-gray-300 transition-colors flex flex-col items-center justify-between">
-                    <div className="w-8 h-8 mx-auto bg-gray-50 rounded-full flex items-center justify-center mb-1 text-sm">
-                      👨‍👩‍👧‍👦
+                  <div className="border border-gray-200 bg-white rounded-2xl py-4 sm:py-5 px-3 text-center cursor-pointer hover:border-gray-300 transition-colors flex flex-col items-center justify-between min-h-[105px]">
+                    <div className="w-12 h-12 sm:w-14 sm:h-14 mx-auto rounded-full overflow-hidden border border-gray-200 bg-white mb-1.5 shrink-0 shadow-2xs">
+                      <img src="/images/package_family.webp" alt="Family Puja" className="w-full h-full object-cover" />
                     </div>
-                    <div>
-                      <p className="text-[11px] font-bold text-gray-800 leading-tight">Family Puja</p>
+                    <div className="space-y-0.5">
+                      <p className="text-[12px] font-bold text-gray-800 leading-tight">Family Puja</p>
                       <p className="text-[9px] text-gray-500 mb-1">4 Persons</p>
                     </div>
-                    <p className="text-sm font-bold text-gray-900">₹2,251</p>
+                    <p className="text-base font-bold text-gray-900">₹2,251</p>
                   </div>
                 </div>
               </div>
 
               {/* Book Now Button */}
-              <button className="w-full bg-[#00b268] hover:bg-[#009e5c] text-white font-bold py-4 rounded-xl shadow-lg shadow-green-200 transition-all text-lg flex justify-center items-center gap-2 group">
+              <button className="w-full bg-[#00b268] hover:bg-[#009e5c] text-white font-extrabold py-4.5 rounded-xl shadow-lg shadow-green-200 transition-all text-xl sm:text-2xl flex justify-center items-center gap-2.5 group">
                 <span>₹1,251</span>
-                <span className="w-px h-5 bg-white/30"></span>
+                <span className="w-px h-6 bg-white/30"></span>
                 <span>Book Now</span>
                 <span className="group-hover:translate-x-1 transition-transform">→</span>
               </button>

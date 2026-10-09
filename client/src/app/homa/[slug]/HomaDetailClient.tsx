@@ -41,6 +41,7 @@ interface Homa {
   subtitle?: string;
   description?: string;
   imageUrl: string;
+  additionalImages?: string[];
   badge?: string;
   shortTitle?: string;
   location?: string;
@@ -130,6 +131,7 @@ export default function HomaDetailClient({
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [shareSuccess, setShareSuccess] = useState(false);
   const [showStickyBar, setShowStickyBar] = useState(false);
+  const [activeBannerIndex, setActiveBannerIndex] = useState(0);
   const heroCtaRef = useRef<HTMLButtonElement | null>(null);
 
   // Scroll observer to show bottom sticky bar only when hero CTA button scrolls out of view
@@ -224,10 +226,9 @@ export default function HomaDetailClient({
   }, []);
 
   const defaultPackageAvatars = [
-    "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80",
-    "https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=150&q=80",
-    "https://images.unsplash.com/photo-1609234656388-0ff363383899?auto=format&fit=crop&w=150&q=80",
-    "https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=150&q=80",
+    "/images/package_individual.webp",
+    "/images/partner.webp",
+    "/images/package_family.webp",
   ];
 
   // Compute normalized package list from Admin data or defaults
@@ -255,7 +256,7 @@ export default function HomaDetailClient({
           priceUSD: pkg.priceUSD,
           priceMYR: pkg.priceMYR,
           description: pkg.description || "Includes personalized sankalpam and havan video proof.",
-          imageUrl: pkg.imageUrl || defaultPackageAvatars[idx % defaultPackageAvatars.length],
+          imageUrl: defaultPackageAvatars[idx % defaultPackageAvatars.length],
         };
       });
     }
@@ -484,6 +485,76 @@ export default function HomaDetailClient({
     (typeof homa.details?.templeImage === "string" && homa.details.templeImage.trim()) ||
     "";
 
+  const DEFAULT_BANNER_IMAGE =
+    "https://images.unsplash.com/photo-1542909168-82c3e7fdca5c?auto=format&fit=crop&w=1600&q=80";
+
+  const bannerImages: string[] = useMemo(() => {
+    if (!homa) return [DEFAULT_BANNER_IMAGE];
+    const list: string[] = [];
+
+    const addUrl = (val: any) => {
+      if (!val) return;
+      if (typeof val === "string") {
+        const parts = val.split(/[\n,]+/);
+        for (const p of parts) {
+          const trimmed = p.trim();
+          if (trimmed) {
+            const formatted = getHomaImageUrl(trimmed);
+            if (formatted) {
+              list.push(formatted);
+            }
+          }
+        }
+      } else if (Array.isArray(val)) {
+        for (const item of val) {
+          addUrl(item);
+        }
+      }
+    };
+
+    // 1. Primary main image
+    if (homa.imageUrl && typeof homa.imageUrl === "string" && homa.imageUrl.trim()) {
+      addUrl(homa.imageUrl);
+    }
+
+    // 2. Additional carousel images
+    const addImgs = homa.additionalImages || (homa as any).additionalImageUrls;
+    const hasAdditional =
+      (Array.isArray(addImgs) && addImgs.length > 0) ||
+      (typeof addImgs === "string" && Boolean((addImgs as string).trim()));
+
+    if (hasAdditional) {
+      addUrl(addImgs);
+    } else {
+      // 3. Fallback to gallery images if no additionalImages provided
+      addUrl(homa.gallery);
+      addUrl((homa as any).galleryUrl);
+      addUrl((homa as any).details?.gallery);
+    }
+
+    // 4. Details sub-object main image
+    if (list.length === 0) {
+      addUrl((homa?.details as any)?.imageUrl);
+    }
+
+    // Fallback default image if no image exists in DB at all
+    if (list.length === 0) {
+      list.push(DEFAULT_BANNER_IMAGE);
+    }
+
+    return list;
+  }, [homa]);
+
+  const handlePrevBanner = () => {
+    if (bannerImages.length <= 1) return;
+    setActiveBannerIndex((prev) => (prev - 1 + bannerImages.length) % bannerImages.length);
+  };
+
+  const handleNextBanner = () => {
+    if (bannerImages.length <= 1) return;
+    setActiveBannerIndex((prev) => (prev + 1) % bannerImages.length);
+  };
+
   return (
     <main className="min-h-screen bg-white text-[#1f1f1f] font-sans pb-24">
       <Navbar />
@@ -497,19 +568,56 @@ export default function HomaDetailClient({
             <div className="lg:col-span-6 flex flex-col">
               <div className="relative w-full h-[280px] sm:h-[350px] md:h-[390px] lg:h-[410px] rounded-3xl overflow-hidden border border-stone-200/90 shadow-md group">
                 <img
-                  src={getHomaImageUrl(homa.imageUrl)}
-                  alt={homa.title}
-                  className="w-full h-full object-cover object-center"
+                  src={bannerImages[activeBannerIndex] || (homa ? getHomaImageUrl(homa.imageUrl) : "")}
+                  alt={homa?.title || "Homa Image"}
+                  className="w-full h-full object-cover object-center transition-all duration-300"
                 />
+
+                {/* Left and Right Navigation Buttons (shown when more than 1 image) */}
+                {bannerImages.length > 1 && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={handlePrevBanner}
+                      aria-label="Previous image"
+                      className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center backdrop-blur-sm transition-all shadow-md active:scale-95 z-10"
+                    >
+                      <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+                      </svg>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleNextBanner}
+                      aria-label="Next image"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center backdrop-blur-sm transition-all shadow-md active:scale-95 z-10"
+                    >
+                      <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
+                  </>
+                )}
               </div>
 
-              {/* Carousel Dots */}
-              <div className="flex items-center justify-center gap-2 mt-3 mb-1">
-                <div className="w-7 h-2 bg-[#00b050] rounded-full transition-all" />
-                <div className="w-2.5 h-2.5 bg-stone-300 rounded-full" />
-                <div className="w-2.5 h-2.5 bg-stone-300 rounded-full" />
-                <div className="w-2.5 h-2.5 bg-stone-300 rounded-full" />
-              </div>
+              {/* Carousel Dots (Shown ONLY when > 1 image, rendering exact length of bannerImages) */}
+              {bannerImages.length > 1 && (
+                <div className="flex items-center justify-center gap-2 mt-3 mb-1">
+                  {bannerImages.map((_, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => setActiveBannerIndex(idx)}
+                      aria-label={`Go to slide ${idx + 1}`}
+                      className={
+                        idx === activeBannerIndex
+                          ? "w-7 h-2 bg-[#00b050] rounded-full transition-all cursor-pointer"
+                          : "w-2.5 h-2.5 bg-stone-300 hover:bg-stone-400 rounded-full transition-all cursor-pointer"
+                      }
+                    />
+                  ))}
+                </div>
+              )}
 
               {/* Frameless Ratings / Stat & Action Strip Under Image (Fits exact image width) */}
               <div className="flex items-center justify-between gap-1.5 sm:gap-2 mt-2.5 w-full px-0.5">
@@ -611,29 +719,31 @@ export default function HomaDetailClient({
                     {packagesList.map((pkg, idx) => {
                       const isSelected = selectedPackage?.id === pkg.id;
                       const displayPrice = getDisplayPrice(pkg);
-                      const pkgAvatar = pkg.imageUrl || defaultPackageAvatars[idx % defaultPackageAvatars.length];
+                      const pkgAvatar = defaultPackageAvatars[idx % defaultPackageAvatars.length];
                       const devoteesText = pkg.devoteeCount || (pkg as any).devotees || (idx === 0 ? "1 Devotee" : idx === 1 ? "2 Devotees" : idx === 2 ? "4 Devotees" : "Multiple Devotees");
 
                       return (
                         <div
                           key={pkg.id}
                           onClick={() => setSelectedPackageId(pkg.id)}
-                          className={`relative border-2 rounded-2xl p-3 cursor-pointer transition-all flex items-center gap-3 ${isSelected
+                          className={`relative border-2 rounded-2xl py-4 sm:py-5 px-3.5 cursor-pointer transition-all flex items-center gap-3 min-h-[88px] ${isSelected
                             ? "border-[#00b050] bg-green-50/50 shadow-xs"
                             : "border-stone-200 hover:border-stone-300 bg-white"
                             }`}
                         >
-                          <div className="relative w-11 h-11 rounded-full overflow-hidden shrink-0 border border-stone-200 bg-stone-100">
-                            <img src={pkgAvatar} alt={pkg.name} className="w-full h-full object-cover" />
+                          <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden shrink-0 border border-stone-200/90 bg-white shadow-2xs">
+                            <img src={pkgAvatar} alt={pkg.name} className="w-full h-full object-cover object-center" />
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <h4 className="font-extrabold text-stone-900 text-xs truncate">{pkg.name}</h4>
-                            <span className="text-[11px] font-semibold text-stone-500 block truncate">{devoteesText}</span>
-                            <span className="font-extrabold text-sm text-[#00b050] block">₹{displayPrice}</span>
+                          <div className="flex-1 min-w-0 space-y-0.5">
+                            <h4 className="font-extrabold text-stone-900 text-xs sm:text-[13px] truncate">{pkg.name}</h4>
+                            <span className="text-[11px] sm:text-xs font-semibold text-stone-500 block truncate">{devoteesText}</span>
+                            <span className="font-extrabold text-sm sm:text-base text-[#00b050] block">₹{displayPrice}</span>
                           </div>
                           {isSelected && (
-                            <div className="absolute top-2 right-2 w-4 h-4 rounded-full bg-[#00b050] text-white flex items-center justify-center text-[10px] font-bold shadow-xs">
-                              ✓
+                            <div className="absolute top-2.5 right-2.5 w-5 h-5 rounded-full bg-[#00b050] text-white flex items-center justify-center shrink-0 shadow-xs">
+                              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3.5">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                              </svg>
                             </div>
                           )}
                         </div>
@@ -647,7 +757,7 @@ export default function HomaDetailClient({
               <button
                 ref={heroCtaRef}
                 onClick={handleAddHomaToCart}
-                className="w-full bg-[#00b050] hover:bg-[#009644] active:scale-95 text-white font-extrabold text-base sm:text-lg py-3 px-6 rounded-full shadow-md transition-all flex items-center justify-center gap-2.5 mb-3.5"
+                className="w-full bg-[#00b050] hover:bg-[#009644] active:scale-95 text-white font-extrabold text-xl sm:text-2xl py-4 sm:py-4.5 px-8 rounded-full shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-3 mb-3.5 tracking-wide"
               >
                 <span>₹{priceVal.toLocaleString("en-IN")}</span>
                 <span className="opacity-60 font-light">|</span>
@@ -695,8 +805,8 @@ export default function HomaDetailClient({
       </div>
 
       {/* ── 3. Sticky Sub-navigation Tabs Bar ── */}
-      <div className="sticky top-[76px] z-30 bg-white/95 backdrop-blur-md border-b border-stone-200/90 shadow-xs pt-2 sm:pt-3">
-        <div className="max-w-[1350px] mx-auto px-4 sm:px-6 lg:px-10 flex overflow-x-auto no-scrollbar gap-6 text-xs sm:text-sm font-bold text-stone-600">
+      <div className="sticky top-[76px] z-30 bg-white/95 backdrop-blur-md border-b border-stone-200/90 shadow-xs pt-2 sm:pt-3 w-full">
+        <div className="w-full max-w-[1350px] mx-auto px-4 sm:px-6 lg:px-10 flex items-center justify-between overflow-x-auto no-scrollbar gap-2 sm:gap-4 text-xs sm:text-sm font-bold text-stone-600">
           {[
             { id: "about", label: "About homa" },
             { id: "benefits", label: "Homa Benefits" },
@@ -719,7 +829,7 @@ export default function HomaDetailClient({
                   window.scrollTo({ top: y, behavior: "smooth" });
                 }
               }}
-              className={`py-3 sm:py-3.5 border-b-2 transition-colors whitespace-nowrap ${activeTab === tab.id
+              className={`flex-1 text-center py-3 sm:py-3.5 border-b-2 transition-colors whitespace-nowrap shrink-0 sm:shrink ${activeTab === tab.id
                 ? "border-[#00b050] text-[#00b050]"
                 : "border-transparent hover:text-stone-900"
                 }`}
@@ -926,7 +1036,10 @@ export default function HomaDetailClient({
                 rel="noopener noreferrer"
                 className="w-full bg-[#00b050] hover:bg-[#009644] text-white font-extrabold text-xs sm:text-sm py-3 px-4 rounded-full transition-colors flex items-center justify-center gap-2 shadow-sm"
               >
-                <span>💬 WhatsApp Agent</span>
+                <svg className="w-5 h-5 shrink-0 fill-white" viewBox="0 0 24 24">
+                  <path d="M12.012 2c-5.506 0-9.989 4.478-9.99 9.984 0 1.758.459 3.474 1.33 4.982L2 22l5.144-1.348c1.455.793 3.097 1.21 4.864 1.21 5.505 0 9.989-4.478 9.99-9.985 0-5.506-4.484-9.984-9.986-9.984zm5.794 14.15c-.244.686-1.437 1.344-1.982 1.393-.526.048-1.018.257-3.418-.686-2.905-1.141-4.757-4.088-4.901-4.281-.144-.193-1.177-1.564-1.177-2.984 0-1.42.747-2.119 1.011-2.408.264-.289.576-.361.769-.361.192 0 .385.001.552.009.178.008.417-.067.653.498.243.582.83 2.023.902 2.168.072.144.12.312.024.504-.096.192-.144.312-.288.48-.144.168-.303.376-.432.504-.144.144-.294.302-.126.59.168.289.747 1.233 1.603 1.996 1.101.98 2.03 1.285 2.318 1.429.288.144.456.12.624-.072.168-.192.721-.84.913-1.128.192-.288.384-.24.648-.144.264.096 1.677.791 1.965.935.288.144.48.216.552.336.072.12.072.696-.172 1.382z" />
+                </svg>
+                <span>WhatsApp Agent</span>
               </a>
             </div>
           </div>
@@ -935,28 +1048,42 @@ export default function HomaDetailClient({
 
       </div>
 
-      {/* ── 5. Sticky Floating Action Bar at Bottom (Only shows when hero Book Now button scrolls out of view) ── */}
+      {/* ── 5. Sticky Floating Action Bar at Bottom ── */}
       <div
-        className={`fixed bottom-3 sm:bottom-6 left-1/2 -translate-x-1/2 z-40 w-[95%] max-w-[1100px] transition-all duration-300 transform ${
-          showStickyBar
-            ? "translate-y-0 opacity-100 pointer-events-auto"
-            : "translate-y-12 opacity-0 pointer-events-none"
-        }`}
+        className={`fixed bottom-3 sm:bottom-6 left-1/2 -translate-x-1/2 z-40 w-[95%] max-w-[1250px] transition-all duration-300 transform ${showStickyBar
+          ? "translate-y-0 opacity-100 pointer-events-auto"
+          : "translate-y-12 opacity-0 pointer-events-none"
+          }`}
       >
-        <div className="bg-[#00b050] text-white rounded-full p-2 sm:p-3 sm:px-6 flex items-center justify-between shadow-2xl shadow-green-900/40 border border-green-400/30 backdrop-blur-md overflow-hidden">
-          <div className="flex items-center gap-2 sm:gap-3 pl-1 sm:pl-2 flex-1 min-w-0 pr-2">
-            <span className="bg-white text-[#00b050] rounded-full flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 text-sm shrink-0 shadow-sm">🔥</span>
+        <div className="bg-[#00b050] text-white rounded-2xl sm:rounded-3xl p-3 sm:py-3.5 sm:px-6 flex items-center justify-between shadow-2xl shadow-green-950/30 border border-green-400/20 backdrop-blur-md">
+          {/* Left Column: Lotus Icon + Uppercase Title + Price */}
+          <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0 pr-3">
+            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white text-[#00b050] flex items-center justify-center shrink-0 shadow-sm">
+              <svg className="w-6 h-6 fill-[#00b050]" viewBox="0 0 24 24">
+                <path d="M12 3c-1.5 2.5-3 5-3 7.5 0 2.5 1.5 4.5 3 4.5s3-2 3-4.5C15 8 13.5 5.5 12 3zm0 14c-4.5 0-7.5-2.5-9-5 1.5 4.5 5.5 7.5 9 7.5s7.5-3 9-7.5c-1.5 2.5-4.5 5-9 5z" />
+              </svg>
+            </div>
             <div className="flex-1 min-w-0">
-              <span className="font-serif font-bold text-xs sm:text-sm block truncate w-full">{homa.title}</span>
-              <span className="font-extrabold text-base sm:text-xl block leading-none mt-0.5">₹{priceVal}</span>
+              <span className="text-[10px] sm:text-xs font-extrabold text-green-100 tracking-wider uppercase block truncate">
+                {homa.title}
+              </span>
+              <span className="text-xl sm:text-2xl font-extrabold text-white block leading-tight mt-0.5">
+                ₹{priceVal.toLocaleString("en-IN")}
+              </span>
             </div>
           </div>
+
+          {/* Right Column: White Pill Button with Green Circle Arrow */}
           <button
-            onClick={() => setShowPackageModal(true)}
-            className="bg-white text-[#00b050] hover:bg-green-50 active:scale-95 font-extrabold text-xs sm:text-sm px-4 sm:px-6 py-2 sm:py-2.5 rounded-full shadow-md transition-all flex items-center gap-1 sm:gap-1.5 shrink-0 whitespace-nowrap mr-1 sm:mr-0"
+            onClick={handleAddHomaToCart}
+            className="bg-white hover:bg-green-50 active:scale-95 text-[#00b050] font-extrabold text-xs sm:text-sm px-4 sm:px-6 py-2 sm:py-2.5 rounded-full shadow-md transition-all flex items-center gap-2 shrink-0 whitespace-nowrap cursor-pointer"
           >
-            <span>Participate</span>
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
+            <span>Book Now</span>
+            <div className="w-6 h-6 rounded-full bg-[#00b050] text-white flex items-center justify-center shrink-0">
+              <svg className="w-3.5 h-3.5 stroke-current" fill="none" viewBox="0 0 24 24" strokeWidth="3">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+              </svg>
+            </div>
           </button>
         </div>
       </div>
