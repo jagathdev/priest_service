@@ -1,58 +1,33 @@
 import 'dotenv/config';
-import express from 'express';
-import cors from 'cors';
-import pujaRoutes from './routes/pujaRoutes.js';
-import homaRoutes from './routes/homaRoutes.js';
-import otpRoutes from './routes/otp.routes.js';
-import orderRoutes from './routes/order.routes.js';
-import poojaDetailsRoutes from './routes/pooja.routes.js';
-import wishlistRoutes from './routes/wishlist.routes.js';
 import connectDB from './config/db.js';
-import userRoutes from './routes/user.routes.js';
-import customerQueryRoutes from './routes/customerQuery.routes.js';
-import paymentRoutes from './routes/payment.routes.js';
-import heroBannerRoutes from './routes/heroBannerRoutes.js';
-import adminRoutes from './routes/adminRoutes.js';
 import setupAdmin from './config/setupAdmin.js';
-import promoCodeRoutes from "./routes/promoCode.routes.js";
+import app from './app.js';
 
-const app = express();
+const PORT = process.env.PORT || 8564;
 
 // Connect Database
 connectDB().then(() => {
     setupAdmin();
 });
-app.use(
-    cors({
-        origin: [
-            "https://priestservices.astroved.com",
-            "http://localhost:8565",
-            "https://priest-service.vercel.app"
-        ],
-        methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-        allowedHeaders: ["Content-Type", "Authorization"],
-        credentials: true,
-    })
-);
-app.use(express.json());
 
-// Routes
-app.use("/api/admin", adminRoutes);
-app.use("/api/hero-banners", heroBannerRoutes);
-app.use('/api/pujas', pujaRoutes);
-app.use('/api/homas', homaRoutes);
-app.use('/api/otp', otpRoutes);
-app.use('/api/orders', orderRoutes);
-app.use('/api/pooja-details', poojaDetailsRoutes);
-app.use("/api/wishlist", wishlistRoutes);
-app.use("/api/users", userRoutes);
-app.use("/api/customerQueries", customerQueryRoutes);
-app.use("/api/payments", paymentRoutes);
-app.use("/api/promos", promoCodeRoutes);
-
-const PORT = process.env.PORT || 8564;
-
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
     console.log(`Server is Running on http://localhost:${PORT}`);
 });
 
+// Graceful Shutdown
+const gracefulShutdown = () => {
+    console.log('Received kill signal, shutting down gracefully.');
+    server.close(() => {
+        console.log('Closed out remaining connections.');
+        process.exit(0);
+    });
+
+    // Force close after 10 seconds
+    setTimeout(() => {
+        console.error('Could not close connections in time, forcefully shutting down');
+        process.exit(1);
+    }, 10000);
+};
+
+process.on('SIGTERM', gracefulShutdown);
+process.on('SIGINT', gracefulShutdown);

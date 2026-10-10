@@ -6,27 +6,17 @@ import {
   updatePuja,
   deletePuja,
 } from "../controllers/pujaController.js";
+import { requireAuth, requireAdmin } from "../middlewares/auth.js";
 
 const router = express.Router();
 
-/**
- * Puja REST API Routes
- * Base Path: /api/pujas
- */
-
-// 1. POST /api/pujas - Create a Puja
-router.post("/", createPuja);
-
-// 2. GET /api/pujas - Get all Pujas
+// Public GET
 router.get("/", getAllPujas);
-
-// 3. GET /api/pujas/:id - Get Puja by ID
 router.get("/:id", getPujaById);
 
-// 4. PUT /api/pujas/:id - Update Puja by ID
-router.put("/:id", updatePuja);
-
-// 5. DELETE /api/pujas/:id - Delete Puja by ID
-router.delete("/:id", deletePuja);
+// Admin only
+router.post("/", requireAuth, requireAdmin, createPuja);
+router.put("/:id", requireAuth, requireAdmin, updatePuja);
+router.delete("/:id", requireAuth, requireAdmin, deletePuja);
 
 export default router;

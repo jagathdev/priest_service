@@ -2,7 +2,7 @@ import User from "../models/user.js";
 
 export const getProfile = async (req, res) => {
     try {
-        const userId = req.params.userId || req.query.userId;
+        const userId = req.user.id;
 
         if (!userId) {
             return res.status(400).json({
@@ -28,6 +28,10 @@ export const getProfile = async (req, res) => {
                 email: user.email,
                 mobileNumber: user.mobileNumber,
                 addresses: user.addresses,
+                gender: user.gender,
+                dob: user.dob,
+                placeOfBirth: user.placeOfBirth,
+                occupation: user.occupation,
             },
         });
     } catch (error) {
@@ -41,7 +45,8 @@ export const getProfile = async (req, res) => {
 
 export const updateProfile = async (req, res) => {
     try {
-        const { userId, name, email, mobileNumber, addresses } = req.body;
+        const userId = req.user.id;
+        const { name, email, gender, dob, placeOfBirth, occupation, addresses } = req.body;
 
         if (!userId) {
             return res.status(400).json({
@@ -69,13 +74,11 @@ export const updateProfile = async (req, res) => {
             email: email.trim().toLowerCase(),
         };
 
-        if (mobileNumber && mobileNumber.trim()) {
-            updateData.mobileNumber = mobileNumber.trim();
-        }
-
-        if (addresses) {
-            updateData.addresses = addresses;
-        }
+        if (gender !== undefined) updateData.gender = gender;
+        if (dob !== undefined) updateData.dob = dob;
+        if (placeOfBirth !== undefined) updateData.placeOfBirth = placeOfBirth;
+        if (occupation !== undefined) updateData.occupation = occupation;
+        if (addresses) updateData.addresses = addresses;
 
         const user = await User.findByIdAndUpdate(
             userId,
@@ -102,6 +105,10 @@ export const updateProfile = async (req, res) => {
                 email: user.email,
                 mobileNumber: user.mobileNumber,
                 addresses: user.addresses,
+                gender: user.gender,
+                dob: user.dob,
+                placeOfBirth: user.placeOfBirth,
+                occupation: user.occupation,
             },
         });
     } catch (error) {
@@ -113,4 +120,3 @@ export const updateProfile = async (req, res) => {
         });
     }
 };
-

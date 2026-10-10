@@ -7,17 +7,17 @@ import {
     updateHeroBanner,
     deleteHeroBanner,
 } from "../controllers/heroBanner.Controller.js";
+import { requireAuth, requireAdmin } from "../middlewares/auth.js";
 
 const router = express.Router();
 
+// Public GET
 router.get("/", getHeroBanners);
-
 router.get("/:id", getHeroBannerById);
 
-router.post("/", createHeroBanner);
-
-router.put("/:id", updateHeroBanner);
-
-router.delete("/:id", deleteHeroBanner);
+// Admin only
+router.post("/", requireAuth, requireAdmin, createHeroBanner);
+router.put("/:id", requireAuth, requireAdmin, updateHeroBanner);
+router.delete("/:id", requireAuth, requireAdmin, deleteHeroBanner);
 
 export default router;

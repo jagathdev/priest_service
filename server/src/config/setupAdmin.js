@@ -1,4 +1,5 @@
-import User from '../models/user.js';
+import Admin from '../models/Admin.js';
+import bcrypt from 'bcrypt';
 
 const setupAdmin = async () => {
     try {
@@ -6,24 +7,18 @@ const setupAdmin = async () => {
         const adminPassword = process.env.ADMIN_PASSWORD;
 
         if (adminEmail && adminPassword) {
-            const admin = await User.findOne({ email: adminEmail, role: 'admin' });
-            if (!admin) {
-                await User.create({
+            const adminCount = await Admin.countDocuments({});
+            if (adminCount === 0) {
+                const passwordHash = await bcrypt.hash(adminPassword, 12);
+                await Admin.create({
                     email: adminEmail,
-                    password: adminPassword,
+                    passwordHash,
                     role: 'admin',
-                    mobileNumber: '9360270984',
-                    name: 'Admin',
-                    isVerified: true
+                    name: 'Admin'
                 });
                 console.log(`Admin account created with email: ${adminEmail}`);
-            } else if (admin.password !== adminPassword) {
-                await User.updateOne(
-                    { _id: admin._id }, 
-                    { $set: { password: adminPassword } }
-                );
-                console.log(`Admin account password updated for email: ${adminEmail}`);
             }
+            // Do not overwrite existing admin passwords
         }
     } catch (error) {
         console.error('Error setting up admin account:', error);

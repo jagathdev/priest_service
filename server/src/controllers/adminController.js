@@ -3,7 +3,8 @@ import Homa from "../models/homaModel.js";
 import Order from "../models/Order.js";
 import User from "../models/user.js";
 import jwt from "jsonwebtoken";
-
+import bcrypt from "bcrypt";
+import Admin from "../models/Admin.js";
 export const adminLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -11,12 +12,20 @@ export const adminLogin = async (req, res) => {
       return res.status(400).json({ success: false, message: "Email and password are required" });
     }
 
-    const admin = await User.findOne({ email, role: "admin" });
-    if (!admin || admin.password !== password) {
+    const admin = await Admin.findOne({ email });
+    if (!admin) {
       return res.status(401).json({ success: false, message: "Invalid email or password" });
     }
 
-    const token = jwt.sign({ id: admin._id, role: admin.role }, process.env.JWT_SECRET || "admin_secret", { expiresIn: "1d" });
+    const isMatch = await bcrypt.compare(password, admin.passwordHash);
+    if (!isMatch) {
+      return res.status(401).json({ success: false, message: "Invalid email or password" });
+    }
+
+    admin.lastLoginAt = new Date();
+    await admin.save();
+
+    const token = jwt.sign({ id: admin._id, role: admin.role }, process.env.JWT_SECRET, { expiresIn: "1d" });
 
     return res.status(200).json({
       success: true,

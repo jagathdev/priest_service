@@ -9,32 +9,19 @@ import {
     updatePromoStatus,
     applyPromoCode,
 } from "../controllers/promoCode.controller.js";
+import { requireAuth, requireAdmin } from "../middlewares/auth.js";
 
 const router = express.Router();
 
-//  Admin
+// Admin
+router.get("/", requireAuth, requireAdmin, getPromoCodes);
+router.get("/:id", requireAuth, requireAdmin, getPromoCodeById);
+router.post("/", requireAuth, requireAdmin, createPromoCode);
+router.put("/:id", requireAuth, requireAdmin, updatePromoCode);
+router.delete("/:id", requireAuth, requireAdmin, deletePromoCode);
+router.patch("/:id/status", requireAuth, requireAdmin, updatePromoStatus);
 
-
-router.get("/", getPromoCodes);
-
-router.get("/:id", getPromoCodeById);
-
-router.post("/", createPromoCode);
-
-router.put("/:id", updatePromoCode);
-
-router.delete("/:id", deletePromoCode);
-
-router.patch(
-    "/:id/status",
-    updatePromoStatus
-);
-
-//  Customer
-
-router.post(
-    "/apply",
-    applyPromoCode
-);
+// Customer
+router.post("/apply", requireAuth, applyPromoCode);
 
 export default router;

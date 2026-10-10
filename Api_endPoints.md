@@ -1073,3 +1073,166 @@ Base URL: `https://priestservices.astroved.com`
   }
 }
 ```
+
+## 9. Health Check
+
+### 1. Check Server Health
+- **URL:** `/health`
+- **Method:** `GET`
+- **Auth Required:** No
+
+#### Success Response
+**Code:** `200 OK`
+```json
+{
+  "status": "ok",
+  "timestamp": "2026-10-10T12:00:00.000Z"
+}
+```
+
+## 10. Updated User Profile APIs (Token-based Auth)
+
+### 1. Get User Profile
+- **URL:** `/api/users/profile`
+- **Method:** `GET`
+- **Auth Required:** Yes (Bearer Token)
+- **Note:** The `userId` path parameter has been removed; identity is extracted from the JWT.
+
+#### Success Response
+**Code:** `200 OK`
+```json
+{
+  "success": true,
+  "data": {
+    "id": "60d5ecb74d6b...",
+    "name": "John Doe",
+    "email": "john@example.com",
+    "mobileNumber": "9876543210",
+    "addresses": [],
+    "gender": "male",
+    "dob": "1990-01-01",
+    "placeOfBirth": "Chennai",
+    "occupation": "Engineer"
+  }
+}
+```
+
+### 2. Update User Profile
+- **URL:** `/api/users/updateProfile`
+- **Method:** `PUT`
+- **Auth Required:** Yes (Bearer Token)
+- **Note:** The `userId` field has been removed from the request body; identity is extracted from the JWT.
+
+#### Request Body
+```json
+{
+  "name": "Jane Doe",
+  "email": "jane.doe@example.com",
+  "gender": "female",
+  "dob": "1995-05-15",
+  "placeOfBirth": "Mumbai",
+  "occupation": "Doctor",
+  "addresses": []
+}
+```
+
+#### Success Response
+**Code:** `200 OK`
+```json
+{
+  "success": true,
+  "message": "Profile updated successfully",
+  "data": {
+    "id": "60d5ecb74d6b...",
+    "name": "Jane Doe",
+    "email": "jane.doe@example.com",
+    "mobileNumber": "9876543210",
+    "addresses": [],
+    "gender": "female",
+    "dob": "1995-05-15",
+    "placeOfBirth": "Mumbai",
+    "occupation": "Doctor"
+  }
+}
+```
+
+## 11. OTP & Authorization Changes
+
+### 1. Verify OTP (Updated Response)
+- **URL:** `/api/otp/verify`
+- **Method:** `POST`
+- **Auth Required:** No
+- **Note:** The verify OTP response now includes a JWT token for authenticated sessions.
+
+#### Success Response
+**Code:** `200 OK`
+```json
+{
+  "success": true,
+  "message": "OTP verified successfully",
+  "data": {
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "user": {
+      "id": "60d5ecb74d6b...",
+      "mobileNumber": "9876543210"
+    }
+  }
+}
+```
+
+## 12. WhatsApp APIs
+
+### 1. Opt-in Customer
+- **URL:** `/api/whatsapp/opt-in`
+- **Method:** `POST`
+- **Auth Required:** No
+
+#### Request Body
+```json
+{
+  "mobileNumber": "9876543210",
+  "consent": true
+}
+```
+
+#### Success Response
+**Code:** `200 OK`
+```json
+{
+  "success": true,
+  "message": "Customer opt-in registered",
+  "data": {
+    "alreadyOptedIn": false,
+    "consentStatus": "active"
+  }
+}
+```
+
+### 2. Order Confirmation Message
+- **URL:** `/api/whatsapp/order-confirmation`
+- **Method:** `POST`
+- **Auth Required:** No
+
+#### Request Body
+```json
+{
+  "mobileNumber": "9876543210",
+  "customerName": "John Doe",
+  "orderId": "PS-2026-000001",
+  "serviceName": "Ganesh Homa",
+  "bookingDate": "2026-11-01T10:00:00Z",
+  "amount": 1500
+}
+```
+
+#### Success Response
+**Code:** `200 OK`
+```json
+{
+  "success": true,
+  "message": "Confirmation request accepted by Netcore",
+  "data": {
+    "messageId": "msg_12345"
+  }
+}
+```
