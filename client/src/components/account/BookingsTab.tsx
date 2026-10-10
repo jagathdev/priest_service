@@ -47,7 +47,7 @@ export default function BookingsTab() {
   if (selectedOrder) {
     return (
       <div className="bg-white rounded-2xl shadow-sm border border-stone-100 p-8 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-        <button onClick={() => setSelectedOrder(null)} className="flex items-center text-sm font-bold text-stone-500 hover:text-[#00b050] transition-colors">
+        <button onClick={() => setSelectedOrder(null)} className="flex items-center text-sm font-bold text-stone-500 hover:text-success transition-colors">
           <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
           Back to Bookings
         </button>
@@ -136,10 +136,10 @@ export default function BookingsTab() {
             <h4 className="font-bold text-stone-800">Puja Journey</h4>
           </div>
 
-          <div className={`space-y-8 relative before:absolute before:inset-0 before:ml-4 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 ${selectedOrder.orderStatus === 'completed' || selectedOrder.orderStatus === 'performed' ? 'before:bg-[#00b050]' : selectedOrder.orderStatus === 'scheduled' ? 'before:bg-gradient-to-b before:from-[#00b050] before:via-[#00b050] before:to-stone-200' : 'before:bg-gradient-to-b before:from-[#00b050] before:via-stone-200 before:to-stone-200'}`}>
+          <div className={`space-y-8 relative before:absolute before:inset-0 before:ml-4 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 ${selectedOrder.orderStatus === 'completed' || selectedOrder.orderStatus === 'performed' ? 'before:bg-success' : selectedOrder.orderStatus === 'scheduled' ? 'before:bg-gradient-to-b before:from-success before:via-success before:to-stone-200' : 'before:bg-gradient-to-b before:from-success before:via-stone-200 before:to-stone-200'}`}>
 
             <div className="relative flex items-center justify-end md:justify-between md:odd:flex-row-reverse group is-active">
-              <div className="absolute left-0 md:left-1/2 md:-translate-x-1/2 flex items-center justify-center w-8 h-8 rounded-full border-4 border-white bg-[#00b050] text-white shadow shrink-0 z-10">
+              <div className="absolute left-0 md:left-1/2 md:-translate-x-1/2 flex items-center justify-center w-8 h-8 rounded-full border-4 border-white bg-success text-white shadow shrink-0 z-10">
                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
               </div>
               <div className="w-[calc(100%-3rem)] md:w-[calc(50%-2.5rem)] p-4 border border-stone-100 rounded-xl bg-stone-50">
@@ -150,7 +150,7 @@ export default function BookingsTab() {
             </div>
 
             <div className="relative flex items-center justify-end md:justify-between md:odd:flex-row-reverse group is-active">
-              <div className="absolute left-0 md:left-1/2 md:-translate-x-1/2 flex items-center justify-center w-8 h-8 rounded-full border-4 border-white bg-[#00b050] text-white shadow shrink-0 z-10">
+              <div className="absolute left-0 md:left-1/2 md:-translate-x-1/2 flex items-center justify-center w-8 h-8 rounded-full border-4 border-white bg-success text-white shadow shrink-0 z-10">
                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
               </div>
               <div className="w-[calc(100%-3rem)] md:w-[calc(50%-2.5rem)] p-4 border border-stone-100 rounded-xl bg-stone-50">
@@ -161,7 +161,7 @@ export default function BookingsTab() {
             </div>
 
             <div className={`relative flex items-center justify-end md:justify-between md:odd:flex-row-reverse group ${selectedOrder.orderStatus === 'scheduled' || selectedOrder.orderStatus === 'performed' || selectedOrder.orderStatus === 'completed' ? 'is-active' : ''}`}>
-              <div className={`absolute left-0 md:left-1/2 md:-translate-x-1/2 flex items-center justify-center w-8 h-8 rounded-full border-4 border-white shadow shrink-0 z-10 ${selectedOrder.orderStatus === 'scheduled' || selectedOrder.orderStatus === 'performed' || selectedOrder.orderStatus === 'completed' ? 'bg-[#00b050] text-white' : 'bg-white'}`}>
+              <div className={`absolute left-0 md:left-1/2 md:-translate-x-1/2 flex items-center justify-center w-8 h-8 rounded-full border-4 border-white shadow shrink-0 z-10 ${selectedOrder.orderStatus === 'scheduled' || selectedOrder.orderStatus === 'performed' || selectedOrder.orderStatus === 'completed' ? 'bg-success text-white' : 'bg-white'}`}>
                 {selectedOrder.orderStatus === 'scheduled' || selectedOrder.orderStatus === 'performed' || selectedOrder.orderStatus === 'completed' ? (
                   <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                 ) : (
@@ -176,7 +176,7 @@ export default function BookingsTab() {
             </div>
 
             <div className={`relative flex items-center justify-end md:justify-between md:odd:flex-row-reverse group ${selectedOrder.orderStatus === 'performed' || selectedOrder.orderStatus === 'completed' ? 'is-active' : ''}`}>
-              <div className={`absolute left-0 md:left-1/2 md:-translate-x-1/2 flex items-center justify-center w-8 h-8 rounded-full border-4 border-white shadow shrink-0 z-10 ${selectedOrder.orderStatus === 'performed' || selectedOrder.orderStatus === 'completed' ? 'bg-[#00b050] text-white' : 'bg-white'}`}>
+              <div className={`absolute left-0 md:left-1/2 md:-translate-x-1/2 flex items-center justify-center w-8 h-8 rounded-full border-4 border-white shadow shrink-0 z-10 ${selectedOrder.orderStatus === 'performed' || selectedOrder.orderStatus === 'completed' ? 'bg-success text-white' : 'bg-white'}`}>
                 {selectedOrder.orderStatus === 'performed' || selectedOrder.orderStatus === 'completed' ? (
                   <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                 ) : (
@@ -187,7 +187,7 @@ export default function BookingsTab() {
                 <div className="text-[10px] font-extrabold text-stone-400 uppercase tracking-wider mb-1">Step 4</div>
                 <h5 className="font-bold text-stone-800">Video Delivered</h5>
                 {selectedOrder.videoLink && (selectedOrder.orderStatus === 'performed' || selectedOrder.orderStatus === 'completed') ? (
-                  <a href={selectedOrder.videoLink} target="_blank" rel="noreferrer" className="text-xs text-[#069e5d] font-bold mt-1 inline-block underline">Watch Recording</a>
+                  <a href={selectedOrder.videoLink} target="_blank" rel="noreferrer" className="text-xs text-success font-bold mt-1 inline-block underline">Watch Recording</a>
                 ) : (
                   <p className="text-xs text-stone-500 font-medium mt-1">Available after the puja</p>
                 )}
@@ -211,7 +211,7 @@ export default function BookingsTab() {
     <div className="bg-white rounded-2xl shadow-sm border border-stone-100 p-8 min-h-[500px]">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-[10px] bg-[#701a28] text-white flex items-center justify-center shrink-0 shadow-sm">
+          <div className="w-10 h-10 rounded-[10px] bg-danger text-white flex items-center justify-center shrink-0 shadow-sm">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" />
             </svg>
@@ -224,13 +224,13 @@ export default function BookingsTab() {
           <button
             onClick={() => setFilter("All")}
             className={`px-5 py-2 rounded-full text-sm font-bold flex items-center gap-2 border transition ${filter === "All"
-              ? "border-[#069e5d] text-[#069e5d] bg-white shadow-sm"
+              ? "border-success text-success bg-white shadow-sm"
               : "border-transparent text-gray-700 bg-[#ebebeb] hover:bg-[#e0e0e0]"
               }`}
           >
             All
             {filter === "All" && (
-              <div className="w-4 h-4 rounded-full bg-[#069e5d] text-white flex items-center justify-center">
+              <div className="w-4 h-4 rounded-full bg-success text-white flex items-center justify-center">
                 <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                 </svg>
@@ -305,7 +305,7 @@ export default function BookingsTab() {
                     )}
                   </div>
                   <div>
-                    <h3 className="text-[16px] sm:text-[18px] font-bold text-[#069e5d] mb-1">{order.itemName || order.pooja || "Sacred Puja Service"}</h3>
+                    <h3 className="text-[16px] sm:text-[18px] font-bold text-success mb-1">{order.itemName || order.pooja || "Sacred Puja Service"}</h3>
                     {order.temple ? (
                       <div className="flex items-center gap-1.5 text-gray-700 font-bold text-[13px] sm:text-[15px]">
                         <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -326,14 +326,14 @@ export default function BookingsTab() {
 
                 {/* Progress Tracker */}
                 <div className="relative max-w-[380px] mt-8 pb-2">
-                  <div className={`absolute top-6 left-12 right-1/2 h-[3px] -z-10 ${order.orderStatus === 'scheduled' || order.orderStatus === 'performed' || order.orderStatus === 'completed' ? 'bg-[#069e5d]' : 'bg-[#eadecd]'}`}></div>
-                  <div className={`absolute top-6 left-1/2 right-14 h-[3px] -z-10 ${order.orderStatus === 'performed' || order.orderStatus === 'completed' ? 'bg-[#069e5d]' : 'bg-[#eadecd]'}`}></div>
+                  <div className={`absolute top-6 left-12 right-1/2 h-[3px] -z-10 ${order.orderStatus === 'scheduled' || order.orderStatus === 'performed' || order.orderStatus === 'completed' ? 'bg-success' : 'bg-[#eadecd]'}`}></div>
+                  <div className={`absolute top-6 left-1/2 right-14 h-[3px] -z-10 ${order.orderStatus === 'performed' || order.orderStatus === 'completed' ? 'bg-success' : 'bg-[#eadecd]'}`}></div>
 
                   <div className="flex justify-between items-start text-center">
                     {/* Step 1 */}
                     <div className="flex flex-col items-center w-24">
-                      <div className="w-12 h-12 rounded-full border-[2px] border-[#069e5d] bg-white flex items-center justify-center mb-2 z-10 shadow-sm relative">
-                        <svg className="w-5 h-5 text-[#069e5d]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <div className="w-12 h-12 rounded-full border-[2px] border-success bg-white flex items-center justify-center mb-2 z-10 shadow-sm relative">
+                        <svg className="w-5 h-5 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 12l2 2 4-4" />
                         </svg>
@@ -341,7 +341,7 @@ export default function BookingsTab() {
                       <p className="text-[12px] font-extrabold text-gray-900 leading-tight">Booked</p>
                       <div className="flex items-center justify-center gap-1 mt-0.5">
                         <span className="text-[11px] font-bold text-gray-600">{bookingDate}</span>
-                        <div className="w-3.5 h-3.5 rounded-full bg-[#069e5d] text-white flex items-center justify-center shrink-0">
+                        <div className="w-3.5 h-3.5 rounded-full bg-success text-white flex items-center justify-center shrink-0">
                           <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="4">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                           </svg>
@@ -351,8 +351,8 @@ export default function BookingsTab() {
 
                     {/* Step 2 */}
                     <div className="flex flex-col items-center w-24">
-                      <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 z-10 shadow-[0_0_0_4px_white] ${order.orderStatus === 'scheduled' || order.orderStatus === 'performed' || order.orderStatus === 'completed' ? 'border-[2px] border-[#069e5d] bg-white' : 'bg-[#fae8e3]'}`}>
-                        <svg className={`w-6 h-6 ${order.orderStatus === 'scheduled' || order.orderStatus === 'performed' || order.orderStatus === 'completed' ? 'text-[#069e5d]' : 'text-[#a3948e]'}`} fill="currentColor" viewBox="0 0 24 24">
+                      <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 z-10 shadow-[0_0_0_4px_white] ${order.orderStatus === 'scheduled' || order.orderStatus === 'performed' || order.orderStatus === 'completed' ? 'border-[2px] border-success bg-white' : 'bg-[#fae8e3]'}`}>
+                        <svg className={`w-6 h-6 ${order.orderStatus === 'scheduled' || order.orderStatus === 'performed' || order.orderStatus === 'completed' ? 'text-success' : 'text-[#a3948e]'}`} fill="currentColor" viewBox="0 0 24 24">
                           <path d="M12 2C8 2 8 8 8 8s-4 0-4 4c0 3 4 5 8 8 4-3 8-5 8-8 0-4-4-4-4-4s0-6-4-6zm0 13c-2 0-4-1-5-2 1 1 3 2 5 2s4-1 5-2c-1 1-3 2-5 2z" />
                         </svg>
                       </div>
@@ -366,7 +366,7 @@ export default function BookingsTab() {
                     <div className="flex flex-col items-center w-28">
                       <div className="h-12 flex items-center justify-center mb-2 z-10 shadow-[0_0_0_4px_white]">
                         {order.orderStatus === 'performed' || order.orderStatus === 'completed' ? (
-                          <a href={order.videoLink || "#"} target="_blank" rel="noreferrer" className="px-4 py-1.5 rounded-full bg-[#069e5d] text-white font-bold text-[12px] flex items-center gap-1.5 hover:bg-green-700 transition" onClick={(e) => e.stopPropagation()}>
+                          <a href={order.videoLink || "#"} target="_blank" rel="noreferrer" className="px-4 py-1.5 rounded-full bg-success text-white font-bold text-[12px] flex items-center gap-1.5 hover:bg-green-700 transition" onClick={(e) => e.stopPropagation()}>
                             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z" /></svg>
                             Watch Video
                           </a>

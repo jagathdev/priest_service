@@ -222,19 +222,19 @@ export default function HomaClient({ initialHomas }: { initialHomas?: Homa[] }) 
                             type="button"
                             onClick={() => setSelectedType(item.label)}
                             className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all ${isSelected
-                              ? "bg-[#e8f5e9] text-[#069e5d] font-bold"
+                              ? "bg-[#e8f5e9] text-success font-bold"
                               : "text-gray-700 hover:bg-gray-50"
                               }`}
                           >
                             <span className="flex items-center gap-2">
                               {isSelected && (
-                                <svg className="w-4 h-4 text-[#069e5d]" fill="currentColor" viewBox="0 0 20 20">
+                                <svg className="w-4 h-4 text-success" fill="currentColor" viewBox="0 0 20 20">
                                   <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                                 </svg>
                               )}
                               <span>{item.label}</span>
                             </span>
-                            <span className={`text-xs px-2 py-0.5 rounded-full ${isSelected ? "bg-[#069e5d]/10 text-[#069e5d] font-bold" : "text-gray-400 font-mono"}`}>
+                            <span className={`text-xs px-2 py-0.5 rounded-full ${isSelected ? "bg-success/10 text-success font-bold" : "text-gray-400 font-mono"}`}>
                               {item.count}
                             </span>
                           </button>
@@ -259,7 +259,7 @@ export default function HomaClient({ initialHomas }: { initialHomas?: Homa[] }) 
                               type="checkbox"
                               checked={isChecked}
                               onChange={() => toggleDeity(deity)}
-                              className="w-4 h-4 rounded text-[#069e5d] focus:ring-[#069e5d] border-gray-300"
+                              className="w-4 h-4 rounded text-success focus:ring-success border-gray-300"
                             />
                             <span>{deity}</span>
                           </label>
@@ -284,7 +284,7 @@ export default function HomaClient({ initialHomas }: { initialHomas?: Homa[] }) 
                               type="checkbox"
                               checked={isChecked}
                               onChange={() => toggleDosha(dosha)}
-                              className="w-4 h-4 rounded text-[#069e5d] focus:ring-[#069e5d] border-gray-300"
+                              className="w-4 h-4 rounded text-success focus:ring-success border-gray-300"
                             />
                             <span>{dosha}</span>
                           </label>
@@ -347,7 +347,7 @@ export default function HomaClient({ initialHomas }: { initialHomas?: Homa[] }) 
                       setSelectedDoshas([]);
                       setSearchQuery("");
                     }}
-                    className="mt-4 px-6 py-2.5 rounded-full bg-[#069e5d] text-white text-xs font-bold hover:bg-[#058a51] transition"
+                    className="mt-4 px-6 py-2.5 rounded-full bg-success text-white text-xs font-bold hover:bg-[#058a51] transition"
                   >
                     Clear Filters
                   </button>
@@ -373,7 +373,7 @@ export default function HomaClient({ initialHomas }: { initialHomas?: Homa[] }) 
                             />
 
                             {/* Top Left Maroon Badge Pill */}
-                            <div className="absolute top-3 left-3 bg-[#701a28] text-white text-[11px] font-extrabold px-3.5 py-1.5 rounded-full shadow-md z-10 backdrop-blur-xs max-w-[80%] truncate">
+                            <div className="absolute top-3 left-3 bg-danger text-white text-[11px] font-extrabold px-3.5 py-1.5 rounded-full shadow-md z-10 backdrop-blur-xs max-w-[80%] truncate">
                               {homa.badge || homa.subtitle}
                             </div>
                           </div>
@@ -422,7 +422,7 @@ export default function HomaClient({ initialHomas }: { initialHomas?: Homa[] }) 
                               </div>
 
                               <div
-                                className="bg-[#069e5d] hover:bg-[#058a51] text-white text-xs font-black px-4.5 py-2.5 rounded-full transition-all shadow-xs flex items-center gap-2 group-hover:shadow-md"
+                                className="bg-success hover:bg-[#058a51] text-white text-xs font-black px-4.5 py-2.5 rounded-full transition-all shadow-xs flex items-center gap-2 group-hover:shadow-md"
                               >
                                 <span>BOOK NOW</span>
                                 <div className="w-4 h-4 rounded-full bg-white/20 flex items-center justify-center">
@@ -511,7 +511,7 @@ export default function HomaClient({ initialHomas }: { initialHomas?: Homa[] }) 
                 className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white text-[#5b1422] text-xs sm:text-sm font-extrabold hover:bg-gray-100 transition shadow-lg"
               >
                 <span>Find the Right Homa</span>
-                <div className="w-5 h-5 rounded-full bg-[#069e5d] flex items-center justify-center">
+                <div className="w-5 h-5 rounded-full bg-success flex items-center justify-center">
                   <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                   </svg>
@@ -521,9 +521,9 @@ export default function HomaClient({ initialHomas }: { initialHomas?: Homa[] }) 
 
             {/* Trust Features Row */}
             <div className="mt-8 flex flex-wrap items-center justify-center gap-6 text-xs text-gray-300 font-medium">
-              <span className="flex items-center gap-1.5"><span className="text-[#069e5d] font-bold text-sm">✓</span> 100% Secure</span>
-              <span className="flex items-center gap-1.5"><span className="text-[#069e5d] font-bold text-sm">✓</span> Video Recording Sent</span>
-              <span className="flex items-center gap-1.5"><span className="text-[#069e5d] font-bold text-sm">✓</span> Vedic Priests</span>
+              <span className="flex items-center gap-1.5"><span className="text-success font-bold text-sm">✓</span> 100% Secure</span>
+              <span className="flex items-center gap-1.5"><span className="text-success font-bold text-sm">✓</span> Video Recording Sent</span>
+              <span className="flex items-center gap-1.5"><span className="text-success font-bold text-sm">✓</span> Vedic Priests</span>
             </div>
           </div>
         </section>

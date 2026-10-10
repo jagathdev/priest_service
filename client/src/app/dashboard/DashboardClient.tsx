@@ -51,7 +51,7 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
   }, [initialPujas]);
 
   return (
-    <main className="min-h-screen bg-white text-[#1f1f1f] font-sans">
+    <main className="min-h-screen bg-white text-ink font-sans">
       <Navbar />
 
       {/* ── 1. Hero Section ── */}
@@ -72,7 +72,7 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
           {/* Section Header */}
           <div className="text-center mb-8 sm:mb-12">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-serif font-bold text-[#221f20] tracking-tight">
-              Your Journey to <span className="text-[#F47820]">Divine Blessings</span>
+              Your Journey to <span className="text-accent">Divine Blessings</span>
             </h2>
 
           </div>
@@ -91,7 +91,7 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
                 />
               </div>
               <h3 className="font-serif font-bold text-[#221f20] text-sm sm:text-base leading-tight">
-                Choose Your<span className="text-[#F47820]"> Puja</span>
+                Choose Your<span className="text-accent"> Puja</span>
               </h3>
             </div>
 
@@ -113,7 +113,7 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
                 />
               </div>
               <h3 className="font-serif font-bold text-[#221f20] text-sm sm:text-base leading-tight">
-                Share Your<span className="text-[#F47820]"> Details</span>
+                Share Your<span className="text-accent"> Details</span>
               </h3>
             </div>
 
@@ -135,7 +135,7 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
                 />
               </div>
               <h3 className="font-serif font-bold text-[#221f20] text-sm sm:text-base leading-tight">
-                Puja Is <span className="text-[#F47820]"> Performed</span>
+                Puja Is <span className="text-accent"> Performed</span>
               </h3>
             </div>
 
@@ -157,7 +157,7 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
                 />
               </div>
               <h3 className="font-serif font-bold text-[#221f20] text-sm sm:text-base leading-tight">
-                Receive <span className="text-[#F47820]">Divine Blessings</span>
+                Receive <span className="text-accent">Divine Blessings</span>
               </h3>
             </div>
 
@@ -173,12 +173,12 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
           {/* Header Row & Category Filters */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
             <h2 className="text-3xl sm:text-4xl font-bold text-[#221f20] font-serif">
-              Our <span className="text-[#F47820]">Pujas</span>
+              Our <span className="text-accent">Pujas</span>
             </h2>
 
             {/* Filter Pills */}
             <div className="flex items-center gap-2.5 flex-wrap">
-              <Link href="/puja" className="bg-[#00b050] text-white font-bold px-5 py-2 rounded-full text-xs sm:text-sm shadow-sm hover:bg-[#009b46] transition-colors">
+              <Link href="/puja" className="bg-success text-white font-bold px-5 py-2 rounded-full text-xs sm:text-sm shadow-sm hover:bg-[#009b46] transition-colors">
                 All
               </Link>
 
@@ -212,7 +212,7 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
                   <div className="w-1/2 h-4 bg-stone-100 rounded-full mb-auto" />
                   <div className="flex justify-between items-end mt-4">
                     <div className="w-20 h-6 bg-stone-200 rounded-full" />
-                    <div className="w-32 h-10 bg-[#00b050]/20 rounded-full" />
+                    <div className="w-32 h-10 bg-success/20 rounded-full" />
                   </div>
                 </div>
               ))
@@ -251,7 +251,7 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
           <div className="text-center mt-10">
             <Link
               href="/puja"
-              className="inline-block text-[#00b050] font-extrabold px-8 py-3 rounded-full border-2 border-[#00b050] hover:bg-green-50 active:scale-95 transition-all text-base shadow-sm"
+              className="inline-block text-success font-extrabold px-8 py-3 rounded-full border-2 border-success hover:bg-green-50 active:scale-95 transition-all text-base shadow-sm"
             >
               View All Pujas
             </Link>
@@ -329,7 +329,7 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
             <p className="text-gray-600 mb-8 text-sm max-w-[250px]">
               Our devotee care team is available in 11 languages, 12 hours a day. Reach them on WhatsApp, phone, or email.
             </p>
-            <button className="bg-[#F47820] text-white px-8 py-3 rounded-full font-bold shadow-md hover:bg-[#008c51] transition-colors">
+            <button className="bg-accent text-white px-8 py-3 rounded-full font-bold shadow-md hover:bg-[#008c51] transition-colors">
               Speak to Devotee Care
             </button>
           </div>
@@ -391,8 +391,8 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
               </li>
             </ul>
           </div>
-          <Link href="/puja" className="bg-[#00b050] hover:bg-[#009644] active:scale-95 text-white font-extrabold px-8 py-3.5 rounded-full text-sm sm:text-base transition-all inline-flex items-center gap-2.5 shadow-md shadow-green-600/20">
-            Find the Right Puja <div className="bg-white text-[#00b050] rounded-full w-5 h-5 flex items-center justify-center shadow-sm"><svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7" /></svg></div>
+          <Link href="/puja" className="bg-success hover:bg-[#009644] active:scale-95 text-white font-extrabold px-8 py-3.5 rounded-full text-sm sm:text-base transition-all inline-flex items-center gap-2.5 shadow-md shadow-green-600/20">
+            Find the Right Puja <div className="bg-white text-success rounded-full w-5 h-5 flex items-center justify-center shadow-sm"><svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7" /></svg></div>
           </Link>
         </div>
 
@@ -411,9 +411,9 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
           <div>
             <h4 className="text-[#1f1a17] font-bold text-sm tracking-[0.15em] uppercase mb-6">Explore</h4>
             <ul className="flex flex-col gap-4 text-sm text-stone-600 font-medium">
-              <li><Link href="/" className="hover:text-[#00b050] transition-colors">Home</Link></li>
-              <li><Link href="/puja" className="hover:text-[#00b050] transition-colors">Puja</Link></li>
-              <li><Link href="/profile" className="hover:text-[#00b050] transition-colors">Account</Link></li>
+              <li><Link href="/" className="hover:text-success transition-colors">Home</Link></li>
+              <li><Link href="/puja" className="hover:text-success transition-colors">Puja</Link></li>
+              <li><Link href="/profile" className="hover:text-success transition-colors">Account</Link></li>
             </ul>
           </div>
 
@@ -421,9 +421,9 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
           <div>
             <h4 className="text-[#1f1a17] font-bold text-sm tracking-[0.15em] uppercase mb-6">Support</h4>
             <ul className="flex flex-col gap-4 text-sm text-stone-600 font-medium">
-              <li><Link href="mailto:support@astroved.com" className="hover:text-[#00b050] transition-colors">support@astroved.com</Link></li>
-              <li><Link href="/profile?tab=support" className="hover:text-[#00b050] transition-colors">Contact Us</Link></li>
-              <li><Link href="https://wa.me/919677391109" target="_blank" rel="noopener noreferrer" className="hover:text-[#00b050] transition-colors">WhatsApp: +91 9677391109</Link></li>
+              <li><Link href="mailto:support@astroved.com" className="hover:text-success transition-colors">support@astroved.com</Link></li>
+              <li><Link href="/profile?tab=support" className="hover:text-success transition-colors">Contact Us</Link></li>
+              <li><Link href="https://wa.me/919677391109" target="_blank" rel="noopener noreferrer" className="hover:text-success transition-colors">WhatsApp: +91 9677391109</Link></li>
             </ul>
           </div>
 
@@ -569,11 +569,11 @@ function PujaCard({ id, imageSrc, topTag, title, subtitle, location, date, price
         <div className="p-1 sm:px-1.5 flex flex-col flex-1">
           {/* Sub-header Tag with Filigree Accents */}
           <div className="flex items-center justify-center gap-2 mb-2">
-            <div className="w-8 h-[1px] bg-[#F47820]/40" />
-            <span className="text-[#F47820] font-serif font-extrabold text-xs sm:text-[13px] tracking-wider uppercase flex items-center gap-1.5 text-center">
+            <div className="w-8 h-[1px] bg-accent/40" />
+            <span className="text-accent font-serif font-extrabold text-xs sm:text-[13px] tracking-wider uppercase flex items-center gap-1.5 text-center">
               <span className="text-[10px]">♦</span> {topTag} <span className="text-[10px]">♦</span>
             </span>
-            <div className="w-8 h-[1px] bg-[#F47820]/40" />
+            <div className="w-8 h-[1px] bg-accent/40" />
           </div>
 
           {/* Card Title */}
@@ -590,7 +590,7 @@ function PujaCard({ id, imageSrc, topTag, title, subtitle, location, date, price
           <div className="bg-stone-50 border border-stone-200/90 rounded-2xl p-3 sm:p-3.5 mb-4 space-y-2.5 text-xs sm:text-[13px] font-bold text-stone-800 mt-auto">
             {/* Location */}
             <div className="flex items-start gap-2.5">
-              <svg className="w-5 h-5 text-[#F47820] shrink-0 mt-0.5" viewBox="0 0 24 24" fill="currentColor">
+              <svg className="w-5 h-5 text-accent shrink-0 mt-0.5" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 2L9 6H15L12 2ZM8 7L6 11H18L16 7H8ZM5 12L3 17H21L19 12H5ZM2 18V21H22V18H2Z" />
               </svg>
               <span className="leading-snug line-clamp-1">{location}</span>
@@ -600,7 +600,7 @@ function PujaCard({ id, imageSrc, topTag, title, subtitle, location, date, price
 
             {/* Date */}
             <div className="flex items-center gap-2.5">
-              <svg className="w-5 h-5 text-[#F47820] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <svg className="w-5 h-5 text-accent shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
                 <line x1="16" y1="2" x2="16" y2="6" />
                 <line x1="8" y1="2" x2="8" y2="6" />
@@ -619,9 +619,9 @@ function PujaCard({ id, imageSrc, topTag, title, subtitle, location, date, price
             </div>
 
             {/* CTA Button */}
-            <div className="inline-flex items-center gap-2 bg-[#00b050] hover:bg-[#009644] active:scale-95 text-white font-extrabold text-xs sm:text-sm px-5 py-2.5 sm:py-3 rounded-full shadow-md shadow-green-600/20 transition-all duration-200 group/btn">
+            <div className="inline-flex items-center gap-2 bg-success hover:bg-[#009644] active:scale-95 text-white font-extrabold text-xs sm:text-sm px-5 py-2.5 sm:py-3 rounded-full shadow-md shadow-green-600/20 transition-all duration-200 group/btn">
               <span>Participate Now</span>
-              <div className="w-5 h-5 rounded-full bg-white text-[#00b050] flex items-center justify-center shrink-0">
+              <div className="w-5 h-5 rounded-full bg-white text-success flex items-center justify-center shrink-0">
                 <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                 </svg>
@@ -648,7 +648,7 @@ function PujaCard({ id, imageSrc, topTag, title, subtitle, location, date, price
               navigator.clipboard?.writeText(window.location.origin + cardUrl);
             }
           }}
-          className="w-8 h-8 rounded-full bg-white/95 text-stone-700 hover:text-[#00b050] flex items-center justify-center shadow-md backdrop-blur-sm transition-transform active:scale-95"
+          className="w-8 h-8 rounded-full bg-white/95 text-stone-700 hover:text-success flex items-center justify-center shadow-md backdrop-blur-sm transition-transform active:scale-95"
         >
           <svg className="w-4 h-4 fill-none stroke-current" strokeWidth="2" viewBox="0 0 24 24">
             <circle cx="18" cy="5" r="3" />
@@ -706,15 +706,15 @@ function AccordionItem({
   return (
     <div
       onClick={onToggle}
-      className={`border rounded-xl px-5 py-4 transition-all duration-300 cursor-pointer select-none ${isOpen ? 'border-[#F47820] shadow-sm bg-white' : 'border-gray-200 bg-[#faf9f6] hover:bg-white'
+      className={`border rounded-xl px-5 py-4 transition-all duration-300 cursor-pointer select-none ${isOpen ? 'border-accent shadow-sm bg-white' : 'border-gray-200 bg-[#faf9f6] hover:bg-white'
         }`}
     >
       <div className="flex justify-between items-center">
-        <h4 className={`text-sm sm:text-base font-bold transition-colors ${isOpen ? 'text-[#F47820]' : 'text-gray-800'}`}>
+        <h4 className={`text-sm sm:text-base font-bold transition-colors ${isOpen ? 'text-accent' : 'text-gray-800'}`}>
           {question}
         </h4>
         <div
-          className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ml-4 transition-all ${isOpen ? 'bg-[#F47820] text-white' : 'bg-gray-200 text-gray-600'
+          className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ml-4 transition-all ${isOpen ? 'bg-accent text-white' : 'bg-gray-200 text-gray-600'
             }`}
         >
           {isOpen ? '−' : '+'}

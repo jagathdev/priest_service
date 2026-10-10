@@ -169,7 +169,7 @@ export default function AdminProfilePage() {
     return (
       <div className="flex h-[80vh] items-center justify-center">
         <div className="flex flex-col items-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#6869F9]"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
           <p className="mt-4 text-gray-500 font-medium">Loading profile...</p>
         </div>
       </div>
@@ -180,7 +180,7 @@ export default function AdminProfilePage() {
     <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
       {/* Header Section */}
       <div className="mb-10 text-center">
-        <div className="inline-flex items-center justify-center p-4 bg-gradient-to-br from-[#1f1f1f] to-[#000000] rounded-full mb-4 shadow-lg ring-4 ring-[#1f1f1f]/20">
+        <div className="inline-flex items-center justify-center p-4 bg-gradient-to-br from-ink to-[#000000] rounded-full mb-4 shadow-lg ring-4 ring-ink/20">
           <UserCircleIcon className="h-16 w-16 text-white" />
         </div>
         <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight">Admin Profile</h1>
@@ -195,7 +195,7 @@ export default function AdminProfilePage() {
         <div className="bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-2xl overflow-hidden">
           <div className="px-6 py-8 sm:p-10 border-b border-gray-900/5 bg-gray-50/50">
             <h2 className="text-xl font-semibold leading-6 text-gray-900 flex items-center gap-2">
-              <UserIcon className="h-6 w-6 text-[#1f1f1f]" />
+              <UserIcon className="h-6 w-6 text-ink" />
               Personal Information
             </h2>
             <p className="mt-2 text-sm text-gray-500">
@@ -224,7 +224,7 @@ export default function AdminProfilePage() {
                   <label htmlFor="name" className="block text-sm font-medium leading-6 text-gray-900">
                     Full Name
                   </label>
-                  <div className="mt-2 flex rounded-md shadow-sm ring-1 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-inset focus-within:ring-[#1f1f1f]">
+                  <div className="mt-2 flex rounded-md shadow-sm ring-1 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-inset focus-within:ring-ink">
                     <span className="flex select-none items-center pl-3 text-gray-500 sm:text-sm">
                       <UserIcon className="h-5 w-5" />
                     </span>
@@ -245,7 +245,7 @@ export default function AdminProfilePage() {
                   <label htmlFor="email" className="block text-sm font-medium leading-6 text-gray-900">
                     Email Address
                   </label>
-                  <div className="mt-2 flex rounded-md shadow-sm ring-1 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-inset focus-within:ring-[#1f1f1f]">
+                  <div className="mt-2 flex rounded-md shadow-sm ring-1 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-inset focus-within:ring-ink">
                     <span className="flex select-none items-center pl-3 text-gray-500 sm:text-sm">
                       <EnvelopeIcon className="h-5 w-5" />
                     </span>
@@ -267,7 +267,7 @@ export default function AdminProfilePage() {
                 <button
                   type="submit"
                   disabled={savingProfile}
-                  className="inline-flex items-center gap-x-2 rounded-lg bg-[#6869F9] px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-[#5657e8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f] disabled:opacity-60 transition-all"
+                  className="inline-flex items-center gap-x-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-[#5657e8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline--ink disabled:opacity-60 transition-all"
                 >
                   {savingProfile ? (
                     <>
@@ -286,7 +286,7 @@ export default function AdminProfilePage() {
           <div className="px-6 py-8 sm:p-10 border-b border-gray-900/5 bg-gray-50/50 flex justify-between items-center">
             <div>
               <h2 className="text-xl font-semibold leading-6 text-gray-900 flex items-center gap-2">
-                <ShieldCheckIcon className="h-6 w-6 text-[#1f1f1f]" />
+                <ShieldCheckIcon className="h-6 w-6 text-ink" />
                 Security Settings
               </h2>
               <p className="mt-2 text-sm text-gray-500">
@@ -341,7 +341,7 @@ export default function AdminProfilePage() {
                   <label htmlFor="currentPassword" className="block text-sm font-medium leading-6 text-gray-900">
                     Current Password
                   </label>
-                  <div className="mt-2 flex rounded-md shadow-sm ring-1 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-inset focus-within:ring-[#1f1f1f] bg-white relative">
+                  <div className="mt-2 flex rounded-md shadow-sm ring-1 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-inset focus-within:ring-ink bg-white relative">
                     <span className="flex select-none items-center pl-3 text-gray-500 sm:text-sm">
                       <KeyIcon className="h-5 w-5" />
                     </span>
@@ -371,7 +371,7 @@ export default function AdminProfilePage() {
                   <label htmlFor="newPassword" className="block text-sm font-medium leading-6 text-gray-900">
                     New Password
                   </label>
-                  <div className="mt-2 flex rounded-md shadow-sm ring-1 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-inset focus-within:ring-[#1f1f1f] bg-white relative">
+                  <div className="mt-2 flex rounded-md shadow-sm ring-1 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-inset focus-within:ring-ink bg-white relative">
                     <span className="flex select-none items-center pl-3 text-gray-500 sm:text-sm">
                       <KeyIcon className="h-5 w-5" />
                     </span>
@@ -399,7 +399,7 @@ export default function AdminProfilePage() {
                   <label htmlFor="confirmPassword" className="block text-sm font-medium leading-6 text-gray-900">
                     Confirm New Password
                   </label>
-                  <div className="mt-2 flex rounded-md shadow-sm ring-1 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-inset focus-within:ring-[#1f1f1f] bg-white relative">
+                  <div className="mt-2 flex rounded-md shadow-sm ring-1 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-inset focus-within:ring-ink bg-white relative">
                     <span className="flex select-none items-center pl-3 text-gray-500 sm:text-sm">
                       <KeyIcon className="h-5 w-5" />
                     </span>

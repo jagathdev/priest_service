@@ -84,7 +84,7 @@ export default function PromoCodesPage() {
                     <tbody className="divide-y divide-gray-100">
                         {promos.map((promo) => {
                             const statusText = getStatus(promo);
-                            const isActiveStyle = promo.isActive ? "bg-[#eaf7f1] text-[#069e5d]" : "bg-red-50 text-red-600";
+                            const isActiveStyle = promo.isActive ? "bg-[#eaf7f1] text-success" : "bg-red-50 text-red-600";
                             return (
                                 <tr key={promo._id} className="hover:bg-gray-50/50 transition-colors">
                                     <td className="px-6 py-4">

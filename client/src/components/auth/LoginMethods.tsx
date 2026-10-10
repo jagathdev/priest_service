@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useMemo, useState, useEffect } from "react";
 import type { CountryOption } from "@/types/auth";
 const DEFAULT_COUNTRY: CountryOption = { name: "India", isoCode: "IN", dialCode: "91" };
-import { authService } from "@/services/authService";
+import { authService } from "@/services/auth.service";
 import { adminService } from "@/services/admin.service";
 
 type LoginMethod = "email" | "phone" | "whatsapp";
@@ -217,8 +217,8 @@ export default function LoginMethods() {
   if (detecting) {
     return (
       <div className="w-full max-w-[460px] mx-auto overflow-hidden rounded-3xl bg-white shadow-[0_30px_80px_rgba(104,105,249,0.25)] flex flex-col items-center justify-center p-10" style={{ minHeight: 380 }}>
-        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-[#6869F9]"></div>
-        <p className="mt-4 text-[#6869F9] text-sm font-medium">Configuring secure login...</p>
+        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary"></div>
+        <p className="mt-4 text-primary text-sm font-medium">Configuring secure login...</p>
       </div>
     );
   }
@@ -261,7 +261,7 @@ export default function LoginMethods() {
             // Indian user: WhatsApp only (matching the original phone tab style)
             <button
               type="button"
-              className="flex-1 flex items-center justify-center gap-2 rounded-lg py-2 text-sm font-semibold transition-all text-[#6869F9] bg-white shadow-sm"
+              className="flex-1 flex items-center justify-center gap-2 rounded-lg py-2 text-sm font-semibold transition-all text-primary bg-white shadow-sm"
             >
               <WhatsappIcon />
               WhatsApp OTP
@@ -270,7 +270,7 @@ export default function LoginMethods() {
             // Foreign user: Email only
             <button
               type="button"
-              className="flex-1 flex items-center justify-center gap-2 rounded-lg py-2 text-sm font-semibold transition-all text-[#6869F9] bg-white shadow-sm"
+              className="flex-1 flex items-center justify-center gap-2 rounded-lg py-2 text-sm font-semibold transition-all text-primary bg-white shadow-sm"
             >
               <MailIcon />
               Email OTP
@@ -284,9 +284,9 @@ export default function LoginMethods() {
           <label className="block text-sm font-medium text-[#5a3b8a] mb-1.5">
             {method === "email" ? "Email" : "WhatsApp Number"}
           </label>
-          <div className="flex items-center rounded-xl border border-[#d8c9fb] bg-[#fcfaff] px-4 py-3 transition-all duration-300 focus-within:border-[#6869F9] focus-within:ring-2 focus-within:ring-[#ddd1ff]">
+          <div className="flex items-center rounded-xl border border-[#d8c9fb] bg-[#fcfaff] px-4 py-3 transition-all duration-300 focus-within:border-primary focus-within:ring-2 focus-within:ring-[#ddd1ff]">
             {method !== "email" && (
-              <span className="mr-2 flex items-center gap-1.5 text-sm font-semibold text-[#6869F9] bg-[#eee9ff] px-2 py-0.5 rounded-md">
+              <span className="mr-2 flex items-center gap-1.5 text-sm font-semibold text-primary bg-[#eee9ff] px-2 py-0.5 rounded-md">
                 <Image src="/images/flag.png" alt="India Flag" width={20} height={14} className="rounded-[2px] object-cover" />
                 +{DEFAULT_COUNTRY.dialCode}
               </span>
@@ -306,7 +306,7 @@ export default function LoginMethods() {
               <button
                 type="button"
                 onClick={() => setValue("")}
-                className="ml-2 text-[#a288cf] hover:text-[#6869F9] transition-colors"
+                className="ml-2 text-[#a288cf] hover:text-primary transition-colors"
                 aria-label="Clear input"
               >
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -322,7 +322,7 @@ export default function LoginMethods() {
             <label className="block text-sm font-medium text-[#5a3b8a] mb-1.5">
               Password
             </label>
-            <div className="relative flex items-center rounded-xl border border-[#d8c9fb] bg-[#faf8ff] px-4 py-3 transition-all duration-300 focus-within:border-[#6869F9] focus-within:ring-2 focus-within:ring-[#e0dcff]">
+            <div className="relative flex items-center rounded-xl border border-[#d8c9fb] bg-[#faf8ff] px-4 py-3 transition-all duration-300 focus-within:border-primary focus-within:ring-2 focus-within:ring-[#e0dcff]">
               <input
                 type={showPassword ? "text" : "password"}
                 value={password}
@@ -391,11 +391,11 @@ export default function LoginMethods() {
         {!isAdmin && (
           <p className="text-center text-xs text-[#9b7ec8]">
             By proceeding you agree to the{" "}
-            <Link href="/terms" className="font-semibold text-[#6869F9] hover:underline">
+            <Link href="/terms" className="font-semibold text-primary hover:underline">
               Terms &amp; Conditions
             </Link>{" "}
             and{" "}
-            <Link href="/privacy" className="font-semibold text-[#6869F9] hover:underline">
+            <Link href="/privacy" className="font-semibold text-primary hover:underline">
               Privacy Policy
             </Link>{" "}
             of AstroVed

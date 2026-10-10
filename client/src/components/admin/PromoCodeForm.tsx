@@ -108,7 +108,7 @@ export default function PromoCodeForm({ promo }: PromoCodeFormProps) {
                             placeholder="e.g. PUJA10"
                             required
                             disabled={isEdit}
-                            className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm font-semibold outline-none focus:border-[#069e5d] focus:ring-1 focus:ring-[#069e5d] transition-all disabled:bg-gray-50 disabled:text-gray-500"
+                            className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm font-semibold outline-none focus:border-success focus:ring-1 focus:ring-success transition-all disabled:bg-gray-50 disabled:text-gray-500"
                         />
                     </div>
 
@@ -117,7 +117,7 @@ export default function PromoCodeForm({ promo }: PromoCodeFormProps) {
                         <select
                             value={applicableServices}
                             onChange={(e) => setApplicableServices(e.target.value as "ALL" | "POOJA" | "HOMA")}
-                            className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold outline-none focus:border-[#069e5d] focus:ring-1 focus:ring-[#069e5d] transition-all"
+                            className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold outline-none focus:border-success focus:ring-1 focus:ring-success transition-all"
                         >
                             <option value="ALL">All Services</option>
                             <option value="POOJA">Pooja Only</option>
@@ -132,7 +132,7 @@ export default function PromoCodeForm({ promo }: PromoCodeFormProps) {
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
                         placeholder="e.g. 10% discount for all Puja bookings"
-                        className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm font-medium outline-none focus:border-[#069e5d] focus:ring-1 focus:ring-[#069e5d] transition-all min-h-[100px]"
+                        className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm font-medium outline-none focus:border-success focus:ring-1 focus:ring-success transition-all min-h-[100px]"
                     />
                 </div>
             </div>
@@ -149,7 +149,7 @@ export default function PromoCodeForm({ promo }: PromoCodeFormProps) {
                         <select
                             value={discountType}
                             onChange={(e) => setDiscountType(e.target.value as "PERCENTAGE" | "FIXED")}
-                            className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold outline-none focus:border-[#069e5d] focus:ring-1 focus:ring-[#069e5d] transition-all"
+                            className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold outline-none focus:border-success focus:ring-1 focus:ring-success transition-all"
                         >
                             <option value="PERCENTAGE">Percentage (%)</option>
                             <option value="FIXED">Fixed Amount (₹)</option>
@@ -167,7 +167,7 @@ export default function PromoCodeForm({ promo }: PromoCodeFormProps) {
                                 onChange={(e) => setDiscountValue(e.target.value)}
                                 required
                                 placeholder={discountType === "PERCENTAGE" ? "10" : "500"}
-                                className={`w-full rounded-xl border border-gray-200 py-3 text-sm font-semibold outline-none focus:border-[#069e5d] focus:ring-1 focus:ring-[#069e5d] transition-all ${discountType === "FIXED" ? "pl-8 pr-4" : "pl-4 pr-8"}`}
+                                className={`w-full rounded-xl border border-gray-200 py-3 text-sm font-semibold outline-none focus:border-success focus:ring-1 focus:ring-success transition-all ${discountType === "FIXED" ? "pl-8 pr-4" : "pl-4 pr-8"}`}
                             />
                         </div>
                     </div>
@@ -183,7 +183,7 @@ export default function PromoCodeForm({ promo }: PromoCodeFormProps) {
                                 value={maxDiscount}
                                 onChange={(e) => setMaxDiscount(e.target.value)}
                                 placeholder="e.g. 1000"
-                                className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm font-semibold outline-none focus:border-[#069e5d] focus:ring-1 focus:ring-[#069e5d] transition-all"
+                                className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm font-semibold outline-none focus:border-success focus:ring-1 focus:ring-success transition-all"
                             />
                             <p className="mt-1.5 text-[10px] font-bold text-gray-400">Leave empty for no upper limit</p>
                         </div>
@@ -196,7 +196,7 @@ export default function PromoCodeForm({ promo }: PromoCodeFormProps) {
                             value={minimumOrderAmount}
                             onChange={(e) => setMinimumOrderAmount(e.target.value)}
                             placeholder="e.g. 500"
-                            className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm font-semibold outline-none focus:border-[#069e5d] focus:ring-1 focus:ring-[#069e5d] transition-all"
+                            className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm font-semibold outline-none focus:border-success focus:ring-1 focus:ring-success transition-all"
                         />
                     </div>
                 </div>
@@ -216,7 +216,7 @@ export default function PromoCodeForm({ promo }: PromoCodeFormProps) {
                             value={startDate}
                             onChange={(e) => setStartDate(e.target.value)}
                             required
-                            className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-[#069e5d] focus:ring-1 focus:ring-[#069e5d] transition-all"
+                            className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-success focus:ring-1 focus:ring-success transition-all"
                         />
                     </div>
                     <div>
@@ -226,7 +226,7 @@ export default function PromoCodeForm({ promo }: PromoCodeFormProps) {
                             value={endDate}
                             onChange={(e) => setEndDate(e.target.value)}
                             required
-                            className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-[#069e5d] focus:ring-1 focus:ring-[#069e5d] transition-all"
+                            className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-700 outline-none focus:border-success focus:ring-1 focus:ring-success transition-all"
                         />
                     </div>
                 </div>
@@ -240,7 +240,7 @@ export default function PromoCodeForm({ promo }: PromoCodeFormProps) {
                             value={usageLimit}
                             onChange={(e) => setUsageLimit(e.target.value)}
                             placeholder="e.g. 100"
-                            className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm font-semibold outline-none focus:border-[#069e5d] focus:ring-1 focus:ring-[#069e5d] transition-all"
+                            className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm font-semibold outline-none focus:border-success focus:ring-1 focus:ring-success transition-all"
                         />
                         <p className="mt-1.5 text-[10px] font-bold text-gray-400">Total times this code can be used by anyone</p>
                     </div>
@@ -252,14 +252,14 @@ export default function PromoCodeForm({ promo }: PromoCodeFormProps) {
                             value={usageLimitPerUser}
                             onChange={(e) => setUsageLimitPerUser(e.target.value)}
                             placeholder="e.g. 1"
-                            className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm font-semibold outline-none focus:border-[#069e5d] focus:ring-1 focus:ring-[#069e5d] transition-all"
+                            className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm font-semibold outline-none focus:border-success focus:ring-1 focus:ring-success transition-all"
                         />
                     </div>
                 </div>
                 
                 <div className="pt-4 mt-4 border-t border-gray-100">
                     <label className="flex items-center gap-3 cursor-pointer w-fit group">
-                        <div className={`w-11 h-6 rounded-full transition-colors flex items-center p-1 ${isActive ? "bg-[#069e5d]" : "bg-gray-300"}`}>
+                        <div className={`w-11 h-6 rounded-full transition-colors flex items-center p-1 ${isActive ? "bg-success" : "bg-gray-300"}`}>
                             <div className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform ${isActive ? "translate-x-5" : "translate-x-0"}`}></div>
                         </div>
                         <input
@@ -268,7 +268,7 @@ export default function PromoCodeForm({ promo }: PromoCodeFormProps) {
                             onChange={(e) => setIsActive(e.target.checked)}
                             className="hidden"
                         />
-                        <span className={`text-sm font-bold ${isActive ? "text-[#069e5d]" : "text-gray-500"}`}>
+                        <span className={`text-sm font-bold ${isActive ? "text-success" : "text-gray-500"}`}>
                             {isActive ? "Code is Active" : "Code is Inactive"}
                         </span>
                     </label>
@@ -279,7 +279,7 @@ export default function PromoCodeForm({ promo }: PromoCodeFormProps) {
                 <button
                     type="submit"
                     disabled={loading}
-                    className="rounded-xl bg-[#069e5d] hover:bg-[#058a51] px-8 py-3.5 text-sm font-bold text-white shadow-md transition-all active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100 flex items-center gap-2"
+                    className="rounded-xl bg-success hover:bg-[#058a51] px-8 py-3.5 text-sm font-bold text-white shadow-md transition-all active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100 flex items-center gap-2"
                 >
                     {loading && (
                         <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

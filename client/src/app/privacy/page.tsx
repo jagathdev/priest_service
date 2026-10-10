@@ -64,7 +64,7 @@ export default function PrivacyPage() {
                         onClick={() => handleTabChange(tab.id)}
                         className={`flex items-center gap-3 w-full rounded-xl px-4 py-3 text-left text-sm font-semibold transition-all duration-200 ${
                           isSelected
-                            ? "bg-[#6869F9]/10 text-[#5B5BF6] shadow-xs"
+                            ? "bg-primary/10 text-[#5B5BF6] shadow-xs"
                             : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                         }`}
                       >
@@ -137,7 +137,7 @@ export default function PrivacyPage() {
                           "Ensure appropriate security, integrity, and confidentiality",
                         ].map((principle, index) => (
                           <li key={index} className="flex items-start gap-3 text-sm text-gray-700 border border-gray-100 rounded-xl p-3 bg-gray-50/50 hover:bg-gray-50 transition-colors">
-                            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#6869F9]/10 text-[#5B5BF6] text-xs font-bold mt-0.5">
+                            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[#5B5BF6] text-xs font-bold mt-0.5">
                               {index + 1}
                             </span>
                             <span className="leading-relaxed">{principle}</span>
@@ -278,7 +278,7 @@ export default function PrivacyPage() {
                         <p className="mt-4 text-sm text-gray-500 italic leading-relaxed">
                           *If at any point you do not wish to receive further emails from us, you can just unsubscribe using the link at the bottom of every email.
                         </p>
-                        <p className="mt-4 text-base font-semibold text-gray-800 border-l-4 border-[#6869F9] pl-3">
+                        <p className="mt-4 text-base font-semibold text-gray-800 border-l-4 border-primary pl-3">
                           We apply the principles of data protection by design and by default.
                         </p>
                       </div>

@@ -379,7 +379,7 @@ function AccountPageContent() {
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#fafafc]">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#069e5d]"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-success"></div>
       </div>
     );
   }
@@ -395,7 +395,7 @@ function AccountPageContent() {
             {/* Mobile/Tablet Hamburger Toggle (Moved to Left) */}
             <button
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="lg:hidden shrink-0 flex items-center gap-1.5 text-[#069e5d] font-bold text-sm px-3 py-1.5 rounded-lg border border-[#069e5d] bg-white active:scale-95 transition"
+              className="lg:hidden shrink-0 flex items-center gap-1.5 text-success font-bold text-sm px-3 py-1.5 rounded-lg border border-success bg-white active:scale-95 transition"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 {isSidebarOpen ? (
@@ -443,7 +443,7 @@ function AccountPageContent() {
               <p className="text-gray-500 max-w-sm mb-6">You must be logged in to access your account settings and history.</p>
               <button
                 onClick={() => setShowLoginModal(true)}
-                className="bg-[#069e5d] text-white font-bold py-2.5 px-8 rounded-full hover:bg-[#058a51] transition"
+                className="bg-success text-white font-bold py-2.5 px-8 rounded-full hover:bg-[#058a51] transition"
               >
                 Login Now
               </button>
@@ -481,7 +481,7 @@ function AccountPageContent() {
                   type="button"
                   onClick={() => { setActiveTab("profile"); setIsSidebarOpen(false); }}
                   className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm transition ${activeTab === "profile"
-                    ? "bg-[#069e5d] text-white font-bold shadow-xs"
+                    ? "bg-success text-white font-bold shadow-xs"
                     : "text-gray-700 font-medium hover:bg-gray-50"
                     }`}
                 >
@@ -496,7 +496,7 @@ function AccountPageContent() {
                   type="button"
                   onClick={() => { setActiveTab("bookings"); setIsSidebarOpen(false); }}
                   className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm transition ${activeTab === "bookings"
-                    ? "bg-[#069e5d] text-white font-bold shadow-xs"
+                    ? "bg-success text-white font-bold shadow-xs"
                     : "text-gray-700 font-medium hover:bg-gray-50"
                     }`}
                 >
@@ -511,7 +511,7 @@ function AccountPageContent() {
                   type="button"
                   onClick={() => { setActiveTab("subscriptions"); setIsSidebarOpen(false); }}
                   className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm transition ${activeTab === "subscriptions"
-                    ? "bg-[#069e5d] text-white font-bold shadow-xs"
+                    ? "bg-success text-white font-bold shadow-xs"
                     : "text-gray-700 font-medium hover:bg-gray-50"
                     }`}
                 >
@@ -526,7 +526,7 @@ function AccountPageContent() {
                   type="button"
                   onClick={() => { setActiveTab("wallet"); setIsSidebarOpen(false); }}
                   className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm transition ${activeTab === "wallet"
-                    ? "bg-[#069e5d] text-white font-bold shadow-xs"
+                    ? "bg-success text-white font-bold shadow-xs"
                     : "text-gray-700 font-medium hover:bg-gray-50"
                     }`}
                 >
@@ -541,7 +541,7 @@ function AccountPageContent() {
                   type="button"
                   onClick={() => { setActiveTab("wishlist"); setIsSidebarOpen(false); }}
                   className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm transition ${activeTab === "wishlist"
-                    ? "bg-[#069e5d] text-white font-bold shadow-xs"
+                    ? "bg-success text-white font-bold shadow-xs"
                     : "text-gray-700 font-medium hover:bg-gray-50"
                     }`}
                 >
@@ -556,7 +556,7 @@ function AccountPageContent() {
                   type="button"
                   onClick={() => { setActiveTab("address"); setIsSidebarOpen(false); }}
                   className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm transition ${activeTab === "address"
-                    ? "bg-[#069e5d] text-white font-bold shadow-xs"
+                    ? "bg-success text-white font-bold shadow-xs"
                     : "text-gray-700 font-medium hover:bg-gray-50"
                     }`}
                 >
@@ -572,7 +572,7 @@ function AccountPageContent() {
                   type="button"
                   onClick={() => { setActiveTab("about"); setIsSidebarOpen(false); }}
                   className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm transition ${activeTab === "about"
-                    ? "bg-[#069e5d] text-white font-bold shadow-xs"
+                    ? "bg-success text-white font-bold shadow-xs"
                     : "text-gray-700 font-medium hover:bg-gray-50"
                     }`}
                 >
@@ -587,7 +587,7 @@ function AccountPageContent() {
                   type="button"
                   onClick={() => { setActiveTab("support"); setIsSidebarOpen(false); }}
                   className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm transition ${activeTab === "support"
-                    ? "bg-[#069e5d] text-white font-bold shadow-xs"
+                    ? "bg-success text-white font-bold shadow-xs"
                     : "text-gray-700 font-medium hover:bg-gray-50"
                     }`}
                 >
@@ -601,9 +601,9 @@ function AccountPageContent() {
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="mt-6 border border-[#069e5d] text-[#069e5d] hover:bg-green-50 font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 text-xs sm:text-sm transition w-full"
+                  className="mt-6 border border-success text-success hover:bg-green-50 font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 text-xs sm:text-sm transition w-full"
                 >
-                  <svg className="w-4 h-4 text-[#069e5d]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="w-4 h-4 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                   </svg>
                   <span>Logout</span>
@@ -616,7 +616,7 @@ function AccountPageContent() {
                   <>
                     {/* Section Title Header */}
                     <div className="flex items-center gap-3 mb-4">
-                      <div className="w-8 h-8 rounded-lg bg-[#701a28] text-white flex items-center justify-center shrink-0">
+                      <div className="w-8 h-8 rounded-lg bg-danger text-white flex items-center justify-center shrink-0">
                         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                           <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
                         </svg>
@@ -657,7 +657,7 @@ function AccountPageContent() {
                                 value={formData.name || ''}
                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                 placeholder=""
-                                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-[14px] focus:outline-none focus:border-[#069e5d] transition"
+                                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-[14px] focus:outline-none focus:border-success transition"
                               />
                             </div>
                             <div className="mb-5">
@@ -667,7 +667,7 @@ function AccountPageContent() {
                                 value={formData.email || ''}
                                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                 placeholder=""
-                                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-[14px] focus:outline-none focus:border-[#069e5d] transition"
+                                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-[14px] focus:outline-none focus:border-success transition"
                               />
                             </div>
 
@@ -696,7 +696,7 @@ function AccountPageContent() {
                                   setShowEditModal(false);
                                 }}
                                 disabled={saving}
-                                className="px-6 py-2.5 rounded-full bg-[#069e5d] text-white text-[14px] font-bold hover:bg-[#058a51] transition"
+                                className="px-6 py-2.5 rounded-full bg-success text-white text-[14px] font-bold hover:bg-[#058a51] transition"
                               >
                                 {saving ? 'Saving...' : 'Save Changes'}
                               </button>
@@ -734,7 +734,7 @@ function AccountPageContent() {
                                 setFormData(user || {});
                                 setShowEditModal(true);
                               }}
-                              className="border border-[#069e5d] text-[#069e5d] hover:bg-green-50 text-xs font-bold px-4 py-1.5 rounded-full flex items-center gap-1.5 transition self-start shadow-xs"
+                              className="border border-success text-success hover:bg-green-50 text-xs font-bold px-4 py-1.5 rounded-full flex items-center gap-1.5 transition self-start shadow-xs"
                             >
                               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
@@ -755,7 +755,7 @@ function AccountPageContent() {
                         className="cursor-pointer bg-[#fdf2f0] border border-[#fce4e0] rounded-2xl p-4 flex items-center justify-between hover:shadow-sm transition"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-full bg-white flex items-center justify-center text-[#701a28] shrink-0 shadow-2xs">
+                          <div className="w-9 h-9 rounded-full bg-white flex items-center justify-center text-danger shrink-0 shadow-2xs">
                             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m0 0h4m-4 0V9a2 2 0 012-2h2a2 2 0 012 2v12" />
                             </svg>
@@ -765,7 +765,7 @@ function AccountPageContent() {
                             <p className="text-[11px] text-gray-500 font-medium leading-tight">View your all puja bookings and History</p>
                           </div>
                         </div>
-                        <div className="w-7 h-7 rounded-full bg-[#069e5d] text-white flex items-center justify-center text-xs font-bold shrink-0 ml-2">
+                        <div className="w-7 h-7 rounded-full bg-success text-white flex items-center justify-center text-xs font-bold shrink-0 ml-2">
                           ➔
                         </div>
                       </div>
@@ -776,7 +776,7 @@ function AccountPageContent() {
                         className="cursor-pointer bg-[#fffbeb] border border-[#fef3c7] rounded-2xl p-4 flex items-center justify-between hover:shadow-sm transition"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-full bg-white flex items-center justify-center text-[#701a28] shrink-0 shadow-2xs">
+                          <div className="w-9 h-9 rounded-full bg-white flex items-center justify-center text-danger shrink-0 shadow-2xs">
                             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
                             </svg>
@@ -786,7 +786,7 @@ function AccountPageContent() {
                             <p className="text-[11px] text-gray-500 font-medium leading-tight">View your saved pujas and services</p>
                           </div>
                         </div>
-                        <div className="w-7 h-7 rounded-full bg-[#069e5d] text-white flex items-center justify-center text-xs font-bold shrink-0 ml-2">
+                        <div className="w-7 h-7 rounded-full bg-success text-white flex items-center justify-center text-xs font-bold shrink-0 ml-2">
                           ➔
                         </div>
                       </div>
@@ -797,7 +797,7 @@ function AccountPageContent() {
                         className="cursor-pointer bg-[#f0fdf4] border border-[#dcfce7] rounded-2xl p-4 flex items-center justify-between hover:shadow-sm transition"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-full bg-white flex items-center justify-center text-[#069e5d] shrink-0 shadow-2xs">
+                          <div className="w-9 h-9 rounded-full bg-white flex items-center justify-center text-success shrink-0 shadow-2xs">
                             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -808,15 +808,15 @@ function AccountPageContent() {
                             <p className="text-[11px] text-gray-500 font-medium leading-tight">Manage your saved delivery addresses</p>
                           </div>
                         </div>
-                        <div className="w-7 h-7 rounded-full bg-[#069e5d] text-white flex items-center justify-center text-xs font-bold shrink-0 ml-2">
+                        <div className="w-7 h-7 rounded-full bg-success text-white flex items-center justify-center text-xs font-bold shrink-0 ml-2">
                           ➔
                         </div>
                       </div>
                     </div>
 
                     {/* ── Green Security Banner (Matching Image 3) ── */}
-                    <div className="bg-[#e8f5e9] border border-[#c8e6c9] text-[#069e5d] text-xs font-bold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 mt-6">
-                      <svg className="w-4 h-4 text-[#069e5d]" fill="currentColor" viewBox="0 0 20 20">
+                    <div className="bg-[#e8f5e9] border border-[#c8e6c9] text-success text-xs font-bold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 mt-6">
+                      <svg className="w-4 h-4 text-success" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                       </svg>
                       <span>Your personal information is protected and securely stored.</span>
@@ -835,7 +835,7 @@ function AccountPageContent() {
                     {/* Header section with Title and Filters */}
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-[10px] bg-[#701a28] text-white flex items-center justify-center shrink-0 shadow-sm">
+                        <div className="w-10 h-10 rounded-[10px] bg-danger text-white flex items-center justify-center shrink-0 shadow-sm">
                           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                           </svg>
@@ -846,9 +846,9 @@ function AccountPageContent() {
                       </div>
 
                       <div className="flex items-center gap-3">
-                        <button className="px-5 py-2 rounded-full text-sm font-bold flex items-center gap-2 border border-[#069e5d] text-[#069e5d] bg-white transition">
+                        <button className="px-5 py-2 rounded-full text-sm font-bold flex items-center gap-2 border border-success text-success bg-white transition">
                           All
-                          <div className="w-4 h-4 rounded-full bg-[#069e5d] text-white flex items-center justify-center">
+                          <div className="w-4 h-4 rounded-full bg-success text-white flex items-center justify-center">
                             <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
                               <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                             </svg>
@@ -880,7 +880,7 @@ function AccountPageContent() {
                   <div className="animate-fade-in">
                     {/* Header */}
                     <div className="flex items-center gap-3 mb-6">
-                      <div className="w-10 h-10 rounded-[10px] bg-[#701a28] text-white flex items-center justify-center shrink-0 shadow-sm">
+                      <div className="w-10 h-10 rounded-[10px] bg-danger text-white flex items-center justify-center shrink-0 shadow-sm">
                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                         </svg>
@@ -906,7 +906,7 @@ function AccountPageContent() {
                         <div className="flex items-center justify-between mb-6">
                           <div className="flex items-center gap-3">
                             <div className="w-11 h-11 rounded-[10px] bg-[#e8f5e9] flex items-center justify-center shrink-0">
-                              <svg className="w-5 h-5 text-[#069e5d]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <svg className="w-5 h-5 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M3 10h18M7 15h1m4 0h1m-7 4h12a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                               </svg>
                             </div>
@@ -924,7 +924,7 @@ function AccountPageContent() {
                           </p>
                         </div>
 
-                        <div className="flex items-center gap-1.5 text-[#069e5d] text-[12px] font-bold">
+                        <div className="flex items-center gap-1.5 text-success text-[12px] font-bold">
                           <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                           </svg>
@@ -993,7 +993,7 @@ function AccountPageContent() {
                     </div>
 
                     {/* Bottom Security Banner */}
-                    <div className="bg-[#e8f5e9] border border-[#c8e6c9] text-[#069e5d] text-[13px] font-bold py-4 px-5 rounded-2xl flex items-center gap-3">
+                    <div className="bg-[#e8f5e9] border border-[#c8e6c9] text-success text-[13px] font-bold py-4 px-5 rounded-2xl flex items-center gap-3">
                       <svg className="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                       </svg>
@@ -1005,7 +1005,7 @@ function AccountPageContent() {
                 {activeTab === 'wishlist' && (
                   <div className="animate-fade-in">
                     <div className="flex items-center gap-3 mb-6">
-                      <div className="w-10 h-10 rounded-[10px] bg-[#701a28] text-white flex items-center justify-center shrink-0 shadow-sm">
+                      <div className="w-10 h-10 rounded-[10px] bg-danger text-white flex items-center justify-center shrink-0 shadow-sm">
                         <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
                         </svg>
@@ -1017,7 +1017,7 @@ function AccountPageContent() {
 
                     {loadingWishlist ? (
                       <div className="flex justify-center py-10">
-                        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-t-2 border-[#069e5d]"></div>
+                        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-t-2 border-success"></div>
                       </div>
                     ) : wishlistItems.length === 0 ? (
                       <div className="flex flex-col items-center justify-center py-24 text-center bg-white rounded-2xl shadow-sm border border-gray-100">
@@ -1028,7 +1028,7 @@ function AccountPageContent() {
                         <p className="text-[13px] font-medium text-gray-500 mb-6">
                           Save your favorite pujas and homas to view them here later.
                         </p>
-                        <Link href="/" className="bg-[#069e5d] text-white px-6 py-2.5 rounded-full font-bold text-sm shadow-sm hover:bg-[#058a51] transition">
+                        <Link href="/" className="bg-success text-white px-6 py-2.5 rounded-full font-bold text-sm shadow-sm hover:bg-[#058a51] transition">
                           Explore Services
                         </Link>
                       </div>
@@ -1065,7 +1065,7 @@ function AccountPageContent() {
                                     console.error(error);
                                   }
                                 }}
-                                className="absolute top-3 right-3 z-20 w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-md cursor-pointer hover:bg-white text-[#00b050]"
+                                className="absolute top-3 right-3 z-20 w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-md cursor-pointer hover:bg-white text-success"
                               >
                                 <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
                                   <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
@@ -1076,7 +1076,7 @@ function AccountPageContent() {
                             {/* Bottom Content Section */}
                             <div className="p-4 flex flex-col min-h-[150px]">
                               <Link href={`/${item.serviceType?.toLowerCase() === 'pooja' ? 'puja' : (item.serviceType || 'puja')}/${item.slug || item.serviceId}`} prefetch={true} className="block mb-2">
-                                <h3 className="text-[14px] font-extrabold text-gray-900 leading-[1.3] line-clamp-2 hover:text-[#00b050] transition-colors">
+                                <h3 className="text-[14px] font-extrabold text-gray-900 leading-[1.3] line-clamp-2 hover:text-success transition-colors">
                                   {item.name}
                                 </h3>
                               </Link>
@@ -1091,7 +1091,7 @@ function AccountPageContent() {
 
                               <div className="mt-auto flex items-center justify-between pt-1">
                                 <div className="text-[16px] font-extrabold text-gray-900">₹{item.price || 516}</div>
-                                <Link href={`/${item.serviceType?.toLowerCase() === 'pooja' ? 'puja' : (item.serviceType || 'puja')}/${item.slug || item.serviceId}`} prefetch={true} className="bg-[#00b050] text-white text-[12px] font-bold pl-4 pr-1 py-1 rounded-full flex items-center gap-2 hover:bg-[#009b46] transition shadow-sm group">
+                                <Link href={`/${item.serviceType?.toLowerCase() === 'pooja' ? 'puja' : (item.serviceType || 'puja')}/${item.slug || item.serviceId}`} prefetch={true} className="bg-success text-white text-[12px] font-bold pl-4 pr-1 py-1 rounded-full flex items-center gap-2 hover:bg-[#009b46] transition shadow-sm group">
                                   Book Now
                                   <div className="w-6 h-6 rounded-full bg-white/25 flex items-center justify-center shrink-0 group-hover:translate-x-0.5 transition-transform">
                                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1112,7 +1112,7 @@ function AccountPageContent() {
                   <div className="animate-fade-in w-full">
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-[10px] bg-[#701a28] text-white flex items-center justify-center shrink-0 shadow-sm">
+                        <div className="w-10 h-10 rounded-[10px] bg-danger text-white flex items-center justify-center shrink-0 shadow-sm">
                           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -1125,7 +1125,7 @@ function AccountPageContent() {
                       {addresses.length > 0 && (
                         <button
                           onClick={() => openAddAddressModal()}
-                          className="bg-[#069e5d] text-white text-xs sm:text-sm font-bold px-4 py-2 sm:px-5 sm:py-2.5 rounded-full flex items-center gap-1.5 hover:bg-green-700 transition"
+                          className="bg-success text-white text-xs sm:text-sm font-bold px-4 py-2 sm:px-5 sm:py-2.5 rounded-full flex items-center gap-1.5 hover:bg-green-700 transition"
                         >
                           <span>+</span> Add New Address
                         </button>
@@ -1135,7 +1135,7 @@ function AccountPageContent() {
                     {addresses.length === 0 ? (
                       <div className="border border-dashed border-[#dca3a3] bg-[#fdfaf8] rounded-2xl p-10 flex flex-col items-center justify-center text-center">
                         <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-sm mb-4">
-                          <svg className="w-6 h-6 text-[#701a28]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <svg className="w-6 h-6 text-danger" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                           </svg>
@@ -1144,7 +1144,7 @@ function AccountPageContent() {
                         <p className="text-[13px] text-gray-500 font-medium mb-6">Add a delivery address to check out faster next time.</p>
                         <button
                           onClick={() => openAddAddressModal()}
-                          className="bg-[#069e5d] text-white text-[13px] font-bold px-6 py-2.5 rounded-full flex items-center gap-1.5 hover:bg-green-700 transition"
+                          className="bg-success text-white text-[13px] font-bold px-6 py-2.5 rounded-full flex items-center gap-1.5 hover:bg-green-700 transition"
                         >
                           <span>+</span> Add New Address
                         </button>
@@ -1155,14 +1155,14 @@ function AccountPageContent() {
                           {addresses.map((addr: Address, idx: number) => (
                             <div key={idx} className="bg-white border border-gray-150 rounded-2xl p-5 shadow-sm">
                               <div className="flex flex-wrap items-center gap-2 mb-3">
-                                <span className="flex items-center gap-1.5 bg-[#fdf2f0] text-[#701a28] text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wide">
+                                <span className="flex items-center gap-1.5 bg-[#fdf2f0] text-danger text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wide">
                                   <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                                   </svg>
                                   {addr.type}
                                 </span>
                                 {addr.isDefault && (
-                                  <span className="bg-[#e8f5e9] text-[#069e5d] text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wide">
+                                  <span className="bg-[#e8f5e9] text-success text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wide">
                                     Default
                                   </span>
                                 )}
@@ -1199,16 +1199,16 @@ function AccountPageContent() {
                             onClick={() => openAddAddressModal()}
                             className="border border-dashed border-[#a3e3c6] bg-[#e8fbf1] rounded-2xl p-5 flex flex-col items-center justify-center cursor-pointer hover:bg-[#d8f5e6] transition text-center min-h-[220px]"
                           >
-                            <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm mb-3 text-[#069e5d]">
+                            <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm mb-3 text-success">
                               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" />
                               </svg>
                             </div>
-                            <span className="text-[#069e5d] text-[14px] font-bold">Add a New Address</span>
+                            <span className="text-success text-[14px] font-bold">Add a New Address</span>
                           </div>
                         </div>
 
-                        <div className="bg-[#e8f5e9] text-[#069e5d] text-[12px] font-bold px-4 py-3 rounded-xl flex items-center gap-2">
+                        <div className="bg-[#e8f5e9] text-success text-[12px] font-bold px-4 py-3 rounded-xl flex items-center gap-2">
                           <svg className="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                           </svg>
@@ -1222,7 +1222,7 @@ function AccountPageContent() {
                 {activeTab === 'language' && (
                   <div className="animate-fade-in w-full">
                     <div className="flex items-center gap-3 mb-6">
-                      <div className="w-10 h-10 rounded-[10px] bg-[#701a28] text-white flex items-center justify-center shrink-0 shadow-sm">
+                      <div className="w-10 h-10 rounded-[10px] bg-danger text-white flex items-center justify-center shrink-0 shadow-sm">
                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
                         </svg>
@@ -1232,7 +1232,7 @@ function AccountPageContent() {
                       </h1>
                     </div>
 
-                    <div className="bg-[#fdf2f0] border border-[#fce4e0] text-[#701a28] p-4 rounded-xl flex items-start gap-3 mb-8">
+                    <div className="bg-[#fdf2f0] border border-[#fce4e0] text-danger p-4 rounded-xl flex items-start gap-3 mb-8">
                       <svg className="w-5 h-5 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
@@ -1262,14 +1262,14 @@ function AccountPageContent() {
                             key={lang.name}
                             onClick={() => setSelectedLanguage(lang.name)}
                             className={`cursor-pointer rounded-2xl p-3 flex items-center justify-between border transition ${isSelected
-                              ? 'border-[#069e5d] bg-white shadow-sm'
-                              : 'border-gray-150 bg-white hover:border-[#069e5d] hover:shadow-sm'
+                              ? 'border-success bg-white shadow-sm'
+                              : 'border-gray-150 bg-white hover:border-success hover:shadow-sm'
                               }`}
                           >
                             <div className="flex items-center gap-3">
                               <div className={`w-11 h-11 rounded-xl flex items-center justify-center text-lg font-bold ${isSelected
-                                ? 'bg-[#069e5d] text-white'
-                                : 'bg-[#f0fdf4] text-[#069e5d]'
+                                ? 'bg-success text-white'
+                                : 'bg-[#f0fdf4] text-success'
                                 }`}>
                                 {lang.char}
                               </div>
@@ -1279,7 +1279,7 @@ function AccountPageContent() {
                               </div>
                             </div>
                             {isSelected && (
-                              <div className="w-6 h-6 rounded-full bg-[#069e5d] text-white flex items-center justify-center shrink-0">
+                              <div className="w-6 h-6 rounded-full bg-success text-white flex items-center justify-center shrink-0">
                                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
                                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                                 </svg>
@@ -1302,7 +1302,7 @@ function AccountPageContent() {
                       </div>
                     </div>
 
-                    <div className="bg-[#e8f5e9] text-[#069e5d] text-[12px] font-bold px-4 py-3 rounded-xl flex items-center gap-2">
+                    <div className="bg-[#e8f5e9] text-success text-[12px] font-bold px-4 py-3 rounded-xl flex items-center gap-2">
                       <svg className="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                       </svg>
@@ -1315,7 +1315,7 @@ function AccountPageContent() {
                   <div className="animate-fade-in w-full">
                     {/* Header */}
                     <div className="flex items-center gap-3 mb-6">
-                      <div className="w-10 h-10 rounded-[10px] bg-[#701a28] text-white flex items-center justify-center shrink-0 shadow-sm">
+                      <div className="w-10 h-10 rounded-[10px] bg-danger text-white flex items-center justify-center shrink-0 shadow-sm">
                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m0 0h4m-4 0V9a2 2 0 012-2h2a2 2 0 012 2v12" />
                         </svg>
@@ -1329,7 +1329,7 @@ function AccountPageContent() {
                     <div className="bg-[#fcf5f3] rounded-2xl p-8 mb-8 text-center border border-[#faebe8]">
                       <div className="mb-4 flex justify-center">
                         {/* astroved text logo approximation */}
-                        <div className="flex items-center gap-1.5 text-[#701a28]">
+                        <div className="flex items-center gap-1.5 text-danger">
                           <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
                             <path d="M12 6c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm0 10c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z" />
@@ -1347,7 +1347,7 @@ function AccountPageContent() {
                     <h3 className="text-lg font-serif font-bold text-gray-800 mb-4">What We Offer</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
                       <div className="bg-white border border-gray-150 rounded-2xl p-5 shadow-sm">
-                        <div className="w-10 h-10 rounded-xl bg-[#701a28] text-white flex items-center justify-center mb-4">
+                        <div className="w-10 h-10 rounded-xl bg-danger text-white flex items-center justify-center mb-4">
                           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m0 0h4m-4 0V9a2 2 0 012-2h2a2 2 0 012 2v12" />
                           </svg>
@@ -1359,7 +1359,7 @@ function AccountPageContent() {
                       </div>
 
                       <div className="bg-white border border-gray-150 rounded-2xl p-5 shadow-sm">
-                        <div className="w-10 h-10 rounded-xl bg-[#701a28] text-white flex items-center justify-center mb-4">
+                        <div className="w-10 h-10 rounded-xl bg-danger text-white flex items-center justify-center mb-4">
                           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -1372,7 +1372,7 @@ function AccountPageContent() {
                       </div>
 
                       <div className="bg-white border border-gray-150 rounded-2xl p-5 shadow-sm">
-                        <div className="w-10 h-10 rounded-xl bg-[#701a28] text-white flex items-center justify-center mb-4">
+                        <div className="w-10 h-10 rounded-xl bg-danger text-white flex items-center justify-center mb-4">
                           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                           </svg>
@@ -1384,7 +1384,7 @@ function AccountPageContent() {
                       </div>
 
                       <div className="bg-white border border-gray-150 rounded-2xl p-5 shadow-sm">
-                        <div className="w-10 h-10 rounded-xl bg-[#701a28] text-white flex items-center justify-center mb-4">
+                        <div className="w-10 h-10 rounded-xl bg-danger text-white flex items-center justify-center mb-4">
                           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                           </svg>
@@ -1396,7 +1396,7 @@ function AccountPageContent() {
                       </div>
 
                       <div className="bg-white border border-gray-150 rounded-2xl p-5 shadow-sm md:col-span-2">
-                        <div className="w-10 h-10 rounded-xl bg-[#701a28] text-white flex items-center justify-center mb-4">
+                        <div className="w-10 h-10 rounded-xl bg-danger text-white flex items-center justify-center mb-4">
                           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                           </svg>
@@ -1409,7 +1409,7 @@ function AccountPageContent() {
                     </div>
 
                     {/* Stats Bar */}
-                    <div className="bg-gradient-to-r from-[#701a28] to-[#a32230] rounded-2xl p-6 text-white grid grid-cols-2 md:grid-cols-4 gap-6 mb-8 text-center shadow-md">
+                    <div className="bg-gradient-to-r from-danger to-[#a32230] rounded-2xl p-6 text-white grid grid-cols-2 md:grid-cols-4 gap-6 mb-8 text-center shadow-md">
                       <div>
                         <div className="text-2xl font-bold font-serif mb-1">35,000+</div>
                         <div className="text-[10px] font-bold tracking-wider uppercase text-red-100">Pujas Conducted</div>
@@ -1458,7 +1458,7 @@ function AccountPageContent() {
                     </div>
 
                     {/* Bottom Banner */}
-                    <div className="bg-[#e8f5e9] text-[#069e5d] text-[12px] font-bold px-4 py-3 rounded-xl flex items-center gap-2">
+                    <div className="bg-[#e8f5e9] text-success text-[12px] font-bold px-4 py-3 rounded-xl flex items-center gap-2">
                       <svg className="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                       </svg>
@@ -1471,7 +1471,7 @@ function AccountPageContent() {
                   <div className="animate-fade-in w-full">
                     {/* Header */}
                     <div className="flex items-center gap-3 mb-6">
-                      <div className="w-10 h-10 rounded-[10px] bg-[#701a28] text-white flex items-center justify-center shrink-0 shadow-sm">
+                      <div className="w-10 h-10 rounded-[10px] bg-danger text-white flex items-center justify-center shrink-0 shadow-sm">
                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
                         </svg>
@@ -1485,28 +1485,28 @@ function AccountPageContent() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
                       {/* WhatsApp */}
                       <div className="bg-white border border-gray-150 rounded-2xl p-5 shadow-sm hover:shadow-md transition">
-                        <div className="w-10 h-10 rounded-xl bg-[#069e5d] text-white flex items-center justify-center mb-4">
+                        <div className="w-10 h-10 rounded-xl bg-success text-white flex items-center justify-center mb-4">
                           <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 00-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
                           </svg>
                         </div>
                         <h4 className="text-[14px] font-bold text-gray-900 mb-1">WhatsApp Support</h4>
                         <p className="text-[11px] text-gray-500 mb-4">Reply within minutes</p>
-                        <button className="text-[#069e5d] text-[12px] font-bold flex items-center gap-1 hover:text-[#047a47]">
+                        <button className="text-success text-[12px] font-bold flex items-center gap-1 hover:text-[#047a47]">
                           +91 9677391108 <span>&rarr;</span>
                         </button>
                       </div>
 
                       {/* Call Support */}
                       <div className="bg-white border border-gray-150 rounded-2xl p-5 shadow-sm hover:shadow-md transition">
-                        <div className="w-10 h-10 rounded-xl bg-[#069e5d] text-white flex items-center justify-center mb-4">
+                        <div className="w-10 h-10 rounded-xl bg-success text-white flex items-center justify-center mb-4">
                           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                           </svg>
                         </div>
                         <h4 className="text-[14px] font-bold text-gray-900 mb-1">Call Support</h4>
                         <p className="text-[11px] text-gray-500 mb-4">10 AM - 7 PM, all days</p>
-                        <button className="text-[#069e5d] text-[12px] font-bold flex items-center gap-1 hover:text-[#047a47]">
+                        <button className="text-success text-[12px] font-bold flex items-center gap-1 hover:text-[#047a47]">
                           +91 9677391108 <span>&rarr;</span>
                         </button>
                       </div>
@@ -1520,7 +1520,7 @@ function AccountPageContent() {
                         </div>
                         <h4 className="text-[14px] font-bold text-gray-900 mb-1">Email Support</h4>
                         <p className="text-[11px] text-gray-500 mb-4">Response within 24 hours</p>
-                        <button className="text-[#069e5d] text-[12px] font-bold flex items-center gap-1 hover:text-[#047a47]">
+                        <button className="text-success text-[12px] font-bold flex items-center gap-1 hover:text-[#047a47]">
                           support@astroved.com <span>&rarr;</span>
                         </button>
                       </div>
@@ -1536,7 +1536,7 @@ function AccountPageContent() {
                           className="w-full flex items-center justify-between p-5 text-left transition hover:bg-gray-50"
                         >
                           <span className="text-[14px] font-bold text-gray-900">How do I book a puja?</span>
-                          <span className="text-[#069e5d] font-bold text-xl leading-none">
+                          <span className="text-success font-bold text-xl leading-none">
                             {openFaq === 1 ? '×' : '+'}
                           </span>
                         </button>
@@ -1554,7 +1554,7 @@ function AccountPageContent() {
                           className="w-full flex items-center justify-between p-5 text-left transition hover:bg-gray-50"
                         >
                           <span className="text-[14px] font-bold text-gray-900">When will I receive my puja video?</span>
-                          <span className="text-[#069e5d] font-bold text-xl leading-none">
+                          <span className="text-success font-bold text-xl leading-none">
                             {openFaq === 2 ? '×' : '+'}
                           </span>
                         </button>
@@ -1572,7 +1572,7 @@ function AccountPageContent() {
                           className="w-full flex items-center justify-between p-5 text-left transition hover:bg-gray-50"
                         >
                           <span className="text-[14px] font-bold text-gray-900">Can I edit my devotee details after booking?</span>
-                          <span className="text-[#069e5d] font-bold text-xl leading-none">
+                          <span className="text-success font-bold text-xl leading-none">
                             {openFaq === 3 ? '×' : '+'}
                           </span>
                         </button>
@@ -1599,12 +1599,12 @@ function AccountPageContent() {
                             placeholder="Enter your full name"
                             value={helpFormData.name}
                             onChange={(e) => setHelpFormData({ ...helpFormData, name: e.target.value })}
-                            className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-[13px] text-gray-800 focus:outline-none focus:border-[#069e5d]"
+                            className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-[13px] text-gray-800 focus:outline-none focus:border-success"
                           />
                         </div>
                         <div>
                           <label className="text-[12px] font-bold text-gray-800 block mb-1.5">Mobile Number <span className="text-red-500">*</span></label>
-                          <div className="flex border border-gray-200 rounded-xl overflow-hidden focus-within:border-[#069e5d]">
+                          <div className="flex border border-gray-200 rounded-xl overflow-hidden focus-within:border-success">
                             <span className="bg-gray-50 border-r border-gray-200 px-4 py-2.5 text-[13px] text-gray-700 font-medium">
                               +91
                             </span>
@@ -1628,7 +1628,7 @@ function AccountPageContent() {
                             placeholder="your.email@example.com"
                             value={helpFormData.email}
                             onChange={(e) => setHelpFormData({ ...helpFormData, email: e.target.value })}
-                            className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-[13px] text-gray-800 focus:outline-none focus:border-[#069e5d]"
+                            className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-[13px] text-gray-800 focus:outline-none focus:border-success"
                           />
                         </div>
                         <div>
@@ -1638,7 +1638,7 @@ function AccountPageContent() {
                             placeholder="e.g. VM123456789"
                             value={helpFormData.bookingId}
                             onChange={(e) => setHelpFormData({ ...helpFormData, bookingId: e.target.value })}
-                            className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-[13px] text-gray-800 focus:outline-none focus:border-[#069e5d]"
+                            className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-[13px] text-gray-800 focus:outline-none focus:border-success"
                           />
                         </div>
                       </div>
@@ -1648,7 +1648,7 @@ function AccountPageContent() {
                         <select
                           value={helpFormData.subject}
                           onChange={(e) => setHelpFormData({ ...helpFormData, subject: e.target.value })}
-                          className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-[13px] text-gray-800 focus:outline-none focus:border-[#069e5d] bg-white appearance-none"
+                          className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-[13px] text-gray-800 focus:outline-none focus:border-success bg-white appearance-none"
                         >
                           <option value="" disabled>Select a subject</option>
                           <option value="Booking Issue">Booking Issue</option>
@@ -1666,7 +1666,7 @@ function AccountPageContent() {
                           value={helpFormData.message}
                           onChange={(e) => setHelpFormData({ ...helpFormData, message: e.target.value })}
                           maxLength={1000}
-                          className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-[13px] text-gray-800 focus:outline-none focus:border-[#069e5d] resize-none"
+                          className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-[13px] text-gray-800 focus:outline-none focus:border-success resize-none"
                         ></textarea>
                         <div className="text-right text-[10px] text-gray-400 mt-1">
                           {helpFormData.message.length} / 1000
@@ -1678,7 +1678,7 @@ function AccountPageContent() {
                           type="checkbox"
                           checked={helpFormData.consent}
                           onChange={(e) => setHelpFormData({ ...helpFormData, consent: e.target.checked })}
-                          className="mt-0.5 w-3.5 h-3.5 rounded border-gray-300 text-[#069e5d] focus:ring-[#069e5d]"
+                          className="mt-0.5 w-3.5 h-3.5 rounded border-gray-300 text-success focus:ring-success"
                         />
                         <span className="text-[11px] font-medium text-gray-600">I authorize astroved to send notifications via SMS / WhatsApp / email. <span className="text-red-500">*</span></span>
                       </label>
@@ -1686,7 +1686,7 @@ function AccountPageContent() {
                       <button
                         onClick={handleHelpSubmit}
                         disabled={isSubmittingHelp}
-                        className={`bg-[#069e5d] text-white text-[13px] font-bold px-6 py-2.5 rounded-full flex items-center gap-1.5 transition w-max ${isSubmittingHelp ? 'opacity-70 cursor-not-allowed' : 'hover:bg-[#058a51]'}`}
+                        className={`bg-success text-white text-[13px] font-bold px-6 py-2.5 rounded-full flex items-center gap-1.5 transition w-max ${isSubmittingHelp ? 'opacity-70 cursor-not-allowed' : 'hover:bg-[#058a51]'}`}
                       >
                         {isSubmittingHelp ? 'Submitting...' : 'Submit Request'} {!isSubmittingHelp && <span>&rarr;</span>}
                       </button>
@@ -1723,7 +1723,7 @@ function AccountPageContent() {
                       type="button"
                       onClick={() => setAddressFormData(prev => ({ ...prev, type }))}
                       className={`px-5 py-2 rounded-full text-sm font-bold border transition ${addressFormData.type === type
-                        ? 'bg-[#069e5d] text-white border-[#069e5d]'
+                        ? 'bg-success text-white border-success'
                         : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
                         }`}
                     >
@@ -1740,7 +1740,7 @@ function AccountPageContent() {
                       placeholder="Recipient name"
                       value={addressFormData.fullName}
                       onChange={(e) => setAddressFormData(p => ({ ...p, fullName: e.target.value }))}
-                      className="w-full border border-gray-250 rounded-xl px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:border-[#069e5d]"
+                      className="w-full border border-gray-250 rounded-xl px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:border-success"
                     />
                   </div>
                   <div>
@@ -1750,7 +1750,7 @@ function AccountPageContent() {
                       placeholder="+91 98765 43210"
                       value={addressFormData.phone}
                       onChange={(e) => setAddressFormData(p => ({ ...p, phone: e.target.value }))}
-                      className="w-full border border-gray-250 rounded-xl px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:border-[#069e5d]"
+                      className="w-full border border-gray-250 rounded-xl px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:border-success"
                     />
                   </div>
                 </div>
@@ -1762,7 +1762,7 @@ function AccountPageContent() {
                     placeholder="Flat / House no. / Building / Street"
                     value={addressFormData.address}
                     onChange={(e) => setAddressFormData(p => ({ ...p, address: e.target.value }))}
-                    className="w-full border border-gray-250 rounded-xl px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:border-[#069e5d]"
+                    className="w-full border border-gray-250 rounded-xl px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:border-success"
                   />
                 </div>
 
@@ -1773,7 +1773,7 @@ function AccountPageContent() {
                     placeholder="Nearby landmark / area"
                     value={addressFormData.landmark}
                     onChange={(e) => setAddressFormData(p => ({ ...p, landmark: e.target.value }))}
-                    className="w-full border border-gray-250 rounded-xl px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:border-[#069e5d]"
+                    className="w-full border border-gray-250 rounded-xl px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:border-success"
                   />
                 </div>
 
@@ -1785,7 +1785,7 @@ function AccountPageContent() {
                       placeholder="City"
                       value={addressFormData.city}
                       onChange={(e) => setAddressFormData(p => ({ ...p, city: e.target.value }))}
-                      className="w-full border border-gray-250 rounded-xl px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:border-[#069e5d]"
+                      className="w-full border border-gray-250 rounded-xl px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:border-success"
                     />
                   </div>
                   <div>
@@ -1795,7 +1795,7 @@ function AccountPageContent() {
                       placeholder="State"
                       value={addressFormData.state}
                       onChange={(e) => setAddressFormData(p => ({ ...p, state: e.target.value }))}
-                      className="w-full border border-gray-250 rounded-xl px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:border-[#069e5d]"
+                      className="w-full border border-gray-250 rounded-xl px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:border-success"
                     />
                   </div>
                 </div>
@@ -1808,7 +1808,7 @@ function AccountPageContent() {
                       placeholder="500033"
                       value={addressFormData.pincode}
                       onChange={(e) => setAddressFormData(p => ({ ...p, pincode: e.target.value }))}
-                      className="w-full border border-gray-250 rounded-xl px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:border-[#069e5d]"
+                      className="w-full border border-gray-250 rounded-xl px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:border-success"
                     />
                   </div>
                   <div>
@@ -1818,7 +1818,7 @@ function AccountPageContent() {
                       placeholder="India"
                       value={addressFormData.country}
                       onChange={(e) => setAddressFormData(p => ({ ...p, country: e.target.value }))}
-                      className="w-full border border-gray-250 rounded-xl px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:border-[#069e5d]"
+                      className="w-full border border-gray-250 rounded-xl px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:border-success"
                     />
                   </div>
                 </div>
@@ -1828,7 +1828,7 @@ function AccountPageContent() {
                     type="checkbox"
                     checked={addressFormData.isDefault}
                     onChange={(e) => setAddressFormData(p => ({ ...p, isDefault: e.target.checked }))}
-                    className="w-4 h-4 rounded border-gray-300 text-[#069e5d] focus:ring-[#069e5d]"
+                    className="w-4 h-4 rounded border-gray-300 text-success focus:ring-success"
                   />
                   <span className="text-[13px] font-medium text-gray-800">Set as default address</span>
                 </label>
@@ -1845,7 +1845,7 @@ function AccountPageContent() {
                 <button
                   type="button"
                   onClick={handleSaveAddress}
-                  className="px-6 py-2.5 rounded-full bg-[#069e5d] text-white text-sm font-bold hover:bg-green-700 transition"
+                  className="px-6 py-2.5 rounded-full bg-success text-white text-sm font-bold hover:bg-green-700 transition"
                 >
                   {addressFormData._id ? "Update Address" : "Add Address"}
                 </button>

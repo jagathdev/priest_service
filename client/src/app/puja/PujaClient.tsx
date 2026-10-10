@@ -163,7 +163,7 @@ function PujaFilterModal({
 
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-[#ebd5c1]">
-          <h3 className="text-[22px] font-serif text-[#1f1f1f]">Puja Filters</h3>
+          <h3 className="text-[22px] font-serif text-ink">Puja Filters</h3>
           <button onClick={onClose} className="text-gray-500 hover:text-gray-800 transition-colors">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
@@ -247,10 +247,10 @@ function PujaFilterModal({
           </button>
           <button
             onClick={() => onApply(draftFilters)}
-            className="w-full sm:flex-1 py-3 bg-[#00b050] text-white rounded-full text-sm font-bold flex items-center justify-center relative hover:bg-[#009644] transition-colors group"
+            className="w-full sm:flex-1 py-3 bg-success text-white rounded-full text-sm font-bold flex items-center justify-center relative hover:bg-[#009644] transition-colors group"
           >
             <span>Apply Filter</span>
-            <div className="absolute right-2 w-[28px] h-[28px] rounded-full bg-white text-[#00b050] flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 transition-transform">
+            <div className="absolute right-2 w-[28px] h-[28px] rounded-full bg-white text-success flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 transition-transform">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
             </div>
           </button>
@@ -611,11 +611,11 @@ export default function PujaClient({ initialPujas }: { initialPujas?: Puja[] }) 
 
                       <div className="p-6 flex flex-col flex-1 text-left">
                         <div className="flex items-center gap-2 mb-2">
-                          <div className="w-8 h-[1px] bg-[#F47820]/40" />
-                          <span className="text-[#F47820] font-serif font-extrabold text-xs sm:text-[13px] tracking-wider uppercase flex items-center gap-1.5">
+                          <div className="w-8 h-[1px] bg-accent/40" />
+                          <span className="text-accent font-serif font-extrabold text-xs sm:text-[13px] tracking-wider uppercase flex items-center gap-1.5">
                             <span className="text-[10px]">♦</span> {puja.subtitle} <span className="text-[10px]">♦</span>
                           </span>
-                          <div className="w-8 h-[1px] bg-[#F47820]/40" />
+                          <div className="w-8 h-[1px] bg-accent/40" />
                         </div>
 
 

@@ -94,7 +94,7 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
     setLoading(true);
 
     try {
-      const data = await authService.sendOtp({
+      const data = await authService.sendOtpLegacy({
         method: "whatsapp",
         country: { isoCode: "IN", dialCode: "+91", name: "India" } as any,
         number: cleanNumber,
@@ -129,7 +129,7 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
     setLoading(true);
 
     try {
-      const verifyRes = await authService.verifyOtp({
+      const verifyRes = await authService.verifyOtpLegacy({
         method: "whatsapp",
         country: { isoCode: "IN", dialCode: "+91", name: "India" } as any,
         number: mobileNumber.replace(/\D/g, ""),
@@ -159,7 +159,7 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
     setError("");
     setLoading(true);
     try {
-      await authService.sendOtp({
+      await authService.sendOtpLegacy({
         method: "whatsapp",
         country: { isoCode: "IN", dialCode: "+91", name: "India" } as any,
         number: mobileNumber.replace(/\D/g, ""),
@@ -241,7 +241,7 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
 
               {waitTimer > 0 && (
                 <p className="text-xs text-stone-500 font-medium text-center mt-2">
-                  Please wait <span className="font-bold text-[#00b050]">{waitTimer}s</span> before requesting another OTP.
+                  Please wait <span className="font-bold text-success">{waitTimer}s</span> before requesting another OTP.
                 </p>
               )}
 
@@ -249,10 +249,10 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
               <button
                 type="submit"
                 disabled={mobileNumber.length !== 10 || loading || waitTimer > 0}
-                className="w-full bg-[#00b050] hover:bg-[#009644] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed text-white font-extrabold text-base py-3.5 px-6 rounded-full flex items-center justify-center relative shadow-md transition-all mt-6"
+                className="w-full bg-success hover:bg-[#009644] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed text-white font-extrabold text-base py-3.5 px-6 rounded-full flex items-center justify-center relative shadow-md transition-all mt-6"
               >
                 <span>{loading ? "Sending..." : "Continue"}</span>
-                <div className="absolute right-3.5 w-8 h-8 rounded-full bg-white text-[#00b050] flex items-center justify-center shadow-xs">
+                <div className="absolute right-3.5 w-8 h-8 rounded-full bg-white text-success flex items-center justify-center shadow-xs">
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.8">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
                   </svg>
@@ -280,7 +280,7 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
               <button
                 type="button"
                 onClick={() => setStep("input")}
-                className="text-[#00b050] font-bold underline ml-1 hover:text-emerald-700"
+                className="text-success font-bold underline ml-1 hover:text-emerald-700"
               >
                 Change
               </button>
@@ -307,14 +307,14 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
               <div className="text-center">
                 {resendTimer > 0 ? (
                   <span className="text-xs text-stone-500 font-medium">
-                    Resend OTP in <span className="text-[#00b050] font-bold">{resendTimer}s</span>
+                    Resend OTP in <span className="text-success font-bold">{resendTimer}s</span>
                   </span>
                 ) : (
                   <button
                     type="button"
                     onClick={handleResendOtp}
                     disabled={loading}
-                    className="text-xs text-[#00b050] font-bold underline hover:text-emerald-700"
+                    className="text-xs text-success font-bold underline hover:text-emerald-700"
                   >
                     Resend OTP
                   </button>
@@ -330,10 +330,10 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
               <button
                 type="submit"
                 disabled={otp.length !== 6 || loading}
-                className="w-full bg-[#00b050] hover:bg-[#009644] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed text-white font-extrabold text-base py-3.5 px-6 rounded-full flex items-center justify-center relative shadow-md transition-all mt-4"
+                className="w-full bg-success hover:bg-[#009644] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed text-white font-extrabold text-base py-3.5 px-6 rounded-full flex items-center justify-center relative shadow-md transition-all mt-4"
               >
                 <span>{loading ? "Verifying..." : "Verify & Continue"}</span>
-                <div className="absolute right-3.5 w-8 h-8 rounded-full bg-white text-[#00b050] flex items-center justify-center shadow-xs">
+                <div className="absolute right-3.5 w-8 h-8 rounded-full bg-white text-success flex items-center justify-center shadow-xs">
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.8">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
                   </svg>

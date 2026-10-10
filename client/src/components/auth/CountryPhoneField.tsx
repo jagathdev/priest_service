@@ -56,7 +56,7 @@ export default function CountryPhoneField({
   return (
     <label className={`block text-sm font-medium text-[#5a3b8a] ${className}`}>
       {label}
-      <div className="mt-2 flex h-12 items-center rounded-xl border border-[#d8c9fb] bg-[#fcfaff] px-3 transition-all focus-within:border-[#F47820] focus-within:ring-2 focus-within:ring-[#ddd1ff]">
+      <div className="mt-2 flex h-12 items-center rounded-xl border border-[#d8c9fb] bg-[#fcfaff] px-3 transition-all focus-within:border-accent focus-within:ring-2 focus-within:ring-[#ddd1ff]">
         <PhoneInput
           value={e164Like}
           disabled={disabled}

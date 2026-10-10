@@ -83,26 +83,26 @@ export default function PromoCodeInput({
                         value={code}
                         onChange={(e) => setCode(e.target.value.toUpperCase())}
                         placeholder="Enter Promocode"
-                        className="flex-1 min-w-0 rounded-xl border border-stone-200 px-3 sm:px-4 py-3 text-sm font-medium outline-none transition focus:border-[#00b050] shadow-sm"
+                        className="flex-1 min-w-0 rounded-xl border border-stone-200 px-3 sm:px-4 py-3 text-sm font-medium outline-none transition focus:border-success shadow-sm"
                     />
                     <button
                         type="button"
                         onClick={handleApply}
                         disabled={loading}
-                        className="shrink-0 rounded-xl bg-[#00b050] px-5 sm:px-8 py-3 text-sm font-bold text-white hover:bg-green-700 transition-colors disabled:opacity-50 shadow-sm"
+                        className="shrink-0 rounded-xl bg-success px-5 sm:px-8 py-3 text-sm font-bold text-white hover:bg-green-700 transition-colors disabled:opacity-50 shadow-sm"
                     >
                         {loading ? "..." : "Apply"}
                     </button>
                 </div>
             ) : (
-                <div className="flex items-center justify-between rounded-xl border border-[#00b050]/30 bg-green-50/50 px-5 py-4 shadow-sm">
+                <div className="flex items-center justify-between rounded-xl border border-success/30 bg-green-50/50 px-5 py-4 shadow-sm">
                     <div>
-                        <div className="font-extrabold text-[#00b050] flex items-center gap-2">
+                        <div className="font-extrabold text-success flex items-center gap-2">
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"></path></svg>
                             {code} applied
                         </div>
                         <div className="text-xs font-bold text-stone-600 mt-1">
-                            You saved <span className="text-[#00b050]">₹{discountAmount.toLocaleString("en-IN")}</span>
+                            You saved <span className="text-success">₹{discountAmount.toLocaleString("en-IN")}</span>
                         </div>
                     </div>
                     <button

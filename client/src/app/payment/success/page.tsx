@@ -75,7 +75,7 @@ function SuccessContent() {
             </div>
             <div className="text-right">
               <p className="text-[10px] text-stone-500 font-bold uppercase tracking-wider mb-1">Amount Paid</p>
-              <p className="text-xl font-black text-[#00b050]">₹{amount}</p>
+              <p className="text-xl font-black text-success">₹{amount}</p>
             </div>
           </div>
 
@@ -138,7 +138,7 @@ function SuccessContent() {
           <div className="flex gap-4">
             <Link
               href="/account?tab=bookings"
-              className="bg-[#00b050] hover:bg-[#009644] text-white font-extrabold text-sm px-8 py-3.5 rounded-xl transition-all shadow-sm flex items-center gap-2"
+              className="bg-success hover:bg-[#009644] text-white font-extrabold text-sm px-8 py-3.5 rounded-xl transition-all shadow-sm flex items-center gap-2"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
               View My Bookings
@@ -152,7 +152,7 @@ function SuccessContent() {
             </Link>
           </div>
 
-          <p className="text-xs font-bold text-[#00b050] flex items-center gap-1.5 mt-4">
+          <p className="text-xs font-bold text-success flex items-center gap-1.5 mt-4">
             <i className="fa-brands fa-whatsapp text-[16px]"></i>
             A confirmation has been sent to your WhatsApp.
           </p>

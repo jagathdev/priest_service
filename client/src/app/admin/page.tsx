@@ -39,7 +39,7 @@ export default async function AdminDashboard() {
         <div className="flex items-center gap-3">
           <Link
             href="/admin/pujas"
-            className="px-4 py-2.5 rounded-xl bg-[#069e5d] text-white text-xs font-bold hover:bg-[#058a51] transition flex items-center gap-1.5 shadow-xs"
+            className="px-4 py-2.5 rounded-xl bg-success text-white text-xs font-bold hover:bg-[#058a51] transition flex items-center gap-1.5 shadow-xs"
           >
             <SparklesIcon className="w-4 h-4" />
             <span>+ Add Puja</span>
@@ -66,7 +66,7 @@ export default async function AdminDashboard() {
             </div>
           </div>
           <dd className="text-3xl font-black text-gray-900 mt-3">{loading ? "..." : stats.pujas}</dd>
-          <span className="text-xs font-bold text-[#069e5d] mt-2 inline-block group-hover:underline">Manage Pujas →</span>
+          <span className="text-xs font-bold text-success mt-2 inline-block group-hover:underline">Manage Pujas →</span>
         </Link>
 
         {/* Total Homas Card */}
@@ -78,7 +78,7 @@ export default async function AdminDashboard() {
             </div>
           </div>
           <dd className="text-3xl font-black text-gray-900 mt-3">{loading ? "..." : stats.homas}</dd>
-          <span className="text-xs font-bold text-[#069e5d] mt-2 inline-block group-hover:underline">Manage Homas →</span>
+          <span className="text-xs font-bold text-success mt-2 inline-block group-hover:underline">Manage Homas →</span>
         </Link>
 
         {/* Total Orders Card */}
@@ -90,19 +90,19 @@ export default async function AdminDashboard() {
             </div>
           </div>
           <dd className="text-3xl font-black text-gray-900 mt-3">{loading ? "..." : stats.orders}</dd>
-          <span className="text-xs font-bold text-[#069e5d] mt-2 inline-block group-hover:underline">View Bookings →</span>
+          <span className="text-xs font-bold text-success mt-2 inline-block group-hover:underline">View Bookings →</span>
         </Link>
 
         {/* Total Revenue Card */}
         <Link href="/admin/payments" className="bg-white rounded-2xl border border-gray-200 p-6 shadow-xs hover:shadow-md transition group">
           <div className="flex items-center justify-between">
             <dt className="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Revenue</dt>
-            <div className="w-9 h-9 rounded-xl bg-green-50 text-[#069e5d] flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-green-50 text-success flex items-center justify-center">
               <BanknotesIcon className="w-5 h-5" />
             </div>
           </div>
-          <dd className="text-3xl font-black text-[#069e5d] mt-3">₹{stats.revenue.toLocaleString()}</dd>
-          <span className="text-xs font-bold text-[#069e5d] mt-2 inline-block group-hover:underline">Revenue Details →</span>
+          <dd className="text-3xl font-black text-success mt-3">₹{stats.revenue.toLocaleString()}</dd>
+          <span className="text-xs font-bold text-success mt-2 inline-block group-hover:underline">Revenue Details →</span>
         </Link>
       </div>
 
@@ -110,7 +110,7 @@ export default async function AdminDashboard() {
       <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-xs">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-bold text-gray-900">Recent Devotee Bookings</h2>
-          <Link href="/admin/orders" className="text-xs font-bold text-[#069e5d] hover:underline">View All →</Link>
+          <Link href="/admin/orders" className="text-xs font-bold text-success hover:underline">View All →</Link>
         </div>
 
         <div className="overflow-x-auto">
@@ -140,7 +140,7 @@ export default async function AdminDashboard() {
                     <td className="px-4 py-3 text-gray-800">
                       {booking.pooja?.title || booking.pooja?.name || booking.serviceName || "Puja Ritual"}
                     </td>
-                    <td className="px-4 py-3 font-bold text-[#069e5d] uppercase text-[10px]">
+                    <td className="px-4 py-3 font-bold text-success uppercase text-[10px]">
                       {booking.type || "Puja"}
                     </td>
                     <td className="px-4 py-3 font-extrabold text-gray-900">

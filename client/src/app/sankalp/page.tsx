@@ -507,38 +507,38 @@ function SankalpContent() {
             <div className="flex items-center justify-between relative">
               <div className="absolute left-10 right-10 top-5 h-[3px] bg-[#e4dfd9] -z-10" />
               <div className="absolute left-10 right-10 top-5 h-[3px] -z-10 flex justify-start">
-                <div className={`h-full bg-[#00b050] transition-all duration-300 ${step === 1 ? 'w-0' : step === 2 ? 'w-1/2' : 'w-full'}`} />
+                <div className={`h-full bg-success transition-all duration-300 ${step === 1 ? 'w-0' : step === 2 ? 'w-1/2' : 'w-full'}`} />
               </div>
 
               <div
                 className={`flex flex-col items-center gap-2 bg-white px-2 sm:px-4 ${step > 1 ? "cursor-pointer hover:opacity-80 transition-opacity" : ""}`}
                 onClick={() => { if (step > 1) setStep(1); }}
               >
-                <div className={`h-10 w-10 rounded-full flex items-center justify-center font-bold text-base transition-all ${step >= 1 ? 'bg-[#00b050] text-white' : 'bg-white border-2 border-[#e4dfd9] text-stone-500'} ${step === 1 ? 'ring-4 ring-[#00b050]/10' : ''}`}>
+                <div className={`h-10 w-10 rounded-full flex items-center justify-center font-bold text-base transition-all ${step >= 1 ? 'bg-success text-white' : 'bg-white border-2 border-[#e4dfd9] text-stone-500'} ${step === 1 ? 'ring-4 ring-success/10' : ''}`}>
                   {step > 1 ? '✓' : '1'}
                 </div>
-                <span className={`text-[13px] font-semibold text-center leading-tight ${step === 1 ? 'text-[#00b050]' : 'text-[#8b8276]'}`}>Devotee<br />Details</span>
+                <span className={`text-[13px] font-semibold text-center leading-tight ${step === 1 ? 'text-success' : 'text-[#8b8276]'}`}>Devotee<br />Details</span>
               </div>
 
               <div className="flex flex-col items-center gap-2 bg-white px-2 sm:px-4">
-                <div className={`h-10 w-10 rounded-full flex items-center justify-center font-bold text-base transition-all ${step >= 2 ? 'bg-[#00b050] text-white shadow-sm' : 'bg-white border-2 border-[#e4dfd9] text-stone-500'} ${step === 2 ? 'ring-4 ring-[#00b050]/10' : ''}`}>
+                <div className={`h-10 w-10 rounded-full flex items-center justify-center font-bold text-base transition-all ${step >= 2 ? 'bg-success text-white shadow-sm' : 'bg-white border-2 border-[#e4dfd9] text-stone-500'} ${step === 2 ? 'ring-4 ring-success/10' : ''}`}>
                   {step > 2 ? '✓' : '2'}
                 </div>
-                <span className={`text-[13px] font-semibold text-center leading-tight ${step === 2 ? 'text-[#00b050]' : 'text-[#8b8276]'}`}>Review</span>
+                <span className={`text-[13px] font-semibold text-center leading-tight ${step === 2 ? 'text-success' : 'text-[#8b8276]'}`}>Review</span>
               </div>
 
               <div className="flex flex-col items-center gap-2 bg-white px-2 sm:px-4">
-                <div className={`h-10 w-10 rounded-full flex items-center justify-center font-bold text-base transition-all ${step >= 3 ? 'bg-[#00b050] text-white shadow-sm' : 'bg-white border-2 border-[#e4dfd9] text-stone-500'} ${step === 3 ? 'ring-4 ring-[#00b050]/10' : ''}`}>
+                <div className={`h-10 w-10 rounded-full flex items-center justify-center font-bold text-base transition-all ${step >= 3 ? 'bg-success text-white shadow-sm' : 'bg-white border-2 border-[#e4dfd9] text-stone-500'} ${step === 3 ? 'ring-4 ring-success/10' : ''}`}>
                   3
                 </div>
-                <span className={`text-[13px] font-semibold text-center leading-tight ${step === 3 ? 'text-[#00b050]' : 'text-[#8b8276]'}`}>Payment</span>
+                <span className={`text-[13px] font-semibold text-center leading-tight ${step === 3 ? 'text-success' : 'text-[#8b8276]'}`}>Payment</span>
               </div>
             </div>
           </div>
 
           {loading ? (
             <div className="flex flex-col items-center justify-center py-20 text-stone-600 font-serif text-base">
-              <div className="w-10 h-10 border-4 border-[#00b050] border-t-transparent rounded-full animate-spin mb-4" />
+              <div className="w-10 h-10 border-4 border-success border-t-transparent rounded-full animate-spin mb-4" />
               Loading sacred order details...
             </div>
           ) : error ? (
@@ -546,7 +546,7 @@ function SankalpContent() {
               <p className="text-red-600 font-bold mb-4">{error}</p>
               <Link
                 href="/puja"
-                className="bg-[#00b050] text-white font-bold py-2.5 px-6 rounded-full inline-block text-sm"
+                className="bg-success text-white font-bold py-2.5 px-6 rounded-full inline-block text-sm"
               >
                 Browse Pujas
               </Link>
@@ -564,7 +564,7 @@ function SankalpContent() {
                         Your WhatsApp Number
                         <svg className="w-4 h-4 text-[#25D366]" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 00-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" /></svg>
                       </label>
-                      <div className={`border rounded-xl flex items-center px-4 py-3 transition shadow-sm ${showErrors && !formData.whatsapp.trim() ? "border-red-400 focus-within:border-red-400 bg-red-50/20" : "border-stone-200 focus-within:border-[#00b050] bg-white"}`}>
+                      <div className={`border rounded-xl flex items-center px-4 py-3 transition shadow-sm ${showErrors && !formData.whatsapp.trim() ? "border-red-400 focus-within:border-red-400 bg-red-50/20" : "border-stone-200 focus-within:border-success bg-white"}`}>
                         <div className="flex items-center gap-2 pr-3 border-r border-stone-200 mr-3">
                           <span className="text-[13px] font-semibold text-[#1c2c5c]">IN</span>
                           <span className="text-[13px] font-extrabold text-stone-900">+91</span>
@@ -623,7 +623,7 @@ function SankalpContent() {
                       <div className="mt-4 flex items-center gap-3">
                         <button
                           onClick={() => setFormData({ ...formData, participants: [...formData.participants, ""] })}
-                          className="text-sm font-bold text-[#00b050] bg-white border border-dashed border-[#00b050] rounded-full px-5 py-2 flex items-center gap-1.5 hover:bg-green-50 transition-colors"
+                          className="text-sm font-bold text-success bg-white border border-dashed border-success rounded-full px-5 py-2 flex items-center gap-1.5 hover:bg-green-50 transition-colors"
                         >
                           <span>+ Add 1 more participant</span>
                           <span className="font-extrabold">+₹300</span>
@@ -653,7 +653,7 @@ function SankalpContent() {
                         value={formData.dontKnowGotra ? "Kashyapa" : formData.gotra}
                         onChange={(e) => setFormData({ ...formData, gotra: e.target.value })}
                         placeholder="Gotra of Puja performer (e.g. Kashyapa, Bharadwaja)"
-                        className={`w-full border border-stone-200 rounded-xl px-4 py-3 text-sm font-medium outline-none focus:border-[#00b050] shadow-sm ${formData.dontKnowGotra ? "bg-[#f4f2ee] text-stone-500 cursor-not-allowed" : "bg-white"
+                        className={`w-full border border-stone-200 rounded-xl px-4 py-3 text-sm font-medium outline-none focus:border-success shadow-sm ${formData.dontKnowGotra ? "bg-[#f4f2ee] text-stone-500 cursor-not-allowed" : "bg-white"
                           }`}
                       />
                       <label className="flex items-center gap-2 mt-3 cursor-pointer select-none pl-1">
@@ -661,7 +661,7 @@ function SankalpContent() {
                           type="checkbox"
                           checked={formData.dontKnowGotra}
                           onChange={(e) => setFormData({ ...formData, dontKnowGotra: e.target.checked })}
-                          className="w-4 h-4 rounded border-stone-300 text-[#00b050] focus:ring-[#00b050]"
+                          className="w-4 h-4 rounded border-stone-300 text-success focus:ring-success"
                         />
                         <span className="text-xs font-medium text-stone-700">
                           I do not know my gotra
@@ -678,7 +678,7 @@ function SankalpContent() {
                         rows={4}
                         value={formData.wish}
                         onChange={(e) => setFormData({ ...formData, wish: e.target.value })}
-                        className="w-full border border-stone-200 rounded-xl p-4 text-xs font-medium text-stone-700 outline-none focus:border-[#00b050] resize-none shadow-sm"
+                        className="w-full border border-stone-200 rounded-xl p-4 text-xs font-medium text-stone-700 outline-none focus:border-success resize-none shadow-sm"
                         placeholder="e.g. FAMILY WELL BEING"
                       />
                     </div>
@@ -692,16 +692,16 @@ function SankalpContent() {
                       <div className="grid grid-cols-2 gap-4">
                         <div
                           onClick={() => setPaymentMethod("upi")}
-                          className={`border rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer transition-colors ${paymentMethod === "upi" ? "border-[#00b050] bg-green-50/30 shadow-sm" : "border-stone-200 hover:border-[#00b050]"}`}
+                          className={`border rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer transition-colors ${paymentMethod === "upi" ? "border-success bg-green-50/30 shadow-sm" : "border-stone-200 hover:border-success"}`}
                         >
-                          <svg className={`w-8 h-8 mb-2 ${paymentMethod === "upi" ? "text-[#00b050]" : "text-stone-400"}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
+                          <svg className={`w-8 h-8 mb-2 ${paymentMethod === "upi" ? "text-success" : "text-stone-400"}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
                           <span className="text-xs font-bold text-stone-700 text-center">Cards / Netbanking / UPI</span>
                         </div>
                         <div
                           onClick={() => setPaymentMethod("qr")}
-                          className={`border rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer transition-colors ${paymentMethod === "qr" ? "border-[#00b050] bg-green-50/30 shadow-sm" : "border-stone-200 hover:border-[#00b050]"}`}
+                          className={`border rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer transition-colors ${paymentMethod === "qr" ? "border-success bg-green-50/30 shadow-sm" : "border-stone-200 hover:border-success"}`}
                         >
-                          <svg className={`w-8 h-8 mb-2 ${paymentMethod === "qr" ? "text-[#00b050]" : "text-stone-400"}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" /></svg>
+                          <svg className={`w-8 h-8 mb-2 ${paymentMethod === "qr" ? "text-success" : "text-stone-400"}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" /></svg>
                           <span className="text-xs font-bold text-stone-700 text-center">Scan QR to Pay</span>
                         </div>
                       </div>
@@ -739,7 +739,7 @@ function SankalpContent() {
                                 }}
                                 className={`text-[11px] font-bold px-5 py-2 rounded-full transition-colors shrink-0 flex items-center gap-1 ${isAdded
                                   ? "bg-red-50 text-red-600 border border-red-200"
-                                  : "bg-[#00b050] text-white"
+                                  : "bg-success text-white"
                                   }`}
                               >
                                 {isAdded ? "− Remove" : "+ Add"}
@@ -791,7 +791,7 @@ function SankalpContent() {
 
                   {/* Date Box */}
                   <div className="bg-[#f2f9f5] border border-[#e2f1e8] rounded-xl px-4 py-2.5 flex items-center gap-3 text-xs font-bold text-[#1f4e35] mb-6">
-                    <svg className="w-4 h-4 text-[#00b050]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                    <svg className="w-4 h-4 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                     <span>{pujaData?.date || "Saturday, 10 October"}</span>
                   </div>
 
@@ -835,7 +835,7 @@ function SankalpContent() {
                       </div>
                     </div>
                     {appliedPromo && (
-                      <div className="flex justify-between items-center text-[#00b050]">
+                      <div className="flex justify-between items-center text-success">
                         <span className="font-medium">Promo ({appliedPromo.promoCode})</span>
                         <span className="font-extrabold">-₹{appliedPromo.discountAmount}</span>
                       </div>
@@ -849,19 +849,19 @@ function SankalpContent() {
                   {/* Continue Button */}
                   {isProcessing ? (
                     <div className="flex flex-col items-center justify-center py-3 mb-4 border border-stone-200 rounded-xl bg-stone-50">
-                      <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-[#00b050] mb-2"></div>
+                      <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-success mb-2"></div>
                       <span className="text-[11px] font-bold text-stone-600 animate-pulse">{loadingMsg}</span>
                     </div>
                   ) : (
                     <button
                       onClick={step === 1 ? handleProceedToStep2 : handleFinalCheckout}
-                      className="w-full bg-[#00b050] hover:bg-[#009644] active:scale-[0.99] text-white font-extrabold text-sm py-4 rounded-xl transition-all shadow-md mb-4"
+                      className="w-full bg-success hover:bg-[#009644] active:scale-[0.99] text-white font-extrabold text-sm py-4 rounded-xl transition-all shadow-md mb-4"
                     >
                       {step === 1 ? "Continue" : "Continue with Payment"}
                     </button>
                   )}
 
-                  <div className="flex items-center justify-center gap-1.5 text-[11px] font-bold text-[#00b050]">
+                  <div className="flex items-center justify-center gap-1.5 text-[11px] font-bold text-success">
                     <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
                     100% Secure
                   </div>
@@ -871,25 +871,25 @@ function SankalpContent() {
                 <div className="bg-white rounded-3xl border border-stone-200 p-5 shadow-sm space-y-4">
                   <div className="flex items-center gap-3 text-xs text-stone-600 font-medium">
                     <div className="w-5 h-5 rounded-full bg-[#eaf7f1] flex items-center justify-center shrink-0">
-                      <svg className="w-3 h-3 text-[#00b050]" fill="none" stroke="currentColor" strokeWidth="3.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                      <svg className="w-3 h-3 text-success" fill="none" stroke="currentColor" strokeWidth="3.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                     </div>
                     Puja Video Delivered Within 48 Hours
                   </div>
                   <div className="flex items-center gap-3 text-xs text-stone-600 font-medium">
                     <div className="w-5 h-5 rounded-full bg-[#eaf7f1] flex items-center justify-center shrink-0">
-                      <svg className="w-3 h-3 text-[#00b050]" fill="none" stroke="currentColor" strokeWidth="3.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                      <svg className="w-3 h-3 text-success" fill="none" stroke="currentColor" strokeWidth="3.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                     </div>
                     Verified & Experienced Purohits
                   </div>
                   <div className="flex items-center gap-3 text-xs text-stone-600 font-medium">
                     <div className="w-5 h-5 rounded-full bg-[#eaf7f1] flex items-center justify-center shrink-0">
-                      <svg className="w-3 h-3 text-[#00b050]" fill="none" stroke="currentColor" strokeWidth="3.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                      <svg className="w-3 h-3 text-success" fill="none" stroke="currentColor" strokeWidth="3.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                     </div>
                     Pujas Performed in Sacred Temples
                   </div>
                   <div className="flex items-center gap-3 text-xs text-stone-600 font-medium">
                     <div className="w-5 h-5 rounded-full bg-[#eaf7f1] flex items-center justify-center shrink-0">
-                      <svg className="w-3 h-3 text-[#00b050]" fill="none" stroke="currentColor" strokeWidth="3.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                      <svg className="w-3 h-3 text-success" fill="none" stroke="currentColor" strokeWidth="3.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                     </div>
                     100% Authentic Vedic Rituals
                   </div>

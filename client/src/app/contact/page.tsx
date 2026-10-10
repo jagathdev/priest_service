@@ -73,7 +73,7 @@ export default function ContactPage() {
                 key={card.title}
                 className="flex flex-col items-center justify-center rounded-sm bg-[#fff3eb] p-8 text-center shadow-[0_8px_22px_rgba(0,0,0,0.1)] transition-all hover:-translate-y-1 hover:shadow-[0_14px_30px_rgba(244,120,32,0.18)]"
               >
-                <i className={`${card.icon} text-3xl text-[#6869F9]`} aria-hidden="true"></i>
+                <i className={`${card.icon} text-3xl text-primary`} aria-hidden="true"></i>
                 <h2 className="mt-6 text-2xl font-black mb-6">{card.title}</h2>
                 <div className="w-full flex flex-col gap-6">
                   {card.items.map((item, idx) => (
@@ -83,7 +83,7 @@ export default function ContactPage() {
                       </span>
                       <a
                         href={item.href}
-                        className="mt-1.5 text-lg font-bold text-[#6869F9] hover:underline"
+                        className="mt-1.5 text-lg font-bold text-primary hover:underline"
                       >
                         {item.value}
                       </a>
@@ -107,7 +107,7 @@ export default function ContactPage() {
                 href="https://play.google.com/store/search?q=astroved&c=apps"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-3 rounded-xl bg-[#6869F9] px-7 py-4 text-sm font-extrabold uppercase tracking-wide text-white shadow-lg shadow-indigo-100 transition-all hover:bg-[#8283fa] active:scale-95"
+                className="inline-flex items-center gap-3 rounded-xl bg-primary px-7 py-4 text-sm font-extrabold uppercase tracking-wide text-white shadow-lg shadow-indigo-100 transition-all hover:bg-[#8283fa] active:scale-95"
               >
                 <i className="fa-brands fa-google-play text-base" aria-hidden="true"></i>
                 Android App
@@ -116,7 +116,7 @@ export default function ContactPage() {
                 href="https://apps.apple.com/us/app/AstroVed-astrology-remedies/id1406242342"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-3 rounded-xl bg-[#6869F9] px-7 py-4 text-sm font-extrabold uppercase tracking-wide text-white shadow-lg shadow-indigo-100 transition-all hover:bg-[#8283fa] active:scale-95"
+                className="inline-flex items-center gap-3 rounded-xl bg-primary px-7 py-4 text-sm font-extrabold uppercase tracking-wide text-white shadow-lg shadow-indigo-100 transition-all hover:bg-[#8283fa] active:scale-95"
               >
                 <i className="fa-brands fa-apple text-base" aria-hidden="true"></i>
                 iOS App

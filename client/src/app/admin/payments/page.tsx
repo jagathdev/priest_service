@@ -40,7 +40,7 @@ export default async function AdminPaymentsPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-xs">
           <dt className="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Revenue</dt>
-          <dd className="text-2xl font-black text-[#069e5d] mt-2">₹{stats.totalRevenue.toLocaleString()}</dd>
+          <dd className="text-2xl font-black text-success mt-2">₹{stats.totalRevenue.toLocaleString()}</dd>
           <span className="text-[11px] text-green-600 font-bold mt-1 inline-block">Lifetime earnings</span>
         </div>
 

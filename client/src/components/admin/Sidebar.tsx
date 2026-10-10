@@ -41,7 +41,7 @@ export default function Sidebar() {
   return (
     <>
       {/* Mobile Top Bar */}
-      <div className="md:hidden flex items-center justify-between bg-[#069e5d] px-4 py-3 text-white shadow-md z-40 relative">
+      <div className="md:hidden flex items-center justify-between bg-success px-4 py-3 text-white shadow-md z-40 relative">
         <span className="font-bold text-lg">Admin Panel</span>
         <button onClick={() => setIsOpen(true)} className="p-1 hover:bg-white/10 rounded-md transition-colors">
           <Bars3Icon className="h-7 w-7" />
@@ -62,7 +62,7 @@ export default function Sidebar() {
           <Link
             href="/admin/profile"
             onClick={() => setIsOpen(false)}
-            className="flex flex-col items-center justify-center border-b border-gray-100 bg-[#069e5d] hover:bg-[#058a51] transition-colors py-6"
+            className="flex flex-col items-center justify-center border-b border-gray-100 bg-success hover:bg-[#058a51] transition-colors py-6"
           >
             <div className="bg-white/20 p-2 rounded-full mb-2">
               <UserCircleIcon className="h-10 w-10 text-white" />
@@ -88,12 +88,12 @@ export default function Sidebar() {
                 href={item.href}
                 onClick={() => setIsOpen(false)}
                 className={`group flex items-center rounded-xl px-3 py-3 text-xs sm:text-sm font-bold transition-all ${isActive
-                  ? "bg-[#e8f5e9] text-[#069e5d]"
+                  ? "bg-[#e8f5e9] text-success"
                   : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                   }`}
               >
                 <item.icon
-                  className={`mr-3 h-5 w-5 shrink-0 ${isActive ? "text-[#069e5d]" : "text-gray-400 group-hover:text-gray-600"
+                  className={`mr-3 h-5 w-5 shrink-0 ${isActive ? "text-success" : "text-gray-400 group-hover:text-gray-600"
                     }`}
                   aria-hidden="true"
                 />
@@ -114,7 +114,7 @@ export default function Sidebar() {
           </button>
         </nav>
         <div className="border-t border-gray-100 p-4 text-xs font-bold text-gray-500">
-          <Link href="/dashboard" className="flex items-center hover:text-[#069e5d] transition">
+          <Link href="/dashboard" className="flex items-center hover:text-success transition">
             <span className="mr-2">←</span> Back to Main Site
           </Link>
         </div>

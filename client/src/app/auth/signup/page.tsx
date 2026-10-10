@@ -107,7 +107,7 @@ export default function SignupPage() {
                   value={formData.firstName}
                   onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
                   placeholder="Enter your first name"
-                  className="mt-2 h-12 w-full rounded-xl border border-[#d8c9fb] bg-[#fcfaff] px-4 text-base text-[#342151] outline-none placeholder:text-[#a288cf] focus:border-[#F47820] focus:ring-2 focus:ring-[#ddd1ff] transition-all"
+                  className="mt-2 h-12 w-full rounded-xl border border-[#d8c9fb] bg-[#fcfaff] px-4 text-base text-[#342151] outline-none placeholder:text-[#a288cf] focus:border-accent focus:ring-2 focus:ring-[#ddd1ff] transition-all"
                 />
               </div>
 
@@ -118,7 +118,7 @@ export default function SignupPage() {
                   value={formData.lastName}
                   onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
                   placeholder="Enter your last name"
-                  className="mt-2 h-12 w-full rounded-xl border border-[#d8c9fb] bg-[#fcfaff] px-4 text-base text-[#342151] outline-none placeholder:text-[#a288cf] focus:border-[#F47820] focus:ring-2 focus:ring-[#ddd1ff] transition-all"
+                  className="mt-2 h-12 w-full rounded-xl border border-[#d8c9fb] bg-[#fcfaff] px-4 text-base text-[#342151] outline-none placeholder:text-[#a288cf] focus:border-accent focus:ring-2 focus:ring-[#ddd1ff] transition-all"
                 />
               </div>
             </div>
@@ -132,7 +132,7 @@ export default function SignupPage() {
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   placeholder="Enter your email"
-                  className="mt-2 h-12 w-full rounded-xl border border-[#d8c9fb] bg-[#fcfaff] px-4 text-base text-[#342151] outline-none placeholder:text-[#a288cf] focus:border-[#F47820] focus:ring-2 focus:ring-[#ddd1ff] transition-all"
+                  className="mt-2 h-12 w-full rounded-xl border border-[#d8c9fb] bg-[#fcfaff] px-4 text-base text-[#342151] outline-none placeholder:text-[#a288cf] focus:border-accent focus:ring-2 focus:ring-[#ddd1ff] transition-all"
                 />
               </div>
 
@@ -170,14 +170,14 @@ export default function SignupPage() {
                   type="checkbox"
                   checked={formData.isWhatsappNumber}
                   onChange={(e) => setFormData({ ...formData, isWhatsappNumber: e.target.checked })}
-                  className="h-4 w-4 rounded border-[#8d849c] accent-[#1f1f1f]"
+                  className="h-4 w-4 rounded border-[#8d849c] accent--ink"
                 />
                 This is also my WhatsApp number
               </label>
 
               <div>
                 <label className="block text-sm font-medium text-[#5a3b8a]">Password</label>
-                <div className="relative mt-2 flex items-center rounded-xl border border-[#d8c9fb] bg-[#fcfaff] px-4 transition-all duration-300 focus-within:border-[#F47820] focus-within:ring-2 focus-within:ring-[#ddd1ff]">
+                <div className="relative mt-2 flex items-center rounded-xl border border-[#d8c9fb] bg-[#fcfaff] px-4 transition-all duration-300 focus-within:border-accent focus-within:ring-2 focus-within:ring-[#ddd1ff]">
                   <input
                     type={showPassword ? "text" : "password"}
                     required
@@ -203,7 +203,7 @@ export default function SignupPage() {
 
               <div>
                 <label className="block text-sm font-medium text-[#5a3b8a]">Confirm Password</label>
-                <div className="relative mt-2 flex items-center rounded-xl border border-[#d8c9fb] bg-[#fcfaff] px-4 transition-all duration-300 focus-within:border-[#F47820] focus-within:ring-2 focus-within:ring-[#ddd1ff]">
+                <div className="relative mt-2 flex items-center rounded-xl border border-[#d8c9fb] bg-[#fcfaff] px-4 transition-all duration-300 focus-within:border-accent focus-within:ring-2 focus-within:ring-[#ddd1ff]">
                   <input
                     type={showConfirmPassword ? "text" : "password"}
                     required
@@ -233,7 +233,7 @@ export default function SignupPage() {
             <button
               type="submit"
               disabled={loading}
-              className="mt-5 h-12 w-full rounded-xl bg-linear-to-r from-[#F47820] via-[#1f1f1f] to-[#F47820] px-4 text-base font-semibold text-white shadow-[0_12px_28px_rgba(104,105,249,0.22)] transition-all hover:brightness-110 disabled:opacity-50"
+              className="mt-5 h-12 w-full rounded-xl bg-linear-to-r from-accent via-ink to-accent px-4 text-base font-semibold text-white shadow-[0_12px_28px_rgba(104,105,249,0.22)] transition-all hover:brightness-110 disabled:opacity-50"
             >
               {loading ? "Creating Account..." : "Sign Up"}
             </button>

@@ -68,7 +68,7 @@ export default function TermsPage() {
                         key={tab.id}
                         onClick={() => handleTabChange(tab.id)}
                         className={`flex items-center gap-3 w-full rounded-xl px-4 py-3 text-left text-sm font-semibold transition-all duration-200 ${isSelected
-                          ? "bg-[#6869F9]/10 text-[#5B5BF6] shadow-xs"
+                          ? "bg-primary/10 text-[#5B5BF6] shadow-xs"
                           : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                           }`}
                       >

@@ -171,7 +171,7 @@ export default function AdminOrdersPage() {
             <input
               type="text"
               placeholder="Search devotee or order ID..."
-              className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-[#069e5d] focus:border-[#069e5d] block w-full pl-3 pr-10 py-2.5 outline-none transition shadow-sm w-[240px]"
+              className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-success focus:border-success block w-full pl-3 pr-10 py-2.5 outline-none transition shadow-sm w-[240px]"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -196,7 +196,7 @@ export default function AdminOrdersPage() {
           <select
             value={selectedService}
             onChange={(e) => setSelectedService(e.target.value)}
-            className="bg-white border border-gray-300 text-gray-900 text-sm font-semibold rounded-lg focus:ring-[#069e5d] focus:border-[#069e5d] block p-2 outline-none shadow-sm cursor-pointer"
+            className="bg-white border border-gray-300 text-gray-900 text-sm font-semibold rounded-lg focus:ring-success focus:border-success block p-2 outline-none shadow-sm cursor-pointer"
           >
             {data.services.map(service => (
               <option key={service} value={service}>{service}</option>
@@ -205,13 +205,13 @@ export default function AdminOrdersPage() {
           <select
             value={selectedStatus}
             onChange={(e) => setSelectedStatus(e.target.value)}
-            className="bg-white border border-gray-300 text-gray-900 text-sm font-semibold rounded-lg focus:ring-[#069e5d] focus:border-[#069e5d] block p-2 outline-none shadow-sm cursor-pointer"
+            className="bg-white border border-gray-300 text-gray-900 text-sm font-semibold rounded-lg focus:ring-success focus:border-success block p-2 outline-none shadow-sm cursor-pointer"
           >
             {data.statuses.map(st => (
               <option key={st} value={st}>{st === "All" ? "All Statuses" : st.toUpperCase()}</option>
             ))}
           </select>
-          <span className="text-xs font-bold bg-[#e8f5e9] text-[#069e5d] px-3 py-1.5 rounded-full whitespace-nowrap">
+          <span className="text-xs font-bold bg-[#e8f5e9] text-success px-3 py-1.5 rounded-full whitespace-nowrap">
             {data.totalOrders} Total Bookings
           </span>
         </div>
@@ -240,7 +240,7 @@ export default function AdminOrdersPage() {
                   </div>
                   <div>
                     <span className="font-bold text-gray-900 block text-sm">{serviceName}</span>
-                    <span className="text-[10px] uppercase font-bold text-[#069e5d]">PUJA</span>
+                    <span className="text-[10px] uppercase font-bold text-success">PUJA</span>
                   </div>
                   <div className="flex justify-between items-end">
                     <div>
@@ -253,7 +253,7 @@ export default function AdminOrdersPage() {
                     <span className="text-[10px] font-bold text-gray-400 uppercase">Schedule Puja</span>
                     <input
                       type="date"
-                      className="bg-gray-50 border border-gray-300 text-gray-900 text-xs font-bold rounded-lg focus:ring-[#069e5d] focus:border-[#069e5d] block w-full p-2 outline-none cursor-pointer"
+                      className="bg-gray-50 border border-gray-300 text-gray-900 text-xs font-bold rounded-lg focus:ring-success focus:border-success block w-full p-2 outline-none cursor-pointer"
                       value={ord.scheduledDate ? new Date(ord.scheduledDate).toISOString().split('T')[0] : ''}
                       onChange={(e) => handleScheduleChange(ord._id, e.target.value)}
                     />
@@ -297,7 +297,7 @@ export default function AdminOrdersPage() {
                       <td className="px-6 py-4 font-mono font-bold text-gray-900">{ord.orderNumber}</td>
                       <td className="px-6 py-4">
                         <span className="font-bold text-gray-900 block">{serviceName}</span>
-                        <span className="text-[10px] uppercase font-bold text-[#069e5d]">PUJA</span>
+                        <span className="text-[10px] uppercase font-bold text-success">PUJA</span>
                       </td>
                       <td className="px-6 py-4">
                         <span className="font-bold text-gray-800 block">{devoteeName}</span>
@@ -315,7 +315,7 @@ export default function AdminOrdersPage() {
                       <td className="px-6 py-4 text-center">
                         <input
                           type="date"
-                          className="bg-gray-50 border border-gray-300 text-gray-900 text-xs font-bold rounded-lg focus:ring-[#069e5d] focus:border-[#069e5d] block w-full p-2 outline-none cursor-pointer"
+                          className="bg-gray-50 border border-gray-300 text-gray-900 text-xs font-bold rounded-lg focus:ring-success focus:border-success block w-full p-2 outline-none cursor-pointer"
                           value={ord.scheduledDate ? new Date(ord.scheduledDate).toISOString().split('T')[0] : ''}
                           onChange={(e) => handleScheduleChange(ord._id, e.target.value)}
                         />

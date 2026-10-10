@@ -96,7 +96,7 @@ export default function OtpClient() {
 
     setLoading(true);
     try {
-      const res = await authService.verifyOtp({ ...otpPayload, otp: otpValue });
+      const res = await authService.verifyOtpLegacy({ ...otpPayload, otp: otpValue });
       if (res.data && res.data.user) {
         setUser(res.data.user);
         document.cookie = "userLogin=true; path=/; max-age=" + 60 * 60 * 24 * 7;
@@ -117,7 +117,7 @@ export default function OtpClient() {
     setError("");
     setLoading(true);
     try {
-      await authService.sendOtp(otpPayload);
+      await authService.sendOtpLegacy(otpPayload);
       setOtp("");
       setResendSeconds(RESEND_SECONDS);
       otpInputRef.current?.focus();
@@ -186,7 +186,7 @@ export default function OtpClient() {
               >
                 <AstroVedMark size={44} />
               </div>
-              <span className="mt-2 font-bold text-[#6869F9] text-base tracking-tight">AstroVed</span>
+              <span className="mt-2 font-bold text-primary text-base tracking-tight">AstroVed</span>
             </div>
 
             <h1 className="text-center text-xl font-bold text-[#1a1a2e]">
@@ -200,12 +200,12 @@ export default function OtpClient() {
             {summary && (
               <div className="mt-4 mx-auto flex items-center gap-2 rounded-xl border border-[#e1d5fb] bg-[#f8f5ff] px-4 py-2.5">
                 {isEmail ? (
-                  <svg className="w-4 h-4 text-[#6869F9]" viewBox="0 0 24 24" fill="none">
+                  <svg className="w-4 h-4 text-primary" viewBox="0 0 24 24" fill="none">
                     <path d="M4 7.5A2.5 2.5 0 0 1 6.5 5h11A2.5 2.5 0 0 1 20 7.5v9A2.5 2.5 0 0 1 17.5 19h-11A2.5 2.5 0 0 1 4 16.5v-9Z" stroke="currentColor" strokeWidth="1.7" />
                     <path d="m5 7 6.2 4.8a1.3 1.3 0 0 0 1.6 0L19 7" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 ) : (
-                  <svg className="w-4 h-4 text-[#6869F9]" viewBox="0 0 24 24" fill="none">
+                  <svg className="w-4 h-4 text-primary" viewBox="0 0 24 24" fill="none">
                     <path d="M12 3.5A8.5 8.5 0 0 0 4.8 16.7L3.5 20.5l3.9-1.2A8.5 8.5 0 1 0 12 3.5Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
                   </svg>
                 )}
@@ -213,7 +213,7 @@ export default function OtpClient() {
                 <button
                   type="button"
                   onClick={handleChangeContact}
-                  className="ml-1 text-xs font-medium text-[#6869F9] hover:underline"
+                  className="ml-1 text-xs font-medium text-primary hover:underline"
                 >
                   Change
                 </button>
@@ -233,7 +233,7 @@ export default function OtpClient() {
                   value={otp}
                   onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
                   placeholder="Enter OTP"
-                  className="w-full max-w-[260px] h-14 rounded-xl border-2 border-[#6869F9] bg-[#f0efff] text-center text-2xl font-bold text-[#342151] outline-none tracking-widest transition-all focus:ring-2 focus:ring-[#ddd1ff]"
+                  className="w-full max-w-[260px] h-14 rounded-xl border-2 border-primary bg-[#f0efff] text-center text-2xl font-bold text-[#342151] outline-none tracking-widest transition-all focus:ring-2 focus:ring-[#ddd1ff]"
                 />
               </div>
 
@@ -242,7 +242,7 @@ export default function OtpClient() {
                 {resendSeconds > 0 ? (
                   <p className="text-sm text-[#6f53a3]">
                     Resend OTP in{" "}
-                    <span className="font-bold text-[#6869F9]">
+                    <span className="font-bold text-primary">
                       {String(Math.floor(resendSeconds / 60)).padStart(2, "0")}:{String(resendSeconds % 60).padStart(2, "0")}
                     </span>
                   </p>
@@ -251,7 +251,7 @@ export default function OtpClient() {
                     type="button"
                     onClick={handleResendOtp}
                     disabled={loading || !otpPayload}
-                    className="text-sm font-semibold text-[#6869F9] hover:underline disabled:cursor-not-allowed disabled:text-[#a288cf]"
+                    className="text-sm font-semibold text-primary hover:underline disabled:cursor-not-allowed disabled:text-[#a288cf]"
                   >
                     Resend OTP
                   </button>
@@ -292,11 +292,11 @@ export default function OtpClient() {
 
               <p className="text-center text-xs text-[#9b7ec8]">
                 By proceeding, you agree to AstroVed&apos;s{" "}
-                <Link href="/terms" className="font-semibold text-[#6869F9] hover:underline">
+                <Link href="/terms" className="font-semibold text-primary hover:underline">
                   Terms and Conditions
                 </Link>{" "}
                 And{" "}
-                <Link href="/privacy" className="font-semibold text-[#6869F9] hover:underline">
+                <Link href="/privacy" className="font-semibold text-primary hover:underline">
                   Privacy Policy
                 </Link>
               </p>
