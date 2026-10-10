@@ -1,5 +1,4 @@
 import { env } from "./env";
-import { getSessionToken } from "./session";
 
 export class ApiError extends Error {
   status: number;
@@ -17,12 +16,19 @@ interface RequestOptions extends RequestInit {
   timeout?: number;
 }
 
+const getSessionToken = (): string | null => {
+  if (typeof window !== "undefined") {
+    return localStorage.getItem("token");
+  }
+  return null;
+};
+
 export async function request<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
   const { timeout = 10000, headers, ...restOptions } = options;
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeout);
 
-  const token = await getSessionToken();
+  const token = getSessionToken();
   const defaultHeaders: HeadersInit = {
     "Content-Type": "application/json",
   };

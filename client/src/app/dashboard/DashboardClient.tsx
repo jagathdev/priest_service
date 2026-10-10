@@ -6,16 +6,6 @@ import React, { useState, useEffect } from "react";
 import Navbar from "@/components/layout/Navbar";
 import WishlistButton from "@/components/common/WishlistButton";
 
-// Imported assets
-import step1Img from "@/assets/images/common/steo_1.png";
-import step2Img from "@/assets/images/common/step_2.png";
-import step3Img from "@/assets/images/common/step_3.png";
-import step4Img from "@/assets/images/common/step_4.png";
-import navagrahaImg from "@/assets/images/puja/Navagraha-Shanti-Puja.jpg";
-import ganeshImg from "@/assets/images/puja/Ganesh-Chaturthi-Mahapuja.jpg";
-import maaKaliImg from "@/assets/images/puja/maa-kali.jpg";
-import maaSaraswathiImg from "@/assets/images/puja/Maa-saraswathi.jpg";
-import lakshmiHomamImg from "@/assets/images/homa/Lakshmi-Homam.jpg";
 import HeroSection from "@/components/home/HeroSection";
 import ReviewsSection from "@/components/common/ReviewsSection";
 
@@ -84,9 +74,10 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
             <div className="flex flex-col items-center group text-center flex-1 w-full max-w-[210px]">
               <div className="w-24 h-24 sm:w-28 sm:h-28 relative mb-3 group-hover:scale-105 transition-all">
                 <Image
-                  src={step1Img}
+                  src="/images/steo_1.png"
                   alt="Choose Your Puja"
                   fill
+                  sizes="(max-width: 640px) 96px, 112px"
                   className="object-contain"
                 />
               </div>
@@ -106,9 +97,10 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
             <div className="flex flex-col items-center group text-center flex-1 w-full max-w-[210px]">
               <div className="w-24 h-24 sm:w-28 sm:h-28 relative mb-3 group-hover:scale-105 transition-all">
                 <Image
-                  src={step2Img}
+                  src="/images/step_2.png"
                   alt="Share Your Details"
                   fill
+                  sizes="(max-width: 640px) 96px, 112px"
                   className="object-contain"
                 />
               </div>
@@ -128,9 +120,10 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
             <div className="flex flex-col items-center group text-center flex-1 w-full max-w-[210px]">
               <div className="w-24 h-24 sm:w-28 sm:h-28 relative mb-3 group-hover:scale-105 transition-all">
                 <Image
-                  src={step3Img}
+                  src="/images/step_3.png"
                   alt="Puja Is Performed"
                   fill
+                  sizes="(max-width: 640px) 96px, 112px"
                   className="object-contain"
                 />
               </div>
@@ -150,9 +143,10 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
             <div className="flex flex-col items-center group text-center flex-1 w-full max-w-[210px]">
               <div className="w-24 h-24 sm:w-28 sm:h-28 relative mb-3 group-hover:scale-105 transition-all">
                 <Image
-                  src={step4Img}
+                  src="/images/step_4.png"
                   alt="Receive Divine Blessings"
                   fill
+                  sizes="(max-width: 640px) 96px, 112px"
                   className="object-contain"
                 />
               </div>
@@ -279,6 +273,7 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
                   src={img.src}
                   alt={img.alt}
                   fill
+                  sizes="(max-width: 640px) 160px, 250px"
                   className="object-cover object-center"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -467,42 +462,42 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
 
 const galleryImages = [
   {
-    src: ganeshImg,
+    src: "/images/Ganesh-Chaturthi-Mahapuja.jpg",
     alt: "Ganesh Chaturthi Mahapuja",
     aspect: "w-[160px] sm:w-[190px] h-[270px] sm:h-[310px]", // Tall
   },
   {
-    src: navagrahaImg,
+    src: "/images/Navagraha-Shanti-Puja.jpg",
     alt: "Navagraha Shanti Puja",
     aspect: "w-[210px] sm:w-[250px] h-[160px] sm:h-[180px]", // Small
   },
   {
-    src: maaKaliImg,
+    src: "/images/maa-kali.jpg",
     alt: "Maa Kali Puja",
     aspect: "w-[200px] sm:w-[240px] h-[170px] sm:h-[190px]", // Medium-small
   },
   {
-    src: lakshmiHomamImg,
+    src: "/images/Lakshmi-Homam.jpg",
     alt: "Lakshmi Homam",
     aspect: "w-[210px] sm:w-[250px] h-[150px] sm:h-[165px]", // Small
   },
   {
-    src: maaSaraswathiImg,
+    src: "/images/Maa-saraswathi.jpg",
     alt: "Maa Saraswathi Puja",
     aspect: "w-[160px] sm:w-[190px] h-[310px] sm:h-[350px]", // Very Tall
   },
   {
-    src: ganeshImg,
+    src: "/images/Ganesh-Chaturthi-Mahapuja.jpg",
     alt: "Sacred Homam Fire",
     aspect: "w-[210px] sm:w-[250px] h-[160px] sm:h-[180px]", // Medium-small
   },
   {
-    src: lakshmiHomamImg,
+    src: "/images/Lakshmi-Homam.jpg",
     alt: "Vedic Priest at Kolam Altar",
     aspect: "w-[160px] sm:w-[190px] h-[310px] sm:h-[350px]", // Very Tall
   },
   {
-    src: navagrahaImg,
+    src: "/images/Navagraha-Shanti-Puja.jpg",
     alt: "Shiva Lingam Abhishekam",
     aspect: "w-[160px] sm:w-[190px] h-[310px] sm:h-[350px]", // Very Tall
   },

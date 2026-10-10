@@ -301,13 +301,13 @@ export default function HomaClient({ initialHomas }: { initialHomas?: Homa[] }) 
                       setSelectedType("All Homas");
                       setSelectedDeities([]);
                       setSelectedDoshas([]);
-                    setSearchQuery("");
-                  }}
-                  className="w-full py-2.5 text-xs font-bold text-red-500 hover:bg-red-50 rounded-xl transition border border-red-100 mt-2"
-                >
-                  Clear All Filters
-                </button>
-              )}
+                      setSearchQuery("");
+                    }}
+                    className="w-full py-2.5 text-xs font-bold text-red-500 hover:bg-red-50 rounded-xl transition border border-red-100 mt-2"
+                  >
+                    Clear All Filters
+                  </button>
+                )}
               </aside>
             )}
 

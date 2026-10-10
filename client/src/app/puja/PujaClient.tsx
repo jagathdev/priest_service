@@ -151,8 +151,8 @@ function PujaFilterModal({
   const activeGroup = filterGroups.find((g) => g.label === activeTab) || filterGroups[0];
   const filteredOptions = activeGroup
     ? activeGroup.options.filter((o) =>
-        o.value.toLowerCase().includes(searchQuery.toLowerCase())
-      )
+      o.value.toLowerCase().includes(searchQuery.toLowerCase())
+    )
     : [];
 
   if (filterGroups.length === 0) return null;

@@ -77,7 +77,8 @@ export default function LoginMethods() {
     // 2. Dynamically detect country using GeoIP
     async function detectCountry() {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || `https://priestservices.astroved.com`}/api/auth/geoip`);
+        const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
+        const res = await fetch(`${baseUrl}/api/auth/geoip`);
         const data = await res.json();
         if (data && data.country) {
           setDetectedCountry(data.country);
@@ -95,7 +96,7 @@ export default function LoginMethods() {
           setMethod("whatsapp");
         }
       } catch (err) {
-        console.error("GeoIP detection failed:", err);
+        console.warn("GeoIP detection failed:", err);
         setIsIndian(true);
         setMethod("whatsapp");
       } finally {

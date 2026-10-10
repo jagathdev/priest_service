@@ -1,5 +1,4 @@
 import pino from 'pino';
-import pinoHttp from 'pino-http';
 
 export const logger = pino({
     level: process.env.LOG_LEVEL || 'info',
@@ -12,12 +11,4 @@ export const logger = pino({
         'body.otp',
         'body.razorpaySignature'
     ]
-});
-
-export const httpLogger = pinoHttp({
-    logger,
-    genReqId: function (req) { return req.id || crypto.randomUUID() },
-    autoLogging: {
-        ignore: (req) => req.url === '/health'
-    }
 });

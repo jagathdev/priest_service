@@ -14,12 +14,10 @@ import heroBannerRoutes from './routes/heroBannerRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import promoCodeRoutes from "./routes/promoCode.routes.js";
 import whatsappRoutes from "./routes/whatsapp.routes.js";
-import { httpLogger } from './utils/logger.js';
 
 const app = express();
 
 // Middlewares
-app.use(httpLogger);
 app.use(
     cors({
         origin: [

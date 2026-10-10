@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://priestservices.astroved.com';
+  const siteUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://priestservices.astroved.com';
 
   // In a real scenario, you would fetch all active public services from the API here
   // and map them to sitemap entries.

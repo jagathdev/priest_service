@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useUser } from "@/contexts/UserContext";
+import { request } from "@/lib/api-client";
 
 export default function BookingsTab() {
   const { user } = useUser();
@@ -10,35 +11,50 @@ export default function BookingsTab() {
   const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
   const [filter, setFilter] = useState("All");
 
-  useEffect(() => {
-    async function fetchOrders() {
-      if (!user?._id && !user?.id) return;
-      try {
-        const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
-        const res = await fetch(`${baseUrl}/api/orders/user/${user._id || user.id}`);
-        const data = await res.json();
-        if (data.success) {
-          setOrders(data.data);
-          
-          // Also update selectedOrder if it exists to reflect new status
-          setSelectedOrder((prev: any) => {
-            if (!prev) return null;
-            const updated = data.data.find((o: any) => o._id === prev._id);
-            return updated || prev;
-          });
-        }
-      } catch (err) {
-        console.error("Error fetching orders:", err);
-      } finally {
-        setLoading(false);
+  const fetchOrders = useCallback(async () => {
+    if (!user?._id && !user?.id) return;
+    try {
+      const data = await request<any>(`/api/orders/user/${user._id || user.id}`);
+      if (data.success) {
+        setOrders(data.data);
+        
+        // Also update selectedOrder if it exists to reflect new status
+        setSelectedOrder((prev: any) => {
+          if (!prev) return null;
+          const updated = data.data.find((o: any) => o._id === prev._id);
+          return updated || prev;
+        });
       }
+    } catch (err) {
+      console.error("Error fetching orders:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
+  // Initial fetch
+  useEffect(() => {
+    fetchOrders();
+  }, [fetchOrders]);
+
+  // Polling logic
+  useEffect(() => {
+    let interval: ReturnType<typeof setInterval>;
+    
+    const hasPending = orders.some((o) => o.paymentStatus === "pending" || o.orderStatus === "pending");
+    
+    if (hasPending) {
+      interval = setInterval(() => {
+        if (document.visibilityState === "visible") {
+          fetchOrders();
+        }
+      }, 20000);
     }
     
-    fetchOrders();
-    const interval = setInterval(fetchOrders, 5000); // Poll every 5 seconds
-    
-    return () => clearInterval(interval);
-  }, [user]);
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [orders, fetchOrders]);
 
   if (loading) {
     return <div className="p-8 text-center text-stone-500 font-medium">Loading your bookings...</div>;
@@ -219,6 +235,11 @@ export default function BookingsTab() {
           <h2 className="text-xl sm:text-2xl font-bold font-serif text-[#333]">
             Bookings <span className="text-gray-500 font-medium text-lg ml-1">({orders.length})</span>
           </h2>
+          <button onClick={fetchOrders} className="ml-2 p-1.5 rounded-full hover:bg-stone-100 transition-colors text-stone-500" aria-label="Refresh bookings" title="Refresh">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+          </button>
         </div>
         <div className="flex items-center gap-3">
           <button
