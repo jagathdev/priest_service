@@ -392,6 +392,9 @@ function SankalpContent() {
         handler: async function (response: RazorpayResponse) {
           setLoadingMsg("Verifying payment...");
           try {
+            const cleanWa = String(formData.whatsapp || userPhone || "").replace(/\D/g, "");
+            const formattedWa = cleanWa.length === 10 ? `91${cleanWa}` : cleanWa;
+
             const verifyRes = await fetch(`${backendUrl}/api/payments/verify`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -401,11 +404,13 @@ function SankalpContent() {
                 razorpaySignature: response.razorpay_signature,
                 orderDetails: {
                   pooja: itemName,
+                  serviceId: pujaData?._id || pujaData?.id,
+                  serviceType: itemType === 'homa' ? 'Homa' : 'Pooja',
                   customer: mongoUserId,
                   customerName: userName,
                   itemName: itemName,
                   mobileNumber: userPhone,
-                  whatsappNumber: formData.whatsapp,
+                  whatsappNumber: formattedWa,
                   participants: formData.participants.filter((p: string) => p.trim()).map((p: string) => ({ name: p.trim() })),
                   gotra: (formData.dontKnowGotra || !formData.gotra.trim()) ? "Kashyapa" : formData.gotra.trim(),
                   doesNotKnowGotra: formData.dontKnowGotra,
@@ -421,12 +426,15 @@ function SankalpContent() {
             });
             const verifyData = await verifyRes.json();
             if (verifyData.success) {
+              const bookedOrderNumber = verifyData.data?.orderNumber || verifyData.data?.orderId || orderId;
               const params = new URLSearchParams({
                 paymentId: response.razorpay_payment_id,
-                orderId: orderId,
+                orderId: bookedOrderNumber,
+                shoppingCartId: bookedOrderNumber,
                 title: pujaData?.title || queryTitle || "Sacred Puja",
                 amount: String(finalPrice),
-                name: userName
+                name: userName,
+                phone: formattedWa
               });
               router.push(`/payment/success?${params.toString()}`);
             } else {

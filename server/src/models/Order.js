@@ -26,12 +26,12 @@ const orderSchema = new mongoose.Schema(
         },
         serviceId: {
             type: mongoose.Schema.Types.ObjectId,
-            required: true,
+            required: false,
             refPath: 'serviceType'
         },
         serviceType: {
             type: String,
-            required: true,
+            required: false,
             enum: ['Pooja', 'Homa']
         },
         customer: {
@@ -130,16 +130,15 @@ const orderSchema = new mongoose.Schema(
 
 orderSchema.index({ customer: 1, createdAt: -1 });
 
-orderSchema.pre('save', async function(next) {
+orderSchema.pre('save', async function() {
     if (this.isNew && !this.orderNumber) {
         const counter = await Counter.findByIdAndUpdate(
             { _id: 'orderNumber' },
             { $inc: { seq: 1 } },
-            { new: true, upsert: true }
+            { returnDocument: 'after', upsert: true }
         );
         this.orderNumber = `PS-${new Date().getFullYear()}-${String(counter.seq).padStart(6, '0')}`;
     }
-    next();
 });
 
 const Order = mongoose.models.Order || mongoose.model("Order", orderSchema);

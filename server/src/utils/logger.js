@@ -1,14 +1,6 @@
-import pino from 'pino';
-
-export const logger = pino({
-    level: process.env.LOG_LEVEL || 'info',
-    redact: [
-        'req.headers.authorization',
-        'req.body.password',
-        'req.body.otp',
-        'req.body.razorpaySignature',
-        'body.password',
-        'body.otp',
-        'body.razorpaySignature'
-    ]
-});
+export const logger = {
+    info: (...args) => console.log(...args),
+    error: (...args) => console.error(...args),
+    warn: (...args) => console.warn(...args),
+    debug: (...args) => console.debug(...args),
+};

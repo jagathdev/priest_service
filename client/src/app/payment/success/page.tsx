@@ -4,17 +4,20 @@ import React, { useEffect, useRef, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
+import { useUser } from "@/contexts/UserContext";
 
 // ── Verification status type ──────────────────────────────────────────────────
 type VerifyStatus = "pending" | "verified" | "not_found" | "error";
 
 function SuccessContent() {
+  const { user } = useUser();
   const searchParams = useSearchParams();
   const paymentId = searchParams?.get("paymentId") || "N/A";
   const orderId = searchParams?.get("orderId") || "N/A";
   const title = searchParams?.get("title") || "Puja Seva";
   const amount = searchParams?.get("amount") || "0";
   const name = searchParams?.get("name") || "";
+  const phone = searchParams?.get("phone") || searchParams?.get("wa") || searchParams?.get("mobile") || "";
   const shoppingCartId = searchParams?.get("shoppingCartId") || orderId;
 
   // Use full original IDs for display
@@ -24,6 +27,7 @@ function SuccessContent() {
   // ── Payment is already verified and order is saved by sankalp/page.tsx ────
   const [verifyStatus, setVerifyStatus] = useState<VerifyStatus>("pending");
   const [transactionId, setTransactionId] = useState<string>("");
+  const whatsAppSentRef = useRef(false);
 
   useEffect(() => {
     if (paymentId === "N/A" || !shoppingCartId || shoppingCartId === "N/A") {
@@ -35,6 +39,44 @@ function SuccessContent() {
       setVerifyStatus("verified");
     }
   }, [paymentId, shoppingCartId]);
+
+  // Dispatch WhatsApp confirmation message on booking success page
+  useEffect(() => {
+    if (verifyStatus === "verified" && !whatsAppSentRef.current) {
+      const recipientPhone = phone || user?.whatsapp || user?.mobileNumber || user?.phone || "";
+      const bookingId = displayOrdId !== "N/A" ? displayOrdId : displayPayId;
+
+      if (recipientPhone && bookingId && bookingId !== "N/A") {
+        whatsAppSentRef.current = true;
+        const cleanNumber = recipientPhone.replace(/\D/g, "");
+        const formattedNumber = cleanNumber.length === 10 ? `91${cleanNumber}` : cleanNumber;
+        const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "https://priestservices.astroved.com";
+
+        console.log(`[WhatsApp] Calling order-confirmation API for ${formattedNumber}, booking: #${bookingId}...`);
+        fetch(`${baseUrl}/api/whatsapp/order-confirmation`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            mobileNumber: formattedNumber,
+            customerName: name || user?.name || "Devotee",
+            orderId: bookingId,
+            serviceName: title,
+            bookingDate: new Date().toISOString(),
+            amount: Number(amount) || 0,
+          }),
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            console.log("[WhatsApp] Confirmation API response:", data);
+          })
+          .catch((err) => {
+            console.error("[WhatsApp] Failed to call order-confirmation API:", err);
+          });
+      }
+    }
+  }, [verifyStatus, phone, user, displayOrdId, displayPayId, name, title, amount]);
 
   const shareText = encodeURIComponent(`I just booked "${title}" on AstroVed! 🙏`);
 

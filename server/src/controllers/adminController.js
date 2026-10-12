@@ -120,7 +120,7 @@ export const updateAdminOrder = async (req, res) => {
     const updatedOrder = await Order.findByIdAndUpdate(
       id,
       { $set: updateData },
-      { new: true }
+      { returnDocument: 'after' }
     );
 
     if (!updatedOrder) {

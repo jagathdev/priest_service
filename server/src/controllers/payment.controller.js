@@ -4,6 +4,7 @@ import {
 } from "../services/payment.service.js";
 import crypto from "crypto";
 import Order from "../models/Order.js";
+import { sendOrderConfirmation } from "../services/whatsapp.service.js";
 
 export const createPaymentOrder = async (req, res) => {
     try {
@@ -138,13 +139,30 @@ export const verifyPayment = async (req, res) => {
             }
         }
 
+        // Send WhatsApp order confirmation
+        if (savedOrder) {
+            try {
+                await sendOrderConfirmation({
+                    mobileNumber: savedOrder.whatsappNumber || savedOrder.mobileNumber,
+                    orderId: savedOrder.orderNumber,
+                    customerName: savedOrder.customerName,
+                    serviceName: savedOrder.itemName || savedOrder.pooja,
+                    bookingDate: savedOrder.bookingDate,
+                    amount: savedOrder.pricing?.total,
+                });
+            } catch (waError) {
+                console.error("[WhatsApp] Failed to dispatch order confirmation:", waError.message);
+            }
+        }
+
         return res.status(200).json({
             success: true,
             message: "Payment verified successfully",
             data: {
                 razorpayOrderId,
                 razorpayPaymentId,
-                orderId: savedOrder ? savedOrder._id : null
+                orderId: savedOrder ? savedOrder._id : null,
+                orderNumber: savedOrder?.orderNumber || null,
             },
         });
     } catch (error) {

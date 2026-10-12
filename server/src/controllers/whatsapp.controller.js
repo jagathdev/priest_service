@@ -44,18 +44,10 @@ export const confirmCustomerOrder = async (req, res) => {
             amount,
         } = req.body;
 
-        if (
-            !mobileNumber ||
-            !customerName ||
-            !orderId ||
-            !serviceName ||
-            !bookingDate ||
-            amount === undefined ||
-            amount === null
-        ) {
+        if (!mobileNumber || !orderId) {
             return res.status(400).json({
                 success: false,
-                message: "All order confirmation fields are required",
+                message: "mobileNumber and orderId are required",
             });
         }
 
