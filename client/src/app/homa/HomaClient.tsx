@@ -150,7 +150,7 @@ export default function HomaClient({ initialHomas }: { initialHomas?: Homa[] }) 
         {/* ── Top Header Hero Banner ── */}
         <section className="bg-gradient-to-b from-[#fff7f8] via-[#ffffff] to-[#fafafc] pt-12 pb-10 text-center border-b border-gray-150 relative overflow-hidden">
           {/* Left Inverted Mandala Decoration */}
-          <div className="absolute left-0 top-0 bottom-0 h-full pointer-events-none opacity-40 z-0 hidden sm:flex items-center">
+          <div className="absolute left-0 top-0 bottom-0 h-full pointer-events-none opacity-40 z-0 hidden min-[769px]:flex items-center">
             <img
               src="/images/mandala.png"
               alt="Mandala Left"
@@ -160,7 +160,7 @@ export default function HomaClient({ initialHomas }: { initialHomas?: Homa[] }) 
           </div>
 
           {/* Right Mandala Decoration */}
-          <div className="absolute right-0 top-0 bottom-0 h-full pointer-events-none opacity-40 z-0 hidden sm:flex items-center">
+          <div className="absolute right-0 top-0 bottom-0 h-full pointer-events-none opacity-40 z-0 hidden min-[769px]:flex items-center">
             <img
               src="/images/mandala.png"
               alt="Mandala Right"

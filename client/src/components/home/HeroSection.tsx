@@ -354,7 +354,7 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
               src={current.image}
               alt={current.title}
               fill
-              className="object-cover object-center relative z-10 drop-shadow-lg"
+              className="object-fit object-center relative z-10 drop-shadow-lg"
               priority
             />
 

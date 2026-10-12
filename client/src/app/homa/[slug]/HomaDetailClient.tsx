@@ -863,11 +863,10 @@ export default function HomaDetailClient({
                     window.scrollTo({ top: y, behavior: "smooth" });
                   }
                 }}
-                className={`py-2.5 sm:py-3.5 border-b-2 transition-colors whitespace-nowrap shrink-0 sm:shrink ${
-                  activeTab === tab.id
+                className={`py-2.5 sm:py-3.5 border-b-2 transition-colors whitespace-nowrap shrink-0 sm:shrink ${activeTab === tab.id
                     ? "border-[#00b050] text-[#00b050]"
                     : "border-transparent hover:text-stone-900"
-                }`}
+                  }`}
               >
                 {tab.label}
               </a>
