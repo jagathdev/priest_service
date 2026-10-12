@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { SparklesIcon, FireIcon, ShoppingBagIcon, BanknotesIcon } from "@heroicons/react/24/outline";
 
 export default async function AdminDashboard() {
@@ -8,8 +9,17 @@ export default async function AdminDashboard() {
   let recentBookings: any[] = [];
   let loading = false;
 
+  const cookieStore = await cookies();
+  const adminToken = cookieStore.get("adminToken")?.value;
+  const headers: Record<string, string> = adminToken
+    ? { Authorization: `Bearer ${adminToken}`, Cookie: `adminToken=${adminToken}` }
+    : {};
+
   try {
-    const res = await fetch(`${baseUrl}/api/admin/stats`, { cache: "no-store" });
+    const res = await fetch(`${baseUrl}/api/admin/stats`, {
+      cache: "no-store",
+      headers,
+    });
     if (res.ok) {
       const resData = await res.json();
       if (resData.success && resData.data) {

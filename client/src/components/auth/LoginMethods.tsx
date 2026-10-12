@@ -160,8 +160,9 @@ export default function LoginMethods() {
         const data = await adminService.login({ email, password });
 
         if (data.success || data.token) {
-          // Set cookie for proxy middleware (if not already set by backend)
-          document.cookie = `adminToken=${data.token}; path=/; max-age=86400`;
+          const token = data.token || "";
+          // Set cookie for authentication
+          document.cookie = `adminToken=${token}; path=/; max-age=86400`;
           window.location.href = "/admin";
           return;
         }

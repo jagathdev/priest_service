@@ -1,4 +1,5 @@
 import React from "react";
+import { cookies } from "next/headers";
 
 export default async function AdminPaymentsPage() {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
@@ -10,8 +11,17 @@ export default async function AdminPaymentsPage() {
     recentTransactions: [] as any[],
   };
 
+  const cookieStore = await cookies();
+  const adminToken = cookieStore.get("adminToken")?.value;
+  const headers: Record<string, string> = adminToken
+    ? { Authorization: `Bearer ${adminToken}`, Cookie: `adminToken=${adminToken}` }
+    : {};
+
   try {
-    const res = await fetch(`${baseUrl}/api/admin/payments`, { cache: "no-store" });
+    const res = await fetch(`${baseUrl}/api/admin/payments`, {
+      cache: "no-store",
+      headers,
+    });
     if (res.ok) {
       const result = await res.json();
       if (result.success && result.data) {

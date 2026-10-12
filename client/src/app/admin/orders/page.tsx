@@ -1,6 +1,128 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
+import { ChevronDownIcon, CheckIcon } from "@heroicons/react/24/outline";
+
+const STATUS_CONFIG: Record<
+  string,
+  { label: string; bg: string; text: string; dot: string; border: string }
+> = {
+  created: {
+    label: "Created",
+    bg: "bg-slate-50",
+    text: "text-slate-700",
+    dot: "bg-slate-400",
+    border: "border-slate-200",
+  },
+  confirmed: {
+    label: "Confirmed",
+    bg: "bg-sky-50",
+    text: "text-sky-700",
+    dot: "bg-sky-500",
+    border: "border-sky-200",
+  },
+  scheduled: {
+    label: "Scheduled",
+    bg: "bg-amber-50",
+    text: "text-amber-700",
+    dot: "bg-amber-500",
+    border: "border-amber-200",
+  },
+  performed: {
+    label: "Performed",
+    bg: "bg-indigo-50",
+    text: "text-indigo-700",
+    dot: "bg-indigo-500",
+    border: "border-indigo-200",
+  },
+  completed: {
+    label: "Completed",
+    bg: "bg-emerald-50",
+    text: "text-emerald-700",
+    dot: "bg-emerald-500",
+    border: "border-emerald-200",
+  },
+  cancelled: {
+    label: "Cancelled",
+    bg: "bg-rose-50",
+    text: "text-rose-700",
+    dot: "bg-rose-500",
+    border: "border-rose-200",
+  },
+};
+
+function StatusDropdown({
+  currentStatus,
+  onChange,
+}: {
+  currentStatus: string;
+  onChange: (status: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const normalized = (currentStatus || "created").toLowerCase();
+  const current = STATUS_CONFIG[normalized] || STATUS_CONFIG.created;
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    if (open) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [open]);
+
+  return (
+    <div className="relative inline-block text-left" ref={dropdownRef}>
+      <button
+        type="button"
+        onClick={() => setOpen((prev) => !prev)}
+        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all duration-150 shadow-xs hover:shadow-sm ${current.bg} ${current.text} ${current.border}`}
+      >
+        <span className={`w-2 h-2 rounded-full ${current.dot}`} />
+        <span>{current.label}</span>
+        <ChevronDownIcon
+          className={`w-3.5 h-3.5 transition-transform duration-200 opacity-70 ${open ? "rotate-180" : ""
+            }`}
+        />
+      </button>
+
+      {open && (
+        <div className="absolute left-0 mt-2 w-40 rounded-xl bg-white shadow-xl border border-gray-100 py-1.5 z-50 animate-in fade-in zoom-in-95 duration-100">
+          <div className="px-3 py-1 text-[10px] font-bold tracking-wider text-gray-400 uppercase border-b border-gray-50 mb-1">
+            Change Status
+          </div>
+          {Object.entries(STATUS_CONFIG).map(([key, item]) => {
+            const isSelected = key === normalized;
+            return (
+              <button
+                key={key}
+                type="button"
+                onClick={() => {
+                  onChange(key);
+                  setOpen(false);
+                }}
+                className={`w-full flex items-center justify-between px-3 py-1.5 text-xs font-medium transition-colors ${isSelected
+                    ? "bg-gray-50 font-semibold text-gray-900"
+                    : "text-gray-700 hover:bg-gray-50/80"
+                  }`}
+              >
+                <span className="flex items-center gap-2">
+                  <span className={`w-2 h-2 rounded-full ${item.dot}`} />
+                  {item.label}
+                </span>
+                {isSelected && <CheckIcon className="w-3.5 h-3.5 text-success" />}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
 
 interface Order {
   _id: string;
@@ -43,11 +165,23 @@ export default function AdminOrdersPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
 
+  const getAdminAuthHeaders = (): Record<string, string> => {
+    if (typeof window === "undefined") return {};
+    const match = document.cookie.match(/(?:^|;\s*)adminToken=([^;]+)/);
+    const token = match ? decodeURIComponent(match[1]) : null;
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  };
+
   const fetchOrders = async (page: number, service: string, status: string, search: string = "") => {
     setLoading(true);
     try {
       const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
-      const res = await fetch(`${baseUrl}/api/admin/orders?page=${page}&service=${encodeURIComponent(service)}&status=${encodeURIComponent(status)}&search=${encodeURIComponent(search)}`, { cache: "no-store" });
+      const headers = getAdminAuthHeaders();
+      const res = await fetch(`${baseUrl}/api/admin/orders?page=${page}&service=${encodeURIComponent(service)}&status=${encodeURIComponent(status)}&search=${encodeURIComponent(search)}`, {
+        cache: "no-store",
+        credentials: "include",
+        headers,
+      });
       if (res.ok) {
         const result = await res.json();
         if (result.success && Array.isArray(result.data)) {
@@ -83,13 +217,7 @@ export default function AdminOrdersPage() {
     if (!dateStr) return;
 
     const selectedDate = new Date(dateStr);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    let newStatus = "scheduled";
-    if (selectedDate < today) {
-      newStatus = "completed";
-    }
+    const newStatus = "completed";
 
     // Optimistically update UI
     setData(prev => ({
@@ -106,7 +234,11 @@ export default function AdminOrdersPage() {
       const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
       const res = await fetch(`${baseUrl}/api/admin/orders/${orderId}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...getAdminAuthHeaders(),
+        },
+        credentials: "include",
         body: JSON.stringify({
           orderStatus: newStatus,
           scheduledDate: selectedDate.toISOString()
@@ -118,6 +250,43 @@ export default function AdminOrdersPage() {
       }
     } catch (err) {
       console.error("Failed to update schedule:", err);
+      fetchOrders(currentPage, selectedService, selectedStatus, searchQuery);
+    }
+  };
+
+  const handleStatusChange = async (orderId: string, newStatus: string) => {
+    if (!newStatus) return;
+
+    // Optimistically update UI
+    setData(prev => ({
+      ...prev,
+      orders: prev.orders.map(ord => {
+        if (ord._id === orderId) {
+          return { ...ord, orderStatus: newStatus };
+        }
+        return ord;
+      })
+    }));
+
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
+      const res = await fetch(`${baseUrl}/api/admin/orders/${orderId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          ...getAdminAuthHeaders(),
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          orderStatus: newStatus
+        })
+      });
+      if (!res.ok) {
+        // Revert on failure
+        fetchOrders(currentPage, selectedService, selectedStatus, searchQuery);
+      }
+    } catch (err) {
+      console.error("Failed to update order status:", err);
       fetchOrders(currentPage, selectedService, selectedStatus, searchQuery);
     }
   };
@@ -134,7 +303,11 @@ export default function AdminOrdersPage() {
       const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
       const res = await fetch(`${baseUrl}/api/admin/orders/bulk-schedule`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...getAdminAuthHeaders(),
+        },
+        credentials: "include",
         body: JSON.stringify({
           service: selectedService,
           scheduledDate: new Date(dateStr).toISOString()
@@ -234,9 +407,10 @@ export default function AdminOrdersPage() {
                 <div key={ord._id} className="p-4 space-y-4">
                   <div className="flex justify-between items-center">
                     <span className="font-mono font-bold text-gray-900 text-xs">{ord.orderNumber}</span>
-                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase ${statusText === "completed" || statusText === "paid" || statusText === "scheduled" ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700"}`}>
-                      {statusText}
-                    </span>
+                    <StatusDropdown
+                      currentStatus={statusText}
+                      onChange={(newStatus) => handleStatusChange(ord._id, newStatus)}
+                    />
                   </div>
                   <div>
                     <span className="font-bold text-gray-900 block text-sm">{serviceName}</span>
@@ -265,7 +439,7 @@ export default function AdminOrdersPage() {
         </div>
 
         {/* Desktop View */}
-        <div className="hidden md:block overflow-x-auto">
+        <div className="hidden md:block overflow-x-auto min-h-[350px]">
           <table className="w-full text-left text-xs sm:text-sm whitespace-nowrap">
             <thead className="bg-gray-50 border-b border-gray-100 text-gray-400 uppercase text-[11px] font-bold tracking-wider">
               <tr>
@@ -305,12 +479,10 @@ export default function AdminOrdersPage() {
                       </td>
                       <td className="px-6 py-4 font-extrabold text-gray-900">₹{ord.pricing?.total || 0}</td>
                       <td className="px-6 py-4">
-                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase ${statusText === "completed" || statusText === "paid" || statusText === "scheduled"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-blue-100 text-blue-700"
-                          }`}>
-                          {statusText}
-                        </span>
+                        <StatusDropdown
+                          currentStatus={statusText}
+                          onChange={(newStatus) => handleStatusChange(ord._id, newStatus)}
+                        />
                       </td>
                       <td className="px-6 py-4 text-center">
                         <input
