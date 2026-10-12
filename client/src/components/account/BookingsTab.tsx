@@ -4,6 +4,31 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useUser } from "@/contexts/UserContext";
 import { request } from "@/lib/api-client";
 
+const formatBookingId = (order: any) => {
+  if (order?.orderNumber) {
+    const clean = String(order.orderNumber).trim();
+    if (clean.startsWith("#")) return clean;
+    if (clean.includes("-")) {
+      const parts = clean.split("-");
+      return `#${parts[parts.length - 1]}`;
+    }
+    return `#${clean}`;
+  }
+  if (order?._id) {
+    return `#${String(order._id).slice(-6).toUpperCase()}`;
+  }
+  return "#200627";
+};
+
+const formatCardDate = (dateVal: any, fallback = "25 Sept 2026") => {
+  if (!dateVal) return fallback;
+  const d = new Date(dateVal);
+  if (isNaN(d.getTime())) return fallback;
+  const day = d.getDate();
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec"];
+  return `${day} ${months[d.getMonth()]} ${d.getFullYear()}`;
+};
+
 export default function BookingsTab() {
   const { user } = useUser();
   const [orders, setOrders] = useState<any[]>([]);
@@ -71,7 +96,7 @@ export default function BookingsTab() {
         <div>
           <h2 className="text-3xl font-extrabold text-[#5c1b1c] font-serif mb-2">Puja Booking Details</h2>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold bg-stone-100 text-stone-600 px-3 py-1 rounded-full">Booking ID <span className="text-[#f15a29]">#{selectedOrder.orderNumber || selectedOrder._id.slice(-6).toUpperCase()}</span></span>
+            <span className="text-xs font-bold bg-stone-100 text-stone-600 px-3 py-1 rounded-full">Booking ID <span className="text-[#2563eb] font-extrabold">{formatBookingId(selectedOrder)}</span></span>
           </div>
         </div>
 
@@ -100,7 +125,7 @@ export default function BookingsTab() {
               <svg className="w-5 h-5 text-[#f15a29] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
               <div>
                 <p className="text-[10px] font-bold text-stone-400 uppercase">Puja Date</p>
-                <p className="text-sm font-semibold text-stone-800">{new Date(selectedOrder.bookingDate || selectedOrder.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+                <p className="text-sm font-semibold text-stone-800">{formatCardDate(selectedOrder.bookingDate || selectedOrder.createdAt)}</p>
               </div>
             </div>
           </div>
@@ -290,123 +315,132 @@ export default function BookingsTab() {
         <div>
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-2 gap-6 mb-8">
             {filteredOrders.map((order, idx) => {
-              const bookingDate = new Date(order.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
-              const scheduledDate = new Date(order.bookingDate || order.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
+              const bookingDate = formatCardDate(order.createdAt || order.bookingDate);
+              const scheduledDate = formatCardDate(order.bookingDate || order.scheduledDate || order.createdAt, "12 Oct 2026");
+              const bookingId = formatBookingId(order);
+              const serviceImg = order.image || order.serviceImage || order.imageUrl || "/images/Ganesh-Chaturthi-Mahapuja.jpg";
+              const serviceTitle = order.itemName || order.pooja || order.serviceTitle || "Rahu Shanti Rudrabhishek";
+              const templeLocation = order.temple || order.templeLocation || "Shri Rahu Temple, Paithani,";
 
               return (
                 <div
                   key={idx}
                   onClick={() => setSelectedOrder(order)}
-                  className="bg-white rounded-[20px] border border-[#a8d5c0] p-5 hover:shadow-sm transition relative w-full cursor-pointer"
+                  className="bg-white rounded-[24px] sm:rounded-3xl border border-[#cfead9] p-5 sm:p-6 hover:shadow-md transition relative w-full cursor-pointer"
                 >
-                {/* Card Header */}
-                <div className="flex justify-between items-center mb-3">
-                  <div className="flex items-center gap-2 font-bold text-gray-800 text-[13px] sm:text-[15px]">
-                    <svg className="w-4 h-4 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    <span>{bookingDate}</span>
+                  {/* Card Header */}
+                  <div className="flex justify-between items-center mb-3">
+                    <div className="flex items-center gap-2 font-bold text-gray-800 text-[14px] sm:text-[15px]">
+                      <svg className="w-4 h-4 text-gray-700 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      <span>{bookingDate}</span>
+                    </div>
+                    <div className="font-bold text-gray-800 text-[14px] sm:text-[15px]">
+                      Booking: <span className="text-[#2563eb] font-extrabold">{bookingId}</span>
+                    </div>
                   </div>
-                  <div className="font-bold text-gray-800 text-[13px] sm:text-[15px]">
-                    Booking: <span className="text-[#3b82f6]">#{order.orderNumber || order._id.slice(-6).toUpperCase()}</span>
-                  </div>
-                </div>
 
-                <hr className="border-gray-100 mb-5" />
+                  <hr className="border-gray-100 my-4" />
 
-                {/* Card Body */}
-                <div className="flex items-start gap-4 mb-6">
-                  <div className="w-24 h-16 sm:w-28 sm:h-18 bg-gray-200 rounded-lg overflow-hidden shrink-0 relative border border-gray-100 flex items-center justify-center">
-                    {order.image ? (
-                      <img src={order.image} alt={order.itemName || order.pooja} className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center">
-                        <i className="fa-solid fa-om text-white text-2xl"></i>
-                      </div>
-                    )}
-                  </div>
-                  <div>
-                    <h3 className="text-[16px] sm:text-[18px] font-bold text-success mb-1">{order.itemName || order.pooja || "Sacred Puja Service"}</h3>
-                    {order.temple ? (
-                      <div className="flex items-center gap-1.5 text-gray-700 font-bold text-[13px] sm:text-[15px]">
-                        <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
+                  {/* Card Body - Dynamic Image and Service Details */}
+                  <div className="flex items-start gap-3.5 sm:gap-4 mb-6">
+                    <div className="w-24 h-16 sm:w-28 sm:h-20 bg-gray-100 rounded-xl overflow-hidden shrink-0 relative border border-gray-100 shadow-xs flex items-center justify-center">
+                      <img
+                        src={serviceImg}
+                        alt={serviceTitle}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = "/images/Ganesh-Chaturthi-Mahapuja.jpg";
+                        }}
+                      />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="text-[16px] sm:text-[18px] font-extrabold text-[#009b46] leading-snug mb-1.5 line-clamp-2">
+                        {serviceTitle}
+                      </h3>
+                      <div className="flex items-center gap-1.5 text-gray-800 font-bold text-[13px] sm:text-[14px]">
+                        <svg className="w-4 h-4 text-gray-800 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M12 2v3" />
+                          <path d="M7 6l5-3 5 3v2H7V6z" />
+                          <path d="M5 10h14v11H5V10z" />
+                          <path d="M10 21v-5a2 2 0 0 1 4 0v5" />
                         </svg>
-                        <span>{order.temple}</span>
+                        <span className="truncate">{templeLocation}</span>
                       </div>
-                    ) : (
-                      <div className="flex items-center gap-1.5 text-gray-700 font-bold text-[13px] sm:text-[15px]">
-                        <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
-                        </svg>
-                        <span>Shri Rahu Temple, Paithani,</span>
-                      </div>
-                    )}
+                    </div>
                   </div>
-                </div>
 
-                {/* Progress Tracker */}
-                <div className="relative max-w-[380px] mt-8 pb-2">
-                  <div className={`absolute top-6 left-12 right-1/2 h-[3px] -z-10 ${order.orderStatus === 'scheduled' || order.orderStatus === 'performed' || order.orderStatus === 'completed' ? 'bg-success' : 'bg-[#eadecd]'}`}></div>
-                  <div className={`absolute top-6 left-1/2 right-14 h-[3px] -z-10 ${order.orderStatus === 'performed' || order.orderStatus === 'completed' ? 'bg-success' : 'bg-[#eadecd]'}`}></div>
+                  {/* Progress Tracker Stepper */}
+                  <div className="relative mt-8 pb-2">
+                    {/* Connecting line behind nodes */}
+                    <div className="absolute top-6 left-10 right-14 sm:left-12 sm:right-16 h-[2px] bg-[#eadfd5] -z-0"></div>
 
-                  <div className="flex justify-between items-start text-center">
-                    {/* Step 1 */}
-                    <div className="flex flex-col items-center w-24">
-                      <div className="w-12 h-12 rounded-full border-[2px] border-success bg-white flex items-center justify-center mb-2 z-10 shadow-sm relative">
-                        <svg className="w-5 h-5 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 12l2 2 4-4" />
-                        </svg>
-                      </div>
-                      <p className="text-[12px] font-extrabold text-gray-900 leading-tight">Booked</p>
-                      <div className="flex items-center justify-center gap-1 mt-0.5">
-                        <span className="text-[11px] font-bold text-gray-600">{bookingDate}</span>
-                        <div className="w-3.5 h-3.5 rounded-full bg-success text-white flex items-center justify-center shrink-0">
-                          <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="4">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    <div className="flex justify-between items-start text-center">
+                      {/* Step 1: Booked */}
+                      <div className="flex flex-col items-center w-24 sm:w-28">
+                        <div className="w-12 h-12 rounded-full border-2 border-[#22c55e] bg-white flex items-center justify-center mb-2 z-10 shadow-xs relative">
+                          <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="3" y="5" width="18" height="15" rx="2.5" stroke="#374151" strokeWidth="1.6" fill="#ffffff" />
+                            <path d="M3 9.5h18" stroke="#ef4444" strokeWidth="1.6" />
+                            <path d="M7 3v3.5M17 3v3.5" stroke="#374151" strokeWidth="1.6" strokeLinecap="round" />
+                            <circle cx="12" cy="14.5" r="2.2" fill="#3b82f6" />
                           </svg>
                         </div>
-                      </div>
-                    </div>
-
-                    {/* Step 2 */}
-                    <div className="flex flex-col items-center w-24">
-                      <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 z-10 shadow-[0_0_0_4px_white] ${order.orderStatus === 'scheduled' || order.orderStatus === 'performed' || order.orderStatus === 'completed' ? 'border-[2px] border-success bg-white' : 'bg-[#fae8e3]'}`}>
-                        <svg className={`w-6 h-6 ${order.orderStatus === 'scheduled' || order.orderStatus === 'performed' || order.orderStatus === 'completed' ? 'text-success' : 'text-[#a3948e]'}`} fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M12 2C8 2 8 8 8 8s-4 0-4 4c0 3 4 5 8 8 4-3 8-5 8-8 0-4-4-4-4-4s0-6-4-6zm0 13c-2 0-4-1-5-2 1 1 3 2 5 2s4-1 5-2c-1 1-3 2-5 2z" />
-                        </svg>
-                      </div>
-                      <p className={`text-[12px] font-bold leading-tight ${order.orderStatus === 'scheduled' || order.orderStatus === 'performed' || order.orderStatus === 'completed' ? 'text-gray-900' : 'text-[#a8a19d]'}`}>Puja Scheduled</p>
-                      <p className={`text-[11px] font-bold mt-0.5 ${order.orderStatus === 'scheduled' || order.orderStatus === 'performed' || order.orderStatus === 'completed' ? 'text-gray-600' : 'text-[#a8a19d]'}`}>
-                        on {scheduledDate}
-                      </p>
-                    </div>
-
-                    {/* Step 3 */}
-                    <div className="flex flex-col items-center w-28">
-                      <div className="h-12 flex items-center justify-center mb-2 z-10 shadow-[0_0_0_4px_white]">
-                        {order.orderStatus === 'performed' || order.orderStatus === 'completed' ? (
-                          <a href={order.videoLink || "#"} target="_blank" rel="noreferrer" className="px-4 py-1.5 rounded-full bg-success text-white font-bold text-[12px] flex items-center gap-1.5 hover:bg-green-700 transition" onClick={(e) => e.stopPropagation()}>
-                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z" /></svg>
-                            Watch Video
-                          </a>
-                        ) : (
-                          <div className="px-4 py-1.5 rounded-full bg-[#fae8e3] text-[#a3948e] font-bold text-[12px] flex items-center gap-1.5">
-                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z" /></svg>
-                            Puja Video
+                        <p className="text-[13px] font-extrabold text-gray-900 leading-tight">Booked</p>
+                        <div className="flex items-center justify-center gap-1 mt-0.5">
+                          <span className="text-[11px] sm:text-[12px] font-bold text-gray-600">{bookingDate}</span>
+                          <div className="w-3.5 h-3.5 rounded-full bg-[#009b46] text-white flex items-center justify-center shrink-0">
+                            <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3.5">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
                           </div>
-                        )}
+                        </div>
                       </div>
-                      <p className="text-[11px] font-bold text-[#a8a19d] leading-tight mt-0.5">
-                        {order.orderStatus === 'performed' || order.orderStatus === 'completed' ? "Recording is ready" : "Available only after puja performed"}
-                      </p>
+
+                      {/* Step 2: Puja Scheduled */}
+                      <div className="flex flex-col items-center w-28 sm:w-32">
+                        <div className="w-12 h-12 rounded-full bg-[#faebe6] flex items-center justify-center mb-2 z-10 shadow-xs">
+                          <svg className="w-6 h-6 text-[#8c7b74]" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2.5c-.8 1.4-1.8 3-1.8 4.5 0 1.2.8 2 1.8 2s1.8-.8 1.8-2c0-1.5-1-3.1-1.8-4.5zM4 14.5c0 3.2 3.6 5.5 8 5.5s8-2.3 8-5.5H4zm-1-1.5h18c.5 0 1-.4 1-.9 0-.5-.5-.9-1-.9H3c-.5 0-1 .4-1 .9 0 .5.5.9 1 .9z" />
+                          </svg>
+                        </div>
+                        <p className="text-[12px] sm:text-[13px] font-bold text-[#8c7b74] leading-tight">Puja Scheduled</p>
+                        <p className="text-[11px] font-bold text-[#8c7b74] mt-0.5">on {scheduledDate}</p>
+                      </div>
+
+                      {/* Step 3: Puja Video */}
+                      <div className="flex flex-col items-center w-28 sm:w-36">
+                        <div className="h-12 flex items-center justify-center mb-2 z-10">
+                          {order.orderStatus === 'performed' || order.orderStatus === 'completed' ? (
+                            <a
+                              href={order.videoLink || "#"}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="px-4 py-2 rounded-full bg-[#009b46] text-white font-bold text-[12px] flex items-center gap-1.5 hover:bg-green-700 transition shadow-xs"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                              <span>Watch Video</span>
+                            </a>
+                          ) : (
+                            <div className="px-4 py-2 rounded-full bg-[#f4ebe6] text-[#8c7b74] font-bold text-[12px] flex items-center gap-1.5 shadow-xs">
+                              <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                              <span>Puja Video</span>
+                            </div>
+                          )}
+                        </div>
+                        <p className="text-[10px] sm:text-[11px] font-medium text-[#8c7b74] text-center leading-tight mt-0.5">
+                          {order.orderStatus === 'performed' || order.orderStatus === 'completed'
+                            ? "Recording is ready"
+                            : <>Available only after<br className="hidden sm:inline" /> puja performed</>}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
           </div>
 
           <div className="text-center pt-8">

@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import Pooja from "../models/Pooja.js";
+import Puja from "../models/pujaModel.js";
 import Homa from "../models/homaModel.js";
 import { calculateServicePrice } from "../services/pricing.service.js";
 import Order from "../models/Order.js";
@@ -140,10 +141,44 @@ export const getUserOrders = async (req, res) => {
             }
         }
 
-        const orders = await Order.find(query).sort({ createdAt: -1 });
+        const orders = await Order.find(query).sort({ createdAt: -1 }).lean();
+
+        const enrichedOrders = await Promise.all(
+            orders.map(async (order) => {
+                let image = order.image || "";
+                let temple = order.temple || "";
+
+                if (!image || !temple) {
+                    let service = null;
+                    if (order.serviceId && mongoose.Types.ObjectId.isValid(order.serviceId)) {
+                        service = await Puja.findById(order.serviceId).lean() ||
+                                  await Pooja.findById(order.serviceId).lean() ||
+                                  await Homa.findById(order.serviceId).lean();
+                    }
+                    if (!service && (order.itemName || order.pooja)) {
+                        const nameToSearch = order.itemName || order.pooja;
+                        service = await Puja.findOne({ title: { $regex: new RegExp(nameToSearch, "i") } }).lean() ||
+                                  await Pooja.findOne({ name: { $regex: new RegExp(nameToSearch, "i") } }).lean() ||
+                                  await Homa.findOne({ title: { $regex: new RegExp(nameToSearch, "i") } }).lean();
+                    }
+
+                    if (service) {
+                        image = image || service.imageUrl || service.image || service.additionalImages?.[0] || "";
+                        temple = temple || service.templeLocation || service.templeVenue || service.location || "";
+                    }
+                }
+
+                return {
+                    ...order,
+                    image: image || "/images/Ganesh-Chaturthi-Mahapuja.jpg",
+                    temple: temple || "Shri Rahu Temple, Paithani,"
+                };
+            })
+        );
+
         return res.status(200).json({
             success: true,
-            data: orders
+            data: enrichedOrders
         });
     } catch (error) {
         console.error("Get User Orders Error:", error);
