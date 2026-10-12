@@ -55,6 +55,7 @@ function SankalpContent() {
   const [loadingMsg, setLoadingMsg] = useState("");
   const [appliedPromo, setAppliedPromo] = useState<{
     promoCode: string;
+    promoId?: string;
     discountAmount: number;
     finalAmount: number;
   } | null>(null);
@@ -395,6 +396,9 @@ function SankalpContent() {
             const cleanWa = String(formData.whatsapp || userPhone || "").replace(/\D/g, "");
             const formattedWa = cleanWa.length === 10 ? `91${cleanWa}` : cleanWa;
 
+            const paidAmount = appliedPromo ? appliedPromo.finalAmount : finalPrice;
+            const discountAmt = appliedPromo ? appliedPromo.discountAmount : 0;
+
             const verifyRes = await fetch(`${backendUrl}/api/payments/verify`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -415,24 +419,28 @@ function SankalpContent() {
                   gotra: (formData.dontKnowGotra || !formData.gotra.trim()) ? "Kashyapa" : formData.gotra.trim(),
                   doesNotKnowGotra: formData.dontKnowGotra,
                   wish: formData.wish,
+                  promoCode: appliedPromo?.promoCode || "",
+                  promoCodeId: appliedPromo?.promoId || null,
+                  originalAmount: finalPrice,
+                  discountAmount: discountAmt,
                   pricing: {
                     basePrice: basePrice,
                     extraParticipantCount: extraParticipantCount,
                     extraParticipantAmount: extraParticipantFee,
-                    total: finalPrice
+                    total: paidAmount
                   }
                 }
               })
             });
             const verifyData = await verifyRes.json();
             if (verifyData.success) {
-              const bookedOrderNumber = verifyData.data?.orderNumber || verifyData.data?.orderId || orderId;
+              const bookedId = verifyData.data?.orderId || verifyData.data?.orderNumber || orderId;
               const params = new URLSearchParams({
                 paymentId: response.razorpay_payment_id,
-                orderId: bookedOrderNumber,
-                shoppingCartId: bookedOrderNumber,
+                orderId: bookedId,
+                shoppingCartId: bookedId,
                 title: pujaData?.title || queryTitle || "Sacred Puja",
-                amount: String(finalPrice),
+                amount: String(paidAmount),
                 name: userName,
                 phone: formattedWa
               });

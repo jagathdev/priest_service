@@ -494,6 +494,9 @@ export const applyPromoCode = async (
             message:
                 "Promo code applied successfully",
             data: {
+                promoId:
+                    result.promo?._id,
+
                 promoCode:
                     result.promoCode,
 

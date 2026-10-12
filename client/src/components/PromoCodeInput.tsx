@@ -10,6 +10,7 @@ interface PromoCodeInputProps {
     userId?: string;
     onApplied?: (data: {
         promoCode: string;
+        promoId?: string;
         discountAmount: number;
         finalAmount: number;
     }) => void;
@@ -53,6 +54,7 @@ export default function PromoCodeInput({
 
             onApplied?.({
                 promoCode: result.promoCode,
+                promoId: result.promoId,
                 discountAmount: result.discountAmount,
                 finalAmount: result.finalAmount,
             });

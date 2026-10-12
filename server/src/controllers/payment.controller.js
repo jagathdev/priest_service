@@ -5,6 +5,7 @@ import {
 import crypto from "crypto";
 import Order from "../models/Order.js";
 import { sendOrderConfirmation } from "../services/whatsapp.service.js";
+import { recordPromoUsage } from "./promoCode.controller.js";
 
 export const createPaymentOrder = async (req, res) => {
     try {
@@ -134,6 +135,20 @@ export const verifyPayment = async (req, res) => {
                     }
                 });
                 console.log("SUCCESS: Order saved to DB successfully with ID:", savedOrder._id);
+
+                if (savedOrder.promoCodeId) {
+                    try {
+                        await recordPromoUsage({
+                            promoCodeId: savedOrder.promoCodeId,
+                            userId: savedOrder.customer,
+                            orderId: savedOrder._id,
+                            discountAmount: savedOrder.discountAmount || 0,
+                        });
+                        console.log("SUCCESS: Promo code usage recorded for order:", savedOrder._id);
+                    } catch (promoErr) {
+                        console.error("ERROR: Failed to record promo usage:", promoErr.message);
+                    }
+                }
             } catch (err) {
                 console.error("ERROR: Failed to save order to DB. Reason:", err.message);
             }
