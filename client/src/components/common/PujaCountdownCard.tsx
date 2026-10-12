@@ -153,49 +153,49 @@ export default function PujaCountdownCard({
         </div>
 
         {/* Right Column: Live Countdown Boxes */}
-        <div className="flex items-center justify-center gap-1 sm:gap-1.5 shrink-0">
+        <div className="flex items-center justify-center gap-1.5 sm:gap-1.5 shrink-0">
           {/* Days */}
-          <div className="bg-[#fff6f4] border border-[#f7d6cd] rounded-lg px-2 sm:px-2.5 py-1 sm:py-1.5 text-center min-w-[46px] sm:min-w-[52px] shadow-2xs">
-            <span className="font-extrabold text-[#800000] text-sm sm:text-base lg:text-lg leading-none block">
+          <div className="bg-[#fff6f4] border border-[#f7d6cd] rounded-xl sm:rounded-lg px-3 sm:px-2.5 py-1.5 sm:py-1.5 text-center min-w-[56px] sm:min-w-[52px] shadow-2xs">
+            <span className="font-extrabold text-[#800000] text-lg sm:text-base lg:text-lg leading-none block">
               {padZero(displayTimeLeft.days)}
             </span>
-            <span className="text-[7.5px] sm:text-[8.5px] font-bold text-stone-500 tracking-wider uppercase block mt-0.5">
+            <span className="text-[9px] sm:text-[8.5px] font-bold text-stone-500 tracking-wider uppercase block mt-1 sm:mt-0.5">
               DAYS
             </span>
           </div>
 
-          <span className="text-stone-800 font-black text-sm sm:text-base self-center pb-0.5">:</span>
+          <span className="text-stone-800 font-black text-base sm:text-base self-center pb-0.5">:</span>
 
           {/* Hours */}
-          <div className="bg-[#fff6f4] border border-[#f7d6cd] rounded-lg px-2 sm:px-2.5 py-1 sm:py-1.5 text-center min-w-[46px] sm:min-w-[52px] shadow-2xs">
-            <span className="font-extrabold text-[#800000] text-sm sm:text-base lg:text-lg leading-none block">
+          <div className="bg-[#fff6f4] border border-[#f7d6cd] rounded-xl sm:rounded-lg px-3 sm:px-2.5 py-1.5 sm:py-1.5 text-center min-w-[56px] sm:min-w-[52px] shadow-2xs">
+            <span className="font-extrabold text-[#800000] text-lg sm:text-base lg:text-lg leading-none block">
               {padZero(displayTimeLeft.hours)}
             </span>
-            <span className="text-[7.5px] sm:text-[8.5px] font-bold text-stone-500 tracking-wider uppercase block mt-0.5">
+            <span className="text-[9px] sm:text-[8.5px] font-bold text-stone-500 tracking-wider uppercase block mt-1 sm:mt-0.5">
               HOURS
             </span>
           </div>
 
-          <span className="text-stone-800 font-black text-sm sm:text-base self-center pb-0.5">:</span>
+          <span className="text-stone-800 font-black text-base sm:text-base self-center pb-0.5">:</span>
 
           {/* Minutes */}
-          <div className="bg-[#fff6f4] border border-[#f7d6cd] rounded-lg px-2 sm:px-2.5 py-1 sm:py-1.5 text-center min-w-[46px] sm:min-w-[52px] shadow-2xs">
-            <span className="font-extrabold text-[#800000] text-sm sm:text-base lg:text-lg leading-none block">
+          <div className="bg-[#fff6f4] border border-[#f7d6cd] rounded-xl sm:rounded-lg px-3 sm:px-2.5 py-1.5 sm:py-1.5 text-center min-w-[56px] sm:min-w-[52px] shadow-2xs">
+            <span className="font-extrabold text-[#800000] text-lg sm:text-base lg:text-lg leading-none block">
               {padZero(displayTimeLeft.minutes)}
             </span>
-            <span className="text-[7.5px] sm:text-[8.5px] font-bold text-stone-500 tracking-wider uppercase block mt-0.5">
+            <span className="text-[9px] sm:text-[8.5px] font-bold text-stone-500 tracking-wider uppercase block mt-1 sm:mt-0.5">
               MIN
             </span>
           </div>
 
-          <span className="text-stone-800 font-black text-sm sm:text-base self-center pb-0.5">:</span>
+          <span className="text-stone-800 font-black text-base sm:text-base self-center pb-0.5">:</span>
 
           {/* Seconds */}
-          <div className="bg-[#fff6f4] border border-[#f7d6cd] rounded-lg px-2 sm:px-2.5 py-1 sm:py-1.5 text-center min-w-[46px] sm:min-w-[52px] shadow-2xs">
-            <span className="font-extrabold text-[#800000] text-sm sm:text-base lg:text-lg leading-none block">
+          <div className="bg-[#fff6f4] border border-[#f7d6cd] rounded-xl sm:rounded-lg px-3 sm:px-2.5 py-1.5 sm:py-1.5 text-center min-w-[56px] sm:min-w-[52px] shadow-2xs">
+            <span className="font-extrabold text-[#800000] text-lg sm:text-base lg:text-lg leading-none block">
               {padZero(displayTimeLeft.seconds)}
             </span>
-            <span className="text-[7.5px] sm:text-[8.5px] font-bold text-stone-500 tracking-wider uppercase block mt-0.5">
+            <span className="text-[9px] sm:text-[8.5px] font-bold text-stone-500 tracking-wider uppercase block mt-1 sm:mt-0.5">
               SEC
             </span>
           </div>

@@ -461,6 +461,24 @@ export default function PujaClient({ initialPujas }: { initialPujas?: Puja[] }) 
     return groups;
   }, [allPujas]);
 
+  // -- Open filter modal if URL has ?filter=... param --
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const filterParam = params.get("filter");
+      if (filterParam) {
+        const found = dynamicFilterGroups.find(
+          (g) => g.label.toLowerCase() === filterParam.toLowerCase()
+        );
+        if (found) {
+          openFilterModal(found.label);
+        } else if (filterParam.toLowerCase() === "location") {
+          openFilterModal("Location");
+        }
+      }
+    }
+  }, [dynamicFilterGroups]);
+
   // -- Apply filters to get displayed pujas --
   const displayedPujas = useMemo(() => {
     return allPujas.filter((p) => pujaMatchesFilters(p, filters, searchQuery, dynamicFilterGroups));

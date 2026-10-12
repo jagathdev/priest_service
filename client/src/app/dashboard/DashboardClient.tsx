@@ -171,21 +171,25 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
             </h2>
 
             {/* Filter Pills */}
-            <div className="flex items-center gap-2.5 flex-wrap">
-              <Link href="/puja" className="bg-success text-white font-bold px-5 py-2 rounded-full text-xs sm:text-sm shadow-sm hover:bg-[#009b46] transition-colors">
+            <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap">
+              <Link href="/puja" className="bg-success text-white font-bold px-4 sm:px-5 py-2 rounded-full text-xs sm:text-sm shadow-sm hover:bg-[#009b46] transition-colors whitespace-nowrap">
                 All
               </Link>
 
-              <Link href="/puja" className="bg-white border border-stone-200 text-stone-700 hover:border-stone-400 font-semibold px-4 py-2 rounded-full text-xs sm:text-sm transition-colors">
-                Diety
+              <Link href="/puja?filter=Deity" className="bg-white border border-stone-200 text-stone-700 hover:border-stone-400 font-semibold px-3.5 sm:px-4 py-2 rounded-full text-xs sm:text-sm transition-colors whitespace-nowrap">
+                Deity
               </Link>
 
-              <Link href="/puja" className="bg-white border border-stone-200 text-stone-700 hover:border-stone-400 font-semibold px-4 py-2 rounded-full text-xs sm:text-sm transition-colors">
+              <Link href="/puja?filter=Dosha" className="bg-white border border-stone-200 text-stone-700 hover:border-stone-400 font-semibold px-3.5 sm:px-4 py-2 rounded-full text-xs sm:text-sm transition-colors whitespace-nowrap">
                 Dosha
               </Link>
 
-              <Link href="/puja" className="bg-white border border-stone-200 text-stone-700 hover:border-stone-400 font-semibold px-4 py-2 rounded-full text-xs sm:text-sm transition-colors">
+              <Link href="/puja?filter=Benefits" className="bg-white border border-stone-200 text-stone-700 hover:border-stone-400 font-semibold px-3.5 sm:px-4 py-2 rounded-full text-xs sm:text-sm transition-colors whitespace-nowrap">
                 Benefit
+              </Link>
+
+              <Link href="/puja?filter=Location" className="bg-white border border-stone-200 text-stone-700 hover:border-stone-400 font-semibold px-3.5 sm:px-4 py-2 rounded-full text-xs sm:text-sm transition-colors whitespace-nowrap">
+                Location
               </Link>
             </div>
           </div>
