@@ -182,7 +182,7 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
   const current = bannerSlides[activeSlide];
 
   return (
-    <section className="relative w-full max-w-[1350px] mx-auto px-4 sm:px-6 lg:px-10 pt-2 sm:pt-3 lg:pt-4 pb-8 md:pb-12 xl:py-12 bg-white my-0 sm:my-1 xl:my-2 overflow-hidden">
+    <section className="relative w-full max-w-[1350px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 pt-2 sm:pt-3 lg:pt-4 pb-8 md:pb-12 xl:py-12 bg-white my-0 sm:my-1 xl:my-2 overflow-hidden">
 
 
       {/* Background Circular Mandala Watermark inside Hero */}
