@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
@@ -52,6 +52,82 @@ export interface WishlistItem {
   [key: string]: unknown;
 }
 
+const ACCOUNT_TABS = [
+  {
+    id: "profile",
+    label: "Profile",
+    icon: (active: boolean) => (
+      <svg className={`w-4 h-4 shrink-0 ${active ? "" : "text-gray-500"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+      </svg>
+    ),
+  },
+  {
+    id: "bookings",
+    label: "My Bookings",
+    icon: (active: boolean) => (
+      <svg className={`w-4 h-4 shrink-0 ${active ? "" : "text-gray-500"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m0 0h4m-4 0V9a2 2 0 012-2h2a2 2 0 012 2v12" />
+      </svg>
+    ),
+  },
+  {
+    id: "subscriptions",
+    label: "My Subscriptions",
+    icon: (active: boolean) => (
+      <svg className={`w-4 h-4 shrink-0 ${active ? "" : "text-gray-500"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+      </svg>
+    ),
+  },
+  {
+    id: "wallet",
+    label: "Wallet",
+    icon: (active: boolean) => (
+      <svg className={`w-4 h-4 shrink-0 ${active ? "" : "text-gray-500"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+      </svg>
+    ),
+  },
+  {
+    id: "wishlist",
+    label: "Wishlist",
+    icon: (active: boolean) => (
+      <svg className={`w-4 h-4 shrink-0 ${active ? "" : "text-gray-500"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+      </svg>
+    ),
+  },
+  {
+    id: "address",
+    label: "Saved Address",
+    icon: (active: boolean) => (
+      <svg className={`w-4 h-4 shrink-0 ${active ? "" : "text-gray-500"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+      </svg>
+    ),
+  },
+  {
+    id: "about",
+    label: "About",
+    icon: (active: boolean) => (
+      <svg className={`w-4 h-4 shrink-0 ${active ? "" : "text-gray-500"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    ),
+  },
+  {
+    id: "support",
+    label: "Support",
+    icon: (active: boolean) => (
+      <svg className={`w-4 h-4 shrink-0 ${active ? "" : "text-gray-500"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
+      </svg>
+    ),
+  },
+];
+
 function AccountPageContent() {
   const searchParams = useSearchParams();
   const { user, setUser } = useUser();
@@ -64,7 +140,8 @@ function AccountPageContent() {
       setActiveTab(tabParam);
     }
   }, [searchParams]);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [formData, setFormData] = useState<User>({});
   const [saving, setSaving] = useState(false);
@@ -391,38 +468,16 @@ function AccountPageContent() {
 
         {/* ── Breadcrumb Bar ── */}
         <div className="border-b border-gray-150 bg-white">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-3.5 flex items-center gap-4">
-            {/* Mobile/Tablet Hamburger Toggle (Moved to Left) */}
-            <button
-              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="lg:hidden shrink-0 flex items-center gap-1.5 text-success font-bold text-sm px-3 py-1.5 rounded-lg border border-success bg-white active:scale-95 transition"
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                {isSidebarOpen ? (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
-                ) : (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 6h16M4 12h16M4 18h16" />
-                )}
-              </svg>
-              {isSidebarOpen ? "Close" : "Menu"}
-            </button>
-
-            <div className="flex items-center gap-2 text-xs font-semibold text-gray-500 overflow-x-auto whitespace-nowrap lg:overflow-visible lg:whitespace-normal [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          <div className="mx-auto max-w-[1350px] px-4 sm:px-6 lg:px-10 py-3.5 flex items-center gap-4">
+            <div className="flex items-center gap-2 text-xs font-semibold text-gray-500 overflow-x-auto whitespace-nowrap [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
               <Link href="/" className="hover:text-gray-900 transition">HOME</Link>
               <span className="text-gray-300">›</span>
-              <button onClick={() => { setActiveTab('profile'); setIsSidebarOpen(false); }} className={`transition ${activeTab === 'profile' ? 'text-gray-900 font-bold' : 'hover:text-gray-900'}`}>Account</button>
+              <button onClick={() => { setActiveTab('profile'); setIsDrawerOpen(false); }} className={`transition ${activeTab === 'profile' ? 'text-gray-900 font-bold' : 'hover:text-gray-900'}`}>Account</button>
               {activeTab !== 'profile' && (
                 <>
                   <span className="text-gray-300">›</span>
                   <span className="text-gray-900 font-bold">
-                    {activeTab === 'bookings' && 'My Bookings'}
-                    {activeTab === 'subscriptions' && 'My Subscriptions'}
-                    {activeTab === 'wallet' && 'Wallet'}
-                    {activeTab === 'wishlist' && 'Wishlist'}
-                    {activeTab === 'address' && 'Saved Address'}
-                    {activeTab === 'language' && 'Language'}
-                    {activeTab === 'about' && 'About'}
-                    {activeTab === 'support' && 'Support'}
+                    {ACCOUNT_TABS.find((t) => t.id === activeTab)?.label || activeTab}
                   </span>
                 </>
               )}
@@ -431,7 +486,7 @@ function AccountPageContent() {
         </div>
 
         {/* ── Main Container: Sidebar + Content ── */}
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-8 pb-16">
+        <div className="mx-auto max-w-[1350px] px-4 sm:px-6 lg:px-10 pt-6 sm:pt-8 pb-16">
           {!user ? (
             <div className="flex flex-col items-center justify-center pt-24 pb-40 text-center">
               <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
@@ -449,166 +504,133 @@ function AccountPageContent() {
               </button>
             </div>
           ) : (
-            <div className="flex flex-col lg:flex-row gap-8 items-start">
+            <>
+              {/* ── Mobile/Tablet Tab Selector Bar (< xl / 1024px) ── */}
+              <div className="xl:hidden w-full mb-6">
+                <button
+                  type="button"
+                  onClick={() => setIsDrawerOpen(true)}
+                  className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 sm:py-3.5 flex items-center justify-between shadow-2xs hover:border-gray-300 transition text-left cursor-pointer"
+                >
+                  <div className="flex items-center gap-3">
+                    <svg className="w-5 h-5 text-success shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                    <span className="font-bold text-gray-900 text-sm sm:text-base capitalize">
+                      {ACCOUNT_TABS.find((t) => t.id === activeTab)?.label || "Profile"}
+                    </span>
+                  </div>
+                  <svg
+                    className={`w-4 h-4 text-gray-500 transition-transform duration-200 shrink-0 ${isDrawerOpen ? "rotate-180" : ""}`}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+              </div>
 
-              {/* Mobile Overlay Backdrop */}
-              {isSidebarOpen && (
+              {/* ── Mobile/Tablet Backdrop Overlay (< xl / 1024px) ── */}
+              {isDrawerOpen && (
                 <div
-                  className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm lg:hidden"
-                  onClick={() => setIsSidebarOpen(false)}
+                  className="fixed inset-0 z-40 bg-black/40 backdrop-blur-xs xl:hidden transition-opacity"
+                  onClick={() => setIsDrawerOpen(false)}
                 />
               )}
 
-              {/* ── Left Sidebar Navigation (Matching Image 3) ── */}
-              <aside className={
-                isSidebarOpen
-                  ? "fixed top-0 left-0 z-50 h-[100dvh] w-[85%] sm:w-80 bg-white rounded-r-3xl shadow-2xl p-5 pb-28 flex flex-col gap-1.5 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] lg:sticky lg:top-[120px] lg:max-h-[calc(100vh-140px)] lg:h-auto lg:w-72 lg:shrink-0 lg:rounded-2xl lg:border lg:border-gray-200 lg:shadow-xs lg:p-4"
-                  : "hidden lg:flex flex-col gap-1.5 w-full lg:w-72 shrink-0 bg-white rounded-2xl border border-gray-200 shadow-xs p-4 lg:sticky lg:top-[120px] lg:max-h-[calc(100vh-140px)] lg:overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
-              }>
-
-                {/* Mobile Drawer Header */}
-                <div className="flex items-center justify-between mb-4 lg:hidden pb-4 border-b border-gray-100">
+              {/* ── Mobile/Tablet Off-canvas Side Drawer (< xl / 1024px) ── */}
+              <div
+                className={`fixed top-0 left-0 z-50 h-[100dvh] w-80 sm:w-88 max-w-[85vw] bg-white rounded-r-3xl shadow-2xl p-5 pb-8 flex flex-col justify-between overflow-y-auto transition-transform duration-300 ease-in-out xl:hidden ${
+                  isDrawerOpen ? "translate-x-0" : "-translate-x-full pointer-events-none"
+                }`}
+              >
+                {/* Drawer Header */}
+                <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-3 shrink-0">
                   <span className="text-lg font-serif font-bold text-gray-900">Account</span>
-                  <button onClick={() => setIsSidebarOpen(false)} className="text-gray-500 hover:text-gray-900 p-1">
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                  <button
+                    type="button"
+                    onClick={() => setIsDrawerOpen(false)}
+                    className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-full transition cursor-pointer"
+                    aria-label="Close menu"
+                  >
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                   </button>
                 </div>
 
-                {/* Profile (Active Tab) */}
-                <button
-                  type="button"
-                  onClick={() => { setActiveTab("profile"); setIsSidebarOpen(false); }}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm transition ${activeTab === "profile"
-                    ? "bg-success text-white font-bold shadow-xs"
-                    : "text-gray-700 font-medium hover:bg-gray-50"
-                    }`}
-                >
-                  <svg className={`w-4 h-4 shrink-0 ${activeTab === 'profile' ? '' : 'text-gray-500'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
-                  <span>Profile</span>
-                </button>
+                {/* Drawer Nav Items */}
+                <div className="flex-1 flex flex-col gap-1.5 overflow-y-auto py-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                  {ACCOUNT_TABS.map((tab) => (
+                    <button
+                      key={tab.id}
+                      type="button"
+                      onClick={() => {
+                        setActiveTab(tab.id);
+                        setIsDrawerOpen(false);
+                      }}
+                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm transition text-left cursor-pointer ${
+                        activeTab === tab.id
+                          ? "bg-success text-white font-bold shadow-xs"
+                          : "text-gray-700 font-medium hover:bg-gray-50"
+                      }`}
+                    >
+                      {tab.icon(activeTab === tab.id)}
+                      <span>{tab.label}</span>
+                    </button>
+                  ))}
+                </div>
 
-                {/* My Bookings */}
-                <button
-                  type="button"
-                  onClick={() => { setActiveTab("bookings"); setIsSidebarOpen(false); }}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm transition ${activeTab === "bookings"
-                    ? "bg-success text-white font-bold shadow-xs"
-                    : "text-gray-700 font-medium hover:bg-gray-50"
-                    }`}
-                >
-                  <svg className={`w-4 h-4 shrink-0 ${activeTab === 'bookings' ? '' : 'text-gray-500'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m0 0h4m-4 0V9a2 2 0 012-2h2a2 2 0 012 2v12" />
-                  </svg>
-                  <span>My Bookings</span>
-                </button>
+                {/* Drawer Logout */}
+                <div className="pt-4 border-t border-gray-100 mt-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsDrawerOpen(false);
+                      handleLogout();
+                    }}
+                    className="w-full border border-success text-success hover:bg-green-50 font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 text-xs sm:text-sm transition cursor-pointer"
+                  >
+                    <svg className="w-4 h-4 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                    <span>Logout</span>
+                  </button>
+                </div>
+              </div>
 
-                {/* My Subscriptions */}
-                <button
-                  type="button"
-                  onClick={() => { setActiveTab("subscriptions"); setIsSidebarOpen(false); }}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm transition ${activeTab === "subscriptions"
-                    ? "bg-success text-white font-bold shadow-xs"
-                    : "text-gray-700 font-medium hover:bg-gray-50"
-                    }`}
-                >
-                  <svg className={`w-4 h-4 shrink-0 ${activeTab === 'subscriptions' ? '' : 'text-gray-500'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                  <span>My Subscriptions</span>
-                </button>
+              <div className="flex flex-col xl:flex-row gap-8 items-start">
+                {/* ── Left Sidebar Navigation (Desktop >= xl) ── */}
+                <aside className="hidden xl:flex flex-col gap-1.5 w-full xl:w-72 shrink-0 bg-white rounded-2xl border border-gray-200 shadow-xs p-4 xl:sticky xl:top-[120px] xl:max-h-[calc(100vh-140px)] xl:overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                  {ACCOUNT_TABS.map((tab) => (
+                    <button
+                      key={tab.id}
+                      type="button"
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm transition ${
+                        activeTab === tab.id
+                          ? "bg-success text-white font-bold shadow-xs"
+                          : "text-gray-700 font-medium hover:bg-gray-50"
+                      }`}
+                    >
+                      {tab.icon(activeTab === tab.id)}
+                      <span>{tab.label}</span>
+                    </button>
+                  ))}
 
-                {/* Wallet */}
-                <button
-                  type="button"
-                  onClick={() => { setActiveTab("wallet"); setIsSidebarOpen(false); }}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm transition ${activeTab === "wallet"
-                    ? "bg-success text-white font-bold shadow-xs"
-                    : "text-gray-700 font-medium hover:bg-gray-50"
-                    }`}
-                >
-                  <svg className={`w-4 h-4 shrink-0 ${activeTab === 'wallet' ? '' : 'text-gray-500'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                  </svg>
-                  <span>Wallet</span>
-                </button>
-
-                {/* Wishlist */}
-                <button
-                  type="button"
-                  onClick={() => { setActiveTab("wishlist"); setIsSidebarOpen(false); }}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm transition ${activeTab === "wishlist"
-                    ? "bg-success text-white font-bold shadow-xs"
-                    : "text-gray-700 font-medium hover:bg-gray-50"
-                    }`}
-                >
-                  <svg className={`w-4 h-4 shrink-0 ${activeTab === 'wishlist' ? '' : 'text-gray-500'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                  </svg>
-                  <span>Wishlist</span>
-                </button>
-
-                {/* Saved Address */}
-                <button
-                  type="button"
-                  onClick={() => { setActiveTab("address"); setIsSidebarOpen(false); }}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm transition ${activeTab === "address"
-                    ? "bg-success text-white font-bold shadow-xs"
-                    : "text-gray-700 font-medium hover:bg-gray-50"
-                    }`}
-                >
-                  <svg className={`w-4 h-4 shrink-0 ${activeTab === 'address' ? '' : 'text-gray-500'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                  <span>Saved Address</span>
-                </button>
-
-                {/* About */}
-                <button
-                  type="button"
-                  onClick={() => { setActiveTab("about"); setIsSidebarOpen(false); }}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm transition ${activeTab === "about"
-                    ? "bg-success text-white font-bold shadow-xs"
-                    : "text-gray-700 font-medium hover:bg-gray-50"
-                    }`}
-                >
-                  <svg className={`w-4 h-4 shrink-0 ${activeTab === 'about' ? '' : 'text-gray-500'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <span>About</span>
-                </button>
-
-                {/* Support */}
-                <button
-                  type="button"
-                  onClick={() => { setActiveTab("support"); setIsSidebarOpen(false); }}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm transition ${activeTab === "support"
-                    ? "bg-success text-white font-bold shadow-xs"
-                    : "text-gray-700 font-medium hover:bg-gray-50"
-                    }`}
-                >
-                  <svg className={`w-4 h-4 shrink-0 ${activeTab === 'support' ? '' : 'text-gray-500'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
-                  </svg>
-                  <span>Support</span>
-                </button>
-
-                {/* Bottom Logout Button (Matching Image 3) */}
-                <button
-                  type="button"
-                  onClick={handleLogout}
-                  className="mt-6 border border-success text-success hover:bg-green-50 font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 text-xs sm:text-sm transition w-full"
-                >
-                  <svg className="w-4 h-4 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                  </svg>
-                  <span>Logout</span>
-                </button>
-              </aside>
+                  {/* Bottom Logout Button */}
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="mt-6 border border-success text-success hover:bg-green-50 font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 text-xs sm:text-sm transition w-full"
+                  >
+                    <svg className="w-4 h-4 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                    <span>Logout</span>
+                  </button>
+                </aside>
 
               {/* ── Right Main Content Area (Matching Image 3) ── */}
               <div className="flex-1 w-full">
@@ -616,12 +638,12 @@ function AccountPageContent() {
                   <>
                     {/* Section Title Header */}
                     <div className="flex items-center gap-3 mb-4">
-                      <div className="w-8 h-8 rounded-lg bg-danger text-white flex items-center justify-center shrink-0">
+                      <div className="w-8 h-8 rounded-lg bg-[#F47820] text-white flex items-center justify-center shrink-0">
                         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                           <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
                         </svg>
                       </div>
-                      <h1 className="text-xl sm:text-2xl font-bold font-serif text-[#5b1422] tracking-tight">
+                      <h1 className="text-xl sm:text-2xl font-bold font-serif tracking-tight">
                         Profile Details
                       </h1>
                     </div>
@@ -630,17 +652,17 @@ function AccountPageContent() {
                     <div className="bg-white rounded-2xl border border-gray-150 shadow-sm p-6 sm:p-10 relative overflow-hidden flex flex-col sm:flex-row items-center sm:items-start gap-10">
 
                       {/* Decorative Mandala Background Watermark */}
-                      <div className="absolute -bottom-16 -right-16 opacity-[0.03] pointer-events-none">
+                      {/* <div className="absolute -bottom-16 -right-16 opacity-[0.03] pointer-events-none">
                         <svg className="w-80 h-80 text-gray-900" fill="currentColor" viewBox="0 0 100 100">
                           <circle cx="50" cy="50" r="45" stroke="currentColor" strokeWidth="1" fill="none" />
                           <circle cx="50" cy="50" r="35" stroke="currentColor" strokeWidth="1" fill="none" />
                           <circle cx="50" cy="50" r="25" stroke="currentColor" strokeWidth="1" fill="none" />
                           <path d="M50 5 L50 95 M5 50 L95 50 M18 18 L82 82 M18 82 L82 18" stroke="currentColor" strokeWidth="0.5" />
                         </svg>
-                      </div>
+                      </div> */}
 
                       {/* Left: Avatar */}
-                      <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-full bg-[#8b1a1a] flex items-center justify-center border-[8px] border-[#fce4e0] shrink-0 relative z-10">
+                      <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-full bg-[#F47820] flex items-center justify-center shrink-0 relative z-10">
                         <svg className="w-16 h-16 text-white" fill="currentColor" viewBox="0 0 24 24">
                           <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
                         </svg>
@@ -703,11 +725,29 @@ function AccountPageContent() {
                             </div>
                           </div>
                         ) : (
-                          <div className="flex flex-col sm:flex-row items-start justify-between gap-6">
-                            <div>
-                              <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight h-8 capitalize">
-                                {user?.name || "Enter your name"}
-                              </h2>
+                          <div className="flex flex-col sm:flex-row items-start justify-between gap-6 w-full">
+                            <div className="w-full">
+                              <div className="flex items-center justify-between sm:justify-start gap-4">
+                                <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight capitalize">
+                                  {user?.name || "Enter your name"}
+                                </h2>
+
+                                {/* Mobile: Edit button straight to the right of name */}
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setFormData(user || {});
+                                    setShowEditModal(true);
+                                  }}
+                                  className="sm:hidden border border-success text-success hover:bg-green-50 text-xs font-bold px-3.5 py-1.5 rounded-full flex items-center gap-1.5 transition shrink-0 shadow-xs"
+                                >
+                                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                  </svg>
+                                  <span>Edit</span>
+                                </button>
+                              </div>
+
                               <span className="bg-gray-100 text-gray-600 text-xs px-3 py-1 rounded-full font-semibold inline-block mt-1">
                                 Devotee
                               </span>
@@ -728,13 +768,14 @@ function AccountPageContent() {
                               </div>
                             </div>
 
+                            {/* Desktop / Tablet: Edit button */}
                             <button
                               type="button"
                               onClick={() => {
                                 setFormData(user || {});
                                 setShowEditModal(true);
                               }}
-                              className="border border-success text-success hover:bg-green-50 text-xs font-bold px-4 py-1.5 rounded-full flex items-center gap-1.5 transition self-start shadow-xs"
+                              className="hidden sm:flex border border-success text-success hover:bg-green-50 text-xs font-bold px-4 py-1.5 rounded-full items-center gap-1.5 transition self-start shadow-xs shrink-0"
                             >
                               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
@@ -1695,8 +1736,9 @@ function AccountPageContent() {
                 )}
               </div>
             </div>
-          )}
-        </div>
+          </>
+        )}
+      </div>
 
         {/* ── Add New Address Modal ── */}
         {showAddressModal && (
