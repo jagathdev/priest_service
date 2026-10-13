@@ -17,6 +17,9 @@ export interface User {
 interface UserContextType {
   user: User | null;
   setUser: (user: User | null) => void;
+  isLoginModalOpen: boolean;
+  openLoginModal: () => void;
+  closeLoginModal: () => void;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -31,6 +34,7 @@ export function UserProvider({ children, initialUser }: { children: ReactNode; i
           try {
             return JSON.parse(stored) as User;
           } catch (e) {
+            console.error(e);
             return {} as User;
           }
         }
@@ -52,8 +56,13 @@ export function UserProvider({ children, initialUser }: { children: ReactNode; i
     }
   }, [user]);
 
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+
+  const openLoginModal = () => setIsLoginModalOpen(true);
+  const closeLoginModal = () => setIsLoginModalOpen(false);
+
   return (
-    <UserContext.Provider value={{ user, setUser }}>
+    <UserContext.Provider value={{ user, setUser, isLoginModalOpen, openLoginModal, closeLoginModal }}>
       {children}
     </UserContext.Provider>
   );

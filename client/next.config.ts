@@ -25,7 +25,11 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
-        hostname: "cdn.pixabay.com",
+        hostname: "cdn.astroved.com",
+      },
+      {
+        protocol: "https",
+        hostname: "priestservices.astroved.com",
       },
       {
         protocol: "https",

@@ -120,7 +120,9 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
             `,
           }}
         />
-        <script
+        <Script
+          id="cookie-analytics-script"
+          strategy="afterInteractive"
           dangerouslySetInnerHTML={{
             __html: `
               function getCookie(name) {

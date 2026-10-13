@@ -413,6 +413,7 @@ function SankalpContent() {
                   customer: mongoUserId,
                   customerName: userName,
                   itemName: itemName,
+                  imageUrl: pujaData?.imageUrl || pujaData?.image || "",
                   mobileNumber: userPhone,
                   whatsappNumber: formattedWa,
                   participants: formData.participants.filter((p: string) => p.trim()).map((p: string) => ({ name: p.trim() })),

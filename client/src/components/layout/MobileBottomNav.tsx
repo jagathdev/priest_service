@@ -100,64 +100,55 @@ export default function MobileBottomNav() {
     <nav
       data-mobile-bottom-nav
       aria-label="Bottom navigation"
-      className="fixed bottom-0 left-0 right-0 z-50 flex h-16 items-center justify-around border-t border-gray-200/90 bg-white shadow-[0_-2px_10px_rgba(0,0,0,0.05)] lg:hidden pb-[env(safe-area-inset-bottom)]"
+      className="fixed bottom-0 left-0 right-0 z-50 flex flex-col border-t border-gray-200/90 bg-white shadow-[0_-2px_10px_rgba(0,0,0,0.05)] lg:hidden"
     >
-      {/* HOME */}
-      <Link
-        href="/dashboard"
-        className="flex flex-col items-center justify-center flex-1 h-full active:bg-gray-50 transition-colors"
-      >
-        <HomeIcon active={isHomeActive} />
-        <span
-          className={`text-[11px] font-bold tracking-wider uppercase ${isHomeActive ? "text-[#15803d]" : "text-gray-500"
-            }`}
+      {/* Icon + label row — always exactly 64px tall */}
+      <div className="flex h-16 items-center justify-around w-full">
+        {/* HOME */}
+        <Link
+          href="/dashboard"
+          className="flex flex-col items-center justify-center flex-1 h-full active:bg-gray-50 transition-colors"
         >
-          HOME
-        </span>
-      </Link>
+          <HomeIcon active={isHomeActive} />
+          <span
+            className={`text-[11px] font-bold tracking-wider uppercase ${isHomeActive ? "text-[#15803d]" : "text-gray-500"
+              }`}
+          >
+            HOME
+          </span>
+        </Link>
 
-      {/* PUJA */}
-      <Link
-        href="/puja"
-        className="flex flex-col items-center justify-center flex-1 h-full active:bg-gray-50 transition-colors"
-      >
-        <PujaIcon active={isPujaActive} />
-        <span
-          className={`text-[11px] font-bold tracking-wider uppercase ${isPujaActive ? "text-[#15803d]" : "text-gray-500"
-            }`}
+        {/* PUJA */}
+        <Link
+          href="/puja"
+          className="flex flex-col items-center justify-center flex-1 h-full active:bg-gray-50 transition-colors"
         >
-          PUJA
-        </span>
-      </Link>
+          <PujaIcon active={isPujaActive} />
+          <span
+            className={`text-[11px] font-bold tracking-wider uppercase ${isPujaActive ? "text-[#15803d]" : "text-gray-500"
+              }`}
+          >
+            PUJA
+          </span>
+        </Link>
 
-      {/* SEVAS */}
-      {/* <Link
-        href="/homa"
-        className="flex flex-col items-center justify-center flex-1 h-full active:bg-gray-50 transition-colors"
-      >
-        <SevasIcon active={isSevasActive} />
-        <span
-          className={`text-[11px] font-bold tracking-wider uppercase ${
-            isSevasActive ? "text-[#15803d]" : "text-gray-500"
-          }`}
+        {/* ACCOUNT */}
+        <Link
+          href="/account"
+          className="flex flex-col items-center justify-center flex-1 h-full active:bg-gray-50 transition-colors"
         >
-          SEVAS
-        </span>
-      </Link> */}
+          <AccountIcon active={isAccountActive} />
+          <span
+            className={`text-[11px] font-bold tracking-wider uppercase ${isAccountActive ? "text-[#15803d]" : "text-gray-500"
+              }`}
+          >
+            ACCOUNT
+          </span>
+        </Link>
+      </div>
 
-      {/* ACCOUNT */}
-      <Link
-        href="/account"
-        className="flex flex-col items-center justify-center flex-1 h-full active:bg-gray-50 transition-colors"
-      >
-        <AccountIcon active={isAccountActive} />
-        <span
-          className={`text-[11px] font-bold tracking-wider uppercase ${isAccountActive ? "text-[#15803d]" : "text-gray-500"
-            }`}
-        >
-          ACCOUNT
-        </span>
-      </Link>
+      {/* Safe-area spacer — absorbs gesture nav bar height on Samsung/iPhone */}
+      <div style={{ height: "env(safe-area-inset-bottom, 0px)" }} className="w-full bg-white" />
     </nav>
   );
 }

@@ -594,7 +594,8 @@ export default function HomaDetailClient({
                 <img
                   src={bannerImages[activeBannerIndex] || (homa ? getHomaImageUrl(homa.imageUrl) : "")}
                   alt={`${homa?.title || "Homa"} - Sacred Ritual Banner ${activeBannerIndex + 1}`}
-                  className="w-full h-full object-cover object-center transition-all duration-300"
+                  className="w-full h-full object-cover object-center transition-all duration-300 cursor-pointer"
+                  onClick={handleAddHomaToCart}
                 />
 
                 {/* Left and Right Navigation Buttons (shown when more than 1 image) */}
@@ -982,11 +983,10 @@ export default function HomaDetailClient({
                     window.scrollTo({ top: y, behavior: "smooth" });
                   }
                 }}
-                className={`py-2.5 sm:py-3.5 border-b-2 transition-colors whitespace-nowrap shrink-0 sm:shrink ${
-                  activeTab === tab.id
+                className={`py-2.5 sm:py-3.5 border-b-2 transition-colors whitespace-nowrap shrink-0 sm:shrink ${activeTab === tab.id
                     ? "border-[#00b050] text-[#00b050]"
                     : "border-transparent hover:text-stone-900"
-                }`}
+                  }`}
               >
                 {tab.label}
               </a>

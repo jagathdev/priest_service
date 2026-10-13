@@ -163,10 +163,9 @@ const languageFullNames: Record<string, string> = {
 
 export default function Navbar() {
   const pathname = usePathname();
-  const { user, setUser } = useUser();
+  const { user, setUser, isLoginModalOpen, openLoginModal, closeLoginModal } = useUser();
   const [langOpen, setLangOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
-  const [loginModalOpen, setLoginModalOpen] = useState(false);
 
   const langRef = useRef<HTMLDivElement>(null);
   const accountRef = useRef<HTMLDivElement>(null);
@@ -227,7 +226,7 @@ export default function Navbar() {
 
   return (
     <>
-      <LoginModal isOpen={loginModalOpen} onClose={() => setLoginModalOpen(false)} onSuccess={handleLoginSuccess} />
+      <LoginModal isOpen={isLoginModalOpen} onClose={closeLoginModal} onSuccess={handleLoginSuccess} />
 
       <header className="sticky top-0 z-50 border-b border-gray-100 bg-white shadow-sm">
         <div className="mx-auto flex max-w-[1350px] items-center justify-between px-4 py-3 sm:py-3.5 sm:px-6 md:px-8 lg:px-10 xl:py-4">
@@ -324,7 +323,7 @@ export default function Navbar() {
               accountOpen={accountOpen}
               setAccountOpen={setAccountOpen}
               user={user}
-              setLoginModalOpen={setLoginModalOpen}
+              setLoginModalOpen={openLoginModal}
               handleLogout={handleLogout}
             />
           </div>

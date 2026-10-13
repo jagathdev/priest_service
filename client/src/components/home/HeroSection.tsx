@@ -72,13 +72,9 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
   const minSwipeDistance = 50;
 
-  const nextSlide = () => {
-    setActiveSlide((prev) => (prev + 1) % bannerSlides.length);
-  };
+  const [isTransitioning, setIsTransitioning] = useState(true);
 
-  const prevSlide = () => {
-    setActiveSlide((prev) => (prev === 0 ? bannerSlides.length - 1 : prev - 1));
-  };
+  const totalSlides = bannerSlides.length;
 
   const onTouchStart = (e: React.TouchEvent) => {
     setTouchEnd(null);
@@ -89,6 +85,18 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
     setTouchEnd(e.targetTouches[0].clientX);
   };
 
+  const nextSlide = () => {
+    if (totalSlides <= 1) return;
+    setIsTransitioning(true);
+    setActiveSlide((prev) => prev + 1);
+  };
+
+  const prevSlide = () => {
+    if (totalSlides <= 1) return;
+    setIsTransitioning(true);
+    setActiveSlide((prev) => (prev === 0 ? totalSlides - 1 : prev - 1));
+  };
+
   const handleTouchEnd = () => {
     if (!touchStart || !touchEnd) return;
     const distance = touchStart - touchEnd;
@@ -97,6 +105,15 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
       nextSlide();
     } else if (distance < -minSwipeDistance) {
       prevSlide();
+    }
+  };
+
+  // When activeSlide reaches the cloned slide (index === totalSlides),
+  // instantly jump back to 0 without animation so it can continue forward infinitely
+  const handleTransitionEnd = () => {
+    if (activeSlide >= totalSlides) {
+      setIsTransitioning(false);
+      setActiveSlide(0);
     }
   };
 
@@ -122,14 +139,14 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
     fetchHeroBanners();
   }, []);
 
-  // Auto-advance slides every 5 seconds
+  // Auto-advance forward only every 5 seconds
   useEffect(() => {
-    if (bannerSlides.length === 0) return;
+    if (totalSlides <= 1) return;
     const timer = setInterval(() => {
-      setActiveSlide((prev) => (prev + 1) % bannerSlides.length);
+      nextSlide();
     }, 5000);
     return () => clearInterval(timer);
-  }, [bannerSlides.length]);
+  }, [totalSlides]);
 
   if (isLoading) {
     return (
@@ -179,7 +196,9 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
 
   if (bannerSlides.length === 0) return null;
 
-  const current = bannerSlides[activeSlide];
+  const displaySlides = bannerSlides.length > 1 ? [...bannerSlides, bannerSlides[0]] : bannerSlides;
+  const currentSafeSlideIndex = bannerSlides.length > 0 ? activeSlide % bannerSlides.length : 0;
+  const current = bannerSlides[currentSafeSlideIndex];
 
   return (
     <section className="relative w-full max-w-[1350px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 pt-2 sm:pt-3 lg:pt-4 pb-8 md:pb-12 xl:py-12 bg-white my-0 sm:my-1 xl:my-2 overflow-hidden">
@@ -333,41 +352,56 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
         {/* ── Right Content (Hero Banner Card) ── 100% Full width on 1024px & Tablet, fixed width on XL desktop ── */}
         <div className="w-full max-w-full lg:w-full xl:w-[670px] 2xl:w-[730px] shrink-0 flex flex-col items-center relative">
 
-          {/* Pure Full-Bleed Banner Card (Image Only, No Wordings) */}
-          <Link
-            href={current.ctaLink}
-            className="w-full block relative rounded-3xl overflow-hidden shadow-2xl border border-stone-200 bg-[#160802] h-[300px] sm:h-[400px] md:h-[460px] lg:h-[500px] xl:h-[500px] shrink-0 transition-all duration-500 group cursor-pointer"
-          >
+          {/* Smooth Forward-Only Carousel Viewport */}
+          <div className="w-full relative rounded-3xl overflow-hidden shadow-2xl border border-stone-200/80 bg-stone-100 h-[300px] sm:h-[400px] md:h-[460px] lg:h-[500px] xl:h-[500px] shrink-0">
+            {/* Sliding Track (Continues sliding forward to the left) */}
+            <div
+              className={`flex w-full h-full ${isTransitioning ? "transition-transform duration-700 ease-out" : ""}`}
+              style={{ transform: `translateX(-${activeSlide * 100}%)` }}
+              onTransitionEnd={handleTransitionEnd}
+            >
+              {displaySlides.map((slide, idx) => (
+                <div key={`${slide.id || "slide"}-${idx}`} className="w-full h-full shrink-0 relative">
+                  <Link
+                    href={slide.ctaLink}
+                    className="w-full h-full block relative cursor-pointer group"
+                  >
+                    {/* Ambient Blurred Background (warm natural tone) */}
+                    <Image
+                      src={slide.image}
+                      alt=""
+                      fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1280px) 100vw, 730px"
+                      className="object-cover blur-2xl opacity-35 scale-110 pointer-events-none"
+                    />
 
-            {/* Ambient Blurred Background (Fills Card Seamlessly) */}
-            <Image
-              key={`bg-${current.id}`}
-              src={current.image}
-              alt=""
-              fill
-              className="object-cover blur-2xl opacity-40 scale-110"
-            />
+                    {/* Full-bleed Banner Image */}
+                    <Image
+                      src={slide.image}
+                      alt={slide.title}
+                      fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1280px) 100vw, 730px"
+                      className="object-cover object-center relative z-10 drop-shadow-md group-hover:scale-[1.02] transition-transform duration-500"
+                      priority={idx === 0}
+                    />
+                  </Link>
+                </div>
+              ))}
+            </div>
 
-            {/* Full Main Image (Fills container seamlessly) */}
-            <Image
-              key={current.id}
-              src={current.image}
-              alt={current.title}
-              fill
-              className="object-fit object-center relative z-10 drop-shadow-lg"
-              priority
-            />
-
-          </Link>
+          </div>
 
           {/* Slider Dots Navigation inside Hero */}
           <div className="flex items-center justify-center gap-2.5 mt-4 sm:mt-5">
             {bannerSlides.map((_, index) => (
               <button
                 key={index}
-                onClick={() => setActiveSlide(index)}
+                onClick={() => {
+                  setIsTransitioning(true);
+                  setActiveSlide(index);
+                }}
                 aria-label={`Go to slide ${index + 1}`}
-                className={`transition-all duration-300 rounded-full ${index === activeSlide
+                className={`transition-all duration-300 rounded-full cursor-pointer ${index === currentSafeSlideIndex
                   ? "w-7 h-2 bg-success"
                   : "w-2 h-2 bg-stone-300 hover:bg-stone-400"
                   }`}

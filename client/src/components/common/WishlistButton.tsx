@@ -12,7 +12,7 @@ interface WishlistButtonProps {
 }
 
 export default function WishlistButton({ itemId, className, iconClassName, text }: WishlistButtonProps) {
-  const { user } = useUser();
+  const { user, openLoginModal } = useUser();
   const [isWishlisted, setIsWishlisted] = useState(false);
 
   useEffect(() => {
@@ -38,7 +38,7 @@ export default function WishlistButton({ itemId, className, iconClassName, text 
     const userId = user?.id || user?._id;
 
     if (!user || !userId) {
-      alert("Please login to add to wishlist");
+      openLoginModal();
       return;
     }
 

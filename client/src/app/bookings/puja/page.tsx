@@ -6,6 +6,7 @@ import Footer from "@/components/layout/Footer";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { useUser } from "@/contexts/UserContext";
 
 interface BookingItem {
   title: string;
@@ -24,6 +25,8 @@ interface Booking {
   status: string;
   bookingType: string;
   title?: string;
+  image?: string;
+  imageUrl?: string;
   items?: BookingItem[];
   orderStatus?: string;
   scheduledDate?: string;
@@ -32,6 +35,7 @@ interface Booking {
 
 export default function MyPujaBookings() {
   const router = useRouter();
+  const { user, openLoginModal } = useUser();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [fetched, setFetched] = useState(false);
   const [filter, setFilter] = useState("All");
@@ -146,7 +150,11 @@ export default function MyPujaBookings() {
                 <span>Wallet</span>
               </Link>
 
-              <Link href="/account#wishlist" className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm font-semibold text-gray-700 hover:bg-gray-50 transition">
+              <Link
+                href="/account#wishlist"
+                onClick={!user ? (e) => { e.preventDefault(); openLoginModal(); } : undefined}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm font-semibold text-gray-700 hover:bg-gray-50 transition"
+              >
                 <svg className="w-4 h-4 text-gray-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                 </svg>
@@ -256,15 +264,22 @@ export default function MyPujaBookings() {
                 <>
                   <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 w-full mb-8">
                     {filteredBookings.map((booking) => {
+                      // Top-level image from server's enriched order (imageUrl saved at booking time OR looked up from puja)
+                      const bookingImage = booking.imageUrl || booking.image || "";
+
                       const items: BookingItem[] =
                         booking.items && booking.items.length > 0
-                          ? booking.items
+                          ? booking.items.map((item) => ({
+                            ...item,
+                            imageUrl: item.imageUrl || bookingImage,
+                          }))
                           : [
                             {
                               title: booking.title || "Sacred Puja Service",
                               quantity: 1,
                               amount: booking.amount,
                               status: "New",
+                              imageUrl: bookingImage,
                             },
                           ];
 
