@@ -46,7 +46,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
     try {
       serverUser = JSON.parse(decodeURIComponent(mockUserCookie.value));
     } catch (e) {
-      console.error("Failed to parse mockUser cookie on server");
+      console.error("Failed to parse mockUser cookie on server", e);
     }
   }
 
@@ -81,7 +81,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
                 "@type": "WebPage",
                 "name": "Priest Services | Sacred Pujas & Rituals by AstroVed",
                 "description": "Book authentic Vedic pujas, homas, and ritual services online. Expert priests for your spiritual and religious needs.",
-                "url": "https://www.astroved.com/priest-services/",
+                "url": "https://www.priestservices.astroved.com/",
                 "publisher": {
                   "@type": "Organization",
                   "name": "AstroVed",
@@ -91,6 +91,14 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
             `,
           }}
         />
+
+        {/* jQuery (Required for GTM Custom Tags) */}
+        <Script
+          id="jquery-cdn"
+          src="https://code.jquery.com/jquery-3.7.1.min.js"
+          strategy="beforeInteractive"
+        />
+
         <Script
           id="gtm-script"
           strategy="beforeInteractive"

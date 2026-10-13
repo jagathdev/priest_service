@@ -461,6 +461,24 @@ export default function PujaClient({ initialPujas }: { initialPujas?: Puja[] }) 
     return groups;
   }, [allPujas]);
 
+  // -- Open filter modal if URL has ?filter=... param --
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const filterParam = params.get("filter");
+      if (filterParam) {
+        const found = dynamicFilterGroups.find(
+          (g) => g.label.toLowerCase() === filterParam.toLowerCase()
+        );
+        if (found) {
+          openFilterModal(found.label);
+        } else if (filterParam.toLowerCase() === "location") {
+          openFilterModal("Location");
+        }
+      }
+    }
+  }, [dynamicFilterGroups]);
+
   // -- Apply filters to get displayed pujas --
   const displayedPujas = useMemo(() => {
     return allPujas.filter((p) => pujaMatchesFilters(p, filters, searchQuery, dynamicFilterGroups));
@@ -478,7 +496,7 @@ export default function PujaClient({ initialPujas }: { initialPujas?: Puja[] }) 
         {/* Hero Section - Light Sacred Sandalwood Theme */}
         <div className="bg-gradient-to-b from-[#fff6ef] via-[#fdeee0] to-[#f9e3d0] py-12 md:py-16 text-center border-b border-[#fcd5b5] relative overflow-hidden">
           {/* Left Inverted Mandala Decoration */}
-          <div className="absolute left-0 top-0 bottom-0 h-full pointer-events-none opacity-50 z-0 hidden sm:flex items-center">
+          <div className="absolute left-0 top-0 bottom-0 h-full pointer-events-none opacity-50 z-0 hidden min-[769px]:flex items-center">
             <img
               src="/images/mandala.png"
               alt="Mandala Left"
@@ -488,7 +506,7 @@ export default function PujaClient({ initialPujas }: { initialPujas?: Puja[] }) 
           </div>
 
           {/* Right Mandala Decoration */}
-          <div className="absolute right-0 top-0 bottom-0 h-full pointer-events-none opacity-50 z-0 hidden sm:flex items-center">
+          <div className="absolute right-0 top-0 bottom-0 h-full pointer-events-none opacity-50 z-0 hidden min-[769px]:flex items-center">
             <img
               src="/images/mandala.png"
               alt="Mandala Right"
@@ -537,13 +555,15 @@ export default function PujaClient({ initialPujas }: { initialPujas?: Puja[] }) 
         </div>
 
         <div className="mx-auto max-w-[1350px] px-4 sm:px-6 lg:px-10 py-10 bg-[#ffffff]">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-4xl font-serif font-bold text-[#5c2424]">Upcoming Online Pujas</h2>
+          <div className="flex items-center justify-between mb-5 sm:mb-6 gap-2">
+            <h2 className="text-[19px] min-[360px]:text-[22px] min-[390px]:text-2xl sm:text-3xl lg:text-4xl font-serif font-bold text-[#5c2424] whitespace-nowrap tracking-tight sm:tracking-normal">
+              Upcoming Online Pujas
+            </h2>
             {hasActiveFilters && (
               <button
                 type="button"
                 onClick={clearFilters}
-                className="text-sm font-semibold text-red-500 hover:text-red-700 underline"
+                className="text-xs sm:text-sm font-semibold text-red-500 hover:text-red-700 underline shrink-0 whitespace-nowrap"
               >
                 Clear Filters
               </button>
@@ -618,7 +638,7 @@ export default function PujaClient({ initialPujas }: { initialPujas?: Puja[] }) 
                         <img
                           src={getPujaImageUrl(puja.imageUrl)}
                           alt={puja.title}
-                          className="w-full h-full object-cover transition-transform duration-700"
+                          className="w-full h-full object-fit transition-transform duration-700"
                         />
                         {puja.badge && (
                           <div className="absolute top-4 left-0 bg-[#d92b2b] text-white text-[12px] font-extrabold px-3.5 py-1.5 shadow-md rounded-r-lg uppercase tracking-wider">

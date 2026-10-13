@@ -171,21 +171,25 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
             </h2>
 
             {/* Filter Pills */}
-            <div className="flex items-center gap-2.5 flex-wrap">
-              <Link href="/puja" className="bg-success text-white font-bold px-5 py-2 rounded-full text-xs sm:text-sm shadow-sm hover:bg-[#009b46] transition-colors">
+            <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap">
+              <Link href="/puja" className="bg-success text-white font-bold px-4 sm:px-5 py-2 rounded-full text-xs sm:text-sm shadow-sm hover:bg-[#009b46] transition-colors whitespace-nowrap">
                 All
               </Link>
 
-              <Link href="/puja" className="bg-white border border-stone-200 text-stone-700 hover:border-stone-400 font-semibold px-4 py-2 rounded-full text-xs sm:text-sm transition-colors">
-                Diety
+              <Link href="/puja?filter=Deity" className="bg-white border border-stone-200 text-stone-700 hover:border-stone-400 font-semibold px-3.5 sm:px-4 py-2 rounded-full text-xs sm:text-sm transition-colors whitespace-nowrap">
+                Deity
               </Link>
 
-              <Link href="/puja" className="bg-white border border-stone-200 text-stone-700 hover:border-stone-400 font-semibold px-4 py-2 rounded-full text-xs sm:text-sm transition-colors">
+              <Link href="/puja?filter=Dosha" className="bg-white border border-stone-200 text-stone-700 hover:border-stone-400 font-semibold px-3.5 sm:px-4 py-2 rounded-full text-xs sm:text-sm transition-colors whitespace-nowrap">
                 Dosha
               </Link>
 
-              <Link href="/puja" className="bg-white border border-stone-200 text-stone-700 hover:border-stone-400 font-semibold px-4 py-2 rounded-full text-xs sm:text-sm transition-colors">
+              <Link href="/puja?filter=Benefits" className="bg-white border border-stone-200 text-stone-700 hover:border-stone-400 font-semibold px-3.5 sm:px-4 py-2 rounded-full text-xs sm:text-sm transition-colors whitespace-nowrap">
                 Benefit
+              </Link>
+
+              <Link href="/puja?filter=Location" className="bg-white border border-stone-200 text-stone-700 hover:border-stone-400 font-semibold px-3.5 sm:px-4 py-2 rounded-full text-xs sm:text-sm transition-colors whitespace-nowrap">
+                Location
               </Link>
             </div>
           </div>
@@ -256,12 +260,12 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
       {/* ── 4. Puja Gallery Section ── */}
       <section className="pt-10 pb-8 sm:pt-14 sm:pb-12 bg-white relative overflow-hidden">
         {/* Background Typography at Top */}
-        <h2 className="text-[75px] sm:text-[115px] md:text-[150px] lg:text-[185px] font-bold text-stone-200/90 font-serif tracking-tight text-center select-none pointer-events-none whitespace-nowrap absolute top-1 left-1/2 -translate-x-1/2 z-0 leading-none">
+        <h2 className="text-[44px] min-[375px]:text-[52px] min-[425px]:text-[60px] sm:text-[95px] md:text-[120px] lg:text-[160px] xl:text-[185px] font-bold text-stone-200/90 font-serif tracking-tight text-center select-none pointer-events-none whitespace-nowrap absolute top-1 sm:top-2 left-1/2 -translate-x-1/2 z-0 leading-none">
           Puja Gallery
         </h2>
 
         {/* Marquee Row Container anchored at Bottom of Font */}
-        <div className="relative z-10 overflow-hidden w-full pt-16 sm:pt-24 pb-2 before:absolute before:left-0 before:top-0 before:bottom-0 before:w-16 sm:before:w-28 before:bg-gradient-to-r before:from-white before:to-transparent before:z-20 after:absolute after:right-0 after:top-0 after:bottom-0 after:w-16 sm:after:w-28 after:bg-gradient-to-l after:from-white after:to-transparent after:z-20">
+        <div className="relative z-10 overflow-hidden w-full pt-12 min-[375px]:pt-14 sm:pt-20 md:pt-24 pb-2">
           <div className="flex animate-marquee gap-4 sm:gap-6 items-end">
             {/* Repeat list twice for continuous infinite marquee */}
             {[...galleryImages, ...galleryImages].map((img, idx) => (
