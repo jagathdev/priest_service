@@ -24,6 +24,8 @@ interface Booking {
   status: string;
   bookingType: string;
   title?: string;
+  image?: string;
+  imageUrl?: string;
   items?: BookingItem[];
   orderStatus?: string;
   scheduledDate?: string;
@@ -256,15 +258,22 @@ export default function MyPujaBookings() {
                 <>
                   <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 w-full mb-8">
                     {filteredBookings.map((booking) => {
+                      // Top-level image from server's enriched order (imageUrl saved at booking time OR looked up from puja)
+                      const bookingImage = booking.imageUrl || booking.image || "";
+
                       const items: BookingItem[] =
                         booking.items && booking.items.length > 0
-                          ? booking.items
+                          ? booking.items.map((item) => ({
+                              ...item,
+                              imageUrl: item.imageUrl || bookingImage,
+                            }))
                           : [
                             {
                               title: booking.title || "Sacred Puja Service",
                               quantity: 1,
                               amount: booking.amount,
                               status: "New",
+                              imageUrl: bookingImage,
                             },
                           ];
 
