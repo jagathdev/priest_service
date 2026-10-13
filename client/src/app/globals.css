@@ -208,9 +208,10 @@ iframe#prime {
   pointer-events: none !important;
 }
 
-/* Ensure SVG icons always render correctly on all browsers including Samsung/Android */
-svg {
-  display: inline-block;
-  vertical-align: middle;
+/* Ensure mobile bottom nav SVG icons render correctly on Samsung/Android browsers */
+[data-mobile-bottom-nav] svg {
+  display: block;
   overflow: visible;
+  flex-shrink: 0;
 }
+
