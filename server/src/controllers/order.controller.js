@@ -145,7 +145,8 @@ export const getUserOrders = async (req, res) => {
 
         const enrichedOrders = await Promise.all(
             orders.map(async (order) => {
-                let image = order.image || "";
+                // 1. Use the imageUrl saved directly on the order (set at payment time)
+                let image = order.imageUrl || order.image || "";
                 let temple = order.temple || "";
 
                 if (!image || !temple) {
@@ -170,7 +171,8 @@ export const getUserOrders = async (req, res) => {
 
                 return {
                     ...order,
-                    image: image || "/images/Ganesh-Chaturthi-Mahapuja.jpg",
+                    imageUrl: image || "",
+                    image: image || "",
                     temple: temple || "Shri Rahu Temple, Paithani,"
                 };
             })
