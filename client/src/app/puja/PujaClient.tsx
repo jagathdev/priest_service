@@ -278,82 +278,7 @@ function PujaFilterModal({
   );
 }
 
-function ShareModal({
-  isOpen,
-  onClose,
-  pujaUrl
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-  pujaUrl: string;
-}) {
-  if (!isOpen) return null;
-
-  const handleShare = (platform: string) => {
-    let url = "";
-    const text = encodeURIComponent("Check out this sacred Puja!");
-    const encodedPujaUrl = encodeURIComponent(pujaUrl);
-
-    if (platform === "whatsapp") url = `https://wa.me/?text=${text}%20${encodedPujaUrl}`;
-    if (platform === "facebook") url = `https://www.facebook.com/sharer/sharer.php?u=${encodedPujaUrl}`;
-    if (platform === "twitter") url = `https://twitter.com/intent/tweet?text=${text}&url=${encodedPujaUrl}`;
-    if (platform === "telegram") url = `https://t.me/share/url?url=${encodedPujaUrl}&text=${text}`;
-
-    if (url) window.open(url, "_blank");
-  };
-
-  const copyLink = () => {
-    navigator.clipboard.writeText(pujaUrl);
-    alert("Link copied!");
-  };
-
-  return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-      <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl relative">
-        <button onClick={onClose} className="absolute right-4 top-4 text-gray-400 hover:text-gray-600">
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
-        </button>
-        <h3 className="text-lg font-bold text-gray-900 mb-6">Share Pooja</h3>
-
-        <div className="grid grid-cols-2 gap-3">
-          <button onClick={() => handleShare("whatsapp")} className="flex flex-col items-center justify-center py-5 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors">
-            <i className="fa-brands fa-whatsapp text-3xl text-[#25D366] mb-2"></i>
-            <span className="text-sm font-semibold text-gray-700">WhatsApp</span>
-          </button>
-
-          <button onClick={() => handleShare("instagram")} className="flex flex-col items-center justify-center py-5 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors">
-            <i className="fa-brands fa-instagram text-3xl mb-2" style={{ background: '-webkit-linear-gradient(#f09433, #e6683c, #dc2743, #cc2366, #bc1888)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}></i>
-            <span className="text-sm font-semibold text-gray-700">Instagram</span>
-          </button>
-
-          <button onClick={() => handleShare("facebook")} className="flex flex-col items-center justify-center py-5 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors">
-            <i className="fa-brands fa-facebook text-3xl text-[#1877F2] mb-2"></i>
-            <span className="text-sm font-semibold text-gray-700">Facebook</span>
-          </button>
-
-          <button onClick={() => handleShare("twitter")} className="flex flex-col items-center justify-center py-5 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors">
-            <div className="w-8 h-8 bg-black rounded-full flex items-center justify-center text-white mb-2">
-              <i className="fa-brands fa-x-twitter text-lg"></i>
-            </div>
-            <span className="text-sm font-semibold text-gray-700">Twitter</span>
-          </button>
-
-          <button onClick={() => handleShare("telegram")} className="flex flex-col items-center justify-center py-5 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors">
-            <i className="fa-brands fa-telegram text-3xl text-[#0088cc] mb-2"></i>
-            <span className="text-sm font-semibold text-gray-700">Telegram</span>
-          </button>
-
-          <button onClick={copyLink} className="flex flex-col items-center justify-center py-5 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors">
-            <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 mb-2">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
-            </div>
-            <span className="text-sm font-semibold text-gray-700">Copy Link</span>
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
+import ShareModal, { ShareData } from "@/components/common/ShareModal";
 
 // --- Main Page ----------------------------------------------------------------
 export default function PujaClient({ initialPujas }: { initialPujas?: Puja[] }) {
@@ -365,7 +290,7 @@ export default function PujaClient({ initialPujas }: { initialPujas?: Puja[] }) 
   const [filterModalInitialTab, setFilterModalInitialTab] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [shareModalOpen, setShareModalOpen] = useState(false);
-  const [shareUrl, setShareUrl] = useState("");
+  const [shareData, setShareData] = useState<ShareData>({});
   const router = useRouter();
 
   const openFilterModal = (tabLabel?: string) => {
@@ -373,8 +298,8 @@ export default function PujaClient({ initialPujas }: { initialPujas?: Puja[] }) 
     setIsFilterModalOpen(true);
   };
 
-  const openShareModal = (url: string) => {
-    setShareUrl(url);
+  const openShareModal = (data: ShareData) => {
+    setShareData(data);
     setShareModalOpen(true);
   };
 
@@ -490,7 +415,7 @@ export default function PujaClient({ initialPujas }: { initialPujas?: Puja[] }) 
       <ShareModal
         isOpen={shareModalOpen}
         onClose={() => setShareModalOpen(false)}
-        pujaUrl={shareUrl}
+        data={shareData}
       />
       <main className="min-h-screen">
         {/* Hero Section - Light Sacred Sandalwood Theme */}
@@ -699,7 +624,12 @@ export default function PujaClient({ initialPujas }: { initialPujas?: Puja[] }) 
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
-                          openShareModal(fullUrl);
+                          openShareModal({
+                            title: puja.title,
+                            description: puja.subtitle || puja.description,
+                            location: puja.location || puja.filterLocation || puja.details?.templeLocation,
+                            url: fullUrl,
+                          });
                         }}
                         className="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-sm text-gray-600 hover:text-[#d95a2b] transition-colors"
                       >

@@ -8,11 +8,14 @@ import WishlistButton from "@/components/common/WishlistButton";
 
 import HeroSection from "@/components/home/HeroSection";
 import ReviewsSection from "@/components/common/ReviewsSection";
+import ShareModal, { ShareData } from "@/components/common/ShareModal";
 
 export default function DashboardClient({ initialHeroBanners, initialPujas }: { initialHeroBanners?: any[], initialPujas?: any[] }) {
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
   const [pujas, setPujas] = useState<any[]>(initialPujas || []);
   const [fetchedPujas, setFetchedPujas] = useState(initialPujas && initialPujas.length > 0);
+  const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [shareData, setShareData] = useState<ShareData>({});
 
   useEffect(() => {
     async function fetchPujas() {
@@ -240,6 +243,10 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
                     date={p.date}
                     price={priceVal}
                     slug={slugVal}
+                    onShare={(sharePayload) => {
+                      setShareData(sharePayload);
+                      setShareModalOpen(true);
+                    }}
                   />
                 );
               })
@@ -458,6 +465,13 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
           © 2026 Astroved PriestService. All rights reserved.
         </div>
       </footer>
+
+      {/* Share Modal */}
+      <ShareModal
+        isOpen={shareModalOpen}
+        onClose={() => setShareModalOpen(false)}
+        data={shareData}
+      />
     </main>
   );
 }
@@ -547,9 +561,10 @@ interface PujaCardProps {
   date: string;
   price: string | number;
   slug?: string;
+  onShare?: (data: ShareData) => void;
 }
 
-function PujaCard({ id, imageSrc, topTag, title, subtitle, location, date, price, slug }: PujaCardProps) {
+function PujaCard({ id, imageSrc, topTag, title, subtitle, location, date, price, slug, onShare }: PujaCardProps) {
   const cardUrl = slug ? `/puja/${slug}` : "/puja";
 
   return (
@@ -609,58 +624,60 @@ function PujaCard({ id, imageSrc, topTag, title, subtitle, location, date, price
             </div>
           </div>
 
-          {/* Bottom Footer Row: Price + Participate Button */}
-          <div className="flex items-center justify-between pt-0.5">
-            {/* Price */}
-            <div>
-              <span className="font-extrabold text-2xl sm:text-3xl text-[#1f1a17] leading-none block">{price}</span>
-              <span className="text-xs text-stone-500 font-semibold mt-0.5 block">Per Booking</span>
-            </div>
+            {/* Bottom Footer Row: Price + Participate Button */}
+            <div className="flex items-center justify-between pt-0.5">
+              {/* Price */}
+              <div>
+                <span className="font-extrabold text-2xl sm:text-3xl text-[#1f1a17] leading-none block">{price}</span>
+                <span className="text-xs text-stone-500 font-semibold mt-0.5 block">Per Booking</span>
+              </div>
 
-            {/* CTA Button */}
-            <div className="inline-flex items-center gap-2 bg-success hover:bg-[#009644] active:scale-95 text-white font-extrabold text-xs sm:text-sm px-5 py-2.5 sm:py-3 rounded-full shadow-md shadow-green-600/20 transition-all duration-200 group/btn">
-              <span>Participate Now</span>
-              <div className="w-5 h-5 rounded-full bg-white text-success flex items-center justify-center shrink-0">
-                <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                </svg>
+              {/* CTA Button */}
+              <div className="inline-flex items-center gap-2 bg-success hover:bg-[#009644] active:scale-95 text-white font-extrabold text-xs sm:text-sm px-5 py-2.5 sm:py-3 rounded-full shadow-md shadow-green-600/20 transition-all duration-200 group/btn">
+                <span>Participate Now</span>
+                <div className="w-5 h-5 rounded-full bg-white text-success flex items-center justify-center shrink-0">
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
               </div>
             </div>
           </div>
+        </Link>
+
+        {/* Top Right Floating Action Buttons (Wishlist & Share) */}
+        <div className="absolute top-5 right-5 flex flex-col gap-2 z-10">
+          {/* Wishlist Heart Button */}
+          {id && <WishlistButton itemId={id} />}
+
+          {/* Share Button */}
+          <button
+            type="button"
+            aria-label="Share puja"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onShare?.({
+                title,
+                description: subtitle,
+                location,
+                url: window.location.origin + cardUrl,
+              });
+            }}
+            className="w-8 h-8 rounded-full bg-white/95 text-stone-700 hover:text-success flex items-center justify-center shadow-md backdrop-blur-sm transition-transform active:scale-95 hover:bg-white"
+          >
+            <svg className="w-4 h-4 fill-none stroke-current" strokeWidth="2" viewBox="0 0 24 24">
+              <circle cx="18" cy="5" r="3" />
+              <circle cx="6" cy="12" r="3" />
+              <circle cx="18" cy="19" r="3" />
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+            </svg>
+          </button>
         </div>
-      </Link>
-
-      {/* Top Right Floating Action Buttons (Wishlist & Share) */}
-      <div className="absolute top-5 right-5 flex flex-col gap-2 z-10">
-        {/* Wishlist Heart Button */}
-        {id && <WishlistButton itemId={id} />}
-
-        {/* Share Button */}
-        <button
-          aria-label="Share puja"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            if (navigator.share) {
-              navigator.share({ title, url: window.location.origin + cardUrl });
-            } else {
-              navigator.clipboard?.writeText(window.location.origin + cardUrl);
-            }
-          }}
-          className="w-8 h-8 rounded-full bg-white/95 text-stone-700 hover:text-success flex items-center justify-center shadow-md backdrop-blur-sm transition-transform active:scale-95"
-        >
-          <svg className="w-4 h-4 fill-none stroke-current" strokeWidth="2" viewBox="0 0 24 24">
-            <circle cx="18" cy="5" r="3" />
-            <circle cx="6" cy="12" r="3" />
-            <circle cx="18" cy="19" r="3" />
-            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
-            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
-          </svg>
-        </button>
       </div>
-    </div>
-  );
-}
+    );
+  }
 
 // --- Helper Data & Components ---
 

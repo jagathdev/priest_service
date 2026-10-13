@@ -10,6 +10,7 @@ import { checkAuthStatus } from "@/lib/authCheck";
 import { XMarkIcon } from "@heroicons/react/24/solid";
 import WishlistButton from "@/components/common/WishlistButton";
 import PujaCountdownCard from "@/components/common/PujaCountdownCard";
+import ShareModal from "@/components/common/ShareModal";
 
 interface PujaPackage {
   id: string;
@@ -124,6 +125,7 @@ export default function PujaDetailClient({
   const [pendingSankalpUrl, setPendingSankalpUrl] = useState<string | null>(null);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [shareSuccess, setShareSuccess] = useState(false);
+  const [shareModalOpen, setShareModalOpen] = useState(false);
   const [showStickyBar, setShowStickyBar] = useState(false);
   const [activeBannerIndex, setActiveBannerIndex] = useState(0);
   const heroCtaRef = useRef<HTMLButtonElement | null>(null);
@@ -678,21 +680,13 @@ export default function PujaDetailClient({
                   <button
                     type="button"
                     aria-label="Share puja"
-                    onClick={() => {
-                      if (navigator.share) {
-                        navigator.share({ title: puja.title, url: window.location.href });
-                      } else {
-                        navigator.clipboard?.writeText(window.location.href);
-                        setShareSuccess(true);
-                        setTimeout(() => setShareSuccess(false), 2000);
-                      }
-                    }}
+                    onClick={() => setShareModalOpen(true)}
                     className="flex-initial border border-stone-300 hover:border-stone-500 bg-white text-stone-800 font-medium text-xs sm:text-sm px-3.5 sm:px-4 py-1.5 rounded-full flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-xs"
                   >
                     <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-none stroke-current" strokeWidth="2" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
                     </svg>
-                    <span>{shareSuccess ? "Copied!" : "Share"}</span>
+                    <span>Share</span>
                   </button>
                 </div>
               </div>
@@ -921,15 +915,7 @@ export default function PujaDetailClient({
             <button
               type="button"
               aria-label="Share puja"
-              onClick={() => {
-                if (navigator.share) {
-                  navigator.share({ title: puja.title, url: window.location.href });
-                } else {
-                  navigator.clipboard?.writeText(window.location.href);
-                  setShareSuccess(true);
-                  setTimeout(() => setShareSuccess(false), 2000);
-                }
-              }}
+              onClick={() => setShareModalOpen(true)}
               className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-stone-300 hover:border-stone-500 bg-white flex items-center justify-center text-stone-700 shadow-2xs hover:bg-stone-50 transition-all active:scale-95 relative"
             >
               <svg
@@ -943,11 +929,6 @@ export default function PujaDetailClient({
                   d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
                 />
               </svg>
-              {shareSuccess && (
-                <span className="absolute -top-7 right-0 bg-stone-900 text-white text-[10px] font-semibold py-0.5 px-2 rounded shadow-sm whitespace-nowrap">
-                  Copied!
-                </span>
-              )}
             </button>
           </div>
         </div>
@@ -1298,6 +1279,19 @@ export default function PujaDetailClient({
           if (pendingSankalpUrl) {
             window.location.href = pendingSankalpUrl;
           }
+        }}
+      />
+
+      {/* ── 9. Dynamic Share Modal ── */}
+      <ShareModal
+        isOpen={shareModalOpen}
+        onClose={() => setShareModalOpen(false)}
+        data={{
+          title: puja.title,
+          description: puja.heroSubtitle || puja.subtitle || puja.description || puja.about,
+          templeVenue: puja.templeVenue,
+          location: puja.location || puja.templeLocation,
+          url: typeof window !== "undefined" ? window.location.href : undefined,
         }}
       />
 
