@@ -1,4 +1,7 @@
 import Navbar from "@/components/layout/Navbar";
+import { Mail, Phone } from "lucide-react";
+import { GooglePlayIcon, AppleIcon } from "@/components/ui/icons";
+import React from "react";
 
 interface ContactItem {
   label: string;
@@ -8,14 +11,14 @@ interface ContactItem {
 }
 
 interface ContactCard {
-  icon: string;
+  icon: React.ReactNode;
   title: string;
   items: ContactItem[];
 }
 
 const contactCards: ContactCard[] = [
   {
-    icon: "fa-regular fa-envelope",
+    icon: <Mail className="w-8 h-8 text-primary" aria-hidden="true" />,
     title: "Email Us",
     items: [
       {
@@ -31,7 +34,7 @@ const contactCards: ContactCard[] = [
     ],
   },
   {
-    icon: "fa-solid fa-phone",
+    icon: <Phone className="w-8 h-8 text-primary" aria-hidden="true" />,
     title: "Call Us",
     items: [
       {
@@ -73,7 +76,7 @@ export default function ContactPage() {
                 key={card.title}
                 className="flex flex-col items-center justify-center rounded-sm bg-[#fff3eb] p-8 text-center shadow-[0_8px_22px_rgba(0,0,0,0.1)] transition-all hover:-translate-y-1 hover:shadow-[0_14px_30px_rgba(244,120,32,0.18)]"
               >
-                <i className={`${card.icon} text-3xl text-primary`} aria-hidden="true"></i>
+                {card.icon}
                 <h2 className="mt-6 text-2xl font-black mb-6">{card.title}</h2>
                 <div className="w-full flex flex-col gap-6">
                   {card.items.map((item, idx) => (
@@ -109,7 +112,7 @@ export default function ContactPage() {
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-3 rounded-xl bg-primary px-7 py-4 text-sm font-extrabold uppercase tracking-wide text-white shadow-lg shadow-indigo-100 transition-all hover:bg-[#8283fa] active:scale-95"
               >
-                <i className="fa-brands fa-google-play text-base" aria-hidden="true"></i>
+                <GooglePlayIcon className="w-5 h-5 text-white" />
                 Android App
               </a>
               <a
@@ -118,7 +121,7 @@ export default function ContactPage() {
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-3 rounded-xl bg-primary px-7 py-4 text-sm font-extrabold uppercase tracking-wide text-white shadow-lg shadow-indigo-100 transition-all hover:bg-[#8283fa] active:scale-95"
               >
-                <i className="fa-brands fa-apple text-base" aria-hidden="true"></i>
+                <AppleIcon className="w-5 h-5 text-white" />
                 iOS App
               </a>
             </div>

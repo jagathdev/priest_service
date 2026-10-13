@@ -144,23 +144,6 @@ const AccountPanel = ({ accountOpen, setAccountOpen, user, setLoginModalOpen, ha
   );
 };
 
-type SupportedLanguage = "en" | "hi" | "ta" | "te" | "kn";
-
-// All nav items (used in desktop nav only)
-const navKeys = [
-  { key: "home", path: "/dashboard" },
-  { key: "puja", path: "/puja" },
-  { key: "homa", path: "/homa" },
-];
-
-const languageFullNames: Record<string, string> = {
-  en: "English",
-  hi: "हिन्दी",
-  ta: "தமிழ்",
-  te: "తెలుగు",
-  kn: "ಕನ್ನಡ",
-};
-
 export default function Navbar() {
   const pathname = usePathname();
   const { user, setUser } = useUser();
@@ -215,15 +198,6 @@ export default function Navbar() {
   const handleLoginSuccess = () => {
     // User Context is updated by LoginModal directly
   };
-
-  const isFullLanguagePage =
-    pathname === "/" || pathname === "/dashboard" ||
-    pathname === "/puja" || pathname?.startsWith("/puja/");
-
-  const languageCodes = isFullLanguagePage
-    ? ["en", "hi", "ta", "te", "kn"]
-    : ["en", "hi"];
-
 
   return (
     <>
@@ -348,27 +322,9 @@ function PersonIcon() {
 function BookingIcon() {
   return <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg>;
 }
-function StoreIcon() {
-  return <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /><path d="M3 6h18M16 10a4 4 0 01-8 0" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" /></svg>;
-}
 function HomeIcon() {
   return <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /><path d="M9 22V12h6v10" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg>;
 }
-function CalendarIcon() {
-  return <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /><path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg>;
-}
 function FlameIcon() {
   return <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5"><path d="M8.5 14.5A2.5 2.5 0 0011 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 11-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 002.5 2.5z" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg>;
-}
-function BowlIcon() {
-  return <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5"><path d="M4 10h16M3 14h18M5 18h14M8 22h8" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg>;
-}
-function BookIcon() {
-  return <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5"><path d="M4 19.5A2.5 2.5 0 016.5 17H20" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg>;
-}
-function TempleIcon() {
-  return <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5"><path d="M12 2L2 12h3v8h14v-8h3L12 2z" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /><path d="M12 22V12" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg>;
-}
-function StarIcon() {
-  return <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg>;
 }

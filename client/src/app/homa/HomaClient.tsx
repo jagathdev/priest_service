@@ -465,7 +465,7 @@ export default function HomaClient({ initialHomas }: { initialHomas?: Homa[] }) 
               {fetched && displayedHomas.length > 0 && (
                 <div className="mt-12 text-center py-6 border-t border-gray-100">
                   <p className="text-xs font-semibold text-gray-400">
-                    You've reached the end of available services ({displayedHomas.length} of {allHomas.length} Homas)
+                    You&apos;ve reached the end of available services ({displayedHomas.length} of {allHomas.length} Homas)
                   </p>
                 </div>
               )}

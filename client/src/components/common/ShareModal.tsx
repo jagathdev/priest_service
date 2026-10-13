@@ -1,6 +1,14 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
+import {
+  WhatsAppIcon,
+  InstagramIcon,
+  FacebookIcon,
+  TwitterXIcon,
+  TelegramIcon,
+} from "@/components/ui/icons";
+import { Copy, Check, X } from "lucide-react";
 
 export interface ShareData {
   title?: string;
@@ -98,9 +106,7 @@ export default function ShareModal({ isOpen, onClose, data }: ShareModalProps) {
           aria-label="Close modal"
           className="absolute right-5 top-5 w-8 h-8 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-500 hover:text-stone-800 flex items-center justify-center transition-colors"
         >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-          </svg>
+          <X className="w-4 h-4" />
         </button>
 
         {/* Modal Header */}
@@ -117,7 +123,7 @@ export default function ShareModal({ isOpen, onClose, data }: ShareModalProps) {
             className="flex flex-col items-center justify-center py-5 px-3 rounded-2xl border border-stone-200 hover:border-[#25D366] hover:bg-[#25D366]/5 transition-all group active:scale-95 shadow-2xs"
           >
             <div className="w-12 h-12 rounded-full bg-[#25D366]/10 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-              <i className="fa-brands fa-whatsapp text-2xl text-[#25D366]"></i>
+              <WhatsAppIcon className="w-6 h-6 text-[#25D366]" />
             </div>
             <span className="text-sm font-semibold text-stone-700 group-hover:text-stone-900">
               WhatsApp
@@ -131,14 +137,7 @@ export default function ShareModal({ isOpen, onClose, data }: ShareModalProps) {
             className="flex flex-col items-center justify-center py-5 px-3 rounded-2xl border border-stone-200 hover:border-pink-500 hover:bg-pink-500/5 transition-all group active:scale-95 shadow-2xs"
           >
             <div className="w-12 h-12 rounded-full bg-pink-500/10 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-              <i
-                className="fa-brands fa-instagram text-2xl"
-                style={{
-                  background: "-webkit-linear-gradient(#f09433, #e6683c, #dc2743, #cc2366, #bc1888)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                }}
-              ></i>
+              <InstagramIcon className="w-6 h-6 text-[#E1306C]" />
             </div>
             <span className="text-sm font-semibold text-stone-700 group-hover:text-stone-900">
               Instagram
@@ -152,7 +151,7 @@ export default function ShareModal({ isOpen, onClose, data }: ShareModalProps) {
             className="flex flex-col items-center justify-center py-5 px-3 rounded-2xl border border-stone-200 hover:border-[#1877F2] hover:bg-[#1877F2]/5 transition-all group active:scale-95 shadow-2xs"
           >
             <div className="w-12 h-12 rounded-full bg-[#1877F2]/10 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-              <i className="fa-brands fa-facebook text-2xl text-[#1877F2]"></i>
+              <FacebookIcon className="w-6 h-6 text-[#1877F2]" />
             </div>
             <span className="text-sm font-semibold text-stone-700 group-hover:text-stone-900">
               Facebook
@@ -166,7 +165,7 @@ export default function ShareModal({ isOpen, onClose, data }: ShareModalProps) {
             className="flex flex-col items-center justify-center py-5 px-3 rounded-2xl border border-stone-200 hover:border-black hover:bg-black/5 transition-all group active:scale-95 shadow-2xs"
           >
             <div className="w-12 h-12 rounded-full bg-black flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-              <i className="fa-brands fa-x-twitter text-lg text-white"></i>
+              <TwitterXIcon className="w-5 h-5 text-white" />
             </div>
             <span className="text-sm font-semibold text-stone-700 group-hover:text-stone-900">
               Twitter
@@ -180,7 +179,7 @@ export default function ShareModal({ isOpen, onClose, data }: ShareModalProps) {
             className="flex flex-col items-center justify-center py-5 px-3 rounded-2xl border border-stone-200 hover:border-[#0088cc] hover:bg-[#0088cc]/5 transition-all group active:scale-95 shadow-2xs"
           >
             <div className="w-12 h-12 rounded-full bg-[#0088cc]/10 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-              <i className="fa-brands fa-telegram text-2xl text-[#0088cc]"></i>
+              <TelegramIcon className="w-6 h-6 text-[#0088cc]" />
             </div>
             <span className="text-sm font-semibold text-stone-700 group-hover:text-stone-900">
               Telegram
@@ -195,17 +194,9 @@ export default function ShareModal({ isOpen, onClose, data }: ShareModalProps) {
           >
             <div className="w-12 h-12 rounded-full bg-stone-100 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform text-stone-700">
               {copied ? (
-                <svg className="w-5 h-5 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                </svg>
+                <Check className="w-5 h-5 text-success" />
               ) : (
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
-                  />
-                </svg>
+                <Copy className="w-5 h-5" />
               )}
             </div>
             <span className="text-sm font-semibold text-stone-700 group-hover:text-stone-900">

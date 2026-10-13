@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useRef } from "react";
 import { ChevronDownIcon, CheckIcon } from "@heroicons/react/24/outline";
+import { Search } from "lucide-react";
 
 const STATUS_CONFIG: Record<
   string,
@@ -348,7 +349,7 @@ export default function AdminOrdersPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
-            <i className="fa-solid fa-search absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+            <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
           </div>
           {selectedService !== "All" && (
             <div className="flex items-center bg-[#e0f2fe] border border-blue-200 rounded-lg shadow-sm overflow-hidden">

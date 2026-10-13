@@ -3,7 +3,14 @@
 import React, { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeftIcon } from "@heroicons/react/24/outline";
+import {
+  ArrowLeftIcon,
+  PencilIcon,
+  CheckCircleIcon,
+  CheckIcon,
+  CalendarIcon,
+  LockClosedIcon,
+} from "@heroicons/react/24/outline";
 
 export default function CheckoutClient({ homa }: { homa: any }) {
   const router = useRouter();
@@ -85,7 +92,7 @@ export default function CheckoutClient({ homa }: { homa: any }) {
                 {/* Whatsapp Number */}
                 <div>
                   <label className="block text-gray-900 font-bold text-[15px] mb-3 flex items-center gap-2">
-                    Your WhatsApp Number <i className="fa-solid fa-pen text-xs text-green-600"></i>
+                    Your WhatsApp Number <PencilIcon className="w-3.5 h-3.5 text-green-600" />
                   </label>
                   <div className="relative group">
                     <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-2 text-[#1f1f1f] font-bold border-r pr-3 border-gray-200">
@@ -100,7 +107,7 @@ export default function CheckoutClient({ homa }: { homa: any }) {
                       placeholder="9360270984"
                     />
                     <div className="absolute right-4 top-1/2 -translate-y-1/2 text-blue-500">
-                      <i className="fa-solid fa-circle-check text-xl"></i>
+                      <CheckCircleIcon className="w-5 h-5 text-blue-500" />
                     </div>
                   </div>
                   <p className="text-[11px] text-gray-400 mt-2 font-medium">The puja video and blessing details will be sent to this number.</p>
@@ -141,7 +148,7 @@ export default function CheckoutClient({ homa }: { homa: any }) {
                   />
                   <div className="mt-3 flex items-center gap-2 cursor-pointer" onClick={() => setDetails({ ...details, dontKnowGotra: !details.dontKnowGotra })}>
                     <div className={`w-4 h-4 rounded flex items-center justify-center ${details.dontKnowGotra ? 'bg-[#009e5b] border-[#009e5b]' : 'border border-gray-300'}`}>
-                      {details.dontKnowGotra && <i className="fa-solid fa-check text-white text-[10px]"></i>}
+                      {details.dontKnowGotra && <CheckIcon className="w-3 h-3 text-white" />}
                     </div>
                     <span className="text-[13px] text-gray-600 font-medium select-none">I do not know my gotra</span>
                   </div>
@@ -184,7 +191,7 @@ export default function CheckoutClient({ homa }: { homa: any }) {
               </div>
 
               <div className="bg-[#f2faee] border border-[#dff0d8] rounded-xl px-4 py-3 flex items-center gap-3 mb-6">
-                <i className="fa-regular fa-calendar text-[#009e5b] text-lg"></i>
+                <CalendarIcon className="w-5 h-5 text-[#009e5b]" />
                 <span className="font-bold text-[#004d2c] text-sm">Tuesday, 6 October</span>
               </div>
 
@@ -232,7 +239,7 @@ export default function CheckoutClient({ homa }: { homa: any }) {
               </button>
 
               <div className="mt-4 flex items-center justify-center gap-2 text-xs font-semibold text-[#009e5b]">
-                <i className="fa-solid fa-lock"></i> 100% Secure
+                <LockClosedIcon className="w-3.5 h-3.5" /> 100% Secure
               </div>
             </div>
 

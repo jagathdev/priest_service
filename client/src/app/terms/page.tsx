@@ -1,7 +1,29 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Image from "next/image";
 import Navbar from "@/components/layout/Navbar";
+import {
+  RotateCcw,
+  Lock,
+  Truck,
+  Scale,
+  AlertCircle,
+  AlertTriangle,
+  ShieldCheck,
+  Users,
+  CreditCard,
+  Package,
+  Clock,
+  Banknote,
+  MapPin,
+  HelpCircle,
+  Headphones,
+  EyeOff,
+  Mail,
+  FileText,
+  Image as ImageIcon,
+} from "lucide-react";
 
 type TabId = "refunds" | "security" | "shipment" | "disclaimer";
 
@@ -27,10 +49,10 @@ export default function TermsPage() {
   };
 
   const tabs = [
-    { id: "refunds", label: "Refunds & Cancellations", icon: "fa-solid fa-rotate-left" },
-    { id: "security", label: "Security Policy", icon: "fa-solid fa-lock" },
-    { id: "shipment", label: "Shipment Policy", icon: "fa-solid fa-truck-fast" },
-    { id: "disclaimer", label: "Disclaimer & Copyright", icon: "fa-solid fa-scale-balanced" },
+    { id: "refunds", label: "Refunds & Cancellations", icon: RotateCcw },
+    { id: "security", label: "Security Policy", icon: Lock },
+    { id: "shipment", label: "Shipment Policy", icon: Truck },
+    { id: "disclaimer", label: "Disclaimer & Copyright", icon: Scale },
   ] as const;
 
   return (
@@ -40,15 +62,15 @@ export default function TermsPage() {
         {/* Header Section with Image & Title */}
         <section className="mx-auto max-w-7xl px-6 pt-12 text-center lg:px-8">
           <div className="mx-auto max-w-7xl overflow-hidden rounded-2xl border border-gray-200 bg-white p-2 shadow-xs">
-            <img
+            <Image
               src="https://www.astroved.com/wp-content/uploads/2023/06/terms-and-conditions.jpg"
               alt="Terms and Conditions Banner"
+              width={1200}
+              height={300}
+              sizes="(max-width: 1280px) 100vw, 1200px"
               className="w-full h-auto rounded-xl object-cover"
             />
           </div>
-          {/* <h1 className="mt-8 text-3xl font-black tracking-wide text-[#16111f] md:text-4xl uppercase">
-            TERMS AND CONDITION
-          </h1> */}
         </section>
 
         {/* Content Section */}
@@ -63,6 +85,7 @@ export default function TermsPage() {
                 <nav className="flex flex-col gap-1" aria-label="Sidebar Navigation">
                   {tabs.map((tab) => {
                     const isSelected = activeTab === tab.id;
+                    const IconComponent = tab.icon;
                     return (
                       <button
                         key={tab.id}
@@ -72,7 +95,7 @@ export default function TermsPage() {
                           : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                           }`}
                       >
-                        <i className={`${tab.icon} text-base transition-colors ${isSelected ? "text-[#5B5BF6]" : "text-gray-400 group-hover:text-gray-600"}`}></i>
+                        <IconComponent className={`h-5 w-5 transition-colors ${isSelected ? "text-[#5B5BF6]" : "text-gray-400 group-hover:text-gray-600"}`} />
                         <span>{tab.label}</span>
                       </button>
                     );
@@ -108,7 +131,7 @@ export default function TermsPage() {
 
                     <div className="rounded-xl border border-amber-200 bg-amber-50/20 p-5">
                       <h4 className="font-bold text-amber-950 mb-2 flex items-center gap-2">
-                        <i className="fa-solid fa-circle-exclamation text-amber-600"></i> Online Cancellation Details
+                        <AlertCircle className="h-5 w-5 text-amber-600" /> Online Cancellation Details
                       </h4>
                       <p className="text-sm text-amber-900 leading-relaxed">
                         The customer cannot initiate online cancellation from their order log and is recommended to contact the CRM team for taking in any cancellation request or for any cancellation related questions/clarifications.
@@ -143,7 +166,7 @@ export default function TermsPage() {
 
                       <div className="p-5 border border-red-100 bg-red-50/20 rounded-2xl">
                         <h4 className="font-bold text-red-950 text-base flex items-center gap-2">
-                          <i className="fa-solid fa-triangle-exclamation text-red-600"></i> How do I return an item purchased on AstroVed?
+                          <AlertTriangle className="h-5 w-5 text-red-600" /> How do I return an item purchased on AstroVed?
                         </h4>
                         <p className="text-sm text-red-900 leading-relaxed mt-2">
                           AstroVed has created a simple refund policy keeping our customer&rsquo;s best interests in mind. Please note that the customer, however, has to send the product back in its original condition without any damage, at his/her own cost through courier. AstroVed will under no circumstances be liable for a refund if the product is found tampered, damaged, or defective in any way when received by us.
@@ -225,21 +248,21 @@ export default function TermsPage() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
                       <div className="p-5 border border-slate-100 bg-slate-50/50 rounded-2xl text-center">
                         <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-50 text-green-600 text-xl mb-4">
-                          <i className="fa-solid fa-shield-halved"></i>
+                          <ShieldCheck className="h-6 w-6" />
                         </div>
                         <h4 className="font-bold text-gray-900">Secure Server</h4>
                         <p className="text-xs text-gray-500 mt-2">All sessions and transactions are fully protected via industry-standard SSL encryption.</p>
                       </div>
                       <div className="p-5 border border-slate-100 bg-slate-50/50 rounded-2xl text-center">
                         <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 text-blue-600 text-xl mb-4">
-                          <i className="fa-solid fa-user-shield"></i>
+                          <Users className="h-6 w-6" />
                         </div>
                         <h4 className="font-bold text-gray-900">Privacy Guards</h4>
                         <p className="text-xs text-gray-500 mt-2">Strict internal access restrictions to guarantee no leakage of horoscopes or private details.</p>
                       </div>
                       <div className="p-5 border border-slate-100 bg-slate-50/50 rounded-2xl text-center">
                         <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-indigo-50 text-indigo-600 text-xl mb-4">
-                          <i className="fa-solid fa-credit-card"></i>
+                          <CreditCard className="h-6 w-6" />
                         </div>
                         <h4 className="font-bold text-gray-900">Encrypted Payments</h4>
                         <p className="text-xs text-gray-500 mt-2">Payment information is processed in encrypted mode through globally accepted gateways.</p>
@@ -263,7 +286,7 @@ export default function TermsPage() {
                     <div className="space-y-6">
                       <div>
                         <h3 className="text-lg font-bold text-gray-950 flex items-center gap-2">
-                          <i className="fa-solid fa-truck-ramp-box text-[#5B5BF6]"></i> AstroVed&rsquo;s Mode of Shipping Products and Prasad
+                          <Package className="h-5 w-5 text-[#5B5BF6]" /> AstroVed&rsquo;s Mode of Shipping Products and Prasad
                         </h3>
                         <p className="text-sm text-gray-600 leading-relaxed mt-2">
                           We offer our members domestic (within India) and international shipping options. We ensure the product or the prasad of the service reaches our members on time via standard or express shipping options for domestic and international shipping. However, the shipping methods may be unavailable for specific countries and products being shipped due to international shipping policy.
@@ -272,7 +295,7 @@ export default function TermsPage() {
 
                       <div>
                         <h3 className="text-lg font-bold text-gray-950 flex items-center gap-2">
-                          <i className="fa-solid fa-clock text-[#5B5BF6]"></i> AstroVed&rsquo;s Shipping Time
+                          <Clock className="h-5 w-5 text-[#5B5BF6]" /> AstroVed&rsquo;s Shipping Time
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
                           <div className="p-5 border border-slate-100 bg-slate-50/50 rounded-2xl">
@@ -295,7 +318,7 @@ export default function TermsPage() {
 
                       <div>
                         <h3 className="text-lg font-bold text-gray-950 flex items-center gap-2">
-                          <i className="fa-solid fa-hand-holding-dollar text-[#5B5BF6]"></i> Shipping Costs
+                          <Banknote className="h-5 w-5 text-[#5B5BF6]" /> Shipping Costs
                         </h3>
                         <p className="text-sm text-gray-600 leading-relaxed mt-2">
                           AstroVed calculates its shipping cost based on the product size (dimension), product weight, and destination. The product shipping charges will be displayed at checkout before you place the order.
@@ -310,7 +333,7 @@ export default function TermsPage() {
 
                       <div>
                         <h3 className="text-lg font-bold text-gray-950 flex items-center gap-2">
-                          <i className="fa-solid fa-map-location-dot text-[#5B5BF6]"></i> Order Tracking
+                          <MapPin className="h-5 w-5 text-[#5B5BF6]" /> Order Tracking
                         </h3>
                         <p className="text-sm text-gray-600 leading-relaxed mt-2">
                           You can log in to your AstroVed account and go to &ldquo;My Orders.&rdquo; Once your order is shipped, a tracking number can be seen against your order. Once you get your tracking number, please visit the official website of India Post to track your shipment.
@@ -319,7 +342,7 @@ export default function TermsPage() {
 
                       <div>
                         <h3 className="text-lg font-bold text-gray-950 flex items-center gap-2">
-                          <i className="fa-solid fa-circle-question text-[#5B5BF6]"></i> Lost or Damaged Shipments
+                          <HelpCircle className="h-5 w-5 text-[#5B5BF6]" /> Lost or Damaged Shipments
                         </h3>
                         <p className="text-sm text-gray-600 leading-relaxed mt-2">
                           Please contact our Customer Support team via email (<a href="mailto:support@astroved.com" className="text-[#5B5BF6] font-bold hover:underline">support@astroved.com</a>) in case your product package arrives damaged within 2 working days from receipt, or is lost. We will investigate and work with the carrier. We may require photos/opening video or a damage report to process claims.
@@ -328,7 +351,7 @@ export default function TermsPage() {
 
                       <div>
                         <h3 className="text-lg font-bold text-gray-950 flex items-center gap-2">
-                          <i className="fa-solid fa-headset text-[#5B5BF6]"></i> Customer Support Contact
+                          <Headphones className="h-5 w-5 text-[#5B5BF6]" /> Customer Support Contact
                         </h3>
                         <p className="text-sm text-gray-600 leading-relaxed mt-2">
                           Email us at <a href="mailto:support@astroved.com" className="text-[#5B5BF6] font-bold hover:underline">support@astroved.com</a> or call our Helpline Toll-Free number <span className="font-bold text-gray-900">1800 102 9098</span> (India Only) to speak to our customer support executive. Available Monday to Saturday from 9:30 am to 6:30 pm IST.
@@ -364,7 +387,7 @@ export default function TermsPage() {
                     <div className="space-y-6">
                       <div>
                         <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                          <i className="fa-solid fa-eye-slash text-gray-500"></i> Confidentiality Disclaimer
+                          <EyeOff className="h-5 w-5 text-gray-500" /> Confidentiality Disclaimer
                         </h3>
                         <p className="text-sm text-gray-600 leading-relaxed mt-2">
                           AstroVed guarantees complete confidentiality in regards to the details of members&rsquo; horoscopes and identities. AstroVed will only use the information revealed in a member&rsquo;s horoscope to communicate predictive results directly to that member.
@@ -373,7 +396,7 @@ export default function TermsPage() {
 
                       <div>
                         <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                          <i className="fa-solid fa-envelope-open-text text-gray-500"></i> Email Disclaimer
+                          <Mail className="h-5 w-5 text-gray-500" /> Email Disclaimer
                         </h3>
                         <p className="text-sm text-gray-600 leading-relaxed mt-2">
                           AstroVed does not sell or transfer email information to any entity or persons. Upon becoming a member of AstroVed, AstroVed will send you one newsletter announcement containing Vedic Astrology insights and AstroVed specials. You may unsubscribe at any time (usually processed within 48 hours).
@@ -382,7 +405,7 @@ export default function TermsPage() {
 
                       <div>
                         <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                          <i className="fa-solid fa-circle-exclamation text-amber-600"></i> Product Liability Disclaimer
+                          <AlertCircle className="h-5 w-5 text-amber-600" /> Product Liability Disclaimer
                         </h3>
                         <p className="text-sm text-gray-600 leading-relaxed mt-2">
                           While AstroVed uses reasonable efforts to include accurate and up to date information, AstroVed makes no guarantees or representations regarding the accuracy or significance of any aspect of the astrological horoscope and predictive advice imparted. AstroVed cannot be held responsible for any interpretation, action, or use that may be made as a result of the information given.
@@ -400,7 +423,7 @@ export default function TermsPage() {
 
                       <div className="border-t border-gray-100 pt-6">
                         <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                          <i className="fa-regular fa-copyright text-gray-500"></i> Copyright Disclaimer
+                          <FileText className="h-5 w-5 text-gray-500" /> Copyright Disclaimer
                         </h3>
                         <p className="text-sm text-gray-600 leading-relaxed mt-2">
                           All images, text, graphics, audios, videos, streaming videos are the property of AstroVed, including the look and feel of the AstroVed.com website. All of these are under copyright. None of the above may be resold, redistributed, or republished without prior written permission from AstroVed.
@@ -409,7 +432,7 @@ export default function TermsPage() {
 
                       <div>
                         <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                          <i className="fa-regular fa-image text-gray-500"></i> Images
+                          <ImageIcon className="h-5 w-5 text-gray-500" /> Images
                         </h3>
                         <p className="text-sm text-gray-600 leading-relaxed mt-2">
                           All celebrity photo images on this site are believed to be public domain, gathered from all over the internet, and there is no copyright on these pictures as far as we are concerned. If there is a picture on this site that has copyright, then the owner can email us at{" "}

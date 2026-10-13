@@ -1,7 +1,21 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Image from "next/image";
 import Navbar from "@/components/layout/Navbar";
+import {
+  ShieldCheck,
+  Cookie,
+  BookOpen,
+  Baby,
+  CheckCircle2,
+  Users,
+  Trash2,
+  FileUp,
+  AlertTriangle,
+  Mail,
+  ExternalLink,
+} from "lucide-react";
 
 type TabId = "privacy" | "cookies";
 
@@ -27,8 +41,8 @@ export default function PrivacyPage() {
   };
 
   const tabs = [
-    { id: "privacy", label: "Privacy Policy", icon: "fa-solid fa-shield-halved" },
-    { id: "cookies", label: "Cookies Policy", icon: "fa-solid fa-cookie-bite" },
+    { id: "privacy", label: "Privacy Policy", icon: ShieldCheck },
+    { id: "cookies", label: "Cookies Policy", icon: Cookie },
   ] as const;
 
   return (
@@ -38,9 +52,12 @@ export default function PrivacyPage() {
         {/* Header Section with Image & Title */}
         <section className="mx-auto max-w-7xl px-6 pt-12 text-center lg:px-8">
           <div className="mx-auto max-w-7xl overflow-hidden rounded-2xl border border-gray-200 bg-white p-2 shadow-xs">
-            <img
+            <Image
               src="https://www.astroved.com/wp-content/uploads/2023/06/terms-and-conditions.jpg"
               alt="Privacy Policy Banner"
+              width={1200}
+              height={300}
+              sizes="(max-width: 1280px) 100vw, 1200px"
               className="w-full h-auto rounded-xl object-cover max-h-[300px]"
             />
           </div>
@@ -58,6 +75,7 @@ export default function PrivacyPage() {
                 <nav className="flex flex-col gap-1" aria-label="Sidebar Navigation">
                   {tabs.map((tab) => {
                     const isSelected = activeTab === tab.id;
+                    const IconComponent = tab.icon;
                     return (
                       <button
                         key={tab.id}
@@ -68,11 +86,11 @@ export default function PrivacyPage() {
                             : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                         }`}
                       >
-                        <i
-                          className={`${tab.icon} text-base transition-colors ${
+                        <IconComponent
+                          className={`h-5 w-5 transition-colors ${
                             isSelected ? "text-[#5B5BF6]" : "text-gray-400 group-hover:text-gray-600"
                           }`}
-                        ></i>
+                        />
                         <span>{tab.label}</span>
                       </button>
                     );
@@ -104,7 +122,7 @@ export default function PrivacyPage() {
 
                     <div className="rounded-xl border border-blue-100 bg-blue-50/40 p-5">
                       <h3 className="text-lg font-bold text-[#2b2d70] mb-4 flex items-center gap-2">
-                        <i className="fa-solid fa-book-open"></i> GLOSSARY
+                        <BookOpen className="h-5 w-5 text-[#2b2d70]" /> GLOSSARY
                       </h3>
                       <div className="space-y-3 text-sm text-gray-700">
                         <p>
@@ -148,7 +166,7 @@ export default function PrivacyPage() {
 
                     <div className="border-l-4 border-amber-500 bg-amber-50/30 p-5 rounded-r-xl">
                       <h3 className="text-lg font-bold text-amber-900 mb-2 flex items-center gap-2">
-                        <i className="fa-solid fa-child"></i> Additional Protection for Children
+                        <Baby className="h-5 w-5 text-amber-900" /> Additional Protection for Children
                       </h3>
                       <p className="text-sm leading-relaxed text-amber-800 font-medium">
                         Consent from a child concerning online services is only valid if authorized by a parent. A child is someone below the age of 16; Within the Data Protection Bill, the UK Government is reducing the age to 13.
@@ -186,7 +204,7 @@ export default function PrivacyPage() {
                             "Email Address", "Purchase Information (Products, amount, date)"
                           ].map((item) => (
                             <div key={item} className="flex items-start gap-2">
-                              <i className="fa-solid fa-circle-check text-[#10b981] mt-0.5 text-[10px]"></i>
+                              <CheckCircle2 className="h-3.5 w-3.5 text-[#10b981] mt-0.5 shrink-0" />
                               <span className="leading-snug">{item}</span>
                             </div>
                           ))}
@@ -207,7 +225,7 @@ export default function PrivacyPage() {
 
                       <div className="border border-indigo-100 bg-indigo-50/30 p-6 rounded-2xl">
                         <h4 className="text-lg font-bold text-[#2b2d70] mb-3 flex items-center gap-2">
-                          <i className="fa-solid fa-users"></i> Adding Users Under Your Membership
+                          <Users className="h-5 w-5 text-[#2b2d70]" /> Adding Users Under Your Membership
                         </h4>
                         <p className="text-sm text-gray-700 leading-relaxed">
                           For our members, AstroVed allows you to run reports on additional users you are interested in viewing astrological data for. AstroVed will let you run reports on all your additional users. In order to do this, we need to collect their 1) name, 2) birth/gender information, 3) and current location information. All of this information will be used for reporting and service delivery purposes only.
@@ -255,7 +273,7 @@ export default function PrivacyPage() {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
                         <div className="p-6 rounded-2xl border border-red-100 bg-red-50/30 hover:shadow-md transition-shadow">
                           <h4 className="font-bold text-red-900 mb-3 flex items-center gap-2 text-lg">
-                            <i className="fa-solid fa-eraser text-red-500"></i> Right to be Forgotten
+                            <Trash2 className="h-5 w-5 text-red-500" /> Right to be Forgotten
                           </h4>
                           <p className="text-sm text-red-800/80 leading-relaxed">
                             Individuals have a new right to require the data controller to erase all personal data held about them in certain circumstances, such as where the data is no longer necessary for the purposes for which it was collected. There are a number of exemptions to this right, for example, concerning freedom of expression and compliance with legal obligations.
@@ -263,7 +281,7 @@ export default function PrivacyPage() {
                         </div>
                         <div className="p-6 rounded-2xl border border-indigo-100 bg-indigo-50/30 hover:shadow-md transition-shadow">
                           <h4 className="font-bold text-[#2b2d70] mb-3 flex items-center gap-2 text-lg">
-                            <i className="fa-solid fa-file-export text-[#5B5BF6]"></i> Right to Data Portability
+                            <FileUp className="h-5 w-5 text-[#5B5BF6]" /> Right to Data Portability
                           </h4>
                           <p className="text-sm text-indigo-900/80 leading-relaxed">
                             This is a new concept under the GDPR and allows Individuals to obtain and reuse their personal data for their own purposes across different services. The personal data must be made available in a structured, commonly used, and machine-readable format.
@@ -288,14 +306,14 @@ export default function PrivacyPage() {
                       <h3 className="text-2xl font-bold text-[#16111f] pb-2 border-b border-gray-100">Part IV. Problem Resolution</h3>
                       <div className="rounded-xl border border-orange-200 bg-orange-50/40 p-6 mb-6">
                         <h4 className="font-bold text-orange-900 mb-3 flex items-center gap-2 text-lg">
-                          <i className="fa-solid fa-triangle-exclamation text-orange-500"></i> Data Breach Notification
+                          <AlertTriangle className="h-5 w-5 text-orange-500" /> Data Breach Notification
                         </h4>
                         <p className="text-sm text-orange-800 leading-relaxed">
                           Appropriate protective measures – essentially encryption – are in place to eliminate danger to data subjects. It is mandatory for us to report any data breach to our supervisory authority and Data Subjects within 72 hours of becoming aware of it.
                         </p>
                       </div>
                       <div className="flex items-center gap-3 bg-blue-50/50 border border-blue-100 p-4 rounded-xl">
-                        <i className="fa-solid fa-envelope-open-text text-blue-500 text-xl"></i>
+                        <Mail className="h-5 w-5 text-blue-500 shrink-0" />
                         <p className="text-base text-gray-700">
                           If problems arise from your use of this website, please feel free to email Astroved at: <a href="mailto:privacy@astroved.com" className="text-[#5B5BF6] font-bold hover:underline">privacy@astroved.com</a>
                         </p>
@@ -309,7 +327,7 @@ export default function PrivacyPage() {
                   <div className="space-y-8 animate-fadeIn">
                     <div>
                       <h2 className="text-2xl font-black text-[#16111f] md:text-3xl border-b border-gray-100 pb-4 flex items-center gap-3">
-                        <i className="fa-solid fa-cookie text-[#5B5BF6]"></i> Cookies Policy
+                        <Cookie className="h-7 w-7 text-[#5B5BF6]" /> Cookies Policy
                       </h2>
                       
                       <div className="mt-8 space-y-6">
@@ -347,7 +365,7 @@ export default function PrivacyPage() {
                             className="shrink-0 inline-flex items-center gap-2 bg-[#5B5BF6] text-white px-6 py-3 rounded-xl font-bold hover:bg-[#4a4ae2] transition-colors shadow-md shadow-blue-500/20"
                           >
                             <span>Manage Settings</span>
-                            <i className="fa-solid fa-arrow-up-right-from-square text-sm"></i>
+                            <ExternalLink className="h-4 w-4" />
                           </a>
                         </div>
                       </div>

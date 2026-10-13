@@ -6,6 +6,7 @@ import Footer from "@/components/layout/Footer";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { InboxIcon } from "lucide-react";
 
 interface BookingItem {
   title: string;
@@ -238,8 +239,8 @@ export default function MyPujaBookings() {
                 <div className="space-y-4 min-h-[400px]"></div>
               ) : filteredBookings.length === 0 ? (
                 <div className="border border-gray-200 rounded-2xl p-16 text-center bg-white shadow-sm">
-                  <div className="text-5xl text-gray-200 mb-4">
-                    <i className="fa-solid fa-box-open"></i>
+                  <div className="flex justify-center text-gray-300 mb-4">
+                    <InboxIcon className="w-12 h-12" />
                   </div>
                   <h2 className="text-lg font-bold text-gray-700 mb-2">No Bookings Found</h2>
                   <p className="text-gray-400 text-sm mb-6">
@@ -296,7 +297,7 @@ export default function MyPujaBookings() {
                                   <Image src={item.imageUrl} alt={item.title} fill className="object-cover" />
                                 ) : (
                                   <div className="w-full h-full bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center">
-                                    <i className="fa-solid fa-om text-white text-2xl"></i>
+                                    <span className="text-white text-2xl font-serif font-bold">ॐ</span>
                                   </div>
                                 )}
                               </div>

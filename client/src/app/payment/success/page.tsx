@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
 import { useUser } from "@/contexts/UserContext";
+import { WhatsAppIcon } from "@/components/ui/icons";
 
 // ── Verification status type ──────────────────────────────────────────────────
 type VerifyStatus = "pending" | "verified" | "not_found" | "error";
@@ -195,7 +196,7 @@ function SuccessContent() {
           </div>
 
           <p className="text-xs font-bold text-success flex items-center gap-1.5 mt-4">
-            <i className="fa-brands fa-whatsapp text-[16px]"></i>
+            <WhatsAppIcon className="w-4 h-4 text-success" />
             A confirmation has been sent to your WhatsApp.
           </p>
         </div>

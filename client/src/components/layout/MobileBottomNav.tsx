@@ -53,16 +53,7 @@ function PujaIcon({ active }: { active: boolean }) {
   );
 }
 
-function SevasIcon({ active }: { active: boolean }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={`h-[22px] w-[22px] mb-0.5 ${active ? "text-[#15803d]" : "text-gray-500"}`}>
-      {/* Gift Box / Sevas */}
-      <rect x="3" y="8" width="18" height="4" rx="1" stroke="currentColor" strokeWidth="2" />
-      <path d="M12 8v12M5 12v7a1 1 0 001 1h12a1 1 0 001-1v-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-      <path d="M7.5 8C6 8 5 6.8 5 5.5S6.5 3 8 4.5L12 8L16 4.5C17.5 3 19 4.2 19 5.5S18 8 16.5 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
+
 
 function AccountIcon({ active }: { active: boolean }) {
   return (

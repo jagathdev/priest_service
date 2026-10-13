@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import Navbar from "@/components/layout/Navbar";
+import { Check } from "lucide-react";
+import { GooglePlayIcon, AppleIcon } from "@/components/ui/icons";
 
 const features = [
   "Offer puja, deepam, flowers, and sacred prayers from your phone.",
@@ -84,7 +86,9 @@ export default function AboutPage() {
           <div className="mx-auto flex max-w-7xl flex-col gap-10 px-6 py-16 lg:flex-row lg:items-start lg:justify-between lg:px-8 lg:py-20">
             <div className="max-w-3xl">
               <div className="mb-7 flex h-20 w-20 items-center justify-center rounded-full bg-[#fff3eb] text-3xl text-primary shadow-sm">
-                <i className="fa-solid fa-hands-praying" aria-hidden="true"></i>
+                <svg className="w-10 h-10 text-primary" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2C12.55 2 13 2.45 13 3V11C13 11.55 12.55 12 12 12C11.45 12 11 11.55 11 11V3C11 2.45 11.45 2 12 2ZM8.5 4.5C8.95 4.18 9.57 4.29 9.89 4.74C10.21 5.19 10.1 5.81 9.65 6.13L6.15 8.63C5.7 8.95 5.08 8.84 4.76 8.39C4.44 7.94 4.55 7.32 5 7L8.5 4.5ZM15.5 4.5L19 7C19.45 7.32 19.56 7.94 19.24 8.39C18.92 8.84 18.3 8.95 17.85 8.63L14.35 6.13C13.9 5.81 13.79 5.19 14.11 4.74C14.43 4.29 15.05 4.18 15.5 4.5ZM12 14C8.69 14 6 16.69 6 20C6 20.55 6.45 21 7 21H17C17.55 21 18 20.55 18 20C18 16.69 15.31 14 12 14Z" />
+                </svg>
               </div>
               <h1 className="text-4xl font-black leading-tight text-[#16111f] md:text-6xl">
                 One spiritual companion for astrology, remedies, and devotion.
@@ -99,7 +103,7 @@ export default function AboutPage() {
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-3 rounded-xl bg-primary px-7 py-4 text-sm font-extrabold uppercase tracking-wide text-white shadow-lg shadow-indigo-100 transition-all hover:bg-[#8283fa] active:scale-95"
                 >
-                  <i className="fa-brands fa-google-play text-base" aria-hidden="true"></i>
+                  <GooglePlayIcon className="h-5 w-5" />
                   Android App
                 </a>
                 <a
@@ -108,7 +112,7 @@ export default function AboutPage() {
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-3 rounded-xl bg-primary px-7 py-4 text-sm font-extrabold uppercase tracking-wide text-white shadow-lg shadow-indigo-100 transition-all hover:bg-[#8283fa] active:scale-95"
                 >
-                  <i className="fa-brands fa-apple text-base" aria-hidden="true"></i>
+                  <AppleIcon className="h-5 w-5" />
                   iOS App
                 </a>
               </div>
@@ -120,7 +124,7 @@ export default function AboutPage() {
                 {features.map((feature) => (
                   <li key={feature} className="flex gap-3 text-[15px] leading-6 text-[#4b2f24]">
                     <span className="mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary text-[10px] text-white">
-                      <i className="fa-solid fa-check" aria-hidden="true"></i>
+                      <Check className="h-3 w-3 text-white" strokeWidth={3} />
                     </span>
                     <span>{feature}</span>
                   </li>
