@@ -195,14 +195,22 @@ input[type="password"]:-webkit-autofill:active {
   animation: fadeInScale 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* Hide AstroVed floating chat widget button */
+/* Hide AstroVed floating chat widget button ONLY — do NOT use .fab globally (Font Awesome brand icons use this class) */
 #prime,
-.fab,
 a#prime,
-a.fab,
-img[src*="av-chat.svg"] {
+img[src*="av-chat.svg"],
+a[href*="av-chat"],
+div#prime,
+iframe#prime {
   display: none !important;
   visibility: hidden !important;
   opacity: 0 !important;
   pointer-events: none !important;
+}
+
+/* Ensure SVG icons always render correctly on all browsers including Samsung/Android */
+svg {
+  display: inline-block;
+  vertical-align: middle;
+  overflow: visible;
 }
