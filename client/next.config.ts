@@ -11,6 +11,18 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "vedamfoundation.com",
       },
+      {
+        protocol: "https",
+        hostname: "cdn.astroved.com",
+      },
+      {
+        protocol: "https",
+        hostname: "priestservices.astroved.com",
+      },
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+      },
     ],
   },
 };
