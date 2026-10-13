@@ -589,7 +589,8 @@ export default function PujaDetailClient({
                 <img
                   src={bannerImages[activeBannerIndex] || (puja ? getPujaImageUrl(puja.imageUrl) : "")}
                   alt={`${puja?.title || "Puja"} - Sacred Ritual Banner ${activeBannerIndex + 1}`}
-                  className="w-full h-full object-cover object-center transition-all duration-300"
+                  className="w-full h-full object-cover object-center transition-all duration-300 cursor-pointer"
+                  onClick={handleAddPujaToCart}
                 />
 
                 {/* Left and Right Navigation Buttons (shown when more than 1 image) */}
