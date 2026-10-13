@@ -3,11 +3,14 @@ import connectDB from './config/db.js';
 import setupAdmin from './config/setupAdmin.js';
 import app from './app.js';
 
+import { startPendingOrdersCleanup } from './services/orderCleanup.service.js';
+
 const PORT = process.env.PORT || 8564;
 
 // Connect Database
 connectDB().then(() => {
     setupAdmin();
+    startPendingOrdersCleanup();
 });
 
 const server = app.listen(PORT, () => {

@@ -18,26 +18,26 @@ const orderSchema = new mongoose.Schema(
     {
         orderNumber: {
             type: String,
-            unique: true
-        },
-        pooja: {
-            type: String,
-            trim: true,
+            unique: true,
         },
         serviceId: {
             type: mongoose.Schema.Types.ObjectId,
-            required: false,
-            refPath: 'serviceType'
+            required: true,
+            refPath: "serviceType",
         },
         serviceType: {
             type: String,
-            required: false,
-            enum: ['Pooja', 'Homa']
+            required: true,
+            enum: ["Puja", "Homa"],
+        },
+        snapshot: {
+            title: { type: String, required: true, trim: true },
+            imageUrl: { type: String, default: "", trim: true },
         },
         customer: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",
-            required: true
+            required: true,
         },
         customerName: {
             type: String,
@@ -60,7 +60,7 @@ const orderSchema = new mongoose.Schema(
             type: [participantSchema],
             required: true,
             validate: {
-                validator: (participants) => participants.length >= 1,
+                validator: (participants) => Array.isArray(participants) && participants.length >= 1,
                 message: "At least one participant is required",
             },
         },
@@ -79,12 +79,12 @@ const orderSchema = new mongoose.Schema(
             trim: true,
         },
         pricing: {
-            basePrice: { type: Number, required: true },
+            basePrice: { type: Number, required: true }, // stored in integer paise
             extraParticipantCount: { type: Number, default: 0 },
-            extraParticipantAmount: { type: Number, default: 0 },
-            convenienceFee: { type: Number, default: 0 },
-            panditFee: { type: Number, default: 0 },
-            recordingFee: { type: Number, default: 0 },
+            extraParticipantAmount: { type: Number, default: 0 }, // stored in integer paise
+            convenienceFee: { type: Number, default: 0 }, // stored in integer paise
+            panditFee: { type: Number, default: 0 }, // stored in integer paise
+            recordingFee: { type: Number, default: 0 }, // stored in integer paise
             total: { type: Number, required: true }, // stored in integer paise
             currency: { type: String, default: "INR" },
         },
@@ -100,7 +100,7 @@ const orderSchema = new mongoose.Schema(
         razorpayOrderId: {
             type: String,
             unique: true,
-            sparse: true
+            sparse: true,
         },
         promoCode: { type: String, default: "" },
         promoCodeId: {
@@ -117,7 +117,7 @@ const orderSchema = new mongoose.Schema(
         },
         orderStatus: {
             type: String,
-            enum: ["created", "confirmed", "scheduled", "performed", "completed", "cancelled"],
+            enum: ["created", "confirmed", "scheduled", "completed", "cancelled"],
             default: "created",
         },
         scheduledDate: { type: Date, default: null },
@@ -129,15 +129,16 @@ const orderSchema = new mongoose.Schema(
 );
 
 orderSchema.index({ customer: 1, createdAt: -1 });
+orderSchema.index({ paymentStatus: 1, createdAt: -1 });
 
-orderSchema.pre('save', async function() {
+orderSchema.pre("save", async function () {
     if (this.isNew && !this.orderNumber) {
         const counter = await Counter.findByIdAndUpdate(
-            { _id: 'orderNumber' },
+            { _id: "orderNumber" },
             { $inc: { seq: 1 } },
-            { returnDocument: 'after', upsert: true }
+            { returnDocument: "after", upsert: true }
         );
-        this.orderNumber = `PS-${new Date().getFullYear()}-${String(counter.seq).padStart(6, '0')}`;
+        this.orderNumber = `PS-${new Date().getFullYear()}-${String(counter.seq).padStart(6, "0")}`;
     }
 });
 

@@ -1,26 +1,13 @@
 import express from "express";
-
-import {
-    createPaymentOrder,
-    razorpayWebhookResponse,
-    verifyPayment,
-} from "../controllers/payment.controller.js";
+import { verifyPayment, handleRazorpayWebhook } from "../controllers/payment.controller.js";
+import { requireAuth } from "../middlewares/auth.js";
 
 const router = express.Router();
 
-router.post(
-    "/create-order",
-    createPaymentOrder
-);
+// Verify payment initiated from checkout
+router.post("/verify", requireAuth, verifyPayment);
 
-router.post(
-    "/verify",
-    verifyPayment
-);
-
-router.post(
-    "/webhook-response",
-    razorpayWebhookResponse
-);
+// Razorpay webhook endpoint (raw body verified in controller)
+router.post("/webhook", handleRazorpayWebhook);
 
 export default router;

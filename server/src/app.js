@@ -26,15 +26,23 @@ app.use(
             "https://priest-service.vercel.app"
         ],
         methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-        allowedHeaders: ["Content-Type", "Authorization"],
+        allowedHeaders: ["Content-Type", "Authorization", "X-Razorpay-Signature"],
         credentials: true,
     })
 );
 
+// Capture raw body for webhook verification before express.json parsing
+app.use("/api/payments/webhook", express.raw({ type: "application/json" }), (req, _res, next) => {
+    if (Buffer.isBuffer(req.body)) {
+        req.rawBody = req.body.toString("utf8");
+    }
+    next();
+});
+
 app.use(express.json());
 
 // Health Check
-app.get('/health', (req, res) => {
+app.get('/health', (_req, res) => {
     res.status(200).json({ status: 'ok', timestamp: new Date() });
 });
 

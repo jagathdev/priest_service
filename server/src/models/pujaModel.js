@@ -55,6 +55,11 @@ const pujaSchema = new mongoose.Schema(
     templeVenue: { type: String, default: "" },
     templeNote: { type: String, default: "" },
 
+    // Pricing & Booking
+    basePrice: { type: Number },
+    extraParticipantPrice: { type: Number, default: 300 },
+    maxParticipants: { type: Number, default: 10 },
+
     // Filters
     deity: { type: String, default: "" },
     tithis: { type: String, default: "" },
