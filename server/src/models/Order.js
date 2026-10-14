@@ -78,10 +78,19 @@ const orderSchema = new mongoose.Schema(
             default: "",
             trim: true,
         },
+        offerings: [
+            {
+                name: { type: String, trim: true },
+                priceINR: { type: Number, default: 0 },
+                description: { type: String, default: "" },
+                imageUrl: { type: String, default: "" },
+            },
+        ],
         pricing: {
             basePrice: { type: Number, default: 0 },
             extraParticipantCount: { type: Number, default: 0 },
             extraParticipantAmount: { type: Number, default: 0 },
+            offeringsAmount: { type: Number, default: 0 },
             convenienceFee: { type: Number, default: 0 },
             panditFee: { type: Number, default: 0 },
             recordingFee: { type: Number, default: 0 },

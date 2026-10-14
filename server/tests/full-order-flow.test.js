@@ -34,6 +34,10 @@ test("Comprehensive Razorpay Webhook & Order Flow Integration Suite", async (t) 
             { name: "Individual Seva", priceINR: 1251, devoteeCount: "1 Devotee" },
             { name: "Couple Seva", priceINR: 1451, devoteeCount: "2 Devotees" },
         ],
+        offerings: [
+            { name: "Vastra Daan", priceINR: 501, description: "Offer sacred clothes" },
+            { name: "Kumkum Archana", priceINR: 101, description: "Offering of Kumkum" },
+        ],
     });
 
     t.after(async () => {
@@ -754,5 +758,86 @@ test("Comprehensive Razorpay Webhook & Order Flow Integration Suite", async (t) 
         assert.equal(res.status, 200);
         assert.equal(res.body.data.length, 1);
         assert.equal(res.body.data[0].paymentStatus, "paid");
+    });
+
+    // 16. offerings calculation on server in create-order
+    await t.test("offerings are properly verified and calculated by backend in create-order", async () => {
+        const devoteeUserOid = new mongoose.Types.ObjectId();
+        // Individual Seva = 1251
+        // Extra participant (2 participants for 1-devotee package) = +300
+        // Offerings: Vastra Daan (501) + Kumkum Archana (101) = +602
+        // Total expected = 1251 + 300 + 602 = 2153
+        const expectedTotal = 1251 + 300 + 501 + 101; // 2153
+
+        // 16a. Mismatch should fail if client passes incorrect price
+        const mismatchRes = await request(app)
+            .post("/api/payments/create-order")
+            .send({
+                customerId: devoteeUserOid,
+                totalamount: 1251, // Omitting offerings and extra participant
+                orderDetails: {
+                    pooja: testPuja.title,
+                    serviceId: testPuja._id,
+                    serviceType: "Puja",
+                    customer: devoteeUserOid,
+                    whatsappNumber: "919360270984",
+                    participants: [{ name: "Jagath" }, { name: "Friend" }],
+                    packageId: "pkg-1",
+                    offerings: [
+                        { name: "Vastra Daan", priceINR: 501 },
+                        { name: "Kumkum Archana", priceINR: 101 },
+                    ],
+                    pricing: {
+                        total: 1251,
+                    },
+                },
+            });
+
+        assert.equal(mismatchRes.status, 400);
+        assert.ok(mismatchRes.body.message.includes("Price mismatch"));
+        assert.ok(mismatchRes.body.message.includes("2153"));
+
+        // 16b. Correct price succeeds, creates order with offerings and offeringsAmount
+        const successRes = await request(app)
+            .post("/api/payments/create-order")
+            .send({
+                customerId: devoteeUserOid,
+                totalamount: expectedTotal,
+                orderDetails: {
+                    pooja: testPuja.title,
+                    serviceId: testPuja._id,
+                    serviceType: "Puja",
+                    customer: devoteeUserOid,
+                    whatsappNumber: "919360270984",
+                    participants: [{ name: "Jagath" }, { name: "Friend" }],
+                    packageId: "pkg-1",
+                    offerings: [
+                        { name: "Vastra Daan", priceINR: 501 },
+                        { name: "Kumkum Archana", priceINR: 101 },
+                    ],
+                    pricing: {
+                        basePrice: 1251,
+                        extraParticipantCount: 1,
+                        extraParticipantAmount: 300,
+                        offeringsAmount: 602,
+                        total: expectedTotal,
+                    },
+                },
+            });
+
+        assert.equal(successRes.status, 200);
+        assert.equal(successRes.body.success, true);
+        assert.equal(successRes.body.data.amount, expectedTotal * 100);
+
+        // Verify order in database
+        const createdOrder = await Order.findOne({ razorpayOrderId: successRes.body.data.orderId });
+        assert.ok(createdOrder);
+        assert.equal(createdOrder.pricing.total, expectedTotal);
+        assert.equal(createdOrder.pricing.offeringsAmount, 602);
+        assert.equal(createdOrder.offerings.length, 2);
+        assert.equal(createdOrder.offerings[0].name, "Vastra Daan");
+        assert.equal(createdOrder.offerings[0].priceINR, 501);
+        assert.equal(createdOrder.offerings[1].name, "Kumkum Archana");
+        assert.equal(createdOrder.offerings[1].priceINR, 101);
     });
 });

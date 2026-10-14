@@ -18,7 +18,7 @@ import { recordPromoUsage } from "./promoCode.controller.js";
  * Computes exact package and extra participant pricing on the server,
  * mirroring client calculations in sankalp/page.tsx.
  */
-const computeServerPrice = async ({ serviceId, serviceType, packageId, participantsCount, promoCode, userId }) => {
+const computeServerPrice = async ({ serviceId, serviceType, packageId, participantsCount, offerings, promoCode, userId }) => {
     let service = null;
     const typeUpper = (serviceType || "").toUpperCase();
 
@@ -80,7 +80,42 @@ const computeServerPrice = async ({ serviceId, serviceType, packageId, participa
     const extraParticipantCount = Math.max(0, count - defaultDevotees);
     const extraParticipantFee = extraParticipantCount * 300;
 
-    const originalAmount = basePrice + extraParticipantFee;
+    // Calculate offerings
+    let offeringsTotal = 0;
+    const validatedOfferings = [];
+    const availableOfferings = Array.isArray(service.offerings) ? service.offerings : [];
+
+    if (Array.isArray(offerings) && offerings.length > 0) {
+        for (const item of offerings) {
+            if (!item) continue;
+            const requestedName = String(item.name || item.title || "").trim().toLowerCase();
+            const requestedId = String(item.id || item._id || "").trim().toLowerCase();
+
+            // Match offering against service offerings defined in database
+            const matched = availableOfferings.find((off) => {
+                const offId = String(off.id || off._id || "").trim().toLowerCase();
+                const offName = String(off.name || off.title || "").trim().toLowerCase();
+                return (requestedId && offId === requestedId) || (requestedName && offName === requestedName);
+            });
+
+            // Use verified price from DB offering if available; fallback to item price if positive number
+            const unitPrice = matched
+                ? (matched.priceINR ?? matched.price ?? 0)
+                : (Number(item.priceINR ?? item.price) || 0);
+
+            if (unitPrice > 0) {
+                offeringsTotal += unitPrice;
+                validatedOfferings.push({
+                    name: (matched?.name || matched?.title || item.name || item.title || "Offering").trim(),
+                    priceINR: unitPrice,
+                    description: matched?.description || item.description || "",
+                    imageUrl: matched?.imageUrl || item.imageUrl || "",
+                });
+            }
+        }
+    }
+
+    const originalAmount = basePrice + extraParticipantFee + offeringsTotal;
 
     let discountAmount = 0;
     let promoCodeId = null;
@@ -105,6 +140,8 @@ const computeServerPrice = async ({ serviceId, serviceType, packageId, participa
         basePrice,
         extraParticipantCount,
         extraParticipantFee,
+        offeringsTotal,
+        validatedOfferings,
         originalAmount,
         discountAmount,
         finalAmount,
@@ -141,6 +178,7 @@ export const createPaymentOrder = async (req, res) => {
                 wish,
                 promoCode,
                 packageId,
+                offerings,
             } = orderDetails;
 
             if (!whatsappNumber || !String(whatsappNumber).trim()) {
@@ -172,6 +210,7 @@ export const createPaymentOrder = async (req, res) => {
                     serviceType,
                     packageId,
                     participantsCount: participants.length,
+                    offerings,
                     promoCode,
                     userId: customer,
                 });
@@ -225,12 +264,14 @@ export const createPaymentOrder = async (req, res) => {
                     uniqueId: customUniqueId,
                     promoCode: promoCode || "",
                     promoCodeId: pricingCalculation.promoCodeId,
+                    offerings: pricingCalculation.validatedOfferings,
                     originalAmount: pricingCalculation.originalAmount,
                     discountAmount: pricingCalculation.discountAmount,
                     pricing: {
                         basePrice: pricingCalculation.basePrice,
                         extraParticipantCount: pricingCalculation.extraParticipantCount,
                         extraParticipantAmount: pricingCalculation.extraParticipantFee,
+                        offeringsAmount: pricingCalculation.offeringsTotal,
                         convenienceFee: 0,
                         panditFee: 0,
                         recordingFee: 0,
@@ -426,6 +467,7 @@ export const verifyPayment = async (req, res) => {
             wish: orderDetails.wish,
             promoCode: orderDetails.promoCode,
             promoCodeId: orderDetails.promoCodeId,
+            offerings: Array.isArray(orderDetails.offerings) ? orderDetails.offerings : [],
             pricing: orderDetails.pricing,
             originalAmount: orderDetails.originalAmount,
             discountAmount: orderDetails.discountAmount,

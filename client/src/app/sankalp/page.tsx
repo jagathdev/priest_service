@@ -256,7 +256,7 @@ function SankalpContent() {
   const basePrice = selectedPackage?.priceINR ?? selectedPackage?.price ?? (queryAmount ? Number(queryAmount) : pujaData?.price || 516);
   const extraParticipantCount = Math.max(0, formData.participants.length - defaultParticipantCount);
   const extraParticipantFee = extraParticipantCount * 300;
-  const offeringsTotal = selectedOfferings.reduce((sum, item) => sum + item.priceINR, 0);
+  const offeringsTotal = selectedOfferings.reduce((sum, item) => sum + (Number(item.priceINR ?? item.price) || 0), 0);
   const finalPrice = basePrice + extraParticipantFee + offeringsTotal;
 
   const isPhoneValid = /^[6-9]\d{9}$/.test(formData.whatsapp.trim());
@@ -333,6 +333,13 @@ function SankalpContent() {
       const discountAmt = appliedPromo ? appliedPromo.discountAmount : 0;
       const originalUserPhone = user?.mobileNumber || user?.phone || userPhone || "";
 
+      const offeringsPayload = selectedOfferings.map((o: any) => ({
+        name: o.name || o.title || "",
+        priceINR: Number(o.priceINR ?? o.price) || 0,
+        description: o.description || o.badge || "",
+        imageUrl: o.imageUrl || o.image || ""
+      }));
+
       const orderDetailsPayload = {
         pooja: itemName,
         serviceId: pujaData?._id || pujaData?.id,
@@ -349,12 +356,14 @@ function SankalpContent() {
         promoCode: appliedPromo?.promoCode || "",
         promoCodeId: appliedPromo?.promoId || null,
         packageId: selectedPackage?.id || pkgId,
+        offerings: offeringsPayload,
         originalAmount: finalPrice,
         discountAmount: discountAmt,
         pricing: {
           basePrice: basePrice,
           extraParticipantCount: extraParticipantCount,
           extraParticipantAmount: extraParticipantFee,
+          offeringsAmount: offeringsTotal,
           total: paidAmount
         }
       };
@@ -852,8 +861,8 @@ function SankalpContent() {
                     )}
                     {selectedOfferings.map((item, idx) => (
                       <div key={idx} className="flex justify-between items-center text-[11px]">
-                        <span className="font-medium text-stone-600 truncate max-w-[200px]">{item.title}</span>
-                        <span className="font-extrabold text-[#980000]">+₹{item.priceINR}</span>
+                        <span className="font-medium text-stone-600 truncate max-w-[200px]">{item.name || item.title}</span>
+                        <span className="font-extrabold text-[#980000]">+₹{item.priceINR || item.price || 0}</span>
                       </div>
                     ))}
                     <div className="flex justify-between items-center">
