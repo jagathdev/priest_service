@@ -292,6 +292,15 @@ function AccountPageContent() {
 
 
 
+  const getUserAuthHeaders = (): Record<string, string> => {
+    if (typeof window === "undefined") return {};
+    const match = document.cookie.match(/(?:^|;\s*)(?:token|adminToken)=([^;]+)/);
+    const cookieToken = match ? decodeURIComponent(match[1]) : null;
+    const localToken = localStorage.getItem("token") || localStorage.getItem("adminToken");
+    const token = cookieToken || localToken;
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  };
+
   const handleSave = async () => {
     setSaving(true);
     try {
@@ -301,9 +310,11 @@ function AccountPageContent() {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
+          ...getUserAuthHeaders(),
         },
+        credentials: "include",
         body: JSON.stringify({
-          userId: user?.id,
+          userId: user?.id || user?._id,
           name: (formData.name || '').trim(),
           email: (formData.email || '').trim(),
           mobileNumber: (formData.mobileNumber || formData.phone || '').trim(),
@@ -372,7 +383,11 @@ function AccountPageContent() {
 
       const res = await fetch(`${baseUrl}/api/users/updateProfile`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...getUserAuthHeaders(),
+        },
+        credentials: "include",
         body: JSON.stringify(payload)
       });
 
@@ -412,7 +427,11 @@ function AccountPageContent() {
       };
       const res = await fetch(`${baseUrl}/api/users/updateProfile`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...getUserAuthHeaders(),
+        },
+        credentials: "include",
         body: JSON.stringify(payload)
       });
       const data = await res.json();
