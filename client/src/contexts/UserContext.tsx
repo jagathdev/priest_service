@@ -7,6 +7,7 @@ export interface User {
   _id?: string;
   name?: string;
   mobileNumber?: string;
+  whatsappNumber?: string;
   phone?: string;
   email?: string;
   whatsapp?: string;

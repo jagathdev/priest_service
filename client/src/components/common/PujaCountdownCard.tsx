@@ -8,6 +8,7 @@ interface PujaCountdownCardProps {
   dateText?: string;
   occasionText?: string;
   eventDateTime?: string; // e.g. "2026-10-10T18:30" or ISO string or timestamp
+  showTimer?: boolean;
   title?: string;
   badgeLabel?: string;
   className?: string;
@@ -19,35 +20,68 @@ interface TimeLeft {
   minutes: number;
   seconds: number;
   isEnded: boolean;
+  hasTarget: boolean;
 }
 
 const padZero = (n: number) => String(Math.max(0, n)).padStart(2, "0");
 
-const calculateTimeLeft = (targetStr?: string): TimeLeft => {
-  if (!targetStr || typeof targetStr !== "string") {
-    return { days: 0, hours: 0, minutes: 0, seconds: 0, isEnded: false };
-  }
-
+const parseTargetTime = (targetStr?: string): number => {
+  if (!targetStr || typeof targetStr !== "string") return NaN;
   const trimmed = targetStr.trim();
-  let targetTime = new Date(trimmed).getTime();
+  if (!trimmed) return NaN;
 
-  // If invalid ISO string, check fallback formats like DD-MM-YYYY or YYYY-MM-DD
-  if (isNaN(targetTime)) {
-    const ddmmyyyy = trimmed.match(/^(\d{2})[-/](\d{2})[-/](\d{4})/);
-    if (ddmmyyyy) {
-      targetTime = new Date(`${ddmmyyyy[3]}-${ddmmyyyy[2]}-${ddmmyyyy[1]}`).getTime();
-    }
+  // 1. Direct JS Date parse (e.g. 2026-11-15T10:30, 2026-11-15, ISO string)
+  let t = new Date(trimmed).getTime();
+  if (!isNaN(t)) return t;
+
+  // 2. Format DD-MM-YYYY or DD/MM/YYYY anywhere in the string (with optional time)
+  // e.g. "08-11-2026", "Sunday, 08-11-2026", "08-11-2026 18:30"
+  const ddmmyyyy = trimmed.match(/(\d{1,2})[-/](\d{1,2})[-/](\d{4})(?:[T\s](\d{1,2}):(\d{2})(?::(\d{2}))?)?/);
+  if (ddmmyyyy) {
+    const day = ddmmyyyy[1].padStart(2, '0');
+    const month = ddmmyyyy[2].padStart(2, '0');
+    const year = ddmmyyyy[3];
+    const hour = ddmmyyyy[4] ? ddmmyyyy[4].padStart(2, '0') : '23';
+    const min = ddmmyyyy[5] || '59';
+    const sec = ddmmyyyy[6] || '59';
+    t = new Date(`${year}-${month}-${day}T${hour}:${min}:${sec}`).getTime();
+    if (!isNaN(t)) return t;
   }
 
+  // 3. Format YYYY-MM-DD anywhere in the string
+  const yyyymmdd = trimmed.match(/(\d{4})[-/](\d{1,2})[-/](\d{1,2})(?:[T\s](\d{1,2}):(\d{2})(?::(\d{2}))?)?/);
+  if (yyyymmdd) {
+    const year = yyyymmdd[1];
+    const month = yyyymmdd[2].padStart(2, '0');
+    const day = yyyymmdd[3].padStart(2, '0');
+    const hour = yyyymmdd[4] ? yyyymmdd[4].padStart(2, '0') : '23';
+    const min = yyyymmdd[5] || '59';
+    const sec = yyyymmdd[6] || '59';
+    t = new Date(`${year}-${month}-${day}T${hour}:${min}:${sec}`).getTime();
+    if (!isNaN(t)) return t;
+  }
+
+  return NaN;
+};
+
+const calculateTimeLeft = (eventDateTime?: string, dateText?: string): TimeLeft => {
+  let targetTime = parseTargetTime(eventDateTime);
+
+  // If eventDateTime is missing or invalid, try parsing dateText
+  if (isNaN(targetTime) && dateText) {
+    targetTime = parseTargetTime(dateText);
+  }
+
+  // If no valid target date is provided from DB, do NOT show fake countdown
   if (isNaN(targetTime)) {
-    return { days: 0, hours: 0, minutes: 0, seconds: 0, isEnded: false };
+    return { days: 0, hours: 0, minutes: 0, seconds: 0, isEnded: true, hasTarget: false };
   }
 
   const now = new Date().getTime();
   const diff = targetTime - now;
 
   if (diff <= 0) {
-    return { days: 0, hours: 0, minutes: 0, seconds: 0, isEnded: true };
+    return { days: 0, hours: 0, minutes: 0, seconds: 0, isEnded: true, hasTarget: true };
   }
 
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));
@@ -55,7 +89,7 @@ const calculateTimeLeft = (targetStr?: string): TimeLeft => {
   const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
   const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
-  return { days, hours, minutes, seconds, isEnded: false };
+  return { days, hours, minutes, seconds, isEnded: false, hasTarget: true };
 };
 
 export default function PujaCountdownCard({
@@ -64,31 +98,33 @@ export default function PujaCountdownCard({
   dateText = "Saturday, 10 October",
   occasionText = "Mahalaya Amavasya",
   eventDateTime,
+  showTimer = true,
   title = "Reserve your sankalp",
   badgeLabel = "MUHURAT ENDS IN",
   className = "",
 }: PujaCountdownCardProps) {
   const [timeLeft, setTimeLeft] = useState<TimeLeft>(() =>
-    calculateTimeLeft(eventDateTime)
+    calculateTimeLeft(eventDateTime, dateText)
   );
 
   useEffect(() => {
-    if (!eventDateTime) return;
     // Initial calculate
-    setTimeLeft(calculateTimeLeft(eventDateTime));
+    setTimeLeft(calculateTimeLeft(eventDateTime, dateText));
 
     const interval = setInterval(() => {
-      setTimeLeft(calculateTimeLeft(eventDateTime));
+      setTimeLeft(calculateTimeLeft(eventDateTime, dateText));
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [eventDateTime]);
+  }, [eventDateTime, dateText]);
 
-  // Fallback if eventDateTime is not set yet in dashboard: calculate time left for demo (e.g. 2 days 18 hrs)
-  const displayTimeLeft =
-    eventDateTime && !isNaN(new Date(eventDateTime).getTime())
-      ? timeLeft
-      : { days: 2, hours: 18, minutes: 17, seconds: 30, isEnded: false };
+  // Calculate time remaining based on eventDateTime or dateText
+  const displayTimeLeft = React.useMemo(() => {
+    return calculateTimeLeft(eventDateTime, dateText);
+  }, [eventDateTime, dateText, timeLeft]);
+
+  // Show timer strip if admin has enabled showTimer (not false) and a valid target date was provided by backend
+  const canShowTimer = showTimer !== false && displayTimeLeft.hasTarget;
 
   return (
     <div className={`w-full font-sans ${className}`}>
@@ -140,67 +176,69 @@ export default function PujaCountdownCard({
         </div>
       </div>
 
-      {/* ── 2. Bottom Countdown Strip ── */}
-      <div className="mt-4 pt-3 flex flex-col sm:flex-row items-center justify-between gap-4 w-full">
-        {/* Left Column: Muhurat Ends In & Reserve title */}
-        <div className="text-center sm:text-left">
-          <span className="text-[10px] sm:text-xs font-bold text-stone-500 tracking-[0.15em] uppercase block mb-0.5">
-            {badgeLabel}
-          </span>
-          <h3 className="font-sans font-extrabold text-stone-900 text-lg sm:text-xl leading-tight">
-            {title}
-          </h3>
+      {/* ── 2. Bottom Countdown Strip (Only shown if admin enables and data is provided) ── */}
+      {canShowTimer && (
+        <div className="mt-4 pt-3 flex flex-col sm:flex-row items-center justify-between gap-4 w-full">
+          {/* Left Column: Muhurat Ends In & Reserve title */}
+          <div className="text-center sm:text-left">
+            <span className="text-[10px] sm:text-xs font-bold text-stone-500 tracking-[0.15em] uppercase block mb-0.5">
+              {badgeLabel}
+            </span>
+            <h3 className="font-sans font-extrabold text-stone-900 text-lg sm:text-xl leading-tight">
+              {title}
+            </h3>
+          </div>
+
+          {/* Right Column: Live Countdown Boxes */}
+          <div className="flex items-center justify-center gap-1.5 sm:gap-1.5 shrink-0">
+            {/* Days */}
+            <div className="bg-[#fff6f4] border border-[#f7d6cd] rounded-xl sm:rounded-lg px-3 sm:px-2.5 py-1.5 sm:py-1.5 text-center min-w-[56px] sm:min-w-[52px] shadow-2xs">
+              <span className="font-extrabold text-[#800000] text-lg sm:text-base lg:text-lg leading-none block">
+                {padZero(displayTimeLeft.days)}
+              </span>
+              <span className="text-[9px] sm:text-[8.5px] font-bold text-stone-500 tracking-wider uppercase block mt-1 sm:mt-0.5">
+                DAYS
+              </span>
+            </div>
+
+            <span className="text-stone-800 font-black text-base sm:text-base self-center pb-0.5">:</span>
+
+            {/* Hours */}
+            <div className="bg-[#fff6f4] border border-[#f7d6cd] rounded-xl sm:rounded-lg px-3 sm:px-2.5 py-1.5 sm:py-1.5 text-center min-w-[56px] sm:min-w-[52px] shadow-2xs">
+              <span className="font-extrabold text-[#800000] text-lg sm:text-base lg:text-lg leading-none block">
+                {padZero(displayTimeLeft.hours)}
+              </span>
+              <span className="text-[9px] sm:text-[8.5px] font-bold text-stone-500 tracking-wider uppercase block mt-1 sm:mt-0.5">
+                HOURS
+              </span>
+            </div>
+
+            <span className="text-stone-800 font-black text-base sm:text-base self-center pb-0.5">:</span>
+
+            {/* Minutes */}
+            <div className="bg-[#fff6f4] border border-[#f7d6cd] rounded-xl sm:rounded-lg px-3 sm:px-2.5 py-1.5 sm:py-1.5 text-center min-w-[56px] sm:min-w-[52px] shadow-2xs">
+              <span className="font-extrabold text-[#800000] text-lg sm:text-base lg:text-lg leading-none block">
+                {padZero(displayTimeLeft.minutes)}
+              </span>
+              <span className="text-[9px] sm:text-[8.5px] font-bold text-stone-500 tracking-wider uppercase block mt-1 sm:mt-0.5">
+                MIN
+              </span>
+            </div>
+
+            <span className="text-stone-800 font-black text-base sm:text-base self-center pb-0.5">:</span>
+
+            {/* Seconds */}
+            <div className="bg-[#fff6f4] border border-[#f7d6cd] rounded-xl sm:rounded-lg px-3 sm:px-2.5 py-1.5 sm:py-1.5 text-center min-w-[56px] sm:min-w-[52px] shadow-2xs">
+              <span className="font-extrabold text-[#800000] text-lg sm:text-base lg:text-lg leading-none block">
+                {padZero(displayTimeLeft.seconds)}
+              </span>
+              <span className="text-[9px] sm:text-[8.5px] font-bold text-stone-500 tracking-wider uppercase block mt-1 sm:mt-0.5">
+                SEC
+              </span>
+            </div>
+          </div>
         </div>
-
-        {/* Right Column: Live Countdown Boxes */}
-        <div className="flex items-center justify-center gap-1.5 sm:gap-1.5 shrink-0">
-          {/* Days */}
-          <div className="bg-[#fff6f4] border border-[#f7d6cd] rounded-xl sm:rounded-lg px-3 sm:px-2.5 py-1.5 sm:py-1.5 text-center min-w-[56px] sm:min-w-[52px] shadow-2xs">
-            <span className="font-extrabold text-[#800000] text-lg sm:text-base lg:text-lg leading-none block">
-              {padZero(displayTimeLeft.days)}
-            </span>
-            <span className="text-[9px] sm:text-[8.5px] font-bold text-stone-500 tracking-wider uppercase block mt-1 sm:mt-0.5">
-              DAYS
-            </span>
-          </div>
-
-          <span className="text-stone-800 font-black text-base sm:text-base self-center pb-0.5">:</span>
-
-          {/* Hours */}
-          <div className="bg-[#fff6f4] border border-[#f7d6cd] rounded-xl sm:rounded-lg px-3 sm:px-2.5 py-1.5 sm:py-1.5 text-center min-w-[56px] sm:min-w-[52px] shadow-2xs">
-            <span className="font-extrabold text-[#800000] text-lg sm:text-base lg:text-lg leading-none block">
-              {padZero(displayTimeLeft.hours)}
-            </span>
-            <span className="text-[9px] sm:text-[8.5px] font-bold text-stone-500 tracking-wider uppercase block mt-1 sm:mt-0.5">
-              HOURS
-            </span>
-          </div>
-
-          <span className="text-stone-800 font-black text-base sm:text-base self-center pb-0.5">:</span>
-
-          {/* Minutes */}
-          <div className="bg-[#fff6f4] border border-[#f7d6cd] rounded-xl sm:rounded-lg px-3 sm:px-2.5 py-1.5 sm:py-1.5 text-center min-w-[56px] sm:min-w-[52px] shadow-2xs">
-            <span className="font-extrabold text-[#800000] text-lg sm:text-base lg:text-lg leading-none block">
-              {padZero(displayTimeLeft.minutes)}
-            </span>
-            <span className="text-[9px] sm:text-[8.5px] font-bold text-stone-500 tracking-wider uppercase block mt-1 sm:mt-0.5">
-              MIN
-            </span>
-          </div>
-
-          <span className="text-stone-800 font-black text-base sm:text-base self-center pb-0.5">:</span>
-
-          {/* Seconds */}
-          <div className="bg-[#fff6f4] border border-[#f7d6cd] rounded-xl sm:rounded-lg px-3 sm:px-2.5 py-1.5 sm:py-1.5 text-center min-w-[56px] sm:min-w-[52px] shadow-2xs">
-            <span className="font-extrabold text-[#800000] text-lg sm:text-base lg:text-lg leading-none block">
-              {padZero(displayTimeLeft.seconds)}
-            </span>
-            <span className="text-[9px] sm:text-[8.5px] font-bold text-stone-500 tracking-wider uppercase block mt-1 sm:mt-0.5">
-              SEC
-            </span>
-          </div>
-        </div>
-      </div>
+      )}
     </div>
   );
 }

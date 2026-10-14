@@ -39,7 +39,8 @@ export const createPaymentOrder = async (req, res) => {
 
         // Here you can use the extra details (customerId, shoppingCartId, contactDetail)
         // to save the order details in your MongoDB database before calling Razorpay
-        console.log("Order payload received:", { customerId, shoppingCartId, finalAmount, contactDetail });
+
+        // console.log("Order payload received:", { customerId, shoppingCartId, finalAmount, contactDetail });
 
         const customUniqueId = `${crypto.randomBytes(8).toString("hex").toUpperCase()}`;
 

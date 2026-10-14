@@ -56,6 +56,7 @@ interface Puja {
   ritualSummary?: string;
   date?: string;
   eventDateTime?: string;
+  showTimer?: boolean;
   slug: string;
   price?: number;
   productId?: number;
@@ -721,6 +722,7 @@ export default function PujaDetailClient({
                 dateText={puja.date || "Saturday, 10 October"}
                 occasionText={puja.subtitle || puja.badge || (puja as any).tithis || "Mahalaya Amavasya"}
                 eventDateTime={puja.eventDateTime}
+                showTimer={puja.showTimer}
                 title="Reserve your sankalp"
                 badgeLabel="MUHURAT ENDS IN"
                 className="mb-5"
@@ -1111,7 +1113,7 @@ export default function PujaDetailClient({
 
           {/* Section: Puja Gallery */}
           {galleryList.length > 0 && (
-            <section id="gallery" className="scroll-mt-36">
+            <section id="gallery" className="scroll-mt-36 pb-28 sm:pb-36">
               <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1f1a17] mb-6">Puja Gallery</h2>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                 {galleryList.map((img: string, idx: number) => (

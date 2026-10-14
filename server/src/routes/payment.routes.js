@@ -6,6 +6,8 @@ import {
     verifyPayment,
 } from "../controllers/payment.controller.js";
 
+import { getRazorpayWebhook } from "../controllers/razorpayWebhook.controller.js";
+
 const router = express.Router();
 
 router.post(
@@ -22,5 +24,7 @@ router.post(
     "/webhook-response",
     razorpayWebhookResponse
 );
+
+router.get("/getRazorpayWebhook", getRazorpayWebhook);
 
 export default router;

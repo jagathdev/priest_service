@@ -199,6 +199,7 @@ export const verifyOtp = async (req, res) => {
                 user: {
                     id: user._id,
                     mobileNumber: user.mobileNumber,
+                    whatsappNumber: user.whatsappNumber || "",
                     name: user.name,
                     email: user.email,
                     isVerified: user.isVerified,

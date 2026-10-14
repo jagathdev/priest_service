@@ -55,6 +55,7 @@ interface Homa {
   ritualSummary?: string;
   date?: string;
   eventDateTime?: string;
+  showTimer?: boolean;
   slug: string;
   price?: number;
   productId?: number;
@@ -734,6 +735,7 @@ export default function HomaDetailClient({
                 dateText={homa.date || "Saturday, 10 October"}
                 occasionText={homa.subtitle || homa.badge || (homa as any).tithis || "Special Vedic Homa"}
                 eventDateTime={homa.eventDateTime}
+                showTimer={homa.showTimer}
                 title="Reserve your sankalp"
                 badgeLabel="MUHURAT ENDS IN"
                 className="mb-5"
@@ -1138,7 +1140,7 @@ export default function HomaDetailClient({
 
           {/* Section: Homa Gallery */}
           {galleryList.length > 0 && (
-            <section id="gallery" className="scroll-mt-32">
+            <section id="gallery" className="scroll-mt-32 pb-28 sm:pb-36">
               <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1f1a17] mb-6">Homa Gallery</h2>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {galleryList.map((img: string, idx: number) => (

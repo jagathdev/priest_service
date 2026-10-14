@@ -2,7 +2,7 @@ import User from "../models/user.js";
 
 export const getProfile = async (req, res) => {
     try {
-        const userId = req.user.id;
+        const userId = req.params?.userId || req.user?.id || req.query?.userId;
 
         if (!userId) {
             return res.status(400).json({
@@ -27,6 +27,7 @@ export const getProfile = async (req, res) => {
                 name: user.name,
                 email: user.email,
                 mobileNumber: user.mobileNumber,
+                whatsappNumber: user.whatsappNumber || "",
                 addresses: user.addresses,
                 gender: user.gender,
                 dob: user.dob,
@@ -45,8 +46,8 @@ export const getProfile = async (req, res) => {
 
 export const updateProfile = async (req, res) => {
     try {
-        const userId = req.user.id;
-        const { name, email, gender, dob, placeOfBirth, occupation, addresses } = req.body;
+        const userId = req.user?.id || req.body?.userId;
+        const { name, email, gender, dob, placeOfBirth, occupation, addresses, whatsappNumber } = req.body;
 
         if (!userId) {
             return res.status(400).json({
@@ -73,6 +74,10 @@ export const updateProfile = async (req, res) => {
             name: name.trim().charAt(0).toUpperCase() + name.trim().slice(1),
             email: email.trim().toLowerCase(),
         };
+
+        if (whatsappNumber !== undefined) {
+            updateData.whatsappNumber = String(whatsappNumber).trim();
+        }
 
         if (gender !== undefined) updateData.gender = gender;
         if (dob !== undefined) updateData.dob = dob;
@@ -104,6 +109,7 @@ export const updateProfile = async (req, res) => {
                 name: user.name,
                 email: user.email,
                 mobileNumber: user.mobileNumber,
+                whatsappNumber: user.whatsappNumber || "",
                 addresses: user.addresses,
                 gender: user.gender,
                 dob: user.dob,

@@ -103,6 +103,7 @@ export default function AdminPujasPage() {
     },
     { name: "date", label: "Date (DD-MM-YYYY)", type: "date-ddmmyyyy" },
     { name: "eventDateTime", label: "Countdown Date & Time", type: "datetime-local", placeholder: "2026-04-19T18:30" },
+    { name: "showTimer", label: "Show Countdown Timer", type: "checkbox", placeholder: "Show countdown timer on page" },
     { name: "buttonText", label: "Button Text", type: "text" },
     { name: "metaTitle", label: "SEO Meta Title (for SEO)", type: "text", placeholder: "Custom title for search engines" },
     { name: "metaDescription", label: "SEO Meta Description (for SEO)", type: "textarea", placeholder: "Custom description for search engines" },

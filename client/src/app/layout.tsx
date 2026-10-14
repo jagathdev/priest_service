@@ -144,6 +144,64 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
             `,
           }}
         />
+        <Script
+          id="suppress-chat-widget-script"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                function removeChatWidgets() {
+                  var nodes = document.querySelectorAll(
+                    '#prime, #chatWidget, .chat-widget-container, .chat-popup-box, .chat-toggle-button, [class*="chat_fem"], [class*="chat-fem"], [class*="chatfem"], .ico-chat, .ico_chat, .ico_whatsapp'
+                  );
+                  nodes.forEach(function(el) {
+                    el.style.display = 'none';
+                    el.style.visibility = 'hidden';
+                    el.style.opacity = '0';
+                    el.style.pointerEvents = 'none';
+                  });
+
+                  // Scan all floating or fixed elements containing the greeting text
+                  var allElements = document.querySelectorAll('div, p, span, a, section');
+                  for (var i = 0; i < allElements.length; i++) {
+                    var el = allElements[i];
+                    var text = el.innerText || el.textContent || '';
+                    if (text.indexOf('How can I help you') !== -1 && text.length < 120) {
+                      var parent = el;
+                      for (var j = 0; j < 3; j++) {
+                        if (parent && parent.parentElement && parent !== document.body) {
+                          var style = window.getComputedStyle(parent);
+                          if (style.position === 'fixed' || style.position === 'absolute' || parent.id === 'prime' || parent.className.indexOf('chat') !== -1) {
+                            parent.style.setProperty('display', 'none', 'important');
+                            parent.style.setProperty('visibility', 'hidden', 'important');
+                            break;
+                          }
+                          parent = parent.parentElement;
+                        }
+                      }
+                      el.style.setProperty('display', 'none', 'important');
+                    }
+                  }
+                }
+
+                if (typeof window !== 'undefined') {
+                  window.addEventListener('DOMContentLoaded', removeChatWidgets);
+                  setInterval(removeChatWidgets, 1000);
+                  var observer = new MutationObserver(function() {
+                    removeChatWidgets();
+                  });
+                  if (document.body) {
+                    observer.observe(document.body, { childList: true, subtree: true });
+                  } else {
+                    document.addEventListener('DOMContentLoaded', function() {
+                      observer.observe(document.body, { childList: true, subtree: true });
+                    });
+                  }
+                }
+              })();
+            `,
+          }}
+        />
       </head>
       <body className="flex flex-col min-h-screen">
         <noscript>

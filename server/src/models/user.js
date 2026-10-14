@@ -75,6 +75,12 @@ const userSchema = new mongoose.Schema(
             trim: true,
         },
 
+        whatsappNumber: {
+            type: String,
+            default: "",
+            trim: true,
+        },
+
         name: {
             type: String,
             default: "",

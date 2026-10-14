@@ -41,7 +41,7 @@ function SankalpContent() {
 
   // Devotee details form state
   const [formData, setFormData] = useState({
-    whatsapp: searchParams?.get("wa") || user?.mobileNumber || user?.phone || user?.whatsapp || "",
+    whatsapp: searchParams?.get("wa") || user?.whatsappNumber || user?.whatsapp || user?.mobileNumber || user?.phone || "",
     gotra: "",
     dontKnowGotra: false,
     wish: "",
@@ -65,7 +65,8 @@ function SankalpContent() {
   // Auto-populate user details from UserContext / backend profile API
   useEffect(() => {
     async function loadUserProfile() {
-      let phone = user?.mobileNumber || user?.phone || user?.whatsapp || searchParams?.get("wa") || "";
+      // Prioritize saved WhatsApp number first; if empty, fallback to user's mobile number
+      let whatsappPhone = user?.whatsappNumber || user?.whatsapp || searchParams?.get("wa") || user?.mobileNumber || user?.phone || "";
       let name = user?.name || searchParams?.get("name") || "";
 
       const uId = user?.id || user?._id;
@@ -77,7 +78,11 @@ function SankalpContent() {
           if (res.ok) {
             const data = await res.json();
             if (data.success && data.data) {
-              if (data.data.mobileNumber) phone = data.data.mobileNumber;
+              if (data.data.whatsappNumber) {
+                whatsappPhone = data.data.whatsappNumber;
+              } else if (data.data.mobileNumber) {
+                whatsappPhone = data.data.mobileNumber;
+              }
               if (data.data.name) name = data.data.name;
               setUser({ ...user, ...data.data });
             }
@@ -88,7 +93,7 @@ function SankalpContent() {
       }
 
       setFormData((prev) => {
-        const nextWhatsapp = prev.whatsapp.trim() ? prev.whatsapp : phone;
+        const nextWhatsapp = prev.whatsapp.trim() ? prev.whatsapp : (whatsappPhone || "");
         const nextParticipants = [...prev.participants];
         if (!nextParticipants[0]?.trim() && name) {
           nextParticipants[0] = name;
@@ -102,7 +107,7 @@ function SankalpContent() {
     }
 
     loadUserProfile();
-  }, [user?.id, user?._id, user?.mobileNumber, user?.name]);
+  }, [user?.id, user?._id, user?.whatsappNumber, user?.whatsapp, user?.mobileNumber, user?.phone, user?.name]);
 
   const pujaFetchedRef = React.useRef(false);
 
@@ -253,18 +258,21 @@ function SankalpContent() {
   const offeringsTotal = selectedOfferings.reduce((sum, item) => sum + item.priceINR, 0);
   const finalPrice = basePrice + extraParticipantFee + offeringsTotal;
 
+  const isPhoneValid = /^[6-9]\d{9}$/.test(formData.whatsapp.trim());
+  const areParticipantsValid = formData.participants.every(p => /^[a-zA-Z\s]+$/.test(p.trim()));
+
   const handleProceedToStep2 = () => {
     setShowErrors(true);
-    if (!formData.whatsapp.trim()) {
+    if (!isPhoneValid) {
       return;
     }
 
-    const emptyIdx = formData.participants.findIndex(p => !p.trim());
-    if (emptyIdx !== -1) {
+    const hasEmptyOrInvalid = formData.participants.some(p => !p.trim() || !/^[a-zA-Z\s]+$/.test(p.trim()));
+    if (hasEmptyOrInvalid) {
       return;
     }
 
-    // Call updateProfile API to sync devotee profile details to backend database
+    // Call updateProfile API to save devotee profile and whatsappNumber to backend database
     const uId = user?.id || user?._id;
     if (uId) {
       const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
@@ -276,13 +284,13 @@ function SankalpContent() {
           userId: uId,
           name: nameToSave,
           email: user?.email || "devotee@astroved.com",
-          mobileNumber: formData.whatsapp.trim(),
+          whatsappNumber: formData.whatsapp.trim(),
         }),
       })
         .then((r) => r.json())
         .then((resData) => {
           if (resData.success && resData.data) {
-            setUser({ ...user, ...resData.data });
+            setUser({ ...user, ...resData.data, whatsappNumber: formData.whatsapp.trim() });
           }
         })
         .catch(console.error);
@@ -399,6 +407,8 @@ function SankalpContent() {
             const paidAmount = appliedPromo ? appliedPromo.finalAmount : finalPrice;
             const discountAmt = appliedPromo ? appliedPromo.discountAmount : 0;
 
+            const originalUserPhone = user?.mobileNumber || user?.phone || userPhone || "";
+
             const verifyRes = await fetch(`${backendUrl}/api/payments/verify`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -414,7 +424,7 @@ function SankalpContent() {
                   customerName: userName,
                   itemName: itemName,
                   imageUrl: pujaData?.imageUrl || pujaData?.image || "",
-                  mobileNumber: userPhone,
+                  mobileNumber: originalUserPhone,
                   whatsappNumber: formattedWa,
                   participants: formData.participants.filter((p: string) => p.trim()).map((p: string) => ({ name: p.trim() })),
                   gotra: (formData.dontKnowGotra || !formData.gotra.trim()) ? "Kashyapa" : formData.gotra.trim(),
@@ -435,7 +445,7 @@ function SankalpContent() {
             });
             const verifyData = await verifyRes.json();
             if (verifyData.success) {
-              const bookedId = verifyData.data?.orderId || verifyData.data?.orderNumber || orderId;
+              const bookedId = verifyData.data?.orderNumber || verifyData.data?.orderId || orderId;
               const params = new URLSearchParams({
                 paymentId: response.razorpay_payment_id,
                 orderId: bookedId,
@@ -581,7 +591,7 @@ function SankalpContent() {
                         Your WhatsApp Number
                         <svg className="w-4 h-4 text-[#25D366]" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 00-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" /></svg>
                       </label>
-                      <div className={`border rounded-xl flex items-center px-4 py-3 transition shadow-sm ${showErrors && !formData.whatsapp.trim() ? "border-red-400 focus-within:border-red-400 bg-red-50/20" : "border-stone-200 focus-within:border-success bg-white"}`}>
+                      <div className={`border rounded-xl flex items-center px-4 py-3 transition shadow-sm ${showErrors && !isPhoneValid ? "border-red-400 focus-within:border-red-400 bg-red-50/20" : "border-stone-200 focus-within:border-success bg-white"}`}>
                         <div className="flex items-center gap-2 pr-3 border-r border-stone-200 mr-3">
                           <span className="text-[13px] font-semibold text-[#1c2c5c]">IN</span>
                           <span className="text-[13px] font-extrabold text-stone-900">+91</span>
@@ -589,17 +599,26 @@ function SankalpContent() {
                         <input
                           type="tel"
                           value={formData.whatsapp}
-                          onChange={(e) => setFormData({ ...formData, whatsapp: e.target.value.replace(/\D/g, "").slice(0, 10) })}
+                          onChange={(e) => {
+                            let val = e.target.value.replace(/\D/g, "").slice(0, 10);
+                            // Only allow starting digit 6, 7, 8, 9
+                            if (val.length > 0 && !/^[6-9]/.test(val)) {
+                              val = "";
+                            }
+                            setFormData({ ...formData, whatsapp: val });
+                          }}
                           placeholder="9360270984"
                           className="w-full text-sm font-extrabold text-stone-900 outline-none bg-transparent"
                         />
-                        <div className="text-[#0084ff]">
+                        <div className={isPhoneValid ? "text-[#0084ff]" : "text-stone-300"}>
                           <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" /></svg>
                         </div>
                       </div>
-                      {showErrors && !formData.whatsapp.trim() && (
+                      {showErrors && !isPhoneValid && (
                         <p className="text-[10px] sm:text-[11px] text-red-500 mt-2 font-semibold">
-                          Please enter a valid WhatsApp number.
+                          {!formData.whatsapp.trim()
+                            ? "Please enter your 10-digit WhatsApp number."
+                            : "Please enter a valid 10-digit WhatsApp number starting with 6, 7, 8, or 9."}
                         </p>
                       )}
                       <p className="text-[11px] text-stone-500 mt-2 font-medium">
@@ -613,29 +632,37 @@ function SankalpContent() {
                         Provide participant names for Puja
                       </label>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {formData.participants.map((p, idx) => (
-                          <div key={idx}>
-                            <input
-                              type="text"
-                              value={p}
-                              onChange={(e) => {
-                                const newP = [...formData.participants];
-                                newP[idx] = e.target.value;
-                                setFormData({ ...formData, participants: newP });
-                              }}
-                              placeholder={`Participant Name ${idx + 1}`}
-                              className={`w-full border rounded-xl px-4 py-3 text-sm font-medium outline-none transition ${showErrors && !p.trim()
-                                ? "border-red-400 bg-red-50/20"
-                                : "border-stone-200 focus:border-stone-300 bg-white"
-                                }`}
-                            />
-                            {showErrors && !p.trim() && (
-                              <p className="text-[10px] sm:text-[11px] text-red-500 mt-1.5 font-semibold">
-                                Please provide a name.
-                              </p>
-                            )}
-                          </div>
-                        ))}
+                        {formData.participants.map((p, idx) => {
+                          const isNameEmpty = !p.trim();
+                          const isNameValidLetters = /^[a-zA-Z\s]+$/.test(p.trim());
+                          const hasNameError = showErrors && (isNameEmpty || !isNameValidLetters);
+
+                          return (
+                            <div key={idx}>
+                              <input
+                                type="text"
+                                value={p}
+                                onChange={(e) => {
+                                  // Allow letters and spaces only
+                                  const sanitized = e.target.value.replace(/[^a-zA-Z\s]/g, "");
+                                  const newP = [...formData.participants];
+                                  newP[idx] = sanitized;
+                                  setFormData({ ...formData, participants: newP });
+                                }}
+                                placeholder={`Participant Name ${idx + 1}`}
+                                className={`w-full border rounded-xl px-4 py-3 text-sm font-medium outline-none transition ${hasNameError
+                                  ? "border-red-400 bg-red-50/20"
+                                  : "border-stone-200 focus:border-stone-300 bg-white"
+                                  }`}
+                              />
+                              {hasNameError && (
+                                <p className="text-[10px] sm:text-[11px] text-red-500 mt-1.5 font-semibold">
+                                  {isNameEmpty ? "Please provide a name." : "Participant name must contain characters only."}
+                                </p>
+                              )}
+                            </div>
+                          );
+                        })}
                       </div>
                       <div className="mt-4 flex items-center gap-3">
                         <button
@@ -662,7 +689,7 @@ function SankalpContent() {
                     {/* Gotra */}
                     <div>
                       <label className="block text-stone-900 font-bold text-sm mb-3">
-                        Add your Gotra <span className="text-stone-400 font-normal text-xs ml-1">(required)</span>
+                        Add your Gotra <span className="text-stone-400 font-normal text-xs ml-1"></span>
                       </label>
                       <input
                         type="text"

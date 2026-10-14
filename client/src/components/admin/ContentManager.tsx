@@ -22,7 +22,7 @@ function isoToDdmmyyyy(iso: string): string {
 interface SubField {
   name: string;
   label: string;
-  type: "text" | "textarea" | "url" | "number" | "select";
+  type: "text" | "textarea" | "url" | "number" | "select" | "checkbox";
   placeholder?: string;
   options?: string[];
 }
@@ -38,6 +38,7 @@ interface Field {
   | "date"
   | "date-ddmmyyyy"
   | "datetime-local"
+  | "checkbox"
   | "json"
   | "array-string"
   | "array-object"
@@ -204,6 +205,15 @@ export default function ContentManager({
     });
   }, [type]);
 
+  const getAdminAuthHeaders = (): Record<string, string> => {
+    if (typeof window === "undefined") return {};
+    const match = document.cookie.match(/(?:^|;\s*)(?:adminToken|token)=([^;]+)/);
+    const cookieToken = match ? decodeURIComponent(match[1]) : null;
+    const localToken = localStorage.getItem("adminToken") || localStorage.getItem("token");
+    const token = cookieToken || localToken;
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  };
+
   const getEndpoint = (itemType: string, id?: string | null): string => {
     let expressBase = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
     if (!expressBase.endsWith('/api')) {
@@ -225,7 +235,12 @@ export default function ContentManager({
     setLoading(true);
     try {
       const endpoint = getEndpoint(type);
-      const res = await fetch(endpoint);
+      const res = await fetch(endpoint, {
+        headers: {
+          ...getAdminAuthHeaders(),
+        },
+        credentials: "include",
+      });
       if (!res.ok) {
         console.error(`Failed to fetch items for ${type}: HTTP ${res.status}`);
         return;
@@ -245,7 +260,9 @@ export default function ContentManager({
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
+    const target = e.target as HTMLInputElement;
+    const name = target.name;
+    const value = target.type === "checkbox" ? target.checked : target.value;
     setFormData((prev: any) => {
       const next = { ...prev, [name]: value };
 
@@ -448,15 +465,24 @@ export default function ContentManager({
 
       const res = await fetch(endpoint, {
         method: editingId ? "PUT" : "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...getAdminAuthHeaders(),
+        },
+        credentials: "include",
         body: JSON.stringify(payload),
       });
       if (res.ok) {
         resetForm();
         fetchItems();
+      } else {
+        const errorData = await res.json().catch(() => ({}));
+        const msg = errorData.message || errorData.error || `Failed to save (Status ${res.status})`;
+        setFormError(msg);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to save item:", error);
+      setFormError(error?.message || "Failed to save item.");
     } finally {
       setSubmitting(false);
     }
@@ -469,9 +495,16 @@ export default function ContentManager({
       const endpoint = getEndpoint(type, id);
       const res = await fetch(endpoint, {
         method: "DELETE",
+        headers: {
+          ...getAdminAuthHeaders(),
+        },
+        credentials: "include",
       });
       if (res.ok) {
         fetchItems();
+      } else {
+        const errorData = await res.json().catch(() => ({}));
+        alert(errorData.message || `Failed to delete (Status ${res.status})`);
       }
     } catch (error) {
       console.error("Failed to delete item:", error);
@@ -814,6 +847,20 @@ export default function ContentManager({
                         </option>
                       ))}
                     </select>
+                  ) : field.type === "checkbox" ? (
+                    <div className="flex items-center gap-3 mt-2">
+                      <input
+                        type="checkbox"
+                        id={field.name}
+                        name={field.name}
+                        checked={formData[field.name] !== undefined ? Boolean(formData[field.name]) : true}
+                        onChange={handleInputChange}
+                        className="h-5 w-5 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
+                      />
+                      <label htmlFor={field.name} className="text-sm font-medium text-gray-700 cursor-pointer">
+                        {field.placeholder || `Enable ${field.label}`}
+                      </label>
+                    </div>
                   ) : (
                     <>
                       <input

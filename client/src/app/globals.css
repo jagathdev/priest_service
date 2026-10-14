@@ -195,17 +195,36 @@ input[type="password"]:-webkit-autofill:active {
   animation: fadeInScale 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* Hide AstroVed floating chat widget button ONLY — do NOT use .fab globally (Font Awesome brand icons use this class) */
+/* Hide AstroVed floating chat widget, chat bubble, and popup completely */
 #prime,
 a#prime,
 img[src*="av-chat.svg"],
 a[href*="av-chat"],
 div#prime,
-iframe#prime {
+iframe#prime,
+#chatWidget,
+.chat-widget-container,
+.chat-popup-box,
+.chat-toggle-button,
+[class*="chat_fem"],
+[class*="chat-fem"],
+[class*="chatfem"],
+[id*="chat_fem"],
+[id*="chat-fem"],
+[id*="chatfem"],
+.ico-chat,
+.ico_chat,
+.ico_whatsapp,
+[data-global-chrome="assistant"] {
   display: none !important;
   visibility: hidden !important;
   opacity: 0 !important;
   pointer-events: none !important;
+  height: 0 !important;
+  width: 0 !important;
+  overflow: hidden !important;
+  position: absolute !important;
+  z-index: -9999 !important;
 }
 
 /* Ensure mobile bottom nav SVG icons render correctly on Samsung/Android browsers */

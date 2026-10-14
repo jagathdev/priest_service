@@ -227,10 +227,10 @@ export const sendOrderConfirmation = async ({
     try {
         const result = await postToNetcore(messageUrl, payload);
 
-        console.log(
-            "Netcore order confirmation:",
-            JSON.stringify(result, null, 2)
-        );
+        // console.log(
+        //     "Netcore order confirmation:",
+        //     JSON.stringify(result, null, 2)
+        // );
 
         if (String(result?.status || "").toLowerCase() !== "success") {
             throw new Error(

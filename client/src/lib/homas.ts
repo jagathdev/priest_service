@@ -477,6 +477,7 @@ export const normalizePuja = (homa: any, offeringsMap: Record<string, any> = {})
     gallery: parsedGallery.length > 0 ? parsedGallery : undefined,
     slug: record.slug || slugify(record.title || 'Untitled homa'),
     eventDateTime: getStringField(record, 'eventDateTime') || undefined,
+    showTimer: record.showTimer !== undefined ? Boolean(record.showTimer) : true,
     details: (() => {
       const flatDetails = {
         heroTitle: getStringField(record, 'heroTitle'),
