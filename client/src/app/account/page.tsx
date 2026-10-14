@@ -1537,15 +1537,15 @@ function AccountPageContent() {
                       <h3 className="text-lg font-serif font-bold text-gray-800 mb-4">Company Information</h3>
                       <div className="bg-white border border-gray-150 rounded-2xl p-6 shadow-sm mb-8">
                         <p className="text-[13px] text-gray-600 leading-relaxed mb-4">
-                          The Platform is owned and operated by Way2News Private Limited, a company incorporated under the Companies Act, 2013, with its registered office at:
+                          Corporate Office:
                         </p>
-                        <p className="text-[13px] text-gray-500 leading-relaxed">
-                          H.No. 8-2-293,<br />
-                          Plot No. 499,<br />
-                          First Floor,<br />
-                          Road No.36,<br />
-                          Jubilee Hills,<br />
-                          Hyderabad-500033
+                        <p className="text-[13px] text-gray-600 leading-relaxed mb-3">
+                          4th Floor, A-Block, Prince Info Park,<br />
+                          Plot No. 81-B, 2nd Main Road,<br />
+                          Ambattur Industrial Estate, Chennai 600058.
+                        </p>
+                        <p className="text-[13px] text-gray-700 font-semibold leading-relaxed">
+                          Phone: <a href="tel:+914443419898" className="text-primary hover:underline">+91-44-43419898</a>
                         </p>
                       </div>
 

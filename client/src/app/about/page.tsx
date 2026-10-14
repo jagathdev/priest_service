@@ -151,6 +151,26 @@ export default function AboutPage() {
             </p>
           </div>
         </section>
+
+        <section className="px-6 py-16 lg:px-8 border-t border-gray-100 bg-[#fafafa]">
+          <div className="mx-auto max-w-4xl text-center">
+            <h2 className="text-2xl font-bold text-[#16111f]">Company Information</h2>
+            <div className="mt-6 inline-block text-left bg-white border border-gray-200/80 rounded-2xl p-6 sm:p-8 shadow-sm">
+              <p className="text-sm font-bold text-gray-800 uppercase tracking-wider mb-2">Corporate Office</p>
+              <p className="text-sm text-gray-600 leading-relaxed">
+                4th Floor, A-Block, Prince Info Park,<br />
+                Plot No. 81-B, 2nd Main Road,<br />
+                Ambattur Industrial Estate, Chennai 600058.
+              </p>
+              <p className="mt-4 text-sm text-gray-800 font-semibold">
+                Phone:{" "}
+                <a href="tel:+914443419898" className="text-primary hover:underline">
+                  +91-44-43419898
+                </a>
+              </p>
+            </div>
+          </div>
+        </section>
       </main>
     </>
   );
