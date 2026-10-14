@@ -647,10 +647,11 @@ Comprehensive documentation for all REST API endpoints configured and mounted in
 ### 7.3 Update User Profile
 - **Endpoint:** `/api/users/updateProfile`
 - **Method:** `PUT`
-- **Auth Required:** Yes (`Authorization: Bearer <user_token>`)
+- **Auth Required:** Optional (`Authorization: Bearer <user_token>` or provide `userId` directly in body)
 - **Payload:**
 ```json
 {
+  "userId": "6abd0358cd62648ac4fa1c4a",
   "name": "Jagathratchagan",
   "email": "jagath.updated@example.com",
   "gender": "Male",
@@ -710,7 +711,32 @@ Comprehensive documentation for all REST API endpoints configured and mounted in
 ## 8. Orders API
 **Base Path:** `/api/orders`
 
-### 8.1 Preview Order Price & Summary
+### 8.1 Get Order Status (Payment Status Polling)
+- **Endpoint:** `/api/orders/status`
+- **Method:** `GET`
+- **Query Params:** `razorpayOrderId=<string>`
+- **Auth Required:** No
+- **Rate Limit:** 60 requests per minute
+- **Description:** Polling endpoint used by the payment success / review page to read the live database status of an order. Exposes safe order details while omitting sensitive personal devotee information.
+- **Response:** `200 OK`
+```json
+{
+  "success": true,
+  "data": {
+    "orderId": "6ac06417d6fcac10cf339e5c",
+    "orderNumber": "PS-2026-000123",
+    "razorpayOrderId": "order_TjGKDZrwmLS1kA",
+    "paymentStatus": "paid",
+    "orderStatus": "confirmed",
+    "amount": 2500,
+    "currency": "INR",
+    "itemName": "Rameshwaram Tharpanam",
+    "bookingDate": "2026-10-12T00:00:00.000Z"
+  }
+}
+```
+
+### 8.2 Preview Order Price & Summary
 - **Endpoint:** `/api/orders/preview`
 - **Method:** `POST`
 - **Auth Required:** No
@@ -767,7 +793,7 @@ Comprehensive documentation for all REST API endpoints configured and mounted in
 }
 ```
 
-### 8.2 Get Orders for User
+### 8.3 Get Orders for User
 - **Endpoint:** `/api/orders/user/:userId`
 - **Method:** `GET`
 - **Auth Required:** No
@@ -911,14 +937,60 @@ Comprehensive documentation for all REST API endpoints configured and mounted in
 - **Endpoint:** `/api/payments/create-order`
 - **Method:** `POST`
 - **Auth Required:** No
+- **Description:** Validates order details, calculates server-verified prices for package, extra participants, offerings, and promo codes, generates Razorpay order, and creates a pending `Order` record in MongoDB.
 - **Payload:**
 ```json
 {
-  "amount": 2500,
-  "receipt": "receipt_order_200627",
   "customerId": "6abd0358cd62648ac4fa1c4a",
-  "shoppingCartId": "cart_12345",
-  "contactDetail": "+919360270984"
+  "currencyCode": "INR",
+  "shoppingCartId": 0,
+  "serviceId": "6abd0362cd62648ac4fa1c4b",
+  "packageId": "pkg-1",
+  "promoCode": "FESTIVE50",
+  "totalamount": 2153,
+  "orderDetails": {
+    "pooja": "Rameshwaram Tharpanam",
+    "serviceId": "6abd0362cd62648ac4fa1c4b",
+    "serviceType": "Pooja",
+    "customer": "6abd0358cd62648ac4fa1c4a",
+    "customerName": "Jagathratchagan",
+    "itemName": "Rameshwaram Tharpanam",
+    "mobileNumber": "9360270984",
+    "whatsappNumber": "919360270984",
+    "participants": [
+      { "name": "Jagath" },
+      { "name": "Friend" }
+    ],
+    "gotra": "Kashyapa",
+    "doesNotKnowGotra": false,
+    "wish": "Peace and good health",
+    "promoCode": "FESTIVE50",
+    "promoCodeId": "670985123456789abcdef012",
+    "packageId": "pkg-1",
+    "offerings": [
+      {
+        "name": "Vastra Daan",
+        "priceINR": 501,
+        "description": "Offer sacred clothes to the deity.",
+        "imageUrl": "/images/vastra.jpg"
+      },
+      {
+        "name": "Kumkum Archana",
+        "priceINR": 101,
+        "description": "Offering of Kumkum for blessings.",
+        "imageUrl": ""
+      }
+    ],
+    "originalAmount": 2153,
+    "discountAmount": 0,
+    "pricing": {
+      "basePrice": 1251,
+      "extraParticipantCount": 1,
+      "extraParticipantAmount": 300,
+      "offeringsAmount": 602,
+      "total": 2153
+    }
+  }
 }
 ```
 - **Response:** `200 OK`
@@ -928,7 +1000,7 @@ Comprehensive documentation for all REST API endpoints configured and mounted in
   "message": "Payment order created successfully",
   "data": {
     "orderId": "order_TjGKDZrwmLS1kA",
-    "amount": 250000,
+    "amount": 215300,
     "currency": "INR",
     "notes": {
       "uniqueId": "A1B2C3D4E5F67890"
@@ -938,10 +1010,11 @@ Comprehensive documentation for all REST API endpoints configured and mounted in
 }
 ```
 
-### 11.2 Verify Payment Signature & Save Order
+### 11.2 Verify Payment Signature & Finalize Order
 - **Endpoint:** `/api/payments/verify`
 - **Method:** `POST`
 - **Auth Required:** No
+- **Description:** Verifies HMAC-SHA256 signature from Razorpay checkout. Races safely with the webhook via `markOrderPaid`. Transitions pending order to `paid`/`confirmed` and sends WhatsApp confirmation.
 - **Payload:**
 ```json
 {
@@ -949,14 +1022,27 @@ Comprehensive documentation for all REST API endpoints configured and mounted in
   "razorpayPaymentId": "pay_TjGKajdznC2zO8",
   "razorpaySignature": "457b1f686661120c09ba6b0db4794ce1a98ad8e3b8c1fa5e4d90bbda793e6983",
   "orderDetails": {
-    "pooja": "6abd0362cd62648ac4fa1c4b",
+    "pooja": "Rameshwaram Tharpanam",
+    "serviceId": "6abd0362cd62648ac4fa1c4b",
+    "serviceType": "Pooja",
     "customer": "6abd0358cd62648ac4fa1c4a",
     "customerName": "Jagathratchagan",
-    "whatsappNumber": "9360270984",
+    "whatsappNumber": "919360270984",
     "mobileNumber": "9360270984",
+    "participants": [
+      { "name": "Jagath" },
+      { "name": "Friend" }
+    ],
+    "offerings": [
+      { "name": "Vastra Daan", "priceINR": 501 },
+      { "name": "Kumkum Archana", "priceINR": 101 }
+    ],
     "pricing": {
-      "total": 2500,
-      "currency": "INR"
+      "basePrice": 1251,
+      "extraParticipantCount": 1,
+      "extraParticipantAmount": 300,
+      "offeringsAmount": 602,
+      "total": 2153
     }
   }
 }
@@ -969,15 +1055,60 @@ Comprehensive documentation for all REST API endpoints configured and mounted in
   "data": {
     "razorpayOrderId": "order_TjGKDZrwmLS1kA",
     "razorpayPaymentId": "pay_TjGKajdznC2zO8",
-    "orderId": "6ac06417d6fcac10cf339e5c"
+    "orderId": "6ac06417d6fcac10cf339e5c",
+    "orderNumber": "PS-2026-000123"
   }
 }
 ```
 
-### 11.3 Razorpay Webhook Callback
+### 11.3 Secure Live Razorpay Webhook
+- **Endpoint:** `/api/payments/getRazorpayWebhook`
+- **Method:** `POST`
+- **Auth Required:** Signature-verified (`X-Razorpay-Signature`, `X-Razorpay-Event-Id`)
+- **Headers:**
+  - `Content-Type: application/json`
+  - `x-razorpay-signature: <hex-digest-of-raw-body-with-RAZORPAY_WEBHOOK_SECRET>`
+  - `x-razorpay-event-id: <unique-event-id>`
+- **Description:** Production live webhook URL called by Razorpay servers on asynchronous payment events (`payment.captured`, `order.paid`, `payment.failed`). Uses raw-body HMAC SHA256 signature verification, idempotently logs into `WebhookEvent` and `Payment` models, finalizes orders via `markOrderPaid`, and triggers WhatsApp confirmation without risk of duplicate notifications.
+- **Payload:** Standard Razorpay Webhook JSON payload
+```json
+{
+  "entity": "event",
+  "account_id": "acc_xxxxxx",
+  "event": "payment.captured",
+  "contains": ["payment"],
+  "payload": {
+    "payment": {
+      "entity": {
+        "id": "pay_TjGKajdznC2zO8",
+        "entity": "payment",
+        "amount": 215300,
+        "currency": "INR",
+        "status": "captured",
+        "order_id": "order_TjGKDZrwmLS1kA",
+        "method": "upi",
+        "notes": {
+          "uniqueId": "A1B2C3D4E5F67890"
+        }
+      }
+    }
+  }
+}
+```
+- **Response:** `200 OK`
+```json
+{
+  "success": true,
+  "message": "Webhook processed successfully",
+  "event": "payment.captured"
+}
+```
+
+### 11.4 Legacy Razorpay Webhook Callback
 - **Endpoint:** `/api/payments/webhook-response`
 - **Method:** `POST`
 - **Auth Required:** No
+- **Description:** Backward compatibility webhook callback.
 - **Payload:**
 ```json
 {
@@ -999,19 +1130,7 @@ Comprehensive documentation for all REST API endpoints configured and mounted in
 ```json
 {
   "success": true,
-  "message": "Razorpay webhook response received",
-  "data": {
-    "event": "payment.captured",
-    "payload": {
-      "payment": {
-        "entity": {
-          "id": "pay_TjGKajdznC2zO8",
-          "amount": 250000,
-          "status": "captured"
-        }
-      }
-    }
-  }
+  "message": "Razorpay webhook response received"
 }
 ```
 
