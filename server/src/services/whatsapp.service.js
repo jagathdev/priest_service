@@ -36,7 +36,7 @@ const getConfig = () => {
     return config;
 };
 
-const postToNetcore = async (url, payload, timeoutMs = 10000) => {
+const postToNetcore = async (url, payload) => {
     const { token } = getConfig();
 
     const response = await axios.post(url, payload, {
@@ -45,7 +45,6 @@ const postToNetcore = async (url, payload, timeoutMs = 10000) => {
             "Content-Type": "application/json",
             Accept: "application/json",
         },
-        timeout: timeoutMs,
     });
 
     return response.data;
@@ -100,7 +99,7 @@ export const registerWhatsAppOptIn = async ({
                     user_agent: userAgent,
                 },
             ],
-        }, 8000);
+        });
     } catch (error) {
         console.error(
             "Netcore opt-in request failed:",
