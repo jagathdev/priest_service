@@ -14,7 +14,8 @@ import heroBannerRoutes from './routes/heroBannerRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import promoCodeRoutes from "./routes/promoCode.routes.js";
 import whatsappRoutes from "./routes/whatsapp.routes.js";
-import razorpayWebhookRoutes from './routes/payment.routes.js';
+
+export const RAZORPAY_WEBHOOK_PATH = "/api/payments/getRazorpayWebhook";
 
 const app = express();
 
@@ -31,6 +32,9 @@ app.use(
         credentials: true,
     })
 );
+
+// Raw body parser for Razorpay webhook signature verification (mounted BEFORE express.json())
+app.use(RAZORPAY_WEBHOOK_PATH, express.raw({ type: "application/json" }));
 
 app.use(express.json());
 
