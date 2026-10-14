@@ -22,6 +22,7 @@ export const getRazorpayWebhook = async (req, res) => {
                 message: "Razorpay signature header is missing",
             });
         }
+        console.log("payment webhook responce", res.data)
 
         return res.status(200).json({
             success: true,

@@ -150,28 +150,38 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
-                function removeChatWidgets() {
+                function removeChatAndPushWidgets() {
+                  // Hide chat and webpushr elements by selectors
                   var nodes = document.querySelectorAll(
-                    '#prime, #chatWidget, .chat-widget-container, .chat-popup-box, .chat-toggle-button, [class*="chat_fem"], [class*="chat-fem"], [class*="chatfem"], .ico-chat, .ico_chat, .ico_whatsapp'
+                    '#prime, #chatWidget, .chat-widget-container, .chat-popup-box, .chat-toggle-button, [class*="chat_fem"], [class*="chat-fem"], [class*="chatfem"], .ico-chat, .ico_chat, .ico_whatsapp, [id^="webpushr"], [class*="webpushr"], #webpushr-prompt-wrapper, .webpushr-prompt, .webpushr-bell'
                   );
                   nodes.forEach(function(el) {
-                    el.style.display = 'none';
-                    el.style.visibility = 'hidden';
-                    el.style.opacity = '0';
-                    el.style.pointerEvents = 'none';
+                    el.style.setProperty('display', 'none', 'important');
+                    el.style.setProperty('visibility', 'hidden', 'important');
+                    el.style.setProperty('opacity', '0', 'important');
+                    el.style.setProperty('pointer-events', 'none', 'important');
                   });
 
-                  // Scan all floating or fixed elements containing the greeting text
+                  // Scan floating/fixed prompt boxes containing the subscription text or greeting text
                   var allElements = document.querySelectorAll('div, p, span, a, section');
                   for (var i = 0; i < allElements.length; i++) {
                     var el = allElements[i];
                     var text = el.innerText || el.textContent || '';
-                    if (text.indexOf('How can I help you') !== -1 && text.length < 120) {
+                    if (
+                      (text.indexOf('How can I help you') !== -1 && text.length < 120) ||
+                      (text.indexOf('Subscribe now') !== -1 && text.length < 200) ||
+                      (text.indexOf('timely updates on our events') !== -1 && text.length < 250)
+                    ) {
                       var parent = el;
-                      for (var j = 0; j < 3; j++) {
+                      for (var j = 0; j < 5; j++) {
                         if (parent && parent.parentElement && parent !== document.body) {
                           var style = window.getComputedStyle(parent);
-                          if (style.position === 'fixed' || style.position === 'absolute' || parent.id === 'prime' || parent.className.indexOf('chat') !== -1) {
+                          if (
+                            style.position === 'fixed' ||
+                            style.position === 'absolute' ||
+                            parent.id === 'prime' ||
+                            (parent.className && typeof parent.className === 'string' && (parent.className.indexOf('chat') !== -1 || parent.className.indexOf('webpushr') !== -1 || parent.className.indexOf('prompt') !== -1))
+                          ) {
                             parent.style.setProperty('display', 'none', 'important');
                             parent.style.setProperty('visibility', 'hidden', 'important');
                             break;
@@ -185,10 +195,10 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
                 }
 
                 if (typeof window !== 'undefined') {
-                  window.addEventListener('DOMContentLoaded', removeChatWidgets);
-                  setInterval(removeChatWidgets, 1000);
+                  window.addEventListener('DOMContentLoaded', removeChatAndPushWidgets);
+                  setInterval(removeChatAndPushWidgets, 500);
                   var observer = new MutationObserver(function() {
-                    removeChatWidgets();
+                    removeChatAndPushWidgets();
                   });
                   if (document.body) {
                     observer.observe(document.body, { childList: true, subtree: true });

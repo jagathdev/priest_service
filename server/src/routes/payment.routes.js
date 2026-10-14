@@ -25,6 +25,6 @@ router.post(
     razorpayWebhookResponse
 );
 
-router.get("/getRazorpayWebhook", getRazorpayWebhook);
+router.post("/getRazorpayWebhook", getRazorpayWebhook);
 
 export default router;

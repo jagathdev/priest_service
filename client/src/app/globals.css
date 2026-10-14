@@ -215,7 +215,16 @@ iframe#prime,
 .ico-chat,
 .ico_chat,
 .ico_whatsapp,
-[data-global-chrome="assistant"] {
+[data-global-chrome="assistant"],
+/* Hide Webpushr Push Notification Popups and Prompts */
+[id^="webpushr"],
+[id*="webpushr"],
+[class^="webpushr"],
+[class*="webpushr"],
+#webpushr-prompt-wrapper,
+.webpushr-prompt,
+.webpushr-bell,
+#webpushr-bell {
   display: none !important;
   visibility: hidden !important;
   opacity: 0 !important;
