@@ -2,6 +2,7 @@ import crypto from "crypto";
 import WebhookEvent from "../models/WebhookEvent.js";
 import Payment from "../models/Payment.js";
 import { mapRazorpayPayment } from "../services/paymentMapper.js";
+import { markOrderPaid } from "../services/orderPayment.service.js";
 
 /**
  * Handles incoming Razorpay webhooks.
@@ -133,11 +134,37 @@ export const getRazorpayWebhook = async (req, res) => {
     try {
         if (paymentEntity) {
             const mappedPayment = mapRazorpayPayment(paymentEntity, eventId);
+
+            // Out-of-order safety: if current payment in DB is already 'captured',
+            // never downgrade to 'failed' or 'authorized' if an older late event arrives.
+            const existingPayment = await Payment.findOne({
+                razorpayPaymentId: mappedPayment.razorpayPaymentId,
+            });
+
+            if (existingPayment && existingPayment.status === "captured" && mappedPayment.status !== "captured") {
+                console.log(
+                    `[razorpay-webhook] Preventing status downgrade: payment ${mappedPayment.razorpayPaymentId} is already captured; ignoring status '${mappedPayment.status}' from older event.`
+                );
+                delete mappedPayment.status;
+            }
+
             await Payment.findOneAndUpdate(
                 { razorpayPaymentId: mappedPayment.razorpayPaymentId },
                 { $set: mappedPayment },
                 { upsert: true, returnDocument: "after", setDefaultsOnInsert: true }
             );
+
+            // For payment.captured or order.paid, finalize order
+            if (eventName === "payment.captured" || eventName === "order.paid") {
+                const markResult = await markOrderPaid({ payment: paymentEntity });
+                console.log(
+                    `[razorpay-webhook] markOrderPaid result status: ${markResult.status} for order: ${markResult.order?._id || "none"}`
+                );
+            } else if (eventName === "payment.failed") {
+                console.log(
+                    `[razorpay-webhook] Payment ${paymentEntity.id} failed; order remains pending for customer retry.`
+                );
+            }
         }
 
         // Mark WebhookEvent as processed

@@ -1,5 +1,6 @@
 import Razorpay from "razorpay";
 import crypto from "crypto";
+import { toPaise } from "../utils/currency.js";
 
 let razorpayInstance = null;
 
@@ -23,7 +24,7 @@ export const createRazorpayOrder = async ({
     notes,
 }) => {
     const order = await getRazorpay().orders.create({
-        amount: Math.round(amount * 100),
+        amount: toPaise(amount),
         currency: process.env.RAZORPAY_CURRENCY || "INR",
         receipt,
         notes,
@@ -31,7 +32,6 @@ export const createRazorpayOrder = async ({
 
     return order;
 };
-
 
 // ==========================================
 // VERIFY RAZORPAY PAYMENT
@@ -53,4 +53,15 @@ export const verifyRazorpayPayment = ({
         .digest("hex");
 
     return generatedSignature === razorpaySignature;
+};
+
+// ==========================================
+// FETCH RAZORPAY PAYMENT
+// ==========================================
+
+export const fetchRazorpayPayment = async (paymentId) => {
+    if (!paymentId) {
+        throw new Error("Payment ID is required to fetch Razorpay payment");
+    }
+    return await getRazorpay().payments.fetch(paymentId);
 };

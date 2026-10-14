@@ -5,6 +5,7 @@ import request from "supertest";
 import app from "../src/app.js";
 import Payment from "../src/models/Payment.js";
 import WebhookEvent from "../src/models/WebhookEvent.js";
+import Order from "../src/models/Order.js";
 
 test("Webhook security and persistence verification", async (t) => {
     const secret = "test_webhook_secret_key_12345";
@@ -97,6 +98,8 @@ test("Webhook security and persistence verification", async (t) => {
 
         const origWebhookFindOneAndUpdate = WebhookEvent.findOneAndUpdate;
         const origPaymentFindOneAndUpdate = Payment.findOneAndUpdate;
+        const origPaymentFindOne = Payment.findOne;
+        const origOrderFindOne = Order.findOne;
 
         try {
             WebhookEvent.findOneAndUpdate = async (filter, update) => {
@@ -111,6 +114,9 @@ test("Webhook security and persistence verification", async (t) => {
                 };
                 return savedWebhook;
             };
+
+            Payment.findOne = async () => null;
+            Order.findOne = async () => null;
 
             Payment.findOneAndUpdate = async (filter, update) => {
                 savedPayment = { ...filter, ...update.$set };
@@ -147,6 +153,8 @@ test("Webhook security and persistence verification", async (t) => {
         } finally {
             WebhookEvent.findOneAndUpdate = origWebhookFindOneAndUpdate;
             Payment.findOneAndUpdate = origPaymentFindOneAndUpdate;
+            Payment.findOne = origPaymentFindOne;
+            Order.findOne = origOrderFindOne;
         }
     });
 

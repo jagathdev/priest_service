@@ -45,12 +45,19 @@ export const adminLogin = async (req, res) => {
 
 export const getAdminOrders = async (req, res) => {
   try {
-    const { page = 1, limit = 5, service = "All", status = "All", search = "" } = req.query;
+    const { page = 1, limit = 5, service = "All", status = "All", search = "", paymentStatus } = req.query;
     const limitNum = parseInt(limit, 10) || 5;
     const skip = (Math.max(1, parseInt(page, 10)) - 1) * limitNum;
 
     const query = {};
     const andConditions = [];
+
+    // Filter unpaid orders: default hides unpaid (pending/failed), admin can supply paymentStatus filter
+    if (paymentStatus && paymentStatus !== "All") {
+      query.paymentStatus = paymentStatus;
+    } else if (!paymentStatus) {
+      query.paymentStatus = { $nin: ["pending", "failed"] };
+    }
 
     if (service !== "All") {
       andConditions.push({ $or: [{ itemName: service }, { pooja: service }] });

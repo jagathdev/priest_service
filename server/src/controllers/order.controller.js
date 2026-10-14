@@ -141,7 +141,13 @@ export const getUserOrders = async (req, res) => {
             }
         }
 
-        const orders = await Order.find(query).sort({ createdAt: -1 }).lean();
+        // Exclude pending and failed payments from real booking lists
+        const finalQuery = {
+            ...query,
+            paymentStatus: { $nin: ["pending", "failed"] }
+        };
+
+        const orders = await Order.find(finalQuery).sort({ createdAt: -1 }).lean();
 
         const enrichedOrders = await Promise.all(
             orders.map(async (order) => {
@@ -187,6 +193,50 @@ export const getUserOrders = async (req, res) => {
         return res.status(500).json({
             success: false,
             message: "Failed to fetch orders",
+        });
+    }
+};
+
+/**
+ * GET /api/orders/status?razorpayOrderId=...
+ * Returns only { paymentStatus, orderStatus, orderNumber, itemName, amount (rupees) }
+ * Exposes NO personal identifiable information (no email, phone, participants).
+ */
+export const getOrderStatus = async (req, res) => {
+    try {
+        const { razorpayOrderId } = req.query;
+
+        if (!razorpayOrderId || !String(razorpayOrderId).trim()) {
+            return res.status(400).json({
+                success: false,
+                message: "razorpayOrderId query parameter is required",
+            });
+        }
+
+        const order = await Order.findOne({ razorpayOrderId: String(razorpayOrderId).trim() }).lean();
+
+        if (!order) {
+            return res.status(404).json({
+                success: false,
+                message: "Order not found",
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            data: {
+                paymentStatus: order.paymentStatus,
+                orderStatus: order.orderStatus,
+                orderNumber: order.orderNumber,
+                itemName: order.itemName || order.pooja || "Sacred Ritual",
+                amount: order.pricing?.total || 0,
+            },
+        });
+    } catch (error) {
+        console.error("Get Order Status Error:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Failed to fetch order status",
         });
     }
 };

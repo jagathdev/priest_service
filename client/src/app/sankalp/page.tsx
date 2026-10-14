@@ -16,6 +16,7 @@ interface RazorpayResponse {
 
 interface RazorpayInstance {
   open: () => void;
+  on: (event: string, callback: (data: unknown) => void) => void;
 }
 
 interface CustomWindow extends Window {
@@ -326,6 +327,38 @@ function SankalpContent() {
 
       const itemName = pujaData?.title || queryTitle || "Sacred Puja";
 
+      const cleanWa = String(formData.whatsapp || userPhone || "").replace(/\D/g, "");
+      const formattedWa = cleanWa.length === 10 ? `91${cleanWa}` : cleanWa;
+      const paidAmount = appliedPromo ? appliedPromo.finalAmount : finalPrice;
+      const discountAmt = appliedPromo ? appliedPromo.discountAmount : 0;
+      const originalUserPhone = user?.mobileNumber || user?.phone || userPhone || "";
+
+      const orderDetailsPayload = {
+        pooja: itemName,
+        serviceId: pujaData?._id || pujaData?.id,
+        serviceType: itemType === 'homa' ? 'Homa' : 'Pooja',
+        customer: mongoUserId,
+        customerName: userName,
+        itemName: itemName,
+        mobileNumber: originalUserPhone,
+        whatsappNumber: formattedWa,
+        participants: formData.participants.filter((p: string) => p.trim()).map((p: string) => ({ name: p.trim() })),
+        gotra: (formData.dontKnowGotra || !formData.gotra.trim()) ? "Kashyapa" : formData.gotra.trim(),
+        doesNotKnowGotra: formData.dontKnowGotra,
+        wish: formData.wish,
+        promoCode: appliedPromo?.promoCode || "",
+        promoCodeId: appliedPromo?.promoId || null,
+        packageId: selectedPackage?.id || pkgId,
+        originalAmount: finalPrice,
+        discountAmount: discountAmt,
+        pricing: {
+          basePrice: basePrice,
+          extraParticipantCount: extraParticipantCount,
+          extraParticipantAmount: extraParticipantFee,
+          total: paidAmount
+        }
+      };
+
       setLoadingMsg("Creating order securely...");
       const orderRes = await fetch(`${backendUrl}/api/payments/create-order`, {
         method: "POST",
@@ -354,7 +387,8 @@ function SankalpContent() {
             Pincode: userPincode,
             Phone: userPhone
           },
-          totalamount: appliedPromo ? appliedPromo.finalAmount : finalPrice
+          totalamount: paidAmount,
+          orderDetails: orderDetailsPayload
         })
       });
 
@@ -401,14 +435,6 @@ function SankalpContent() {
         handler: async function (response: RazorpayResponse) {
           setLoadingMsg("Verifying payment...");
           try {
-            const cleanWa = String(formData.whatsapp || userPhone || "").replace(/\D/g, "");
-            const formattedWa = cleanWa.length === 10 ? `91${cleanWa}` : cleanWa;
-
-            const paidAmount = appliedPromo ? appliedPromo.finalAmount : finalPrice;
-            const discountAmt = appliedPromo ? appliedPromo.discountAmount : 0;
-
-            const originalUserPhone = user?.mobileNumber || user?.phone || userPhone || "";
-
             const verifyRes = await fetch(`${backendUrl}/api/payments/verify`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -416,46 +442,13 @@ function SankalpContent() {
                 razorpayOrderId: response.razorpay_order_id,
                 razorpayPaymentId: response.razorpay_payment_id,
                 razorpaySignature: response.razorpay_signature,
-                orderDetails: {
-                  pooja: itemName,
-                  serviceId: pujaData?._id || pujaData?.id,
-                  serviceType: itemType === 'homa' ? 'Homa' : 'Pooja',
-                  customer: mongoUserId,
-                  customerName: userName,
-                  itemName: itemName,
-                  imageUrl: pujaData?.imageUrl || pujaData?.image || "",
-                  mobileNumber: originalUserPhone,
-                  whatsappNumber: formattedWa,
-                  participants: formData.participants.filter((p: string) => p.trim()).map((p: string) => ({ name: p.trim() })),
-                  gotra: (formData.dontKnowGotra || !formData.gotra.trim()) ? "Kashyapa" : formData.gotra.trim(),
-                  doesNotKnowGotra: formData.dontKnowGotra,
-                  wish: formData.wish,
-                  promoCode: appliedPromo?.promoCode || "",
-                  promoCodeId: appliedPromo?.promoId || null,
-                  originalAmount: finalPrice,
-                  discountAmount: discountAmt,
-                  pricing: {
-                    basePrice: basePrice,
-                    extraParticipantCount: extraParticipantCount,
-                    extraParticipantAmount: extraParticipantFee,
-                    total: paidAmount
-                  }
-                }
+                orderDetails: orderDetailsPayload
               })
             });
             const verifyData = await verifyRes.json();
             if (verifyData.success) {
-              const bookedId = verifyData.data?.orderNumber || verifyData.data?.orderId || orderId;
-              const params = new URLSearchParams({
-                paymentId: response.razorpay_payment_id,
-                orderId: bookedId,
-                shoppingCartId: bookedId,
-                title: pujaData?.title || queryTitle || "Sacred Puja",
-                amount: String(paidAmount),
-                name: userName,
-                phone: formattedWa
-              });
-              router.push(`/payment/success?${params.toString()}`);
+              const targetOrderId = response.razorpay_order_id || orderId;
+              router.push(`/payment/success?razorpayOrderId=${encodeURIComponent(targetOrderId)}`);
             } else {
               setError("Payment verification failed.");
               setIsProcessing(false);
@@ -496,6 +489,12 @@ function SankalpContent() {
       }
 
       const rzp = new (window as unknown as CustomWindow).Razorpay(options);
+      rzp.on("payment.failed", function (response: { error?: { description?: string; reason?: string } }) {
+        setIsProcessing(false);
+        setLoadingMsg("");
+        const desc = response?.error?.description || response?.error?.reason || "Payment was not successful. You can retry anytime.";
+        setError(`Payment Failed: ${desc}`);
+      });
       rzp.open();
 
     } catch (err: unknown) {

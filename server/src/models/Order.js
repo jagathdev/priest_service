@@ -32,7 +32,7 @@ const orderSchema = new mongoose.Schema(
         serviceType: {
             type: String,
             required: false,
-            enum: ['Pooja', 'Homa']
+            enum: ['Pooja', 'Homa', 'Puja', 'pooja', 'homa', 'puja']
         },
         customer: {
             type: mongoose.Schema.Types.ObjectId,
@@ -79,13 +79,13 @@ const orderSchema = new mongoose.Schema(
             trim: true,
         },
         pricing: {
-            basePrice: { type: Number, required: true },
+            basePrice: { type: Number, default: 0 },
             extraParticipantCount: { type: Number, default: 0 },
             extraParticipantAmount: { type: Number, default: 0 },
             convenienceFee: { type: Number, default: 0 },
             panditFee: { type: Number, default: 0 },
             recordingFee: { type: Number, default: 0 },
-            total: { type: Number, required: true }, // stored in integer paise
+            total: { type: Number, required: true }, // stored in rupees
             currency: { type: String, default: "INR" },
         },
         bookingDate: {
@@ -102,14 +102,19 @@ const orderSchema = new mongoose.Schema(
             unique: true,
             sparse: true
         },
+        uniqueId: {
+            type: String,
+            index: true,
+            sparse: true
+        },
         promoCode: { type: String, default: "" },
         promoCodeId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "PromoCode",
             default: null,
         },
-        originalAmount: { type: Number, default: 0 }, // stored in integer paise
-        discountAmount: { type: Number, default: 0 }, // stored in integer paise
+        originalAmount: { type: Number, default: 0 }, // stored in rupees
+        discountAmount: { type: Number, default: 0 }, // stored in rupees
         paymentStatus: {
             type: String,
             enum: ["pending", "paid", "failed", "refunded"],
