@@ -486,7 +486,7 @@ export const applyPromoCode = async (
                 orderAmount,
                 serviceType,
                 packageId,
-                userId,
+                userId: userId || req.user?.id || null,
             });
 
         return res.status(200).json({

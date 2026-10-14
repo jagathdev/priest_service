@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { cookies } from "next/headers";
 import PromoCodeForm from "@/components/admin/PromoCodeForm";
 
 interface PageProps {
@@ -10,11 +11,17 @@ interface PageProps {
 
 export default async function EditPromoCodePage({ params }: PageProps) {
     const { id } = await params;
+    const cookieStore = await cookies();
+    const adminToken = cookieStore.get("adminToken")?.value || cookieStore.get("token")?.value;
 
-    // In server components, always provide an absolute URL or use standard fetch from the API URL
     const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
+    const headers: Record<string, string> = adminToken
+        ? { Authorization: `Bearer ${adminToken}`, Cookie: `adminToken=${adminToken}` }
+        : {};
+
     const response = await fetch(`${baseUrl}/api/promos/${id}`, {
         cache: "no-store",
+        headers,
     });
 
     if (!response.ok) {

@@ -43,3 +43,34 @@ export const requireAdmin = (req, res, next) => {
     res.status(403).json({ success: false, message: 'Not authorized as an admin' });
   }
 };
+
+export const optionalAuth = async (req, res, next) => {
+  try {
+    let token = null;
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.split(' ')[1];
+    } else if (req.headers.cookie) {
+      const match = req.headers.cookie.match(/(?:^|;\s*)(?:adminToken|token)=([^;]+)/);
+      if (match) {
+        token = decodeURIComponent(match[1]);
+      }
+    }
+
+    if (token) {
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        req.user = {
+          id: decoded.id,
+          role: decoded.role,
+        };
+      } catch (err) {
+        // Token invalid/expired - continue as guest
+      }
+    }
+
+    next();
+  } catch (error) {
+    next();
+  }
+};
