@@ -73,7 +73,7 @@ function SankalpContent() {
       if (uId && !profileFetchedRef.current) {
         profileFetchedRef.current = true;
         try {
-          const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
+          const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
           const res = await fetch(`${baseUrl}/api/users/profile/${uId}`);
           if (res.ok) {
             const data = await res.json();
@@ -126,7 +126,7 @@ function SankalpContent() {
       setLoading(true);
       setError(null);
 
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
       const targetId = pujaId || slug;
 
       try {
@@ -275,7 +275,7 @@ function SankalpContent() {
     // Call updateProfile API to save devotee profile and whatsappNumber to backend database
     const uId = user?.id || user?._id;
     if (uId) {
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
       const nameToSave = formData.participants[0]?.trim() || user?.name || "Devotee";
       fetch(`${baseUrl}/api/users/updateProfile`, {
         method: "PUT",

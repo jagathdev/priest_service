@@ -187,7 +187,7 @@ export default function HomaDetailClient({
           return;
         }
 
-        const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "https://priestservices.astroved.com";
+        const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
         const res = await fetch(`${backendUrl}/api/homas`);
         if (!res.ok) {
           setHoma(null);
@@ -986,8 +986,8 @@ export default function HomaDetailClient({
                   }
                 }}
                 className={`py-2.5 sm:py-3.5 border-b-2 transition-colors whitespace-nowrap shrink-0 sm:shrink ${activeTab === tab.id
-                    ? "border-[#00b050] text-[#00b050]"
-                    : "border-transparent hover:text-stone-900"
+                  ? "border-[#00b050] text-[#00b050]"
+                  : "border-transparent hover:text-stone-900"
                   }`}
               >
                 {tab.label}

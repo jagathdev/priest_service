@@ -106,8 +106,8 @@ function StatusDropdown({
                   setOpen(false);
                 }}
                 className={`w-full flex items-center justify-between px-3 py-1.5 text-xs font-medium transition-colors ${isSelected
-                    ? "bg-gray-50 font-semibold text-gray-900"
-                    : "text-gray-700 hover:bg-gray-50/80"
+                  ? "bg-gray-50 font-semibold text-gray-900"
+                  : "text-gray-700 hover:bg-gray-50/80"
                   }`}
               >
                 <span className="flex items-center gap-2">
@@ -175,7 +175,7 @@ export default function AdminOrdersPage() {
   const fetchOrders = async (page: number, service: string, status: string, search: string = "") => {
     setLoading(true);
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
       const headers = getAdminAuthHeaders();
       const res = await fetch(`${baseUrl}/api/admin/orders?page=${page}&service=${encodeURIComponent(service)}&status=${encodeURIComponent(status)}&search=${encodeURIComponent(search)}`, {
         cache: "no-store",
@@ -231,7 +231,7 @@ export default function AdminOrdersPage() {
     }));
 
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
       const res = await fetch(`${baseUrl}/api/admin/orders/${orderId}`, {
         method: "PUT",
         headers: {
@@ -269,7 +269,7 @@ export default function AdminOrdersPage() {
     }));
 
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
       const res = await fetch(`${baseUrl}/api/admin/orders/${orderId}`, {
         method: "PUT",
         headers: {
@@ -300,7 +300,7 @@ export default function AdminOrdersPage() {
 
     setLoading(true);
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
       const res = await fetch(`${baseUrl}/api/admin/orders/bulk-schedule`, {
         method: "POST",
         headers: {

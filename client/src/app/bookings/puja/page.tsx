@@ -42,7 +42,7 @@ export default function MyPujaBookings() {
 
   useEffect(() => {
     const fetchBookings = () => {
-      fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "https://priestservices.astroved.com"}/api/bookings/me?type=puja`)
+      fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com"}/api/bookings/me?type=puja`)
         .then((res) => res.json())
         .then((data) => {
           if (data.success) {
@@ -69,7 +69,7 @@ export default function MyPujaBookings() {
 
   const handleLogout = async () => {
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "https://priestservices.astroved.com"}/api/auth/logout`, { method: "POST" });
+      await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com"}/api/auth/logout`, { method: "POST" });
     } catch {
       // ignore
     }

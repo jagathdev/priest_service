@@ -165,7 +165,7 @@ function AccountPageContent() {
   useEffect(() => {
     const userId = user?._id || user?.id;
     if (userId) {
-      const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "https://priestservices.astroved.com";
+      const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
       fetch(`${backendUrl}/api/orders/user/${userId}`)
         .then(res => res.json())
         .then(data => {
@@ -212,7 +212,7 @@ function AccountPageContent() {
     }
     setIsSubmittingHelp(true);
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "https://priestservices.astroved.com";
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
 
       const res = await fetch(`${baseUrl}/api/customerQueries`, {
         method: "POST",
@@ -261,7 +261,7 @@ function AccountPageContent() {
     if (!user || (!user.id && !user._id)) return;
     setLoadingWishlist(true);
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "https://priestservices.astroved.com";
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
       const res = await fetch(`${baseUrl}/api/wishlist/${user.id || user._id}`);
       const data = await res.json();
       if (data.success && data.data) {
@@ -282,7 +282,7 @@ function AccountPageContent() {
 
   const handleLogout = async () => {
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "https://priestservices.astroved.com"}/api/auth/logout`, { method: "POST" });
+      await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com"}/api/auth/logout`, { method: "POST" });
     } catch {
       // ignore
     }
@@ -295,7 +295,7 @@ function AccountPageContent() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "https://priestservices.astroved.com";
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
 
       const res = await fetch(`${baseUrl}/api/users/updateProfile`, {
         method: "PUT",
@@ -330,7 +330,7 @@ function AccountPageContent() {
   const handleSaveAddress = async () => {
     if (!user) return;
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "https://priestservices.astroved.com";
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
 
       const newAddress = {
         type: addressFormData.type,
@@ -395,7 +395,7 @@ function AccountPageContent() {
     if (!window.confirm("Are you sure to delete the address?")) return;
 
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "https://priestservices.astroved.com";
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
 
       const updatedAddresses = (user.addresses || []).filter((a: Address) => a._id !== addressId && a.id !== addressId);
 
@@ -552,8 +552,8 @@ function AccountPageContent() {
               {/* ── Mobile/Tablet Off-canvas Card Drawer (< xl / 1024px, Matching Reference) ── */}
               <div
                 className={`fixed top-0 bottom-0 left-0 z-[100] h-[100dvh] w-[82vw] max-w-[315px] bg-white shadow-2xl p-5 pb-6 sm:pb-8 flex flex-col justify-between overflow-hidden transition-transform duration-300 ease-out xl:hidden ${isDrawerOpen
-                    ? "translate-x-0"
-                    : "-translate-x-full pointer-events-none"
+                  ? "translate-x-0"
+                  : "-translate-x-full pointer-events-none"
                   }`}
               >
                 {/* Modal Header */}
@@ -584,8 +584,8 @@ function AccountPageContent() {
                           setIsDrawerOpen(false);
                         }}
                         className={`w-full flex items-center gap-3.5 px-4 py-2.5 sm:py-3 rounded-2xl text-[14px] sm:text-[15px] transition text-left cursor-pointer ${isActive
-                            ? "bg-success text-white font-bold shadow-xs"
-                            : "text-gray-900 font-semibold hover:bg-gray-50"
+                          ? "bg-success text-white font-bold shadow-xs"
+                          : "text-gray-900 font-semibold hover:bg-gray-50"
                           }`}
                       >
                         {tab.icon(isActive)}
@@ -622,8 +622,8 @@ function AccountPageContent() {
                       type="button"
                       onClick={() => setActiveTab(tab.id)}
                       className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm transition ${activeTab === tab.id
-                          ? "bg-success text-white font-bold shadow-xs"
-                          : "text-gray-700 font-medium hover:bg-gray-50"
+                        ? "bg-success text-white font-bold shadow-xs"
+                        : "text-gray-700 font-medium hover:bg-gray-50"
                         }`}
                     >
                       {tab.icon(activeTab === tab.id)}
@@ -1127,7 +1127,7 @@ function AccountPageContent() {
                                     e.preventDefault();
                                     e.stopPropagation();
                                     try {
-                                      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "https://priestservices.astroved.com";
+                                      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
                                       await fetch(`${baseUrl}/api/wishlist/updateWishlist`, {
                                         method: "POST",
                                         headers: { "Content-Type": "application/json" },

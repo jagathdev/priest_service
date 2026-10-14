@@ -182,7 +182,7 @@ export default function PujaDetailClient({
           return;
         }
 
-        const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || "https://priestservices.astroved.com";
+        const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
         const res = await fetch(`${backendUrl}/api/pujas`);
         if (!res.ok) {
           setPuja(null);

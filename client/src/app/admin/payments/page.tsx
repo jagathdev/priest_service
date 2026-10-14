@@ -2,7 +2,7 @@ import React from "react";
 import { cookies } from "next/headers";
 
 export default async function AdminPaymentsPage() {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
+  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
   let data = {
     totalRevenue: 0,
     monthlyRevenue: 0,
