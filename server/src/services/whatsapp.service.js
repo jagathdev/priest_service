@@ -36,7 +36,7 @@ const getConfig = () => {
     return config;
 };
 
-const postToNetcore = async (url, payload) => {
+const postToNetcore = async (url, payload, timeoutMs = 10000) => {
     const { token } = getConfig();
 
     const response = await axios.post(url, payload, {
@@ -45,7 +45,7 @@ const postToNetcore = async (url, payload) => {
             "Content-Type": "application/json",
             Accept: "application/json",
         },
-        timeout: 30000,
+        timeout: timeoutMs,
     });
 
     return response.data;
@@ -100,7 +100,7 @@ export const registerWhatsAppOptIn = async ({
                     user_agent: userAgent,
                 },
             ],
-        });
+        }, 8000);
     } catch (error) {
         console.error(
             "Netcore opt-in request failed:",
@@ -171,37 +171,35 @@ export const sendOrderConfirmation = async ({
 
     const { messageUrl, source, template } = getConfig();
 
-    let consent = await WhatsAppConsent.findOne({
-        mobileNumber: mobile,
-        optedIn: true,
-    });
-
-    if (!consent) {
-        try {
-            await registerWhatsAppOptIn({
-                mobileNumber: mobile,
-                consent: true,
-                source: "WEB",
-                userAgent: "PriestServices",
-            });
-            consent = true;
-        } catch (optInErr) {
-            console.warn("Auto opt-in before sending WhatsApp message note:", optInErr.message);
-            // Record consent locally so message sending can proceed
-            await WhatsAppConsent.findOneAndUpdate(
-                { mobileNumber: mobile },
-                {
-                    $set: {
-                        mobileNumber: mobile,
-                        optedIn: true,
-                        consentedAt: new Date(),
-                        source: "WEB",
-                    },
-                },
-                { upsert: true }
-            );
-        }
-    }
+    // Ensure opt-in asynchronously in the background so it does not block immediate message sending
+    WhatsAppConsent.findOne({ mobileNumber: mobile, optedIn: true })
+        .then((consent) => {
+            if (!consent) {
+                return registerWhatsAppOptIn({
+                    mobileNumber: mobile,
+                    consent: true,
+                    source: "WEB",
+                    userAgent: "PriestServices",
+                }).catch((optInErr) => {
+                    console.warn("[WhatsApp] Background opt-in notice:", optInErr.message);
+                    return WhatsAppConsent.findOneAndUpdate(
+                        { mobileNumber: mobile },
+                        {
+                            $set: {
+                                mobileNumber: mobile,
+                                optedIn: true,
+                                consentedAt: new Date(),
+                                source: "WEB",
+                            },
+                        },
+                        { upsert: true }
+                    );
+                });
+            }
+        })
+        .catch((err) => {
+            console.warn("[WhatsApp] Opt-in lookup check notice:", err.message);
+        });
 
     const payload = {
         message: [
