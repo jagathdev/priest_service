@@ -1,6 +1,9 @@
 import express from "express";
 import rateLimit from "express-rate-limit";
 import { previewOrder, getUserOrders, getOrderStatus } from "../controllers/order.controller.js";
+import { requireAuth, requireUserOrAdmin } from "../middlewares/auth.js";
+import { validateRequest } from "../middlewares/validate.js";
+import { validatePreviewOrder } from "../validators/public.schemas.js";
 
 const router = express.Router();
 
@@ -13,7 +16,7 @@ const statusLimiter = rateLimit({
 });
 
 router.get("/status", statusLimiter, getOrderStatus);
-router.post("/preview", previewOrder);
-router.get("/user/:userId", getUserOrders);
+router.post("/preview", validateRequest(validatePreviewOrder), previewOrder);
+router.get("/user/:userId", requireAuth, requireUserOrAdmin, getUserOrders);
 
 export default router;

@@ -18,8 +18,19 @@ export const loginLimiter = rateLimit({
 
 export const otpLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10,
+  message: { success: false, message: 'Too many OTP requests from this IP, please try again after 15 minutes' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+export const perMobileOtpLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
   max: 5,
-  message: 'Too many OTP requests from this IP, please try again after 15 minutes',
+  keyGenerator: (req) => {
+    return req.body?.mobileNumber ? String(req.body.mobileNumber).trim() : (req.ip || 'unknown');
+  },
+  message: { success: false, message: 'Too many OTP requests for this mobile number, please wait before trying again.' },
   standardHeaders: true,
   legacyHeaders: false,
 });

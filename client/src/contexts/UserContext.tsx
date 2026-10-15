@@ -52,7 +52,9 @@ export function UserProvider({ children, initialUser }: { children: ReactNode; i
       document.cookie = "userLogin=true; path=/; max-age=604800;";
     } else if (user === null) {
       localStorage.removeItem("mockUser");
+      localStorage.removeItem("token");
       document.cookie = "mockUser=; path=/; max-age=0;";
+      document.cookie = "token=; path=/; max-age=0;";
       document.cookie = "userLogin=false; path=/; max-age=0;";
     }
   }, [user]);

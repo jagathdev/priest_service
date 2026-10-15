@@ -42,6 +42,10 @@ export const verifyRazorpayPayment = ({
     razorpayPaymentId,
     razorpaySignature,
 }) => {
+    if (!razorpayOrderId || !razorpayPaymentId || !razorpaySignature) {
+        return false;
+    }
+
     const generatedSignature = crypto
         .createHmac(
             "sha256",
@@ -52,7 +56,16 @@ export const verifyRazorpayPayment = ({
         )
         .digest("hex");
 
-    return generatedSignature === razorpaySignature;
+    try {
+        const genBuffer = Buffer.from(generatedSignature, "utf8");
+        const sigBuffer = Buffer.from(razorpaySignature, "utf8");
+        if (genBuffer.length !== sigBuffer.length) {
+            return false;
+        }
+        return crypto.timingSafeEqual(genBuffer, sigBuffer);
+    } catch {
+        return false;
+    }
 };
 
 // ==========================================

@@ -214,3 +214,31 @@ export const validatePromoCode = async ({
         finalAmount,
     };
 };
+
+/**
+ * Record promo usage in PromoCodeUsage collection and increment usedCount.
+ */
+export const recordPromoUsage = async ({
+    promoCodeId,
+    userId,
+    orderId,
+    discountAmount,
+}) => {
+    const existing = await PromoCodeUsage.findOne({ orderId });
+    if (existing) {
+        return existing;
+    }
+
+    const usage = await PromoCodeUsage.create({
+        promoCodeId,
+        userId,
+        orderId,
+        discountAmount,
+    });
+
+    await PromoCode.findByIdAndUpdate(promoCodeId, {
+        $inc: { usedCount: 1 },
+    });
+
+    return usage;
+};

@@ -2,7 +2,9 @@ import User from "../models/user.js";
 
 export const getProfile = async (req, res) => {
     try {
-        const userId = req.params?.userId || req.user?.id || req.query?.userId;
+        const userId = (req.user?.role === "admin" && (req.params?.userId || req.query?.userId))
+            ? (req.params?.userId || req.query?.userId)
+            : (req.user?.id || req.params?.userId || req.query?.userId);
 
         if (!userId) {
             return res.status(400).json({
@@ -46,7 +48,9 @@ export const getProfile = async (req, res) => {
 
 export const updateProfile = async (req, res) => {
     try {
-        const userId = req.user?.id || req.body?.userId;
+        const userId = (req.user?.role === "admin" && req.body?.userId)
+            ? req.body?.userId
+            : (req.user?.id || req.body?.userId);
         const { name, email, gender, dob, placeOfBirth, occupation, addresses, whatsappNumber } = req.body;
 
         if (!userId) {

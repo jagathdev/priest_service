@@ -1,3 +1,5 @@
+import crypto from "crypto";
+import jwt from "jsonwebtoken";
 import { sendOTP } from "../services/otp.service.js";
 import Otp from "../models/otp.js";
 import User from "../models/user.js";
@@ -111,6 +113,18 @@ export const verifyOtp = async (req, res) => {
 
 
         // ==========================================
+        // CHECK ATTEMPT LIMIT (max 5)
+        // ==========================================
+
+        if ((otpRecord.attempts || 0) >= 5) {
+            await Otp.deleteOne({ _id: otpRecord._id });
+            return res.status(400).json({
+                success: false,
+                message: "Maximum OTP verification attempts exceeded. Please request a new OTP.",
+            });
+        }
+
+        // ==========================================
         // CHECK OTP EXPIRY
         // ==========================================
 
@@ -127,14 +141,29 @@ export const verifyOtp = async (req, res) => {
         }
 
         // ==========================================
-        // CHECK OTP
+        // CHECK OTP HASH
         // ==========================================
 
-        if (otpRecord.otp !== enteredOtp) {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid OTP.",
-            });
+        const enteredOtpHash = crypto.createHash("sha256").update(enteredOtp).digest("hex");
+        const storedHash = otpRecord.otp;
+        const matches = (storedHash === enteredOtp || storedHash === enteredOtpHash);
+
+        if (!matches) {
+            const updatedAttempts = (otpRecord.attempts || 0) + 1;
+            if (updatedAttempts >= 5) {
+                await Otp.deleteOne({ _id: otpRecord._id });
+                return res.status(400).json({
+                    success: false,
+                    message: "Maximum OTP verification attempts exceeded. Please request a new OTP.",
+                });
+            } else {
+                otpRecord.attempts = updatedAttempts;
+                await otpRecord.save();
+                return res.status(400).json({
+                    success: false,
+                    message: `Invalid OTP. ${5 - updatedAttempts} attempt(s) remaining.`,
+                });
+            }
         }
 
         // ==========================================
@@ -186,6 +215,16 @@ export const verifyOtp = async (req, res) => {
         });
 
         // ==========================================
+        // GENERATE AUTH TOKEN
+        // ==========================================
+
+        const token = jwt.sign(
+            { id: user._id, role: "user" },
+            process.env.JWT_SECRET,
+            { expiresIn: "7d" }
+        );
+
+        // ==========================================
         // SUCCESS RESPONSE
         // ==========================================
 
@@ -193,9 +232,10 @@ export const verifyOtp = async (req, res) => {
             success: true,
             is_user: true,
             message: "Login successful",
-
+            token,
             data: {
                 is_user: true,
+                token,
                 user: {
                     id: user._id,
                     mobileNumber: user.mobileNumber,

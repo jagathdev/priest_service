@@ -371,9 +371,14 @@ function SankalpContent() {
       };
 
       setLoadingMsg("Creating order securely...");
+      const userToken = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+      const authHeaders: Record<string, string> = { "Content-Type": "application/json" };
+      if (userToken) {
+        authHeaders["Authorization"] = `Bearer ${userToken}`;
+      }
       const orderRes = await fetch(`${backendUrl}/api/payments/create-order`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: authHeaders,
         body: JSON.stringify({
           customerId: mongoUserId,
           currencyCode: "INR",
@@ -446,9 +451,14 @@ function SankalpContent() {
         handler: async function (response: RazorpayResponse) {
           setLoadingMsg("Verifying payment...");
           try {
+            const verifyToken = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+            const verifyHeaders: Record<string, string> = { "Content-Type": "application/json" };
+            if (verifyToken) {
+              verifyHeaders["Authorization"] = `Bearer ${verifyToken}`;
+            }
             const verifyRes = await fetch(`${backendUrl}/api/payments/verify`, {
               method: "POST",
-              headers: { "Content-Type": "application/json" },
+              headers: verifyHeaders,
               body: JSON.stringify({
                 razorpayOrderId: response.razorpay_order_id,
                 razorpayPaymentId: response.razorpay_payment_id,

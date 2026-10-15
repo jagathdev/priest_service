@@ -4,6 +4,7 @@ import Order from "../models/Order.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import Admin from "../models/Admin.js";
+import { escapeRegex } from "../utils/escapeRegex.js";
 export const adminLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -62,10 +63,10 @@ export const getAdminOrders = async (req, res) => {
       andConditions.push({ $or: [{ itemName: service }, { pooja: service }] });
     }
     if (status !== "All") {
-      query.orderStatus = new RegExp(`^${status}$`, "i");
+      query.orderStatus = new RegExp(`^${escapeRegex(status)}$`, "i");
     }
     if (search) {
-      const searchRegex = new RegExp(search, "i");
+      const searchRegex = new RegExp(escapeRegex(search), "i");
       andConditions.push({
         $or: [
           { customerName: searchRegex },

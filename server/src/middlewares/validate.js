@@ -1,7 +1,15 @@
 export const validateRequest = (schema) => {
     return (req, res, next) => {
         try {
-            if (typeof schema?.parse === 'function') {
+            if (typeof schema === 'function') {
+                const errorMsg = schema(req.body);
+                if (errorMsg) {
+                    return res.status(400).json({
+                        success: false,
+                        message: errorMsg,
+                    });
+                }
+            } else if (typeof schema?.parse === 'function') {
                 const parsed = schema.parse({
                     body: req.body,
                     query: req.query,

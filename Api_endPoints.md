@@ -565,8 +565,10 @@ Comprehensive documentation for all REST API endpoints configured and mounted in
   "success": true,
   "is_user": true,
   "message": "Login successful",
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
   "data": {
     "is_user": true,
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
     "user": {
       "id": "6abd0358cd62648ac4fa1c4a",
       "mobileNumber": "9360270984",

@@ -29,11 +29,28 @@ export const requireAuth = async (req, res, next) => {
       role: decoded.role
     };
 
+    // If userId exists in params, verify ownership
+    const paramUserId = req.params?.userId;
+    if (paramUserId && req.user.role !== 'admin' && String(paramUserId) !== String(req.user.id)) {
+      return res.status(403).json({ success: false, message: 'Forbidden: access denied to requested resource' });
+    }
+
     next();
   } catch (error) {
     console.error('Auth middleware error:', error);
     res.status(401).json({ success: false, message: 'Not authorized' });
   }
+};
+
+export const requireUserOrAdmin = (req, res, next) => {
+  if (!req.user) {
+    return res.status(401).json({ success: false, message: 'Not authorized, no token' });
+  }
+  const targetUserId = req.params?.userId || req.body?.userId;
+  if (targetUserId && req.user.role !== 'admin' && String(targetUserId) !== String(req.user.id)) {
+    return res.status(403).json({ success: false, message: 'Forbidden: access denied' });
+  }
+  next();
 };
 
 export const requireAdmin = (req, res, next) => {

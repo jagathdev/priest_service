@@ -5,6 +5,7 @@ import Homa from "../models/homaModel.js";
 import { calculateServicePrice } from "../services/pricing.service.js";
 import Order from "../models/Order.js";
 import User from "../models/user.js";
+import { escapeRegex } from "../utils/escapeRegex.js";
 export const previewOrder = async (req, res) => {
     try {
         const {
@@ -119,7 +120,9 @@ export const previewOrder = async (req, res) => {
 
 export const getUserOrders = async (req, res) => {
     try {
-        const { userId } = req.params;
+        const userId = req.user?.role === "admin" && req.params?.userId
+            ? req.params?.userId
+            : (req.user?.id || req.params?.userId);
 
         let query = { customer: userId };
 
@@ -130,12 +133,13 @@ export const getUserOrders = async (req, res) => {
             if (user && user.mobileNumber) {
                 // Strip potential country code like +91 for flexible matching
                 const strippedMobile = user.mobileNumber.replace(/^\+91/, '').trim();
+                const escapedMobile = escapeRegex(strippedMobile);
 
                 query = {
                     $or: [
                         { customer: userId },
-                        { whatsappNumber: { $regex: new RegExp(strippedMobile + "$") } },
-                        { mobileNumber: { $regex: new RegExp(strippedMobile + "$") } }
+                        { whatsappNumber: { $regex: new RegExp(escapedMobile + "$") } },
+                        { mobileNumber: { $regex: new RegExp(escapedMobile + "$") } }
                     ]
                 };
             }
@@ -149,6 +153,23 @@ export const getUserOrders = async (req, res) => {
 
         const orders = await Order.find(finalQuery).sort({ createdAt: -1 }).lean();
 
+        // Batch query any missing service images/temples with $in to eliminate N+1 queries
+        const missingServiceIds = orders
+            .filter((o) => (!o.imageUrl && !o.image) || !o.temple)
+            .map((o) => o.serviceId)
+            .filter((id) => id && mongoose.Types.ObjectId.isValid(id));
+
+        const [pujasBatch, poojasBatch, homasBatch] = await Promise.all([
+            missingServiceIds.length > 0 ? Puja.find({ _id: { $in: missingServiceIds } }).lean() : [],
+            missingServiceIds.length > 0 ? Pooja.find({ _id: { $in: missingServiceIds } }).lean() : [],
+            missingServiceIds.length > 0 ? Homa.find({ _id: { $in: missingServiceIds } }).lean() : [],
+        ]);
+
+        const serviceMap = new Map();
+        [...pujasBatch, ...poojasBatch, ...homasBatch].forEach((s) => {
+            if (s && s._id) serviceMap.set(String(s._id), s);
+        });
+
         const enrichedOrders = await Promise.all(
             orders.map(async (order) => {
                 // 1. Use the imageUrl saved directly on the order (set at payment time)
@@ -158,12 +179,10 @@ export const getUserOrders = async (req, res) => {
                 if (!image || !temple) {
                     let service = null;
                     if (order.serviceId && mongoose.Types.ObjectId.isValid(order.serviceId)) {
-                        service = await Puja.findById(order.serviceId).lean() ||
-                                  await Pooja.findById(order.serviceId).lean() ||
-                                  await Homa.findById(order.serviceId).lean();
+                        service = serviceMap.get(String(order.serviceId));
                     }
                     if (!service && (order.itemName || order.pooja)) {
-                        const nameToSearch = order.itemName || order.pooja;
+                        const nameToSearch = escapeRegex(order.itemName || order.pooja);
                         service = await Puja.findOne({ title: { $regex: new RegExp(nameToSearch, "i") } }).lean() ||
                                   await Pooja.findOne({ name: { $regex: new RegExp(nameToSearch, "i") } }).lean() ||
                                   await Homa.findOne({ title: { $regex: new RegExp(nameToSearch, "i") } }).lean();
