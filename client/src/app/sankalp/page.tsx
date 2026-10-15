@@ -615,7 +615,7 @@ function SankalpContent() {
                             }
                             setFormData({ ...formData, whatsapp: val });
                           }}
-                          placeholder="9360270984"
+                          placeholder="9566777645"
                           className="w-full text-sm font-extrabold text-stone-900 outline-none bg-transparent"
                         />
                         <div className={isPhoneValid ? "text-[#0084ff]" : "text-stone-300"}>

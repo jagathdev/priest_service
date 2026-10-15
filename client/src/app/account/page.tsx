@@ -190,6 +190,7 @@ function AccountPageContent() {
     country: "India",
     isDefault: false
   });
+  const [addressErrors, setAddressErrors] = useState<Record<string, string>>({});
   const [selectedLanguage, setSelectedLanguage] = useState("English");
   const [openFaq, setOpenFaq] = useState<number | null>(1);
 
@@ -338,21 +339,80 @@ function AccountPageContent() {
     }
   };
 
+  const validateAddressForm = () => {
+    const errors: Record<string, string> = {};
+    const trimmedName = addressFormData.fullName.trim();
+    const cleanPhone = addressFormData.phone.trim();
+    const trimmedAddress = addressFormData.address.trim();
+    const trimmedCity = addressFormData.city.trim();
+    const trimmedState = addressFormData.state.trim();
+    const cleanPincode = addressFormData.pincode.trim();
+    const trimmedCountry = addressFormData.country.trim();
+
+    if (!trimmedName) {
+      errors.fullName = "Full name is required";
+    } else if (trimmedName.length < 2) {
+      errors.fullName = "Name must be at least 2 characters";
+    } else if (!/^[A-Za-z\s]+$/.test(trimmedName)) {
+      errors.fullName = "Full name must contain only letters";
+    }
+
+    if (!cleanPhone) {
+      errors.phone = "Phone number is required";
+    } else if (!/^[6-9]\d{9}$/.test(cleanPhone)) {
+      errors.phone = "Mobile number must be 10 digits and start with 6, 7, 8, or 9";
+    }
+
+    if (!trimmedAddress) {
+      errors.address = "Address is required";
+    } else if (trimmedAddress.length < 5) {
+      errors.address = "Please enter complete street / building address";
+    }
+
+    if (!trimmedCity) {
+      errors.city = "City is required";
+    } else if (!/^[A-Za-z\s]+$/.test(trimmedCity)) {
+      errors.city = "City must contain only letters";
+    }
+
+    if (!trimmedState) {
+      errors.state = "State is required";
+    } else if (!/^[A-Za-z\s]+$/.test(trimmedState)) {
+      errors.state = "State must contain only letters";
+    }
+
+    if (!cleanPincode) {
+      errors.pincode = "Pincode is required";
+    } else if (!/^\d{6}$/.test(cleanPincode)) {
+      errors.pincode = "Enter a valid 6-digit pincode";
+    }
+
+    if (!trimmedCountry) {
+      errors.country = "Country is required";
+    } else if (!/^[A-Za-z\s]+$/.test(trimmedCountry)) {
+      errors.country = "Country must contain only letters";
+    }
+
+    setAddressErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleSaveAddress = async () => {
     if (!user) return;
+    if (!validateAddressForm()) return;
     try {
       const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
 
       const newAddress = {
         type: addressFormData.type,
-        name: addressFormData.fullName,
-        phone: addressFormData.phone,
-        addressLine1: addressFormData.address,
-        addressLine2: addressFormData.landmark,
-        city: addressFormData.city,
-        state: addressFormData.state,
-        pincode: addressFormData.pincode,
-        country: addressFormData.country,
+        name: addressFormData.fullName.trim(),
+        phone: addressFormData.phone.trim(),
+        addressLine1: addressFormData.address.trim(),
+        addressLine2: addressFormData.landmark.trim(),
+        city: addressFormData.city.trim(),
+        state: addressFormData.state.trim(),
+        pincode: addressFormData.pincode.trim(),
+        country: addressFormData.country.trim(),
         isDefault: addressFormData.isDefault
       };
 
@@ -448,6 +508,7 @@ function AccountPageContent() {
   };
 
   const openEditAddressModal = (addr: Address) => {
+    setAddressErrors({});
     setAddressFormData({
       _id: addr._id || "",
       type: addr.type || "Home",
@@ -466,6 +527,7 @@ function AccountPageContent() {
 
 
   const openAddAddressModal = () => {
+    setAddressErrors({});
     setAddressFormData({
       _id: "",
       type: "Home",
@@ -1827,36 +1889,82 @@ function AccountPageContent() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                   <div>
-                    <label className="text-[13px] font-bold text-gray-800 block mb-1.5">Full Name</label>
+                    <label className="text-[13px] font-bold text-gray-800 block mb-1.5">
+                      Full Name <span className="text-red-500">*</span>
+                    </label>
                     <input
                       type="text"
                       placeholder="Recipient name"
                       value={addressFormData.fullName}
-                      onChange={(e) => setAddressFormData(p => ({ ...p, fullName: e.target.value }))}
-                      className="w-full border border-gray-250 rounded-xl px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:border-success"
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/[^a-zA-Z\s]/g, "");
+                        setAddressFormData(p => ({ ...p, fullName: val }));
+                        if (addressErrors.fullName) {
+                          setAddressErrors(prev => ({ ...prev, fullName: "" }));
+                        }
+                      }}
+                      className={`w-full border rounded-xl px-4 py-2.5 text-sm text-gray-800 focus:outline-none transition ${addressErrors.fullName
+                          ? "border-red-500 focus:border-red-500 bg-red-50/20"
+                          : "border-gray-250 focus:border-success"
+                        }`}
                     />
+                    {addressErrors.fullName && (
+                      <p className="text-red-500 text-xs mt-1 font-medium">{addressErrors.fullName}</p>
+                    )}
                   </div>
                   <div>
-                    <label className="text-[13px] font-bold text-gray-800 block mb-1.5">Phone</label>
+                    <label className="text-[13px] font-bold text-gray-800 block mb-1.5">
+                      Phone <span className="text-red-500">*</span>
+                    </label>
                     <input
-                      type="text"
-                      placeholder="+91 98765 43210"
+                      type="tel"
+                      placeholder="9876543210"
+                      maxLength={10}
                       value={addressFormData.phone}
-                      onChange={(e) => setAddressFormData(p => ({ ...p, phone: e.target.value }))}
-                      className="w-full border border-gray-250 rounded-xl px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:border-success"
+                      onChange={(e) => {
+                        let digits = e.target.value.replace(/\D/g, "");
+                        // Ensure first digit must be 6, 7, 8, or 9
+                        if (digits.length > 0 && !['6', '7', '8', '9'].includes(digits[0])) {
+                          digits = "";
+                        }
+                        setAddressFormData(p => ({ ...p, phone: digits }));
+                        if (addressErrors.phone) {
+                          setAddressErrors(prev => ({ ...prev, phone: "" }));
+                        }
+                      }}
+                      className={`w-full border rounded-xl px-4 py-2.5 text-sm text-gray-800 focus:outline-none transition ${addressErrors.phone
+                          ? "border-red-500 focus:border-red-500 bg-red-50/20"
+                          : "border-gray-250 focus:border-success"
+                        }`}
                     />
+                    {addressErrors.phone && (
+                      <p className="text-red-500 text-xs mt-1 font-medium">{addressErrors.phone}</p>
+                    )}
                   </div>
                 </div>
 
                 <div className="mb-4">
-                  <label className="text-[13px] font-bold text-gray-800 block mb-1.5">Address</label>
+                  <label className="text-[13px] font-bold text-gray-800 block mb-1.5">
+                    Address <span className="text-red-500">*</span>
+                  </label>
                   <input
                     type="text"
                     placeholder="Flat / House no. / Building / Street"
                     value={addressFormData.address}
-                    onChange={(e) => setAddressFormData(p => ({ ...p, address: e.target.value }))}
-                    className="w-full border border-gray-250 rounded-xl px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:border-success"
+                    onChange={(e) => {
+                      setAddressFormData(p => ({ ...p, address: e.target.value }));
+                      if (addressErrors.address) {
+                        setAddressErrors(prev => ({ ...prev, address: "" }));
+                      }
+                    }}
+                    className={`w-full border rounded-xl px-4 py-2.5 text-sm text-gray-800 focus:outline-none transition ${addressErrors.address
+                        ? "border-red-500 focus:border-red-500 bg-red-50/20"
+                        : "border-gray-250 focus:border-success"
+                      }`}
                   />
+                  {addressErrors.address && (
+                    <p className="text-red-500 text-xs mt-1 font-medium">{addressErrors.address}</p>
+                  )}
                 </div>
 
                 <div className="mb-4">
@@ -1872,47 +1980,104 @@ function AccountPageContent() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                   <div>
-                    <label className="text-[13px] font-bold text-gray-800 block mb-1.5">City</label>
+                    <label className="text-[13px] font-bold text-gray-800 block mb-1.5">
+                      City <span className="text-red-500">*</span>
+                    </label>
                     <input
                       type="text"
                       placeholder="City"
                       value={addressFormData.city}
-                      onChange={(e) => setAddressFormData(p => ({ ...p, city: e.target.value }))}
-                      className="w-full border border-gray-250 rounded-xl px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:border-success"
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/[^a-zA-Z\s]/g, "");
+                        setAddressFormData(p => ({ ...p, city: val }));
+                        if (addressErrors.city) {
+                          setAddressErrors(prev => ({ ...prev, city: "" }));
+                        }
+                      }}
+                      className={`w-full border rounded-xl px-4 py-2.5 text-sm text-gray-800 focus:outline-none transition ${addressErrors.city
+                          ? "border-red-500 focus:border-red-500 bg-red-50/20"
+                          : "border-gray-250 focus:border-success"
+                        }`}
                     />
+                    {addressErrors.city && (
+                      <p className="text-red-500 text-xs mt-1 font-medium">{addressErrors.city}</p>
+                    )}
                   </div>
                   <div>
-                    <label className="text-[13px] font-bold text-gray-800 block mb-1.5">State</label>
+                    <label className="text-[13px] font-bold text-gray-800 block mb-1.5">
+                      State <span className="text-red-500">*</span>
+                    </label>
                     <input
                       type="text"
                       placeholder="State"
                       value={addressFormData.state}
-                      onChange={(e) => setAddressFormData(p => ({ ...p, state: e.target.value }))}
-                      className="w-full border border-gray-250 rounded-xl px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:border-success"
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/[^a-zA-Z\s]/g, "");
+                        setAddressFormData(p => ({ ...p, state: val }));
+                        if (addressErrors.state) {
+                          setAddressErrors(prev => ({ ...prev, state: "" }));
+                        }
+                      }}
+                      className={`w-full border rounded-xl px-4 py-2.5 text-sm text-gray-800 focus:outline-none transition ${addressErrors.state
+                          ? "border-red-500 focus:border-red-500 bg-red-50/20"
+                          : "border-gray-250 focus:border-success"
+                        }`}
                     />
+                    {addressErrors.state && (
+                      <p className="text-red-500 text-xs mt-1 font-medium">{addressErrors.state}</p>
+                    )}
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
                   <div>
-                    <label className="text-[13px] font-bold text-gray-800 block mb-1.5">Pincode</label>
+                    <label className="text-[13px] font-bold text-gray-800 block mb-1.5">
+                      Pincode <span className="text-red-500">*</span>
+                    </label>
                     <input
                       type="text"
                       placeholder="500033"
+                      maxLength={6}
                       value={addressFormData.pincode}
-                      onChange={(e) => setAddressFormData(p => ({ ...p, pincode: e.target.value }))}
-                      className="w-full border border-gray-250 rounded-xl px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:border-success"
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/\D/g, "");
+                        setAddressFormData(p => ({ ...p, pincode: val }));
+                        if (addressErrors.pincode) {
+                          setAddressErrors(prev => ({ ...prev, pincode: "" }));
+                        }
+                      }}
+                      className={`w-full border rounded-xl px-4 py-2.5 text-sm text-gray-800 focus:outline-none transition ${addressErrors.pincode
+                          ? "border-red-500 focus:border-red-500 bg-red-50/20"
+                          : "border-gray-250 focus:border-success"
+                        }`}
                     />
+                    {addressErrors.pincode && (
+                      <p className="text-red-500 text-xs mt-1 font-medium">{addressErrors.pincode}</p>
+                    )}
                   </div>
                   <div>
-                    <label className="text-[13px] font-bold text-gray-800 block mb-1.5">Country</label>
+                    <label className="text-[13px] font-bold text-gray-800 block mb-1.5">
+                      Country <span className="text-red-500">*</span>
+                    </label>
                     <input
                       type="text"
                       placeholder="India"
                       value={addressFormData.country}
-                      onChange={(e) => setAddressFormData(p => ({ ...p, country: e.target.value }))}
-                      className="w-full border border-gray-250 rounded-xl px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:border-success"
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/[^a-zA-Z\s]/g, "");
+                        setAddressFormData(p => ({ ...p, country: val }));
+                        if (addressErrors.country) {
+                          setAddressErrors(prev => ({ ...prev, country: "" }));
+                        }
+                      }}
+                      className={`w-full border rounded-xl px-4 py-2.5 text-sm text-gray-800 focus:outline-none transition ${addressErrors.country
+                          ? "border-red-500 focus:border-red-500 bg-red-50/20"
+                          : "border-gray-250 focus:border-success"
+                        }`}
                     />
+                    {addressErrors.country && (
+                      <p className="text-red-500 text-xs mt-1 font-medium">{addressErrors.country}</p>
+                    )}
                   </div>
                 </div>
 
