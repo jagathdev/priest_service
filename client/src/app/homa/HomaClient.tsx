@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import Image from "next/image";
 import Navbar from "@/components/layout/Navbar";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -151,9 +152,11 @@ export default function HomaClient({ initialHomas }: { initialHomas?: Homa[] }) 
         <section className="bg-gradient-to-b from-[#fff7f8] via-[#ffffff] to-[#fafafc] pt-12 pb-10 text-center border-b border-gray-150 relative overflow-hidden">
           {/* Left Inverted Mandala Decoration */}
           <div className="absolute left-0 top-0 bottom-0 h-full pointer-events-none opacity-40 z-0 hidden min-[769px]:flex items-center">
-            <img
+            <Image
               src="/images/mandala.png"
               alt="Mandala Left"
+              width={200}
+              height={200}
               className="h-full w-auto object-contain -scale-x-100"
               style={{ transform: "scaleX(-1)" }}
             />
@@ -161,9 +164,11 @@ export default function HomaClient({ initialHomas }: { initialHomas?: Homa[] }) 
 
           {/* Right Mandala Decoration */}
           <div className="absolute right-0 top-0 bottom-0 h-full pointer-events-none opacity-40 z-0 hidden min-[769px]:flex items-center">
-            <img
+            <Image
               src="/images/mandala.png"
               alt="Mandala Right"
+              width={200}
+              height={200}
               className="h-full w-auto object-contain"
             />
           </div>
@@ -366,9 +371,12 @@ export default function HomaClient({ initialHomas }: { initialHomas?: Homa[] }) 
                         <div className="flex flex-col flex-1 block">
                           {/* ── Top Image Container ── */}
                           <div className="relative h-[210px] w-full overflow-hidden bg-gray-100 shrink-0">
-                            <img
+                            <Image
                               src={getHomaImageUrl(homa.imageUrl)}
                               alt={homa.title}
+                              fill
+                              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                              unoptimized
                               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                             />
 

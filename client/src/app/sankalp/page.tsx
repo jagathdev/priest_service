@@ -3,6 +3,7 @@
 import React, { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import PromoCodeInput from "@/components/PromoCodeInput";
@@ -63,19 +64,25 @@ function SankalpContent() {
 
   const profileFetchedRef = React.useRef(false);
 
+  const searchParamsWa = searchParams?.get("wa") || "";
+  const searchParamsName = searchParams?.get("name") || "";
+  const userId = user?.id || user?._id;
+  const userWhatsapp = user?.whatsappNumber || user?.whatsapp || "";
+  const userMobile = user?.mobileNumber || user?.phone || "";
+  const userName = user?.name || "";
+
   // Auto-populate user details from UserContext / backend profile API
   useEffect(() => {
     async function loadUserProfile() {
       // Prioritize saved WhatsApp number first; if empty, fallback to user's mobile number
-      let whatsappPhone = user?.whatsappNumber || user?.whatsapp || searchParams?.get("wa") || user?.mobileNumber || user?.phone || "";
-      let name = user?.name || searchParams?.get("name") || "";
+      let whatsappPhone = userWhatsapp || searchParamsWa || userMobile || "";
+      let name = userName || searchParamsName || "";
 
-      const uId = user?.id || user?._id;
-      if (uId && !profileFetchedRef.current) {
+      if (userId && !profileFetchedRef.current) {
         profileFetchedRef.current = true;
         try {
-          const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
-          const res = await fetch(`${baseUrl}/api/users/profile/${uId}`);
+          const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
+          const res = await fetch(`${baseUrl}/api/users/profile/${userId}`);
           if (res.ok) {
             const data = await res.json();
             if (data.success && data.data) {
@@ -85,7 +92,7 @@ function SankalpContent() {
                 whatsappPhone = data.data.mobileNumber;
               }
               if (data.data.name) name = data.data.name;
-              setUser({ ...user, ...data.data });
+              setUser((prevUser) => ({ ...(prevUser || {}), ...data.data }));
             }
           }
         } catch (err) {
@@ -108,7 +115,7 @@ function SankalpContent() {
     }
 
     loadUserProfile();
-  }, [user?.id, user?._id, user?.whatsappNumber, user?.whatsapp, user?.mobileNumber, user?.phone, user?.name]);
+  }, [userId, userWhatsapp, userMobile, userName, searchParamsWa, searchParamsName, setUser]);
 
   const pujaFetchedRef = React.useRef(false);
 
@@ -765,12 +772,14 @@ function SankalpContent() {
                           return (
                             <div key={idx} className="bg-white p-3 rounded-2xl border border-stone-100 flex items-center gap-3">
                               {offeringImage && offeringImage.trim() !== '' && (
-                                <div className="w-12 h-12 rounded-full overflow-hidden shrink-0 bg-stone-100 border border-stone-200">
-                                  <img
+                                <div className="w-12 h-12 rounded-full overflow-hidden shrink-0 bg-stone-100 border border-stone-200 relative">
+                                  <Image
                                     src={offeringImage.startsWith("http") || offeringImage.startsWith("/") ? offeringImage : `/${offeringImage}`}
                                     alt={offeringName}
+                                    width={48}
+                                    height={48}
+                                    unoptimized
                                     className="w-full h-full object-cover"
-                                    onError={(e) => { e.currentTarget.parentElement!.style.display = 'none'; }}
                                   />
                                 </div>
                               )}
@@ -821,9 +830,12 @@ function SankalpContent() {
 
                   {/* Puja Item */}
                   <div className="flex gap-4 items-center mb-6">
-                    <img
+                    <Image
                       src={pujaData?.imageUrl || "/images/Ganesh-Chaturthi-Mahapuja.jpg"}
-                      alt={pujaData?.title || queryTitle}
+                      alt={pujaData?.title || queryTitle || "Puja"}
+                      width={84}
+                      height={64}
+                      unoptimized
                       className="w-[84px] h-[64px] rounded-lg object-cover border border-stone-200 shrink-0 shadow-sm"
                     />
                     <div>

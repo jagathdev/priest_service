@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
+import Image from "next/image";
 import { PencilSquareIcon, PlusIcon, TrashIcon, EyeIcon, Bars3Icon } from "@heroicons/react/24/outline";
 
 /** Puja card date stored as DD-MM-YYYY; native date input uses YYYY-MM-DD */
@@ -105,6 +106,7 @@ export default function ContentManager({
   const [draggedItemIndex, setDraggedItemIndex] = useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [viewingReview, setViewingReview] = useState<any | null>(null);
+  const [currencyRates] = useState<{ usd: number; myr: number } | null>(null);
 
   const effectiveFilterGroups = useMemo(() => {
     if (type !== "puja" || !dynamicPujaLocationFromItems) {
@@ -160,60 +162,16 @@ export default function ContentManager({
     });
   }, [effectiveFilterGroups]);
 
-  useEffect(() => {
-    fetchItems();
-
-    // Fetch currency settings
-    // API removed based on user request
-    /*
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com"}/api/admin/content?type=currency`)
-      .then(async (res) => {
-        if (!res.ok) return null;
-        const text = await res.text();
-        return text ? JSON.parse(text) : null;
-      })
-      .then((data) => {
-        if (Array.isArray(data) && data.length > 0) {
-          const rates = data[0];
-          setCurrencyRates({
-            usd: Number(rates.usdConversionRate) || 0,
-            myr: Number(rates.myrConversionRate) || 0,
-          });
-        }
-      })
-      .catch(console.error);
-    */
-
-    // Fetch any reference data
-    fields.forEach(async (f) => {
-      if (f.type === "reference-array" && f.referenceEndpoint) {
-        try {
-          const res = await fetch(f.referenceEndpoint);
-          if (!res.ok) return;
-          const text = await res.text();
-          if (!text) return;
-          const data = JSON.parse(text);
-          const list = Array.isArray(data) ? data : (data && Array.isArray(data.data) ? data.data : []);
-          if (Array.isArray(list)) {
-            setReferenceData((prev) => ({ ...prev, [f.name]: list }));
-          }
-        } catch (error) {
-          console.error(`Failed to fetch reference data for ${f.name}:`, error);
-        }
-      }
-    });
-  }, [type]);
-
-  const getAdminAuthHeaders = (): Record<string, string> => {
+  const getAdminAuthHeaders = useCallback((): Record<string, string> => {
     if (typeof window === "undefined") return {};
     const match = document.cookie.match(/(?:^|;\s*)(?:adminToken|token)=([^;]+)/);
     const cookieToken = match ? decodeURIComponent(match[1]) : null;
     const localToken = localStorage.getItem("adminToken") || localStorage.getItem("token");
     const token = cookieToken || localToken;
     return token ? { Authorization: `Bearer ${token}` } : {};
-  };
+  }, []);
 
-  const getEndpoint = (itemType: string, id?: string | null): string => {
+  const getEndpoint = useCallback((itemType: string, id?: string | null): string => {
     let expressBase = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
     if (!expressBase.endsWith('/api')) {
       expressBase += '/api';
@@ -228,9 +186,9 @@ export default function ContentManager({
       return id ? `${expressBase}/hero-banners/${id}` : `${expressBase}/hero-banners?all=true`;
     }
     return id ? `/api/admin/content?type=${itemType}&id=${id}` : `/api/admin/content?type=${itemType}`;
-  };
+  }, []);
 
-  const fetchItems = async () => {
+  const fetchItems = useCallback(async () => {
     setLoading(true);
     try {
       const endpoint = getEndpoint(type);
@@ -256,7 +214,30 @@ export default function ContentManager({
     } finally {
       setLoading(false);
     }
-  };
+  }, [type, getEndpoint, getAdminAuthHeaders]);
+
+  useEffect(() => {
+    fetchItems();
+
+    // Fetch any reference data
+    fields.forEach(async (f) => {
+      if (f.type === "reference-array" && f.referenceEndpoint) {
+        try {
+          const res = await fetch(f.referenceEndpoint);
+          if (!res.ok) return;
+          const text = await res.text();
+          if (!text) return;
+          const data = JSON.parse(text);
+          const list = Array.isArray(data) ? data : (data && Array.isArray(data.data) ? data.data : []);
+          if (Array.isArray(list)) {
+            setReferenceData((prev) => ({ ...prev, [f.name]: list }));
+          }
+        } catch (error) {
+          console.error(`Failed to fetch reference data for ${f.name}:`, error);
+        }
+      }
+    });
+  }, [fetchItems, fields]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const target = e.target as HTMLInputElement;
@@ -942,7 +923,7 @@ export default function ContentManager({
                         <td key={field.name} className="whitespace-nowrap px-6 py-4 text-sm text-gray-900 max-w-[200px] truncate">
                           {field.type === "url" && item[field.name] ? (
                             <div className="flex items-center">
-                              <img src={item[field.name]} alt="" className="h-8 w-8 rounded object-cover mr-2" />
+                              <Image src={item[field.name]} alt="" width={32} height={32} unoptimized className="h-8 w-8 rounded object-cover mr-2" />
                               <span className="truncate max-w-[150px]">{item[field.name]}</span>
                             </div>
                           ) : (

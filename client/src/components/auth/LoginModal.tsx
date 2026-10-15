@@ -94,7 +94,7 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
     setLoading(true);
 
     try {
-      const data = await authService.sendOtpLegacy({
+      await authService.sendOtpLegacy({
         method: "whatsapp",
         country: { isoCode: "IN", dialCode: "+91", name: "India" } as any,
         number: cleanNumber,

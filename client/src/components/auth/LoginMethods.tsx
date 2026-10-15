@@ -44,7 +44,7 @@ function WhatsappIcon() {
 // AstroVed Logo mark (A shape from their SVG)
 function AstroVedMark({ size = 48 }: { size?: number }) {
   return (
-    <img src="/icons/Fav-Icon.png" alt="AstroVed Logo" width={size} height={size} />
+    <Image src="/icons/Fav-Icon.png" alt="AstroVed Logo" width={size} height={size} />
   );
 }
 

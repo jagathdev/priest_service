@@ -11,6 +11,7 @@ import { XMarkIcon } from "@heroicons/react/24/solid";
 import WishlistButton from "@/components/common/WishlistButton";
 import PujaCountdownCard from "@/components/common/PujaCountdownCard";
 import ShareModal from "@/components/common/ShareModal";
+import Image from "next/image";
 
 interface PujaPackage {
   id: string;
@@ -100,6 +101,12 @@ const getPujaImageUrl = (imageUrl?: string): string => {
   }
   return `/${trimmed}`;
 };
+
+const DEFAULT_PACKAGE_AVATARS = [
+  "/images/package_individual.webp",
+  "/images/partner.webp",
+  "/images/package_family.png",
+];
 
 export default function PujaDetailClient({
   initialPuja,
@@ -228,11 +235,7 @@ export default function PujaDetailClient({
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const DEFAULT_PACKAGE_AVATARS = [
-    "/images/package_individual.webp",
-    "/images/partner.webp",
-    "/images/package_family.png",
-  ];
+
 
   // Compute normalized package list from Admin data or defaults
   const packagesList = useMemo(() => {
@@ -317,16 +320,12 @@ export default function PujaDetailClient({
     : puja?.price || 516;
 
   const handleAddPujaToCart = async () => {
-    setAddingToCart(true);
-    setCartError("");
     try {
       const { is_user } = await checkAuthStatus();
       const actualPujaId = puja?._id || (puja as any)?.id || slug;
       const totalAmount = priceVal;
 
-      const sankalpUrl = `/sankalp?pujaId=${encodeURIComponent(actualPujaId)}&amount=${totalAmount}&type=puja&pkg=${selectedPackageId || ""}&name=${encodeURIComponent(
-        userDetails.name
-      )}&wa=${userDetails.whatsapp}&title=${encodeURIComponent(puja?.title || "")}&slug=${encodeURIComponent(
+      const sankalpUrl = `/sankalp?pujaId=${encodeURIComponent(actualPujaId)}&amount=${totalAmount}&type=puja&pkg=${selectedPackageId || ""}&title=${encodeURIComponent(puja?.title || "")}&slug=${encodeURIComponent(
         slug || ""
       )}`;
 
@@ -337,9 +336,7 @@ export default function PujaDetailClient({
       }
       window.location.href = sankalpUrl;
     } catch (err: any) {
-      setCartError(err.message || "An error occurred. Please try again.");
-    } finally {
-      setAddingToCart(false);
+      console.error("Error booking puja:", err);
     }
   };
 
@@ -580,9 +577,12 @@ export default function PujaDetailClient({
             {/* Left 6 Cols: Main Banner Image (Slightly Increased Width) */}
             <div className="lg:col-span-6 flex flex-col">
               <div className="relative w-full h-[280px] sm:h-[350px] md:h-[390px] lg:h-[410px] rounded-xl overflow-hidden border border-stone-200/90 shadow-md group">
-                <img
-                  src={bannerImages[activeBannerIndex] || (puja ? getPujaImageUrl(puja.imageUrl) : "")}
+                <Image
+                  src={bannerImages[activeBannerIndex] || (puja ? getPujaImageUrl(puja.imageUrl) : "/images/Ganesh-Chaturthi-Mahapuja.jpg")}
                   alt={`${puja?.title || "Puja"} - Sacred Ritual Banner ${activeBannerIndex + 1}`}
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  unoptimized
                   className="w-full h-full object-cover object-center transition-all duration-300 cursor-pointer"
                   onClick={handleAddPujaToCart}
                 />
@@ -727,7 +727,7 @@ export default function PujaDetailClient({
                   {packagesList.map((pkg, idx) => {
                     const isSelected = selectedPackage?.id === pkg.id;
                     const displayPrice = getDisplayPrice(pkg);
-                    const pkgAvatar = defaultPackageAvatars[idx % defaultPackageAvatars.length];
+                    const pkgAvatar = DEFAULT_PACKAGE_AVATARS[idx % DEFAULT_PACKAGE_AVATARS.length];
                     const devoteesText = pkg.devoteeCount || (pkg as any).devotees || (idx === 0 ? "1 Devotee" : idx === 1 ? "2 Devotees" : idx === 2 ? "4 Devotees" : "Multiple Devotees");
 
                     return (
@@ -748,9 +748,12 @@ export default function PujaDetailClient({
 
                         {/* Avatar Image on the Left */}
                         <div className="relative w-14 h-14 sm:w-12 sm:h-12 lg:w-13 lg:h-13 rounded-full overflow-hidden shrink-0 border border-stone-200/90 bg-white shadow-2xs mr-3.5 sm:mr-2.5 lg:mr-3">
-                          <img
-                            src={pkgAvatar}
+                          <Image
+                            src={pkgAvatar || "/images/Ganesh-Chaturthi-Mahapuja.jpg"}
                             alt={`${pkg.name || "Package"} - ${puja?.title || "Puja"}`}
+                            width={56}
+                            height={56}
+                            unoptimized
                             className="w-full h-full object-cover object-center"
                           />
                         </div>
@@ -797,7 +800,7 @@ export default function PujaDetailClient({
               {/* Secondary WhatsApp & Call Buttons */}
               <div className="flex flex-wrap items-center gap-3">
                 <a
-                  href="https://wa.me/95667776459566777645"
+                  href="https://wa.me/9566777645"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex-1 min-w-[150px] inline-flex items-center justify-center gap-2 bg-white border border-[#00b050] text-[#009644] hover:bg-green-50/60 font-extrabold text-xs sm:text-sm py-2.5 px-4 rounded-full transition-colors shadow-xs"
@@ -1037,9 +1040,12 @@ export default function PujaDetailClient({
             <div className="bg-white border border-stone-200/90 rounded-3xl p-6 sm:p-8 flex flex-col md:flex-row gap-6 items-center shadow-xs">
               {templeImage && (
                 <div className="w-full md:w-1/3 h-48 rounded-2xl overflow-hidden bg-stone-100 shrink-0 relative">
-                  <img
+                  <Image
                     src={templeImage}
                     alt={`${templeVenueText || "Temple"} - ${templeLocationText || "Sacred Temple Venue"}`}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 33vw"
+                    unoptimized
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -1110,10 +1116,13 @@ export default function PujaDetailClient({
               <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1f1a17] mb-6">Puja Gallery</h2>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                 {galleryList.map((img: string, idx: number) => (
-                  <div key={idx} className="h-48 rounded-2xl overflow-hidden border border-stone-200 shadow-xs">
-                    <img
+                  <div key={idx} className="h-48 rounded-2xl overflow-hidden border border-stone-200 shadow-xs relative">
+                    <Image
                       src={img}
                       alt={`${puja?.title || "Puja"} - Sacred Ritual Photo ${idx + 1}`}
+                      fill
+                      sizes="(max-width: 640px) 50vw, 33vw"
+                      unoptimized
                       className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                     />
                   </div>
@@ -1156,7 +1165,7 @@ export default function PujaDetailClient({
               </p>
               <div className="mt-3 mb-1">
                 <a
-                  href="https://wa.me/95667776459566777645"
+                  href="https://wa.me/9566777645"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-full bg-[#00b050] hover:bg-[#009644] text-white font-extrabold text-xs sm:text-sm py-3 px-4 rounded-full transition-colors flex items-center justify-center gap-2 shadow-sm"

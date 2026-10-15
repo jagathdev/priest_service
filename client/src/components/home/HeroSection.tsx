@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import PujaCountdownCard from "@/components/common/PujaCountdownCard";
@@ -85,11 +85,11 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
     setTouchEnd(e.targetTouches[0].clientX);
   };
 
-  const nextSlide = () => {
+  const nextSlide = useCallback(() => {
     if (totalSlides <= 1) return;
     setIsTransitioning(true);
     setActiveSlide((prev) => prev + 1);
-  };
+  }, [totalSlides]);
 
   const prevSlide = () => {
     if (totalSlides <= 1) return;
@@ -137,7 +137,7 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
       }
     }
     fetchHeroBanners();
-  }, []);
+  }, [initialBanners]);
 
   // Auto-advance forward only every 5 seconds
   useEffect(() => {
@@ -146,7 +146,7 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
       nextSlide();
     }, 5000);
     return () => clearInterval(timer);
-  }, [totalSlides]);
+  }, [totalSlides, nextSlide]);
 
   if (isLoading) {
     return (

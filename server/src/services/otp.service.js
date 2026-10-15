@@ -87,7 +87,7 @@ export const sendOTP = async (mobileNumber) => {
 
     // Send SMS request to 24x7sms gateway
     const response = await axios.get(url);
-    console.log(`[sendOTP] Sent to ${formattedPhone}, SMS Gateway Response:`, response.data);
+    // console.log(`[sendOTP] Sent to ${formattedPhone}, SMS Gateway Response:`, response.data);
 
     return {
         otpSent: true,

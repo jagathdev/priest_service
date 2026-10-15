@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useState, useCallback, useMemo } from "react";
+import Image from "next/image";
 import Navbar from "@/components/layout/Navbar";
 import { SparklesIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
@@ -283,6 +284,7 @@ import ShareModal, { ShareData } from "@/components/common/ShareModal";
 // --- Main Page ----------------------------------------------------------------
 export default function PujaClient({ initialPujas }: { initialPujas?: Puja[] }) {
   const allPujas = useMemo(() => initialPujas || [], [initialPujas]);
+  const fetched = true;
   const [filters, setFilters] = useState<FilterState>(defaultFilters);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [filterModalInitialTab, setFilterModalInitialTab] = useState("");
@@ -408,9 +410,11 @@ export default function PujaClient({ initialPujas }: { initialPujas?: Puja[] }) 
         <div className="bg-gradient-to-b from-[#fff6ef] via-[#fdeee0] to-[#f9e3d0] py-12 md:py-16 text-center border-b border-[#fcd5b5] relative overflow-hidden">
           {/* Left Inverted Mandala Decoration */}
           <div className="absolute left-0 top-0 bottom-0 h-full pointer-events-none opacity-50 z-0 hidden min-[769px]:flex items-center">
-            <img
+            <Image
               src="/images/mandala.png"
               alt="Mandala Left"
+              width={200}
+              height={200}
               className="h-full w-auto object-contain -scale-x-100"
               style={{ transform: "scaleX(-1)" }}
             />
@@ -418,9 +422,11 @@ export default function PujaClient({ initialPujas }: { initialPujas?: Puja[] }) 
 
           {/* Right Mandala Decoration */}
           <div className="absolute right-0 top-0 bottom-0 h-full pointer-events-none opacity-50 z-0 hidden min-[769px]:flex items-center">
-            <img
+            <Image
               src="/images/mandala.png"
               alt="Mandala Right"
+              width={200}
+              height={200}
               className="h-full w-auto object-contain"
             />
           </div>
@@ -546,10 +552,13 @@ export default function PujaClient({ initialPujas }: { initialPujas?: Puja[] }) 
                   >
                     <div className="flex flex-col flex-1 block">
                       <div className="relative h-[260px] sm:h-[275px] w-full shrink-0 overflow-hidden">
-                        <img
+                        <Image
                           src={getPujaImageUrl(puja.imageUrl)}
                           alt={puja.title}
-                          className="w-full h-full object-fit transition-transform duration-700"
+                          fill
+                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                          unoptimized
+                          className="w-full h-full object-cover transition-transform duration-700"
                         />
                         {puja.badge && (
                           <div className="absolute top-4 left-0 bg-[#d92b2b] text-white text-[12px] font-extrabold px-3.5 py-1.5 shadow-md rounded-r-lg uppercase tracking-wider">

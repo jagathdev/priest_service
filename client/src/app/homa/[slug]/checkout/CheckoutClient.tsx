@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
+import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 
@@ -175,7 +176,14 @@ export default function CheckoutClient({ homa }: { homa: any }) {
               <h3 className="text-[17px] font-serif font-bold text-gray-900 mb-6">Order Summary</h3>
 
               <div className="flex gap-4 items-start mb-6 border-b border-gray-100 pb-6">
-                <img src={homa?.imageUrl || 'https://images.unsplash.com/photo-1601024445121-e5b82f020549'} alt="" className="w-20 h-20 rounded-xl object-cover" />
+                <Image
+                  src={homa?.imageUrl || 'https://images.unsplash.com/photo-1601024445121-e5b82f020549'}
+                  alt=""
+                  width={80}
+                  height={80}
+                  unoptimized
+                  className="w-20 h-20 rounded-xl object-cover shrink-0"
+                />
                 <div>
                   <h4 className="text-[15px] font-bold text-gray-900 leading-snug">{homa?.title || 'Mahapuja at Sacred Kashi Pishach Mochan Kund And Kashi Ganga Aarti'}</h4>
                   <p className="text-[13px] font-bold text-gray-900 mt-2">{selectedPackage?.name} - <span className="text-[#a52a2a]">₹{baseFee}</span></p>

@@ -480,7 +480,13 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
           {/* Logo Section */}
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <img src="https://cdn.astroved.com/images/priestservice/priest-services.jpg" alt="AstroVed Priest Service" className="h-10 sm:h-12 w-auto object-contain grayscale-0" />
+              <Image
+                src="https://cdn.astroved.com/images/priestservice/priest-services.jpg"
+                alt="AstroVed Priest Service"
+                width={192}
+                height={48}
+                className="h-10 sm:h-12 w-auto object-contain grayscale-0"
+              />
             </div>
             <p className="text-xs sm:text-sm text-stone-600 max-w-xs leading-relaxed font-medium">
               Priest Service is a spiritual platform that enables devotees to book authentic Vedic pujas at sacred temples across India.
@@ -503,7 +509,7 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
             <ul className="flex flex-col gap-4 text-sm text-stone-600 font-medium">
               <li><Link href="mailto:support@astroved.com" className="hover:text-success transition-colors">support@astroved.com</Link></li>
               <li><Link href="/profile?tab=support" className="hover:text-success transition-colors">Contact Us</Link></li>
-              <li><Link href="https://wa.me/9195667776459566777645" target="_blank" rel="noopener noreferrer" className="hover:text-success transition-colors">WhatsApp: +91 95667776459566777645</Link></li>
+              <li><Link href="https://wa.me/919566777645" target="_blank" rel="noopener noreferrer" className="hover:text-success transition-colors">WhatsApp: +91 9566777645</Link></li>
             </ul>
           </div>
 
@@ -627,10 +633,13 @@ function PujaCard({ id, imageSrc, topTag, title, subtitle, location, date, price
       <Link href={cardUrl} className="flex flex-col flex-1 cursor-pointer block">
         {/* Top Banner Image Container with Subtle Space */}
         <div className="relative w-full h-[260px] sm:h-[340px] md:h-[400px] lg:h-[450px] xl:h-[235px] rounded-2xl overflow-hidden mb-2 sm:mb-2.5 bg-stone-100 shrink-0">
-          <img
-            src={typeof imageSrc === "string" ? imageSrc : (imageSrc as any)?.src}
+          <Image
+            src={(typeof imageSrc === "string" ? imageSrc : (imageSrc as any)?.src) || "/images/Ganesh-Chaturthi-Mahapuja.jpg"}
             alt={title}
-            className="w-full h-full object-fit object-center"
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            unoptimized
+            className="w-full h-full object-cover object-center"
           />
         </div>
 

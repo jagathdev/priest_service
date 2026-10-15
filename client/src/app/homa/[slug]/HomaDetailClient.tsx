@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useMemo, useRef } from "react";
+import Image from "next/image";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
@@ -103,6 +104,12 @@ export const getHomaImageUrl = (imageUrl?: string): string => {
   return `/${trimmed}`;
 };
 
+const DEFAULT_PACKAGE_AVATARS = [
+  "/images/package_individual.webp",
+  "/images/partner.webp",
+  "/images/package_family.webp",
+];
+
 export default function HomaDetailClient({
   initialHoma,
 }: {
@@ -126,6 +133,7 @@ export default function HomaDetailClient({
   const [pendingSankalpUrl, setPendingSankalpUrl] = useState<string | null>(null);
   const [showStickyBar, setShowStickyBar] = useState(false);
   const [activeBannerIndex, setActiveBannerIndex] = useState(0);
+  const [shareSuccess, setShareSuccess] = useState(false);
   const heroCtaRef = useRef<HTMLButtonElement | null>(null);
   const tabsContainerRef = useRef<HTMLDivElement | null>(null);
 
@@ -233,11 +241,7 @@ export default function HomaDetailClient({
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-const DEFAULT_PACKAGE_AVATARS = [
-  "/images/package_individual.webp",
-  "/images/partner.webp",
-  "/images/package_family.webp",
-];
+
 
   // Compute normalized package list from Admin data or defaults
   const packagesList = useMemo(() => {
@@ -322,16 +326,12 @@ const DEFAULT_PACKAGE_AVATARS = [
     : homa?.price || 1250;
 
   const handleAddHomaToCart = async () => {
-    setAddingToCart(true);
-    setCartError("");
     try {
       const { is_user } = await checkAuthStatus();
       const actualHomaId = homa?._id || (homa as any)?.id || slug;
       const totalAmount = priceVal;
 
-      const sankalpUrl = `/sankalp?pujaId=${encodeURIComponent(actualHomaId)}&amount=${totalAmount}&type=homa&pkg=${selectedPackageId || ""}&name=${encodeURIComponent(
-        userDetails.name
-      )}&wa=${userDetails.whatsapp}&title=${encodeURIComponent(homa?.title || "")}&slug=${encodeURIComponent(
+      const sankalpUrl = `/sankalp?pujaId=${encodeURIComponent(actualHomaId)}&amount=${totalAmount}&type=homa&pkg=${selectedPackageId || ""}&title=${encodeURIComponent(homa?.title || "")}&slug=${encodeURIComponent(
         slug || ""
       )}`;
 
@@ -342,10 +342,7 @@ const DEFAULT_PACKAGE_AVATARS = [
       }
       window.location.href = sankalpUrl;
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : "An error occurred. Please try again.";
-      setCartError(errorMessage);
-    } finally {
-      setAddingToCart(false);
+      console.error("Error booking homa:", err);
     }
   };
 
@@ -584,9 +581,12 @@ const DEFAULT_PACKAGE_AVATARS = [
             {/* Left 6 Cols: Main Banner Image (Slightly Increased Width) */}
             <div className="lg:col-span-6 flex flex-col">
               <div className="relative w-full h-[280px] sm:h-[350px] md:h-[390px] lg:h-[410px] rounded-3xl overflow-hidden border border-stone-200/90 shadow-md group">
-                <img
-                  src={bannerImages[activeBannerIndex] || (homa ? getHomaImageUrl(homa.imageUrl) : "")}
+                <Image
+                  src={bannerImages[activeBannerIndex] || (homa ? getHomaImageUrl(homa.imageUrl) : "/images/Ganesh-Chaturthi-Mahapuja.jpg")}
                   alt={`${homa?.title || "Homa"} - Sacred Ritual Banner ${activeBannerIndex + 1}`}
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  unoptimized
                   className="w-full h-full object-cover object-center transition-all duration-300 cursor-pointer"
                   onClick={handleAddHomaToCart}
                 />
@@ -740,7 +740,7 @@ const DEFAULT_PACKAGE_AVATARS = [
                     {packagesList.map((pkg, idx) => {
                       const isSelected = selectedPackage?.id === pkg.id;
                       const displayPrice = getDisplayPrice(pkg);
-                      const pkgAvatar = defaultPackageAvatars[idx % defaultPackageAvatars.length];
+                      const pkgAvatar = DEFAULT_PACKAGE_AVATARS[idx % DEFAULT_PACKAGE_AVATARS.length];
                       const devoteesText = pkg.devoteeCount || (pkg as any).devotees || (idx === 0 ? "1 Devotee" : idx === 1 ? "2 Devotees" : idx === 2 ? "4 Devotees" : "Multiple Devotees");
 
                       return (
@@ -761,9 +761,12 @@ const DEFAULT_PACKAGE_AVATARS = [
 
                           {/* Avatar Image on the Left */}
                           <div className="relative w-14 h-14 sm:w-12 sm:h-12 lg:w-13 lg:h-13 rounded-full overflow-hidden shrink-0 border border-stone-200/90 bg-white shadow-2xs mr-3.5 sm:mr-2.5 lg:mr-3">
-                            <img
-                              src={pkgAvatar}
+                            <Image
+                              src={pkgAvatar || "/images/Ganesh-Chaturthi-Mahapuja.jpg"}
                               alt={`${pkg.name || "Package"} - ${homa?.title || "Homa"}`}
+                              width={56}
+                              height={56}
+                              unoptimized
                               className="w-full h-full object-cover object-center"
                             />
                           </div>
@@ -811,7 +814,7 @@ const DEFAULT_PACKAGE_AVATARS = [
               {/* Secondary WhatsApp & Call Buttons */}
               <div className="flex flex-wrap items-center gap-3">
                 <a
-                  href="https://wa.me/95667776459566777645"
+                  href="https://wa.me/9566777645"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex-1 min-w-[150px] inline-flex items-center justify-center gap-2 bg-white border border-[#00b050] text-[#009644] hover:bg-green-50/60 font-extrabold text-xs sm:text-sm py-2.5 px-4 rounded-full transition-colors shadow-xs"
@@ -1063,9 +1066,12 @@ const DEFAULT_PACKAGE_AVATARS = [
             <div className="bg-white border border-stone-200/90 rounded-3xl p-6 sm:p-8 flex flex-col md:flex-row gap-6 items-center shadow-xs">
               {templeImage && (
                 <div className="w-full md:w-1/3 h-48 rounded-2xl overflow-hidden bg-stone-100 shrink-0 relative">
-                  <img
+                  <Image
                     src={templeImage}
                     alt={`${templeVenueText || "Temple"} - ${templeLocationText || "Sacred Temple Venue"}`}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 33vw"
+                    unoptimized
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -1136,10 +1142,13 @@ const DEFAULT_PACKAGE_AVATARS = [
               <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1f1a17] mb-6">Homa Gallery</h2>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {galleryList.map((img: string, idx: number) => (
-                  <div key={idx} className="h-48 rounded-2xl overflow-hidden border border-stone-200 shadow-xs">
-                    <img
+                  <div key={idx} className="h-48 rounded-2xl overflow-hidden border border-stone-200 shadow-xs relative">
+                    <Image
                       src={img}
                       alt={`${homa?.title || "Homa"} - Sacred Ritual Photo ${idx + 1}`}
+                      fill
+                      sizes="(max-width: 640px) 100vw, 33vw"
+                      unoptimized
                       className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                     />
                   </div>
@@ -1182,7 +1191,7 @@ const DEFAULT_PACKAGE_AVATARS = [
               </p>
               <div className="mt-3 mb-1">
                 <a
-                  href="https://wa.me/95667776459566777645"
+                  href="https://wa.me/9566777645"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-full bg-[#00b050] hover:bg-[#009644] text-white font-extrabold text-xs sm:text-sm py-3 px-4 rounded-full transition-colors flex items-center justify-center gap-2 shadow-sm"

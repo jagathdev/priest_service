@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import Link from "next/link";
+import Image from "next/image";
 import { useUser } from "@/contexts/UserContext";
 import LoginModal from "@/components/auth/LoginModal";
 import BookingsTab from "@/components/account/BookingsTab";
@@ -1194,14 +1195,13 @@ function AccountPageContent() {
                             <div key={item.wishlistId} className="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition">
                               {/* Top Image Section - Full Bleed */}
                               <Link href={`/${item.serviceType?.toLowerCase() === 'pooja' ? 'puja' : (item.serviceType || 'puja')}/${item.slug || item.serviceId}`} prefetch={true} className="relative h-[200px] w-full flex overflow-hidden group cursor-pointer block">
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img
+                                <Image
                                   src={typeof item.image === "string" ? (item.image.startsWith("http") || item.image.startsWith("/") ? item.image : `/${item.image}`) : ((item.image as any)?.src || "/subrahmanya_swamy_hero.png")}
                                   alt={item.name || "Service Image"}
+                                  fill
+                                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                                  unoptimized
                                   className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-                                  onError={(e) => {
-                                    e.currentTarget.src = "/subrahmanya_swamy_hero.png";
-                                  }}
                                 />
 
                                 {/* Heart Icon (Remove) */}

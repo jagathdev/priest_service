@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Image from "next/image";
 import Navbar from "@/components/layout/Navbar";
 
 type TabId = "refunds" | "security" | "shipment" | "disclaimer";
@@ -49,9 +50,12 @@ export default function TermsPage() {
         {/* Header Section with Image & Title */}
         <section className="mx-auto max-w-7xl px-6 pt-12 text-center lg:px-8">
           <div className="mx-auto max-w-7xl overflow-hidden rounded-2xl border border-gray-200 bg-white p-2 shadow-xs">
-            <img
+            <Image
               src="https://www.astroved.com/wp-content/uploads/2023/06/terms-and-conditions.jpg"
               alt="Terms and Conditions Banner"
+              width={1280}
+              height={300}
+              unoptimized
               className="w-full h-auto rounded-xl object-cover"
             />
           </div>

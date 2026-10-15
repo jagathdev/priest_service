@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import Image from "next/image";
 import { useUser } from "@/contexts/UserContext";
 import { request } from "@/lib/api-client";
 
@@ -383,13 +384,13 @@ export default function BookingsTab() {
                   {/* Card Body - Dynamic Image and Service Details */}
                   <div className="flex items-start gap-2.5 sm:gap-4 mb-4 sm:mb-6">
                     <div className="w-20 h-14 sm:w-28 sm:h-20 bg-gray-100 rounded-lg sm:rounded-xl overflow-hidden shrink-0 relative border border-gray-100 shadow-xs flex items-center justify-center">
-                      <img
-                        src={serviceImg}
+                      <Image
+                        src={serviceImg || "/images/Ganesh-Chaturthi-Mahapuja.jpg"}
                         alt={serviceTitle}
+                        width={112}
+                        height={80}
+                        unoptimized
                         className="w-full h-full object-cover"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src = "/images/Ganesh-Chaturthi-Mahapuja.jpg";
-                        }}
                       />
                     </div>
                     <div className="min-w-0 flex-1">
