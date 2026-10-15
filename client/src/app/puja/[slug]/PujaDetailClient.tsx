@@ -129,6 +129,7 @@ export default function PujaDetailClient({
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [showStickyBar, setShowStickyBar] = useState(false);
   const [activeBannerIndex, setActiveBannerIndex] = useState(0);
+  const [galleryCarouselIdx, setGalleryCarouselIdx] = useState(0);
   const heroCtaRef = useRef<HTMLButtonElement | null>(null);
   const tabsContainerRef = useRef<HTMLDivElement | null>(null);
 
@@ -699,7 +700,7 @@ export default function PujaDetailClient({
               {/* Filigree Subtag */}
               <div className="flex items-center justify-center lg:justify-start gap-2 mb-2">
                 <div className="w-8 h-[1px] bg-[#F47820]/40" />
-                <span className="text-[#F47820] font-serif font-extrabold text-xs sm:text-[13px] tracking-wider uppercase flex items-center gap-1.5">
+                <span className="text-[#F47820] font-serif font-extrabold text-xs sm:text-[13px] tracking-wider uppercase flex items-center gap-1.5 whitespace-nowrap">
                   <span className="text-[10px]">♦</span> {badgeText} <span className="text-[10px]">♦</span>
                 </span>
                 <div className="w-8 h-[1px] bg-[#F47820]/40" />
@@ -802,12 +803,12 @@ export default function PujaDetailClient({
               </button>
 
               {/* Secondary WhatsApp & Call Buttons */}
-              <div className="flex flex-wrap items-center gap-3">
+              <div className="flex flex-col sm:flex-row items-center gap-3">
                 <a
                   href="https://wa.me/95667776459566777645"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex-1 min-w-[150px] inline-flex items-center justify-center gap-2 bg-white border border-[#00b050] text-[#009644] hover:bg-green-50/60 font-extrabold text-xs sm:text-sm py-2.5 px-4 rounded-full transition-colors shadow-xs"
+                  className="w-full sm:flex-1 inline-flex items-center justify-center gap-2 bg-white border border-[#00b050] text-[#009644] hover:bg-green-50/60 font-extrabold text-xs sm:text-sm py-2.5 px-4 rounded-full transition-colors shadow-xs"
                 >
                   <svg className="w-5 h-5 shrink-0 fill-[#25D366]" viewBox="0 0 24 24">
                     <path d="M12.012 2c-5.506 0-9.989 4.478-9.99 9.984 0 1.758.459 3.474 1.33 4.982L2 22l5.144-1.348c1.455.793 3.097 1.21 4.864 1.21 5.505 0 9.989-4.478 9.99-9.985 0-5.506-4.484-9.984-9.986-9.984zm5.794 14.15c-.244.686-1.437 1.344-1.982 1.393-.526.048-1.018.257-3.418-.686-2.905-1.141-4.757-4.088-4.901-4.281-.144-.193-1.177-1.564-1.177-2.984 0-1.42.747-2.119 1.011-2.408.264-.289.576-.361.769-.361.192 0 .385.001.552.009.178.008.417-.067.653.498.243.582.83 2.023.902 2.168.072.144.12.312.024.504-.096.192-.144.312-.288.48-.144.168-.303.376-.432.504-.144.144-.294.302-.126.59.168.289.747 1.233 1.603 1.996 1.101.98 2.03 1.285 2.318 1.429.288.144.456.12.624-.072.168-.192.721-.84.913-1.128.192-.288.384-.24.648-.144.264.096 1.677.791 1.965.935.288.144.48.216.552.336.072.12.072.696-.172 1.382z" />
@@ -816,7 +817,7 @@ export default function PujaDetailClient({
                 </a>
                 <a
                   href="tel:+919677391108"
-                  className="flex-1 min-w-[150px] inline-flex items-center justify-center gap-2 bg-white border border-[#2563eb] text-[#2563eb] hover:bg-blue-50/60 font-extrabold text-xs sm:text-sm py-2.5 px-4 rounded-full transition-colors shadow-xs"
+                  className="w-full sm:flex-1 inline-flex items-center justify-center gap-2 bg-white border border-[#2563eb] text-[#2563eb] hover:bg-blue-50/60 font-extrabold text-xs sm:text-sm py-2.5 px-4 rounded-full transition-colors shadow-xs"
                 >
                   <svg className="w-4 h-4 min-w-[16px] min-h-[16px] fill-none stroke-[#2563eb]" strokeWidth="2" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
@@ -834,7 +835,7 @@ export default function PujaDetailClient({
       {/* ── 2. Trust Strip Badges ── */}
       <div className="w-full bg-[#f0f8f1] border-y border-green-100 py-3.5 sm:py-4.5 overflow-hidden">
         {/* Continuous Marquee on Phone, Tablet (Tab 768px) and 1024px screens (< xl) */}
-        <div className="xl:hidden overflow-hidden w-full relative">
+        <div className="md:hidden overflow-hidden w-full relative">
           <div className="flex animate-marquee gap-8 sm:gap-12 items-center text-xs sm:text-sm font-bold text-[#009e5b]">
             {[
               { icon: "🎥", text: "Puja Video Delivered Within 48 hours" },
@@ -853,6 +854,14 @@ export default function PujaDetailClient({
           </div>
         </div>
 
+        {/* Static spread layout on Tablet (md=768px) through xl */}
+        <div className="hidden md:flex xl:hidden w-full px-6 md:px-8 items-center justify-around gap-6 text-xs sm:text-sm font-bold text-[#009e5b] whitespace-nowrap">
+          <span className="flex items-center gap-2"><span className="bg-green-100 rounded-full p-1">🎥</span> Puja Video Delivered Within 48 hours</span>
+          <span className="flex items-center gap-2"><span className="bg-green-100 rounded-full p-1">✓</span> Verified &amp; Experienced Pandits</span>
+          <span className="flex items-center gap-2"><span className="bg-green-100 rounded-full p-1">🏛</span> Puja Performed in Sacred Temples</span>
+          <span className="flex items-center gap-2"><span className="bg-green-100 rounded-full p-1">📜</span> 100% Authentic Vedic Rituals</span>
+        </div>
+
         {/* Standard layout on XL desktop screens (>= 1280px) */}
         <div className="hidden xl:flex max-w-[1350px] mx-auto items-center justify-around gap-6 px-4 text-xs sm:text-sm font-bold text-[#009e5b] whitespace-nowrap">
           <span className="flex items-center gap-2"><span className="bg-green-100 rounded-full p-1">🎥</span> Puja Video Delivered Within 48 hours</span>
@@ -864,73 +873,88 @@ export default function PujaDetailClient({
 
       {/* ── 2b. Ratings Stats & Action Strip (Wishlist & Share) Above Nav Tabs (Below 1000px only) ── */}
       <div className="lg:hidden w-full bg-white border-b border-stone-200/90 py-3 sm:py-3.5">
-        <div className="max-w-[1350px] mx-auto px-4 sm:px-6 lg:px-10 flex items-center justify-between gap-3">
-          {/* Stats Container */}
-          <div className="flex items-center gap-3 sm:gap-6 md:gap-8 overflow-x-auto no-scrollbar py-0.5">
-            {/* Stat 1: Ratings */}
+        {/* Mobile layout: stats left, buttons right */}
+        <div className="md:hidden w-full px-4 sm:px-6 flex items-center justify-between gap-3">
+          <div className="flex items-start gap-3 sm:gap-6 overflow-x-auto no-scrollbar py-0.5">
             <div className="text-left shrink-0">
-              <span className="block text-xs sm:text-base lg:text-lg font-extrabold text-[#1f1a17] leading-tight">
-                4.36L+
-              </span>
-              <span className="text-[10px] sm:text-xs text-stone-500 font-medium block mt-0.5 leading-tight">
-                ratings
-              </span>
+              <span className="block text-xs font-extrabold text-[#1f1a17] leading-tight">4.36L+</span>
+              <span className="text-[10px] text-stone-500 font-medium block mt-0.5 leading-tight">ratings</span>
             </div>
-
-            <div className="w-[1px] h-6 sm:h-7 bg-stone-200 shrink-0" />
-
-            {/* Stat 2: Pujas Conducted */}
+            <div className="w-[1px] self-stretch bg-stone-200 shrink-0" />
             <div className="text-left shrink-0">
-              <span className="block text-xs sm:text-base lg:text-lg font-extrabold text-[#1f1a17] leading-tight">
-                24L+
-              </span>
-              <span className="text-[10px] sm:text-xs text-stone-500 font-medium block mt-0.5 leading-tight">
-                pujas conducted
-              </span>
+              <span className="block text-xs font-extrabold text-[#1f1a17] leading-tight">24L+</span>
+              <span className="text-[10px] text-stone-500 font-medium block mt-0.5 leading-tight">pujas<br />conducted</span>
             </div>
-
-            <div className="w-[1px] h-6 sm:h-7 bg-stone-200 shrink-0" />
-
-            {/* Stat 3: Average Ratings */}
+            <div className="w-[1px] self-stretch bg-stone-200 shrink-0" />
             <div className="text-left shrink-0">
-              <div className="flex items-center gap-0.5 sm:gap-1 leading-tight">
-                <span className="text-xs sm:text-base lg:text-lg font-extrabold text-[#1f1a17]">
-                  4.9/5
-                </span>
-                <span className="text-amber-400 text-xs sm:text-sm">⭐</span>
+              <div className="flex items-center gap-0.5 leading-tight">
+                <span className="text-xs font-extrabold text-[#1f1a17]">4.9/5</span>
+                <span className="text-amber-400 text-xs">⭐</span>
               </div>
-              <span className="text-[10px] sm:text-xs text-stone-500 font-medium block mt-0.5 leading-tight">
-                Average ratings
-              </span>
+              <span className="text-[10px] text-stone-500 font-medium block mt-0.5 leading-tight">Avg. ratings</span>
             </div>
           </div>
-
-          {/* Action Buttons: Wishlist & Share (Circular icon buttons matching Image 3) */}
-          <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
-            {/* Circular Wishlist Button */}
+          <div className="flex items-center gap-2 shrink-0">
             <WishlistButton
               itemId={puja._id}
-              className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-stone-300 hover:border-stone-500 bg-white flex items-center justify-center text-stone-700 shadow-2xs hover:bg-stone-50 transition-all active:scale-95"
-              iconClassName="w-4 h-4 sm:w-5 sm:h-5"
+              className="w-9 h-9 rounded-full border border-stone-300 hover:border-stone-500 bg-white flex items-center justify-center text-stone-700 shadow-2xs hover:bg-stone-50 transition-all active:scale-95"
+              iconClassName="w-4 h-4"
             />
-
-            {/* Circular Share Button */}
             <button
               type="button"
               aria-label="Share puja"
               onClick={() => setShareModalOpen(true)}
-              className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-stone-300 hover:border-stone-500 bg-white flex items-center justify-center text-stone-700 shadow-2xs hover:bg-stone-50 transition-all active:scale-95 relative"
+              className="w-9 h-9 rounded-full border border-stone-300 hover:border-stone-500 bg-white flex items-center justify-center text-stone-700 shadow-2xs hover:bg-stone-50 transition-all active:scale-95"
             >
-              <svg
-                className="w-4 h-4 sm:w-5 sm:h-5 fill-none stroke-current"
-                strokeWidth="2"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
-                />
+              <svg className="w-4 h-4 fill-none stroke-current" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        {/* Tablet layout (md=768px): all 5 items equal space */}
+        <div className="hidden md:flex lg:hidden w-full px-6 md:px-8 items-center">
+          {/* Stat 1 */}
+          <div className="flex-1 flex flex-col items-center justify-center text-center">
+            <span className="block text-base font-extrabold text-[#1f1a17] leading-tight">4.36L+</span>
+            <span className="text-xs text-stone-500 font-medium block mt-0.5 leading-tight">ratings</span>
+          </div>
+          <div className="w-[1px] h-7 bg-stone-200 shrink-0" />
+          {/* Stat 2 */}
+          <div className="flex-1 flex flex-col items-center justify-center text-center">
+            <span className="block text-base font-extrabold text-[#1f1a17] leading-tight">24L+</span>
+            <span className="text-xs text-stone-500 font-medium block mt-0.5 leading-tight">pujas conducted</span>
+          </div>
+          <div className="w-[1px] h-7 bg-stone-200 shrink-0" />
+          {/* Stat 3 */}
+          <div className="flex-1 flex flex-col items-center justify-center text-center">
+            <div className="flex items-center justify-center gap-1 leading-tight">
+              <span className="text-base font-extrabold text-[#1f1a17]">4.9/5</span>
+              <span className="text-amber-400 text-sm">⭐</span>
+            </div>
+            <span className="text-xs text-stone-500 font-medium block mt-0.5 leading-tight">Average ratings</span>
+          </div>
+          <div className="w-[1px] h-7 bg-stone-200 shrink-0" />
+          {/* Wishlist */}
+          <div className="flex-1 flex items-center justify-center">
+            <WishlistButton
+              itemId={puja._id}
+              className="w-10 h-10 rounded-full border border-stone-300 hover:border-stone-500 bg-white flex items-center justify-center text-stone-700 shadow-2xs hover:bg-stone-50 transition-all active:scale-95"
+              iconClassName="w-5 h-5"
+            />
+          </div>
+          <div className="w-[1px] h-7 bg-stone-200 shrink-0" />
+          {/* Share */}
+          <div className="flex-1 flex items-center justify-center">
+            <button
+              type="button"
+              aria-label="Share puja"
+              onClick={() => setShareModalOpen(true)}
+              className="w-10 h-10 rounded-full border border-stone-300 hover:border-stone-500 bg-white flex items-center justify-center text-stone-700 shadow-2xs hover:bg-stone-50 transition-all active:scale-95"
+            >
+              <svg className="w-5 h-5 fill-none stroke-current" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
               </svg>
             </button>
           </div>
@@ -980,7 +1004,7 @@ export default function PujaDetailClient({
           <section id="about" className="scroll-mt-36">
             <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1f1a17] mb-6">About puja</h2>
 
-            <div className="bg-[#fdfbf7] border border-[#f0e4d0] rounded-3xl p-6 sm:p-8 relative overflow-hidden">
+            <div className="bg-[#ffffff] border border-[#f0e4d0] rounded-3xl p-6 sm:p-8 relative overflow-hidden">
               <p className="text-stone-700 text-sm sm:text-base leading-relaxed font-medium mb-6">
                 {aboutText}
               </p>
@@ -1041,9 +1065,9 @@ export default function PujaDetailClient({
           {/* Section: Temple Details */}
           <section id="temple" className="scroll-mt-36">
             <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1f1a17] mb-6">Temple Details</h2>
-            <div className="bg-white border border-stone-200/90 rounded-3xl p-6 sm:p-8 flex flex-col md:flex-row gap-6 items-center shadow-xs">
+            <div className="bg-white border border-stone-200/90 rounded-3xl flex flex-col md:flex-row gap-6 items-center shadow-xs overflow-hidden">
               {templeImage && (
-                <div className="w-full md:w-1/3 h-48 rounded-2xl overflow-hidden bg-stone-100 shrink-0 relative">
+                <div className="w-full md:w-1/3 h-48 md:h-full md:min-h-[160px] bg-stone-100 shrink-0 relative">
                   <img
                     src={templeImage}
                     alt={`${templeVenueText || "Temple"} - ${templeLocationText || "Sacred Temple Venue"}`}
@@ -1051,12 +1075,12 @@ export default function PujaDetailClient({
                   />
                 </div>
               )}
-              <div className="flex-1">
+              <div className="flex-1 p-5 text-center sm:text-left">
                 <h3 className="font-serif font-bold text-stone-900 text-xl mb-2">{templeVenueText}</h3>
                 <p className="text-stone-600 text-xs sm:text-sm leading-relaxed font-medium mb-4">
                   {templeNoteText}
                 </p>
-                <span className="inline-flex items-center gap-1.5 text-xs font-bold text-[#F47820]">
+                <span className="inline-flex items-center justify-center sm:justify-start gap-1.5 text-xs font-bold text-[#F47820]">
                   📍 {templeLocationText}
                 </span>
               </div>
@@ -1113,9 +1137,55 @@ export default function PujaDetailClient({
 
           {/* Section: Puja Gallery */}
           {galleryList.length > 0 && (
-            <section id="gallery" className="scroll-mt-36 pb-28 sm:pb-36">
+            <section id="gallery" className="scroll-mt-36 pb-4 sm:pb-28 lg:pb-36">
               <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1f1a17] mb-6">Puja Gallery</h2>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+
+              {/* Mobile: Carousel */}
+              <div className="sm:hidden relative">
+                <div className="relative h-64 rounded-2xl overflow-hidden border border-stone-200 shadow-xs">
+                  <img
+                    src={galleryList[galleryCarouselIdx] as string}
+                    alt={`${puja?.title || "Puja"} - Sacred Ritual Photo ${galleryCarouselIdx + 1}`}
+                    className="w-full h-full object-cover transition-all duration-300"
+                  />
+                  {galleryList.length > 1 && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => setGalleryCarouselIdx((prev) => (prev - 1 + galleryList.length) % galleryList.length)}
+                        aria-label="Previous gallery image"
+                        className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center backdrop-blur-sm transition-all shadow-md z-10"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" /></svg>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setGalleryCarouselIdx((prev) => (prev + 1) % galleryList.length)}
+                        aria-label="Next gallery image"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center backdrop-blur-sm transition-all shadow-md z-10"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" /></svg>
+                      </button>
+                    </>
+                  )}
+                </div>
+                {galleryList.length > 1 && (
+                  <div className="flex items-center justify-center gap-2 mt-3">
+                    {galleryList.map((_: string, idx: number) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => setGalleryCarouselIdx(idx)}
+                        aria-label={`Go to gallery image ${idx + 1}`}
+                        className={idx === galleryCarouselIdx ? "w-6 h-2 bg-[#00b050] rounded-full transition-all" : "w-2 h-2 bg-stone-300 hover:bg-stone-400 rounded-full transition-all"}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* sm+ : Grid */}
+              <div className="hidden sm:grid grid-cols-2 sm:grid-cols-3 gap-4">
                 {galleryList.map((img: string, idx: number) => (
                   <div key={idx} className="h-48 rounded-2xl overflow-hidden border border-stone-200 shadow-xs">
                     <img
@@ -1132,12 +1202,12 @@ export default function PujaDetailClient({
         </div>
 
         {/* Right Sidebar Column (4 cols) */}
-        <div className="lg:col-span-4 space-y-6 pt-2 sm:pt-4 pb-16 sm:pb-20 lg:pb-36">
+        <div className="lg:col-span-4 space-y-6 pt-0 sm:pt-4 pb-16 sm:pb-20 lg:pb-36">
 
           {/* Dedicated Vedic Puja Sticky Card */}
-          <div className="bg-[#fdfbf7] border border-[#f0e4d0] rounded-3xl p-5 sm:p-6 pb-6 sm:pb-8 shadow-xs static lg:sticky lg:top-[140px] xl:top-[144px] space-y-4 sm:space-y-5 mb-0 lg:mb-28">
+          <div className="bg-[#ffffff] border border-[#f0e4d0] rounded-3xl p-5 sm:p-6 pb-6 sm:pb-8 shadow-xs static lg:sticky lg:top-[140px] xl:top-[144px] space-y-4 sm:space-y-5 mb-0 lg:mb-28">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-[#800000] text-white flex items-center justify-center font-bold shrink-0">🔥</div>
+
               <div>
                 <h3 className="font-serif font-bold text-stone-900 text-base">Dedicated Vedic Puja</h3>
                 <span className="text-xs text-stone-500 font-semibold">100% Authentic Rituals</span>
