@@ -74,7 +74,7 @@ export default async function AdminDashboard() {
               <SparklesIcon className="w-5 h-5" />
             </div>
           </div>
-          <dd className="text-3xl font-black text-gray-900 mt-3">{loading ? "..." : stats.pujas}</dd>
+          <dd className="text-3xl font-black text-gray-900 mt-3">{stats.pujas}</dd>
           <span className="text-xs font-bold text-success mt-2 inline-block group-hover:underline">Manage Pujas →</span>
         </Link>
 
@@ -86,7 +86,7 @@ export default async function AdminDashboard() {
               <FireIcon className="w-5 h-5" />
             </div>
           </div>
-          <dd className="text-3xl font-black text-gray-900 mt-3">{loading ? "..." : stats.homas}</dd>
+          <dd className="text-3xl font-black text-gray-900 mt-3">{stats.homas}</dd>
           <span className="text-xs font-bold text-success mt-2 inline-block group-hover:underline">Manage Homas →</span>
         </Link>
 
@@ -98,7 +98,7 @@ export default async function AdminDashboard() {
               <ShoppingBagIcon className="w-5 h-5" />
             </div>
           </div>
-          <dd className="text-3xl font-black text-gray-900 mt-3">{loading ? "..." : stats.orders}</dd>
+          <dd className="text-3xl font-black text-gray-900 mt-3">{stats.orders}</dd>
           <span className="text-xs font-bold text-success mt-2 inline-block group-hover:underline">View Bookings →</span>
         </Link>
 

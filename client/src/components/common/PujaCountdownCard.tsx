@@ -186,7 +186,7 @@ export default function PujaCountdownCard({
             {/* Days */}
             <div className="bg-[#fff6f4] border border-[#f7d6cd] rounded-xl sm:rounded-lg px-3 sm:px-2.5 py-1.5 sm:py-1.5 text-center min-w-[56px] sm:min-w-[52px] shadow-2xs">
               <span className="font-extrabold text-[#800000] text-lg sm:text-base lg:text-lg leading-none block">
-                {padZero(displayTimeLeft.days)}
+                {padZero(timeLeft.days)}
               </span>
               <span className="text-[9px] sm:text-[8.5px] font-bold text-stone-500 tracking-wider uppercase block mt-1 sm:mt-0.5">
                 DAYS
@@ -198,7 +198,7 @@ export default function PujaCountdownCard({
             {/* Hours */}
             <div className="bg-[#fff6f4] border border-[#f7d6cd] rounded-xl sm:rounded-lg px-3 sm:px-2.5 py-1.5 sm:py-1.5 text-center min-w-[56px] sm:min-w-[52px] shadow-2xs">
               <span className="font-extrabold text-[#800000] text-lg sm:text-base lg:text-lg leading-none block">
-                {padZero(displayTimeLeft.hours)}
+                {padZero(timeLeft.hours)}
               </span>
               <span className="text-[9px] sm:text-[8.5px] font-bold text-stone-500 tracking-wider uppercase block mt-1 sm:mt-0.5">
                 HOURS
@@ -210,7 +210,7 @@ export default function PujaCountdownCard({
             {/* Minutes */}
             <div className="bg-[#fff6f4] border border-[#f7d6cd] rounded-xl sm:rounded-lg px-3 sm:px-2.5 py-1.5 sm:py-1.5 text-center min-w-[56px] sm:min-w-[52px] shadow-2xs">
               <span className="font-extrabold text-[#800000] text-lg sm:text-base lg:text-lg leading-none block">
-                {padZero(displayTimeLeft.minutes)}
+                {padZero(timeLeft.minutes)}
               </span>
               <span className="text-[9px] sm:text-[8.5px] font-bold text-stone-500 tracking-wider uppercase block mt-1 sm:mt-0.5">
                 MIN
@@ -222,7 +222,7 @@ export default function PujaCountdownCard({
             {/* Seconds */}
             <div className="bg-[#fff6f4] border border-[#f7d6cd] rounded-xl sm:rounded-lg px-3 sm:px-2.5 py-1.5 sm:py-1.5 text-center min-w-[56px] sm:min-w-[52px] shadow-2xs">
               <span className="font-extrabold text-[#800000] text-lg sm:text-base lg:text-lg leading-none block">
-                {padZero(displayTimeLeft.seconds)}
+                {padZero(timeLeft.seconds)}
               </span>
               <span className="text-[9px] sm:text-[8.5px] font-bold text-stone-500 tracking-wider uppercase block mt-1 sm:mt-0.5">
                 SEC
