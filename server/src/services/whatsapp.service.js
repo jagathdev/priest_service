@@ -157,10 +157,6 @@ export const registerWhatsAppOptIn = async ({
 export const sendOrderConfirmation = async ({
     mobileNumber,
     orderId,
-    customerName,
-    serviceName,
-    bookingDate,
-    amount,
 }) => {
     const mobile = validateMobile(mobileNumber);
 

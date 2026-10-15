@@ -105,7 +105,6 @@ export default function ContentManager({
   const [draggedItemIndex, setDraggedItemIndex] = useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [viewingReview, setViewingReview] = useState<any | null>(null);
-  const [currencyRates, setCurrencyRates] = useState<{ usd: number, myr: number } | null>(null);
 
   const effectiveFilterGroups = useMemo(() => {
     if (type !== "puja" || !dynamicPujaLocationFromItems) {

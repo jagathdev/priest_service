@@ -6,17 +6,26 @@ import Navbar from "@/components/layout/Navbar";
 type TabId = "refunds" | "security" | "shipment" | "disclaimer";
 
 export default function TermsPage() {
-  const [activeTab, setActiveTab] = useState<TabId>("refunds");
+  const [activeTab, setActiveTab] = useState<TabId>(() => {
+    if (typeof window !== "undefined" && window.location.hash) {
+      const hash = window.location.hash.replace("#", "") as TabId;
+      if (hash === "refunds" || hash === "security" || hash === "shipment" || hash === "disclaimer") {
+        return hash;
+      }
+    }
+    return "refunds";
+  });
 
   // Allow URL hash navigation if someone links directly to a section
   useEffect(() => {
-    if (typeof window !== "undefined" && window.location.hash) {
+    const handleHashChange = () => {
       const hash = window.location.hash.replace("#", "") as TabId;
-      const validTabs: TabId[] = ["refunds", "security", "shipment", "disclaimer"];
-      if (validTabs.includes(hash)) {
+      if (hash === "refunds" || hash === "security" || hash === "shipment" || hash === "disclaimer") {
         setActiveTab(hash);
       }
-    }
+    };
+    window.addEventListener("hashchange", handleHashChange);
+    return () => window.removeEventListener("hashchange", handleHashChange);
   }, []);
 
   const handleTabChange = (tab: TabId) => {

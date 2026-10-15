@@ -7,7 +7,6 @@ export default async function AdminDashboard() {
   const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
   let stats = { pujas: 0, homas: 0, orders: 0, revenue: 0 };
   let recentBookings: any[] = [];
-  let loading = false;
 
   const cookieStore = await cookies();
   const adminToken = cookieStore.get("adminToken")?.value;

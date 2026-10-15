@@ -260,16 +260,11 @@ function SankalpContent() {
   const finalPrice = basePrice + extraParticipantFee + offeringsTotal;
 
   const isPhoneValid = /^[6-9]\d{9}$/.test(formData.whatsapp.trim());
-  const areParticipantsValid = formData.participants.every(p => /^[a-zA-Z\s]+$/.test(p.trim()));
+  const areParticipantsValid = formData.participants.length > 0 && formData.participants.every(p => p.trim() && /^[a-zA-Z\s]+$/.test(p.trim()));
 
   const handleProceedToStep2 = () => {
     setShowErrors(true);
-    if (!isPhoneValid) {
-      return;
-    }
-
-    const hasEmptyOrInvalid = formData.participants.some(p => !p.trim() || !/^[a-zA-Z\s]+$/.test(p.trim()));
-    if (hasEmptyOrInvalid) {
+    if (!isPhoneValid || !areParticipantsValid) {
       return;
     }
 

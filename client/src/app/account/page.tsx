@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef, Suspense } from "react";
+import { useEffect, useState, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
@@ -140,7 +140,7 @@ const ACCOUNT_TABS = [
 function AccountPageContent() {
   const searchParams = useSearchParams();
   const { user, setUser } = useUser();
-  const [loading, setLoading] = useState(false);
+  const [loading] = useState(false);
   const [activeTab, setActiveTab] = useState("profile");
 
   useEffect(() => {
@@ -239,6 +239,7 @@ function AccountPageContent() {
         alert(data.message || "Failed to submit request.");
       }
     } catch (error) {
+      console.error("Error submitting help request:", error);
       alert("Error submitting request.");
     } finally {
       setIsSubmittingHelp(false);
@@ -247,7 +248,6 @@ function AccountPageContent() {
 
   // Login Modal States
   const [showLoginModal, setShowLoginModal] = useState(false);
-
 
   useEffect(() => {
     if (typeof window !== "undefined" && window.location.hash) {
@@ -258,7 +258,7 @@ function AccountPageContent() {
     }
   }, []);
 
-  const fetchWishlist = async () => {
+  const fetchWishlist = useCallback(async () => {
     if (!user || (!user.id && !user._id)) return;
     setLoadingWishlist(true);
     try {
@@ -273,13 +273,13 @@ function AccountPageContent() {
     } finally {
       setLoadingWishlist(false);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     if (user) {
       fetchWishlist();
     }
-  }, [user]);
+  }, [user, fetchWishlist]);
 
   const handleLogout = async () => {
     try {
@@ -461,6 +461,7 @@ function AccountPageContent() {
         alert(data.message || "Failed to save address");
       }
     } catch (error) {
+      console.error("Error saving address:", error);
       alert("Error saving address");
     }
   };
@@ -503,6 +504,7 @@ function AccountPageContent() {
         alert(data.message || "Failed to delete address");
       }
     } catch (error) {
+      console.error("Error deleting address:", error);
       alert("Error deleting address");
     }
   };

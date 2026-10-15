@@ -1,7 +1,6 @@
 import Puja from "../models/pujaModel.js";
 import Homa from "../models/homaModel.js";
 import Order from "../models/Order.js";
-import User from "../models/user.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import Admin from "../models/Admin.js";

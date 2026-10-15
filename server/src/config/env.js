@@ -1,5 +1,3 @@
-import crypto from 'crypto';
-
 const requiredEnvVars = [
   'MONGO_URI',
   'JWT_SECRET',
@@ -14,7 +12,7 @@ const requiredEnvVars = [
 
 export function validateEnv() {
   const missing = requiredEnvVars.filter(envVar => !process.env[envVar]);
-  
+
   if (missing.length > 0) {
     console.error(`Missing required environment variables: ${missing.join(', ')}`);
     process.exit(1);

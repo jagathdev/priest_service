@@ -114,7 +114,7 @@ export default function BookingsTab() {
 
           <div className="mb-4 sm:mb-6">
             <h3 className="text-lg sm:text-xl font-bold text-[#5c1b1c] font-serif leading-snug">{selectedOrder.itemName || selectedOrder.pooja}</h3>
-            <p className="text-xs sm:text-sm text-stone-500 font-medium mt-1">Performed with personalized sankalpam in your family's name.</p>
+            <p className="text-xs sm:text-sm text-stone-500 font-medium mt-1">Performed with personalized sankalpam in your family&apos;s name.</p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-6">
@@ -508,7 +508,7 @@ export default function BookingsTab() {
           </div>
 
           <div className="text-center pt-8">
-            <p className="text-xs font-bold text-stone-400">You've reached the end of your bookings</p>
+            <p className="text-xs font-bold text-stone-400">You&apos;ve reached the end of your bookings</p>
             <p className="text-[10px] font-semibold text-stone-400 mt-1">{filteredOrders.length} of {orders.length} bookings shown</p>
           </div>
         </div>

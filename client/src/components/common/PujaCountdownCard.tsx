@@ -108,9 +108,6 @@ export default function PujaCountdownCard({
   );
 
   useEffect(() => {
-    // Initial calculate
-    setTimeLeft(calculateTimeLeft(eventDateTime, dateText));
-
     const interval = setInterval(() => {
       setTimeLeft(calculateTimeLeft(eventDateTime, dateText));
     }, 1000);
@@ -118,13 +115,8 @@ export default function PujaCountdownCard({
     return () => clearInterval(interval);
   }, [eventDateTime, dateText]);
 
-  // Calculate time remaining based on eventDateTime or dateText
-  const displayTimeLeft = React.useMemo(() => {
-    return calculateTimeLeft(eventDateTime, dateText);
-  }, [eventDateTime, dateText, timeLeft]);
-
   // Show timer strip if admin has enabled showTimer (not false) and a valid target date was provided by backend
-  const canShowTimer = showTimer !== false && displayTimeLeft.hasTarget;
+  const canShowTimer = showTimer !== false && timeLeft.hasTarget;
 
   return (
     <div className={`w-full font-sans ${className}`}>

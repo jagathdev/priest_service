@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useMemo, useRef } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
@@ -103,7 +103,6 @@ const getPujaImageUrl = (imageUrl?: string): string => {
 
 export default function PujaDetailClient({
   initialPuja,
-  recommendations = [],
 }: {
   initialPuja: Puja | null;
   recommendations?: any[];
@@ -119,13 +118,8 @@ export default function PujaDetailClient({
   const [showPackageModal, setShowPackageModal] = useState(false);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
   const [activeTab, setActiveTab] = useState("about");
-  const [userDetails, setUserDetails] = useState({ name: "", whatsapp: "" });
-  const [addingToCart, setAddingToCart] = useState(false);
-  const [cartError, setCartError] = useState("");
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [pendingSankalpUrl, setPendingSankalpUrl] = useState<string | null>(null);
-  const [isWishlisted, setIsWishlisted] = useState(false);
-  const [shareSuccess, setShareSuccess] = useState(false);
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [showStickyBar, setShowStickyBar] = useState(false);
   const [activeBannerIndex, setActiveBannerIndex] = useState(0);
@@ -234,7 +228,7 @@ export default function PujaDetailClient({
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const defaultPackageAvatars = [
+  const DEFAULT_PACKAGE_AVATARS = [
     "/images/package_individual.webp",
     "/images/partner.webp",
     "/images/package_family.png",
@@ -265,7 +259,7 @@ export default function PujaDetailClient({
           priceUSD: pkg.priceUSD,
           priceMYR: pkg.priceMYR,
           description: pkg.description || "Includes personalized sankalpam and video proof.",
-          imageUrl: defaultPackageAvatars[idx % defaultPackageAvatars.length],
+          imageUrl: DEFAULT_PACKAGE_AVATARS[idx % DEFAULT_PACKAGE_AVATARS.length],
         };
       });
     }
@@ -278,7 +272,7 @@ export default function PujaDetailClient({
         devoteeCount: "1 Devotee",
         priceINR: basePrice,
         description: "Personalized Sankalpam for 1 Person with video recording.",
-        imageUrl: defaultPackageAvatars[0],
+        imageUrl: DEFAULT_PACKAGE_AVATARS[0],
       },
       {
         id: "pkg-2",
@@ -286,7 +280,7 @@ export default function PujaDetailClient({
         devoteeCount: "2 Devotees",
         priceINR: basePrice + 200,
         description: "Personalized Sankalpam for Couple / 2 Devotees.",
-        imageUrl: defaultPackageAvatars[1],
+        imageUrl: DEFAULT_PACKAGE_AVATARS[1],
       },
       {
         id: "pkg-3",
@@ -294,7 +288,7 @@ export default function PujaDetailClient({
         devoteeCount: "4 Devotees",
         priceINR: basePrice + 400,
         description: "Personalized Sankalpam for 4 Family Members.",
-        imageUrl: defaultPackageAvatars[2],
+        imageUrl: DEFAULT_PACKAGE_AVATARS[2],
       },
     ];
   }, [puja]);
@@ -348,6 +342,84 @@ export default function PujaDetailClient({
       setAddingToCart(false);
     }
   };
+
+  const DEFAULT_BANNER_IMAGE = "/images/Navagraha-Shanti-Puja.jpg";
+
+  const bannerImages: string[] = useMemo(() => {
+    if (!puja) return [DEFAULT_BANNER_IMAGE];
+    const list: string[] = [];
+
+    const addUrl = (val: any) => {
+      if (!val) return;
+      if (typeof val === "string") {
+        const parts = val.split(/[\n,]+/);
+        for (const p of parts) {
+          const trimmed = p.trim();
+          if (trimmed) {
+            const formatted = getPujaImageUrl(trimmed);
+            if (formatted) {
+              list.push(formatted);
+            }
+          }
+        }
+      } else if (Array.isArray(val)) {
+        for (const item of val) {
+          addUrl(item);
+        }
+      }
+    };
+
+    // 1. Primary main image
+    if (puja.imageUrl && typeof puja.imageUrl === "string" && puja.imageUrl.trim()) {
+      addUrl(puja.imageUrl);
+    }
+
+    // 2. Additional carousel images
+    const addImgs = puja.additionalImages || (puja as any).additionalImageUrls;
+    const hasAdditional =
+      (Array.isArray(addImgs) && addImgs.length > 0) ||
+      (typeof addImgs === "string" && Boolean((addImgs as string).trim()));
+
+    if (hasAdditional) {
+      addUrl(addImgs);
+    } else {
+      // 3. Fallback to gallery images if no additionalImages provided
+      addUrl(puja.gallery);
+      addUrl((puja as any).galleryUrl);
+      addUrl((puja as any).details?.gallery);
+    }
+
+    // 4. Details sub-object main image
+    if (list.length === 0) {
+      addUrl((puja?.details as any)?.imageUrl);
+    }
+
+    // Fallback default image if no image exists in DB at all
+    if (list.length === 0) {
+      list.push(DEFAULT_BANNER_IMAGE);
+    }
+
+    return list;
+  }, [puja]);
+
+  const galleryList =
+    Array.isArray(puja?.gallery) && puja.gallery.length > 0
+      ? puja.gallery.map((img: string) => getPujaImageUrl(img)).filter(Boolean)
+      : Array.isArray((puja as any)?.galleryUrl) && (puja as any).galleryUrl.length > 0
+        ? (puja as any).galleryUrl.map((img: string) => getPujaImageUrl(img)).filter(Boolean)
+        : typeof (puja as any)?.galleryUrl === "string" && (puja as any).galleryUrl.trim()
+          ? [getPujaImageUrl((puja as any).galleryUrl)]
+          : [];
+
+  const subNavTabs = useMemo(() => [
+    { id: "about", label: "About puja" },
+    { id: "benefits", label: "Puja Benefits" },
+    { id: "process", label: "Puja Procedure" },
+    { id: "temple", label: "Temple Details" },
+    { id: "receive", label: "What will you receive" },
+    { id: "faqs", label: "FAQs" },
+    ...(galleryList.length > 0 ? [{ id: "gallery", label: "Puja Gallery" }] : []),
+  ], [galleryList.length]);
 
   if (loading) {
     return (
@@ -479,81 +551,12 @@ export default function PujaDetailClient({
           { title: "Full Puja Video Recording", description: "Delivered directly to your WhatsApp number within 48 hours of ritual completion." },
         ];
 
-  const galleryList =
-    Array.isArray(puja.gallery) && puja.gallery.length > 0
-      ? puja.gallery.map((img: string) => getPujaImageUrl(img)).filter(Boolean)
-      : Array.isArray((puja as any).galleryUrl) && (puja as any).galleryUrl.length > 0
-        ? (puja as any).galleryUrl.map((img: string) => getPujaImageUrl(img)).filter(Boolean)
-        : typeof (puja as any).galleryUrl === "string" && (puja as any).galleryUrl.trim()
-          ? [getPujaImageUrl((puja as any).galleryUrl)]
-          : [];
-
   const templeImage =
     (typeof (puja as any).templeImageUrl === "string" && (puja as any).templeImageUrl.trim()) ||
     (typeof puja.templeImage === "string" && puja.templeImage.trim()) ||
     (typeof (puja as any).details?.templeImageUrl === "string" && (puja as any).details.templeImageUrl.trim()) ||
     (typeof puja.details?.templeImage === "string" && puja.details.templeImage.trim()) ||
     "";
-
-  const DEFAULT_BANNER_IMAGE =
-    "https://images.unsplash.com/photo-1542909168-82c3e7fdca5c?auto=format&fit=crop&w=1600&q=80";
-
-  const bannerImages: string[] = useMemo(() => {
-    if (!puja) return [DEFAULT_BANNER_IMAGE];
-    const list: string[] = [];
-
-    const addUrl = (val: any) => {
-      if (!val) return;
-      if (typeof val === "string") {
-        const parts = val.split(/[\n,]+/);
-        for (const p of parts) {
-          const trimmed = p.trim();
-          if (trimmed) {
-            const formatted = getPujaImageUrl(trimmed);
-            if (formatted) {
-              list.push(formatted);
-            }
-          }
-        }
-      } else if (Array.isArray(val)) {
-        for (const item of val) {
-          addUrl(item);
-        }
-      }
-    };
-
-    // 1. Primary main image
-    if (puja.imageUrl && typeof puja.imageUrl === "string" && puja.imageUrl.trim()) {
-      addUrl(puja.imageUrl);
-    }
-
-    // 2. Additional carousel images
-    const addImgs = puja.additionalImages || (puja as any).additionalImageUrls;
-    const hasAdditional =
-      (Array.isArray(addImgs) && addImgs.length > 0) ||
-      (typeof addImgs === "string" && Boolean((addImgs as string).trim()));
-
-    if (hasAdditional) {
-      addUrl(addImgs);
-    } else {
-      // 3. Fallback to gallery images if no additionalImages provided
-      addUrl(puja.gallery);
-      addUrl((puja as any).galleryUrl);
-      addUrl((puja as any).details?.gallery);
-    }
-
-    // 4. Details sub-object main image
-    if (list.length === 0) {
-      addUrl((puja?.details as any)?.imageUrl);
-    }
-
-    // Fallback default image if no image exists in DB at all
-    if (list.length === 0) {
-      list.push(DEFAULT_BANNER_IMAGE);
-    }
-
-    return list;
-  }, [puja]);
 
   const handlePrevBanner = () => {
     if (bannerImages.length <= 1) return;
@@ -564,16 +567,6 @@ export default function PujaDetailClient({
     if (bannerImages.length <= 1) return;
     setActiveBannerIndex((prev) => (prev + 1) % bannerImages.length);
   };
-
-  const subNavTabs = useMemo(() => [
-    { id: "about", label: "About puja" },
-    { id: "benefits", label: "Puja Benefits" },
-    { id: "process", label: "Puja Procedure" },
-    { id: "temple", label: "Temple Details" },
-    { id: "receive", label: "What will you receive" },
-    { id: "faqs", label: "FAQs" },
-    ...(galleryList.length > 0 ? [{ id: "gallery", label: "Puja Gallery" }] : []),
-  ], [galleryList.length]);
 
   return (
     <main className="min-h-screen bg-white text-[#1f1f1f] font-sans">

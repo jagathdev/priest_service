@@ -325,7 +325,7 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
                   </svg>
                 </div>
                 <p className="text-[10px] sm:text-[11px] text-stone-900 font-bold leading-tight text-left">
-                  One of India's most<br />loved devotional<br />platforms
+                  One of India&apos;s most<br />loved devotional<br />platforms
                 </p>
               </div>
 

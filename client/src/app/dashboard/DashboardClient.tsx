@@ -7,7 +7,6 @@ import Navbar from "@/components/layout/Navbar";
 import WishlistButton from "@/components/common/WishlistButton";
 
 import HeroSection from "@/components/home/HeroSection";
-import ReviewsSection from "@/components/common/ReviewsSection";
 import PujaFilterModal, {
   FilterState,
   defaultFilters,
@@ -605,26 +604,7 @@ function Badge({ icon, text }: { icon: string; text: string }) {
   );
 }
 
-function Step({ icon, title, subtitle, active }: { icon: string; title: string; subtitle: string; active?: boolean }) {
-  return (
-    <div className="flex flex-col items-center bg-[#faf9f6] z-10 p-2">
-      <div className={`w-16 h-16 rounded-full flex items-center justify-center text-2xl shadow-md border-4 mb-3 transition-colors ${active ? 'bg-[#009e5b] text-white border-green-200 shadow-green-200' : 'bg-white text-gray-400 border-white shadow-gray-200'}`}>
-        {icon}
-      </div>
-      <p className="text-[10px] md:text-xs text-gray-500 text-center font-medium leading-tight">
-        {title}<br /><span className="text-[#4a2e21] font-bold">{subtitle}</span>
-      </p>
-    </div>
-  );
-}
 
-function FilterBtn({ text, active }: { text: string; active?: boolean }) {
-  return (
-    <button className={`px-5 py-1.5 rounded-full text-sm font-bold transition-colors shadow-sm ${active ? 'bg-[#009e5b] text-white' : 'bg-white text-gray-500 hover:text-gray-800'}`}>
-      {text}
-    </button>
-  );
-}
 
 interface PujaCardProps {
   id?: string;
@@ -820,12 +800,6 @@ function AccordionItem({
   );
 }
 
-function SocialIcon({ bg, border, text }: { bg: string; border?: string; text: string }) {
-  return (
-    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-[10px] font-bold uppercase cursor-pointer hover:scale-110 transition-transform ${bg} ${border || ''}`}>
-      {text}
-    </div>
-  );
-}
+
 
 

@@ -7,7 +7,6 @@ import {
   SparklesIcon,
   FireIcon,
   ShoppingBagIcon,
-  CreditCardIcon,
   ArrowLeftOnRectangleIcon,
   UserCircleIcon,
   Bars3Icon,

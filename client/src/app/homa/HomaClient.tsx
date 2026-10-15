@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import Navbar from "@/components/layout/Navbar";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -45,8 +45,8 @@ const getHomaImageUrl = (imageUrl?: string): string => {
 };
 
 export default function HomaClient({ initialHomas }: { initialHomas?: Homa[] }) {
-  const [allHomas, setAllHomas] = useState<Homa[]>(initialHomas || []);
-  const [fetched, setFetched] = useState(true); // Since it's SSR, data is always already fetched when the component mounts
+  const allHomas = useMemo(() => initialHomas || [], [initialHomas]);
+  const fetched = true; // Since it's SSR, data is always already fetched when the component mounts
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedType, setSelectedType] = useState("All Homas");
   const [selectedDeities, setSelectedDeities] = useState<string[]>([]);
@@ -465,7 +465,7 @@ export default function HomaClient({ initialHomas }: { initialHomas?: Homa[] }) 
               {fetched && displayedHomas.length > 0 && (
                 <div className="mt-12 text-center py-6 border-t border-gray-100">
                   <p className="text-xs font-semibold text-gray-400">
-                    You've reached the end of available services ({displayedHomas.length} of {allHomas.length} Homas)
+                    You&apos;ve reached the end of available services ({displayedHomas.length} of {allHomas.length} Homas)
                   </p>
                 </div>
               )}

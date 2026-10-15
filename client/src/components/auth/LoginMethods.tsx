@@ -58,7 +58,7 @@ export default function LoginMethods() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  const [detectedCountry, setDetectedCountry] = useState<string | null>(null);
+  const [_detectedCountry, setDetectedCountry] = useState<string | null>(null);
   const [isIndian, setIsIndian] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [detecting, setDetecting] = useState(true);

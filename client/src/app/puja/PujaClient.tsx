@@ -282,9 +282,7 @@ import ShareModal, { ShareData } from "@/components/common/ShareModal";
 
 // --- Main Page ----------------------------------------------------------------
 export default function PujaClient({ initialPujas }: { initialPujas?: Puja[] }) {
-  const [allPujas, setAllPujas] = useState<Puja[]>(initialPujas || []);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [fetched, setFetched] = useState(true);
+  const allPujas = useMemo(() => initialPujas || [], [initialPujas]);
   const [filters, setFilters] = useState<FilterState>(defaultFilters);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [filterModalInitialTab, setFilterModalInitialTab] = useState("");
@@ -302,20 +300,6 @@ export default function PujaClient({ initialPujas }: { initialPujas?: Puja[] }) 
     setShareData(data);
     setShareModalOpen(true);
   };
-
-  // Limit carousel to first 5 pujas
-  const carouselPujas = allPujas.slice(0, 5);
-
-  // Banner auto-rotate
-  useEffect(() => {
-    if (carouselPujas.length <= 1) return;
-    const id = setInterval(() => {
-      setCurrentIndex((prev) => (prev === carouselPujas.length - 1 ? 0 : prev + 1));
-    }, 4000);
-    return () => clearInterval(id);
-  }, [carouselPujas.length]);
-
-  const activeIndex = carouselPujas.length === 0 ? 0 : Math.min(currentIndex, carouselPujas.length - 1);
 
   const clearFilters = () => setFilters(defaultFilters);
   const applyFilters = useCallback((nextFilters: FilterState) => {
@@ -372,7 +356,7 @@ export default function PujaClient({ initialPujas }: { initialPujas?: Puja[] }) 
     }
     if (benefits.length > 0) {
       groups.push({
-        label: "Benefits",
+        label: "Benefit",
         options: benefits.map((v) => ({ value: v })),
       });
     }
@@ -395,10 +379,12 @@ export default function PujaClient({ initialPujas }: { initialPujas?: Puja[] }) 
         const found = dynamicFilterGroups.find(
           (g) => g.label.toLowerCase() === filterParam.toLowerCase()
         );
-        if (found) {
-          openFilterModal(found.label);
-        } else if (filterParam.toLowerCase() === "location") {
-          openFilterModal("Location");
+        const modalTab = found ? found.label : (filterParam.toLowerCase() === "location" ? "Location" : "");
+        if (modalTab) {
+          const timeoutId = setTimeout(() => {
+            openFilterModal(modalTab);
+          }, 0);
+          return () => clearTimeout(timeoutId);
         }
       }
     }
@@ -539,7 +525,7 @@ export default function PujaClient({ initialPujas }: { initialPujas?: Puja[] }) 
             <div className="mt-16 flex flex-col items-center justify-center gap-4 rounded-2xl border border-dashed border-[#e3d1c2] bg-white py-16 text-center">
               <SparklesIcon className="h-10 w-10 text-[#d95a2b]" />
               <p className="text-lg font-semibold text-[#5c2424]">No pujas found</p>
-              <p className="text-sm text-gray-500">Try adjusting your filters to find what you're looking for.</p>
+              <p className="text-sm text-gray-500">Try adjusting your filters to find what you&apos;re looking for.</p>
               <button
                 type="button"
                 onClick={clearFilters}
@@ -643,7 +629,7 @@ export default function PujaClient({ initialPujas }: { initialPujas?: Puja[] }) 
           )}
           {displayedPujas.length > 0 && fetched && (
             <div className="mt-12 text-center pb-10">
-              <p className="text-[16px] sm:text-[18px] mb-2 font-medium text-gray-600">You've reached the end of available pujas</p>
+              <p className="text-[16px] sm:text-[18px] mb-2 font-medium text-gray-600">You&apos;ve reached the end of available pujas</p>
               <p className="text-[14px] text-gray-500">{displayedPujas.length} of {displayedPujas.length} pujas shown</p>
             </div>
           )}

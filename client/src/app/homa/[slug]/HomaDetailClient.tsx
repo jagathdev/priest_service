@@ -105,7 +105,6 @@ export const getHomaImageUrl = (imageUrl?: string): string => {
 
 export default function HomaDetailClient({
   initialHoma,
-  recommendations = [],
 }: {
   initialHoma: Homa | null;
   recommendations?: Homa[];
@@ -114,7 +113,6 @@ export default function HomaDetailClient({
   const slugParam = params?.slug;
   const slug = Array.isArray(slugParam) ? slugParam[0] : slugParam;
   const currency = "INR";
-  const currencySymbol = "₹";
 
   const [homa, setHoma] = useState<Homa | null>(initialHoma);
   const [loading, setLoading] = useState(!initialHoma);
@@ -124,13 +122,8 @@ export default function HomaDetailClient({
   const [showPackageModal, setShowPackageModal] = useState(false);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
   const [activeTab, setActiveTab] = useState("about");
-  const [userDetails, setUserDetails] = useState({ name: "", whatsapp: "" });
-  const [addingToCart, setAddingToCart] = useState(false);
-  const [cartError, setCartError] = useState("");
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [pendingSankalpUrl, setPendingSankalpUrl] = useState<string | null>(null);
-  const [isWishlisted, setIsWishlisted] = useState(false);
-  const [shareSuccess, setShareSuccess] = useState(false);
   const [showStickyBar, setShowStickyBar] = useState(false);
   const [activeBannerIndex, setActiveBannerIndex] = useState(0);
   const heroCtaRef = useRef<HTMLButtonElement | null>(null);
@@ -240,11 +233,11 @@ export default function HomaDetailClient({
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const defaultPackageAvatars = [
-    "/images/package_individual.webp",
-    "/images/partner.webp",
-    "/images/package_family.webp",
-  ];
+const DEFAULT_PACKAGE_AVATARS = [
+  "/images/package_individual.webp",
+  "/images/partner.webp",
+  "/images/package_family.webp",
+];
 
   // Compute normalized package list from Admin data or defaults
   const packagesList = useMemo(() => {
@@ -271,7 +264,7 @@ export default function HomaDetailClient({
           priceUSD: pkg.priceUSD,
           priceMYR: pkg.priceMYR,
           description: pkg.description || "Includes personalized sankalpam and havan video proof.",
-          imageUrl: defaultPackageAvatars[idx % defaultPackageAvatars.length],
+          imageUrl: DEFAULT_PACKAGE_AVATARS[idx % DEFAULT_PACKAGE_AVATARS.length],
         };
       });
     }
@@ -284,7 +277,7 @@ export default function HomaDetailClient({
         devoteeCount: "1 Devotee",
         priceINR: basePrice,
         description: "Personalized Sankalpam for 1 Person with havan video recording.",
-        imageUrl: defaultPackageAvatars[0],
+        imageUrl: DEFAULT_PACKAGE_AVATARS[0],
       },
       {
         id: "pkg-2",
@@ -292,7 +285,7 @@ export default function HomaDetailClient({
         devoteeCount: "2 Devotees",
         priceINR: basePrice + 300,
         description: "Personalized Sankalpam for Couple / 2 Devotees.",
-        imageUrl: defaultPackageAvatars[1],
+        imageUrl: DEFAULT_PACKAGE_AVATARS[1],
       },
       {
         id: "pkg-3",
@@ -300,7 +293,7 @@ export default function HomaDetailClient({
         devoteeCount: "4 Devotees",
         priceINR: basePrice + 600,
         description: "Personalized Sankalpam for 4 Family Members.",
-        imageUrl: defaultPackageAvatars[2],
+        imageUrl: DEFAULT_PACKAGE_AVATARS[2],
       },
     ];
   }, [homa]);
@@ -355,6 +348,65 @@ export default function HomaDetailClient({
       setAddingToCart(false);
     }
   };
+
+  const DEFAULT_BANNER_IMAGE = "/images/Lakshmi-Homam.jpg";
+
+  const bannerImages: string[] = useMemo(() => {
+    if (!homa) return [DEFAULT_BANNER_IMAGE];
+    const list: string[] = [];
+
+    const addUrl = (val: any) => {
+      if (!val) return;
+      if (typeof val === "string") {
+        const parts = val.split(/[\n,]+/);
+        for (const p of parts) {
+          const trimmed = p.trim();
+          if (trimmed) {
+            const formatted = getHomaImageUrl(trimmed);
+            if (formatted) {
+              list.push(formatted);
+            }
+          }
+        }
+      } else if (Array.isArray(val)) {
+        for (const item of val) {
+          addUrl(item);
+        }
+      }
+    };
+
+    // 1. Primary main image
+    if (homa.imageUrl && typeof homa.imageUrl === "string" && homa.imageUrl.trim()) {
+      addUrl(homa.imageUrl);
+    }
+
+    // 2. Additional carousel images
+    const addImgs = homa.additionalImages || (homa as any).additionalImageUrls;
+    const hasAdditional =
+      (Array.isArray(addImgs) && addImgs.length > 0) ||
+      (typeof addImgs === "string" && Boolean((addImgs as string).trim()));
+
+    if (hasAdditional) {
+      addUrl(addImgs);
+    } else {
+      // 3. Fallback to gallery images if no additionalImages provided
+      addUrl(homa.gallery);
+      addUrl((homa as any).galleryUrl);
+      addUrl((homa as any).details?.gallery);
+    }
+
+    // 4. Details sub-object main image
+    if (list.length === 0) {
+      addUrl((homa?.details as any)?.imageUrl);
+    }
+
+    // Fallback default image if no image exists in DB at all
+    if (list.length === 0) {
+      list.push(DEFAULT_BANNER_IMAGE);
+    }
+
+    return list;
+  }, [homa]);
 
   if (loading) {
     return (
@@ -499,66 +551,6 @@ export default function HomaDetailClient({
     (typeof homa.details?.templeImageUrl === "string" && homa.details.templeImageUrl.trim()) ||
     (typeof homa.details?.templeImage === "string" && homa.details.templeImage.trim()) ||
     "";
-
-  const DEFAULT_BANNER_IMAGE =
-    "https://images.unsplash.com/photo-1542909168-82c3e7fdca5c?auto=format&fit=crop&w=1600&q=80";
-
-  const bannerImages: string[] = useMemo(() => {
-    if (!homa) return [DEFAULT_BANNER_IMAGE];
-    const list: string[] = [];
-
-    const addUrl = (val: any) => {
-      if (!val) return;
-      if (typeof val === "string") {
-        const parts = val.split(/[\n,]+/);
-        for (const p of parts) {
-          const trimmed = p.trim();
-          if (trimmed) {
-            const formatted = getHomaImageUrl(trimmed);
-            if (formatted) {
-              list.push(formatted);
-            }
-          }
-        }
-      } else if (Array.isArray(val)) {
-        for (const item of val) {
-          addUrl(item);
-        }
-      }
-    };
-
-    // 1. Primary main image
-    if (homa.imageUrl && typeof homa.imageUrl === "string" && homa.imageUrl.trim()) {
-      addUrl(homa.imageUrl);
-    }
-
-    // 2. Additional carousel images
-    const addImgs = homa.additionalImages || (homa as any).additionalImageUrls;
-    const hasAdditional =
-      (Array.isArray(addImgs) && addImgs.length > 0) ||
-      (typeof addImgs === "string" && Boolean((addImgs as string).trim()));
-
-    if (hasAdditional) {
-      addUrl(addImgs);
-    } else {
-      // 3. Fallback to gallery images if no additionalImages provided
-      addUrl(homa.gallery);
-      addUrl((homa as any).galleryUrl);
-      addUrl((homa as any).details?.gallery);
-    }
-
-    // 4. Details sub-object main image
-    if (list.length === 0) {
-      addUrl((homa?.details as any)?.imageUrl);
-    }
-
-    // Fallback default image if no image exists in DB at all
-    if (list.length === 0) {
-      list.push(DEFAULT_BANNER_IMAGE);
-    }
-
-    return list;
-  }, [homa]);
 
   const handlePrevBanner = () => {
     if (bannerImages.length <= 1) return;

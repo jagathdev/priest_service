@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { ChevronDownIcon, CheckIcon } from "@heroicons/react/24/outline";
 
 const STATUS_CONFIG: Record<
@@ -172,7 +172,7 @@ export default function AdminOrdersPage() {
     return token ? { Authorization: `Bearer ${token}` } : {};
   };
 
-  const fetchOrders = async (page: number, service: string, status: string, search: string = "") => {
+  const fetchOrders = useCallback(async (page: number, service: string, status: string, search: string = "") => {
     setLoading(true);
     try {
       const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
@@ -200,14 +200,14 @@ export default function AdminOrdersPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     const handler = setTimeout(() => {
       fetchOrders(currentPage, selectedService, selectedStatus, searchQuery);
     }, 400);
     return () => clearTimeout(handler);
-  }, [currentPage, selectedService, selectedStatus, searchQuery]);
+  }, [currentPage, selectedService, selectedStatus, searchQuery, fetchOrders]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -400,7 +400,6 @@ export default function AdminOrdersPage() {
             data.orders.map((ord) => {
               const serviceName = ord.serviceName || "Sacred Ritual";
               const devoteeName = ord.devoteeName || "Devotee";
-              const isPaid = ord.paymentStatus === "paid";
               const statusText = ord.orderStatus || ord.paymentStatus || "pending";
 
               return (
@@ -462,10 +461,6 @@ export default function AdminOrdersPage() {
                 data.orders.map((ord) => {
                   const serviceName = ord.serviceName || "Sacred Ritual";
                   const devoteeName = ord.devoteeName || "Devotee";
-                  const isPaid = ord.paymentStatus === "paid";
-                  const statusText = ord.orderStatus || ord.paymentStatus || "pending";
-                  const isScheduled = statusText === "scheduled" || statusText === "performed" || statusText === "completed";
-
                   return (
                     <tr key={ord._id} className="hover:bg-gray-50/80 transition">
                       <td className="px-6 py-4 font-mono font-bold text-gray-900">{ord.orderNumber}</td>
@@ -480,7 +475,7 @@ export default function AdminOrdersPage() {
                       <td className="px-6 py-4 font-extrabold text-gray-900">₹{ord.pricing?.total || 0}</td>
                       <td className="px-6 py-4">
                         <StatusDropdown
-                          currentStatus={statusText}
+                          currentStatus={ord.orderStatus}
                           onChange={(newStatus) => handleStatusChange(ord._id, newStatus)}
                         />
                       </td>

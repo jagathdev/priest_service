@@ -6,17 +6,26 @@ import Navbar from "@/components/layout/Navbar";
 type TabId = "privacy" | "cookies";
 
 export default function PrivacyPage() {
-  const [activeTab, setActiveTab] = useState<TabId>("privacy");
+  const [activeTab, setActiveTab] = useState<TabId>(() => {
+    if (typeof window !== "undefined" && window.location.hash) {
+      const hash = window.location.hash.replace("#", "") as TabId;
+      if (hash === "privacy" || hash === "cookies") {
+        return hash;
+      }
+    }
+    return "privacy";
+  });
 
   // Allow URL hash navigation if someone links directly to a section
   useEffect(() => {
-    if (typeof window !== "undefined" && window.location.hash) {
+    const handleHashChange = () => {
       const hash = window.location.hash.replace("#", "") as TabId;
-      const validTabs: TabId[] = ["privacy", "cookies"];
-      if (validTabs.includes(hash)) {
+      if (hash === "privacy" || hash === "cookies") {
         setActiveTab(hash);
       }
-    }
+    };
+    window.addEventListener("hashchange", handleHashChange);
+    return () => window.removeEventListener("hashchange", handleHashChange);
   }, []);
 
   const handleTabChange = (tab: TabId) => {
