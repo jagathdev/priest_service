@@ -108,15 +108,15 @@ const ACCOUNT_TABS = [
       </svg>
     ),
   },
-  {
-    id: "language",
-    label: "Language",
-    icon: (active: boolean) => (
-      <svg className={`w-4 h-4 shrink-0 ${active ? "" : "text-gray-500"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-      </svg>
-    ),
-  },
+  // {
+  //   id: "language",
+  //   label: "Language",
+  //   icon: (active: boolean) => (
+  //     <svg className={`w-4 h-4 shrink-0 ${active ? "" : "text-gray-500"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+  //       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+  //     </svg>
+  //   ),
+  // },
   {
     id: "about",
     label: "About",
@@ -1585,7 +1585,7 @@ function AccountPageContent() {
                           <h4 className="text-[14px] font-bold text-gray-900 mb-1">WhatsApp Support</h4>
                           <p className="text-[11px] text-gray-500 mb-4">Reply within minutes</p>
                           <button className="text-success text-[12px] font-bold flex items-center gap-1 hover:text-[#047a47]">
-                            +91 9677391108 <span>&rarr;</span>
+                            +91 9566777645 <span>&rarr;</span>
                           </button>
                         </div>
 

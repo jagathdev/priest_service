@@ -498,7 +498,7 @@ function SankalpContent() {
       }
 
       const rzp = new (window as unknown as CustomWindow).Razorpay(options);
-      rzp.on("payment.failed", function (response: { error?: { description?: string; reason?: string } }) {
+      rzp.on("payment.failed", function (response: any) {
         setIsProcessing(false);
         setLoadingMsg("");
         const desc = response?.error?.description || response?.error?.reason || "Payment was not successful. You can retry anytime.";

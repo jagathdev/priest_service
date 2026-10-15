@@ -169,13 +169,6 @@ export default function MyPujaBookings() {
                 <span>Saved Address</span>
               </Link>
 
-              <Link href="/account#language" className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm font-semibold text-gray-700 hover:bg-gray-50 transition">
-                <svg className="w-4 h-4 text-gray-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span>Language</span>
-              </Link>
-
               <button
                 type="button"
                 onClick={handleLogout}
@@ -203,37 +196,33 @@ export default function MyPujaBookings() {
                   </h1>
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2.5 sm:gap-3">
                   <button
+                    type="button"
                     onClick={() => setFilter("All")}
-                    className={`px-5 py-2 rounded-full text-sm font-bold flex items-center gap-2 border transition ${filter === "All"
-                      ? "border-success text-success bg-white"
-                      : "border-transparent text-gray-700 bg-[#ebebeb] hover:bg-[#e0e0e0]"
+                    className={`px-4 sm:px-5 py-2 rounded-full text-xs sm:text-sm font-bold transition-all shadow-xs cursor-pointer ${filter === "All"
+                        ? "bg-success text-white shadow-sm"
+                        : "bg-[#ebebeb] text-gray-700 hover:bg-[#e0e0e0]"
                       }`}
                   >
                     All
-                    {filter === "All" && (
-                      <div className="w-4 h-4 rounded-full bg-success text-white flex items-center justify-center">
-                        <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                        </svg>
-                      </div>
-                    )}
                   </button>
                   <button
+                    type="button"
                     onClick={() => setFilter("Ongoing")}
-                    className={`px-5 py-2 rounded-full text-sm font-bold flex items-center gap-2 border transition ${filter === "Ongoing"
-                      ? "border-2 border-black text-[#1d3557] bg-[#e5e7eb]"
-                      : "border-2 border-transparent text-gray-700 bg-[#ebebeb] hover:bg-[#e0e0e0]"
+                    className={`px-4 sm:px-5 py-2 rounded-full text-xs sm:text-sm font-bold transition-all shadow-xs cursor-pointer ${filter === "Ongoing"
+                        ? "bg-success text-white shadow-sm"
+                        : "bg-[#ebebeb] text-gray-700 hover:bg-[#e0e0e0]"
                       }`}
                   >
                     Ongoing
                   </button>
                   <button
+                    type="button"
                     onClick={() => setFilter("Complete")}
-                    className={`px-5 py-2 rounded-full text-sm font-bold flex items-center gap-2 border transition ${filter === "Complete"
-                      ? "border-2 border-black text-[#1d3557] bg-[#e5e7eb]"
-                      : "border-2 border-transparent text-gray-700 bg-[#ebebeb] hover:bg-[#e0e0e0]"
+                    className={`px-4 sm:px-5 py-2 rounded-full text-xs sm:text-sm font-bold transition-all shadow-xs cursor-pointer ${filter === "Complete"
+                        ? "bg-success text-white shadow-sm"
+                        : "bg-[#ebebeb] text-gray-700 hover:bg-[#e0e0e0]"
                       }`}
                   >
                     Complete
@@ -331,7 +320,16 @@ export default function MyPujaBookings() {
                           <div className="relative max-w-[380px] mt-8 pb-2">
                             {/* Background lines */}
                             <div className={`absolute top-6 left-12 right-1/2 h-[3px] -z-10 ${booking.orderStatus === 'scheduled' || booking.orderStatus === 'performed' || booking.orderStatus === 'completed' ? 'bg-success' : 'bg-[#eadecd]'}`}></div>
-                            <div className={`absolute top-6 left-1/2 right-14 h-[3px] -z-10 ${booking.orderStatus === 'performed' || booking.orderStatus === 'completed' ? 'bg-success' : 'bg-[#eadecd]'}`}></div>
+                            <div className="absolute top-6 left-1/2 right-14 h-[3px] -z-10 bg-[#eadecd] overflow-hidden">
+                              <div
+                                className={`h-full bg-success transition-all duration-500 ${booking.orderStatus === 'completed'
+                                    ? "w-full"
+                                    : booking.orderStatus === 'performed'
+                                      ? "w-1/2"
+                                      : "w-0"
+                                  }`}
+                              />
+                            </div>
 
                             <div className="flex justify-between items-start text-center">
                               {/* Step 1 */}
@@ -371,7 +369,7 @@ export default function MyPujaBookings() {
                               {/* Step 3 */}
                               <div className="flex flex-col items-center w-28">
                                 <div className="h-12 flex items-center justify-center mb-2 z-10 shadow-[0_0_0_4px_white]">
-                                  {booking.orderStatus === 'performed' || booking.orderStatus === 'completed' ? (
+                                  {booking.orderStatus === 'completed' ? (
                                     <a href={booking.videoLink || "#"} target="_blank" rel="noreferrer" className="px-4 py-1.5 rounded-full bg-success text-white font-bold text-[12px] flex items-center gap-1.5 hover:bg-green-700 transition">
                                       <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 24 24">
                                         <path d="M8 5v14l11-7z" />
@@ -387,7 +385,7 @@ export default function MyPujaBookings() {
                                     </div>
                                   )}
                                 </div>
-                                {booking.orderStatus === 'performed' || booking.orderStatus === 'completed' ? (
+                                {booking.orderStatus === 'completed' ? (
                                   <p className="text-[10px] font-bold text-gray-900 leading-tight px-1">Watch your sacred ritual</p>
                                 ) : (
                                   <p className="text-[10px] font-bold text-[#a8a19d] leading-tight px-1">Available only after puja performed</p>

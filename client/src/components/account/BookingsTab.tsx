@@ -48,7 +48,7 @@ export default function BookingsTab() {
       const data = await request<any>(`/api/orders/user/${user._id || user.id}`);
       if (data.success) {
         setOrders(data.data);
-        
+
         // Also update selectedOrder if it exists to reflect new status
         setSelectedOrder((prev: any) => {
           if (!prev) return null;
@@ -71,9 +71,9 @@ export default function BookingsTab() {
   // Polling logic
   useEffect(() => {
     let interval: ReturnType<typeof setInterval>;
-    
+
     const hasPending = orders.some((o) => o.paymentStatus === "pending" || o.orderStatus === "pending");
-    
+
     if (hasPending) {
       interval = setInterval(() => {
         if (document.visibilityState === "visible") {
@@ -81,7 +81,7 @@ export default function BookingsTab() {
         }
       }, 20000);
     }
-    
+
     return () => {
       if (interval) clearInterval(interval);
     };
@@ -183,7 +183,7 @@ export default function BookingsTab() {
             <h4 className="font-bold text-stone-800">Puja Journey</h4>
           </div>
 
-          <div className={`space-y-6 sm:space-y-8 relative before:absolute before:inset-0 before:ml-4 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 ${selectedOrder.orderStatus === 'completed' || selectedOrder.orderStatus === 'performed' ? 'before:bg-success' : selectedOrder.orderStatus === 'scheduled' ? 'before:bg-gradient-to-b before:from-success before:via-success before:to-stone-200' : 'before:bg-gradient-to-b before:from-success before:via-stone-200 before:to-stone-200'}`}>
+          <div className={`space-y-6 sm:space-y-8 relative before:absolute before:inset-0 before:ml-4 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 ${selectedOrder.orderStatus === 'completed' ? 'before:bg-success' : selectedOrder.orderStatus === 'performed' ? 'before:bg-gradient-to-b before:from-success before:via-success before:to-stone-200' : selectedOrder.orderStatus === 'scheduled' ? 'before:bg-gradient-to-b before:from-success before:via-stone-200 before:to-stone-200' : 'before:bg-gradient-to-b before:from-success before:via-stone-200 before:to-stone-200'}`}>
 
             <div className="relative flex items-center justify-end md:justify-between md:odd:flex-row-reverse group is-active">
               <div className="absolute left-0 md:left-1/2 md:-translate-x-1/2 flex items-center justify-center w-8 h-8 rounded-full border-4 border-white bg-success text-white shadow shrink-0 z-10">
@@ -222,6 +222,7 @@ export default function BookingsTab() {
               </div>
             </div>
 
+            {/* Step 4: Puja Performed */}
             <div className={`relative flex items-center justify-end md:justify-between md:odd:flex-row-reverse group ${selectedOrder.orderStatus === 'performed' || selectedOrder.orderStatus === 'completed' ? 'is-active' : ''}`}>
               <div className={`absolute left-0 md:left-1/2 md:-translate-x-1/2 flex items-center justify-center w-8 h-8 rounded-full border-4 border-white shadow shrink-0 z-10 ${selectedOrder.orderStatus === 'performed' || selectedOrder.orderStatus === 'completed' ? 'bg-success text-white' : 'bg-white'}`}>
                 {selectedOrder.orderStatus === 'performed' || selectedOrder.orderStatus === 'completed' ? (
@@ -232,6 +233,24 @@ export default function BookingsTab() {
               </div>
               <div className={`w-[calc(100%-2.5rem)] sm:w-[calc(100%-3rem)] md:w-[calc(50%-2.5rem)] p-3 sm:p-4 border border-stone-100 rounded-xl ${selectedOrder.orderStatus === 'performed' || selectedOrder.orderStatus === 'completed' ? 'bg-stone-50' : 'bg-white opacity-60'}`}>
                 <div className="text-[10px] font-extrabold text-stone-400 uppercase tracking-wider mb-0.5 sm:mb-1">Step 4</div>
+                <h5 className="font-bold text-stone-800 text-xs sm:text-sm">Puja Performed</h5>
+                <p className="text-[11px] sm:text-xs text-stone-500 font-medium mt-0.5 sm:mt-1">
+                  {selectedOrder.orderStatus === 'performed' || selectedOrder.orderStatus === 'completed' ? "Sacred rituals successfully completed" : "Rituals to be performed by Vedic pandits"}
+                </p>
+              </div>
+            </div>
+
+            {/* Step 5: Video Delivered */}
+            <div className={`relative flex items-center justify-end md:justify-between md:odd:flex-row-reverse group ${selectedOrder.orderStatus === 'completed' ? 'is-active' : ''}`}>
+              <div className={`absolute left-0 md:left-1/2 md:-translate-x-1/2 flex items-center justify-center w-8 h-8 rounded-full border-4 border-white shadow shrink-0 z-10 ${selectedOrder.orderStatus === 'completed' ? 'bg-success text-white' : 'bg-white'}`}>
+                {selectedOrder.orderStatus === 'completed' ? (
+                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                ) : (
+                  <div className="w-2.5 h-2.5 rounded-full bg-stone-300"></div>
+                )}
+              </div>
+              <div className={`w-[calc(100%-2.5rem)] sm:w-[calc(100%-3rem)] md:w-[calc(50%-2.5rem)] p-3 sm:p-4 border border-stone-100 rounded-xl ${selectedOrder.orderStatus === 'completed' ? 'bg-stone-50' : 'bg-white opacity-60'}`}>
+                <div className="text-[10px] font-extrabold text-stone-400 uppercase tracking-wider mb-0.5 sm:mb-1">Step 5</div>
                 <h5 className="font-bold text-stone-800 text-xs sm:text-sm">Video Delivered</h5>
                 {selectedOrder.videoLink && (selectedOrder.orderStatus === 'performed' || selectedOrder.orderStatus === 'completed') ? (
                   <a href={selectedOrder.videoLink} target="_blank" rel="noreferrer" className="text-xs text-success font-bold mt-1 inline-block underline">Watch Recording</a>
@@ -274,35 +293,31 @@ export default function BookingsTab() {
         </div>
         <div className="flex items-center gap-1.5 sm:gap-3 flex-wrap sm:flex-nowrap w-full sm:w-auto">
           <button
+            type="button"
             onClick={() => setFilter("All")}
-            className={`px-3.5 py-1.5 sm:px-5 sm:py-2 rounded-full text-xs sm:text-sm font-bold flex items-center gap-1.5 border transition ${filter === "All"
-              ? "border-success text-success bg-white shadow-sm"
-              : "border-transparent text-gray-700 bg-[#ebebeb] hover:bg-[#e0e0e0]"
+            className={`px-3.5 py-1.5 sm:px-5 sm:py-2 rounded-full text-xs sm:text-sm font-bold transition-all shadow-xs cursor-pointer ${filter === "All"
+                ? "bg-success text-white shadow-sm"
+                : "bg-[#ebebeb] text-gray-700 hover:bg-[#e0e0e0]"
               }`}
           >
             All
-            {filter === "All" && (
-              <div className="w-3.5 h-3.5 rounded-full bg-success text-white flex items-center justify-center">
-                <svg className="w-2 h-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
-            )}
           </button>
           <button
+            type="button"
             onClick={() => setFilter("Ongoing")}
-            className={`px-3.5 py-1.5 sm:px-5 sm:py-2 rounded-full text-xs sm:text-sm font-bold flex items-center gap-1.5 border transition ${filter === "Ongoing"
-              ? "border-2 border-black text-[#1d3557] bg-[#e5e7eb] shadow-sm"
-              : "border-2 border-transparent text-gray-700 bg-[#ebebeb] hover:bg-[#e0e0e0]"
+            className={`px-3.5 py-1.5 sm:px-5 sm:py-2 rounded-full text-xs sm:text-sm font-bold transition-all shadow-xs cursor-pointer ${filter === "Ongoing"
+                ? "bg-success text-white shadow-sm"
+                : "bg-[#ebebeb] text-gray-700 hover:bg-[#e0e0e0]"
               }`}
           >
             Ongoing
           </button>
           <button
+            type="button"
             onClick={() => setFilter("Complete")}
-            className={`px-3.5 py-1.5 sm:px-5 sm:py-2 rounded-full text-xs sm:text-sm font-bold flex items-center gap-1.5 border transition ${filter === "Complete"
-              ? "border-2 border-black text-[#1d3557] bg-[#e5e7eb] shadow-sm"
-              : "border-2 border-transparent text-gray-700 bg-[#ebebeb] hover:bg-[#e0e0e0]"
+            className={`px-3.5 py-1.5 sm:px-5 sm:py-2 rounded-full text-xs sm:text-sm font-bold transition-all shadow-xs cursor-pointer ${filter === "Complete"
+                ? "bg-success text-white shadow-sm"
+                : "bg-[#ebebeb] text-gray-700 hover:bg-[#e0e0e0]"
               }`}
           >
             Complete
@@ -327,11 +342,14 @@ export default function BookingsTab() {
                 order.orderStatus === 'completed' ||
                 order.scheduledDate
               );
-              const isCompleted = Boolean(
+              const isPerformed = Boolean(
                 order.orderStatus === 'performed' ||
-                order.orderStatus === 'completed' ||
-                order.videoLink
+                order.orderStatus === 'completed'
               );
+              // Only mark video as completed / ready when orderStatus is actually 'completed'
+              const isCompleted = Boolean(
+                order.orderStatus === 'completed' && order.videoLink
+              ) || order.orderStatus === 'completed';
 
               const bookingDate = formatCardDate(order.createdAt || order.bookingDate);
               const scheduledDateRaw = order.scheduledDate || order.muhuratDate || order.eventDateTime || order.bookingDate || order.createdAt;
@@ -394,7 +412,12 @@ export default function BookingsTab() {
                   <div className="relative mt-5 sm:mt-8 pb-1 sm:pb-2">
                     {/* Connecting line behind nodes - Highlights green dynamically when reached */}
                     <div className={`absolute top-5 sm:top-6 left-8 sm:left-12 right-1/2 h-[2px] sm:h-[2.5px] -z-0 transition-colors ${isScheduled ? 'bg-success' : 'bg-[#eadfd5]'}`}></div>
-                    <div className={`absolute top-5 sm:top-6 left-1/2 right-8 sm:right-16 h-[2px] sm:h-[2.5px] -z-0 transition-colors ${isCompleted ? 'bg-success' : 'bg-[#eadfd5]'}`}></div>
+                    <div className="absolute top-5 sm:top-6 left-1/2 right-8 sm:right-16 h-[2px] sm:h-[2.5px] -z-0 bg-[#eadfd5] overflow-hidden">
+                      <div
+                        className={`h-full bg-success transition-all duration-500 ${isCompleted ? "w-full" : isPerformed ? "w-1/2" : "w-0"
+                          }`}
+                      />
+                    </div>
 
                     <div className="flex justify-between items-start text-center gap-1">
                       {/* Step 1: Booked */}

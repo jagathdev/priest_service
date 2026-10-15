@@ -819,7 +819,7 @@ export default function HomaDetailClient({
               {/* Secondary WhatsApp & Call Buttons */}
               <div className="flex flex-wrap items-center gap-3">
                 <a
-                  href="https://wa.me/9677391109"
+                  href="https://wa.me/95667776459566777645"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex-1 min-w-[150px] inline-flex items-center justify-center gap-2 bg-white border border-[#00b050] text-[#009644] hover:bg-green-50/60 font-extrabold text-xs sm:text-sm py-2.5 px-4 rounded-full transition-colors shadow-xs"
@@ -1190,7 +1190,7 @@ export default function HomaDetailClient({
               </p>
               <div className="mt-3 mb-1">
                 <a
-                  href="https://wa.me/9677391109"
+                  href="https://wa.me/95667776459566777645"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-full bg-[#00b050] hover:bg-[#009644] text-white font-extrabold text-xs sm:text-sm py-3 px-4 rounded-full transition-colors flex items-center justify-center gap-2 shadow-sm"

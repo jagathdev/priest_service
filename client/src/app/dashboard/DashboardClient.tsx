@@ -8,11 +8,20 @@ import WishlistButton from "@/components/common/WishlistButton";
 
 import HeroSection from "@/components/home/HeroSection";
 import ReviewsSection from "@/components/common/ReviewsSection";
+import PujaFilterModal, {
+  FilterState,
+  defaultFilters,
+  extractDynamicFilterGroups,
+  matchesPujaFilters,
+} from "@/components/common/PujaFilterModal";
 import ShareModal, { ShareData } from "@/components/common/ShareModal";
 
 export default function DashboardClient({ initialHeroBanners, initialPujas }: { initialHeroBanners?: any[], initialPujas?: any[] }) {
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
-  const [pujas, setPujas] = useState<any[]>(initialPujas || []);
+  const [allPujas, setAllPujas] = useState<any[]>(initialPujas || []);
+  const [filters, setFilters] = useState<FilterState>(defaultFilters);
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [filterModalInitialTab, setFilterModalInitialTab] = useState("");
   const [fetchedPujas, setFetchedPujas] = useState(initialPujas && initialPujas.length > 0);
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [shareData, setShareData] = useState<ShareData>({});
@@ -31,7 +40,7 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
                 ? data
                 : [];
             const activeList = rawList.filter((item: any) => !item.status || item.status === "active");
-            setPujas(activeList.slice(0, 6));
+            setAllPujas(activeList);
           }
         } catch (err) {
           console.error("Failed to fetch pujas on client:", err);
@@ -42,6 +51,34 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
     }
     fetchPujas();
   }, [initialPujas]);
+
+  // Compute dynamic filter groups for home page
+  const dynamicFilterGroups = React.useMemo(() => {
+    return extractDynamicFilterGroups(allPujas);
+  }, [allPujas]);
+
+  const hasActiveFilters = Object.values(filters).some((arr) => arr && arr.length > 0);
+
+  const openFilterModal = (tabLabel?: string) => {
+    setFilterModalInitialTab(tabLabel || "");
+    setIsFilterModalOpen(true);
+  };
+
+  const clearFilters = () => setFilters(defaultFilters);
+  const applyFilters = (nextFilters: FilterState) => {
+    setFilters(nextFilters);
+    setIsFilterModalOpen(false);
+  };
+
+  // Filter pujas based on selected modal filters
+  const filteredPujas = React.useMemo(() => {
+    if (!hasActiveFilters) {
+      return allPujas.slice(0, 6);
+    }
+    return allPujas
+      .filter((p) => matchesPujaFilters(p, filters, "", dynamicFilterGroups))
+      .slice(0, 6);
+  }, [allPujas, filters, hasActiveFilters, dynamicFilterGroups]);
 
   return (
     <main className="min-h-screen bg-white text-ink font-sans">
@@ -175,27 +212,63 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
 
             {/* Filter Pills */}
             <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap">
-              <Link href="/puja" className="bg-success text-white font-bold px-4 sm:px-5 py-2 rounded-full text-xs sm:text-sm shadow-sm hover:bg-[#009b46] transition-colors whitespace-nowrap">
+              <button
+                type="button"
+                onClick={clearFilters}
+                className={`font-bold px-4 sm:px-5 py-2 rounded-full text-xs sm:text-sm transition-all whitespace-nowrap cursor-pointer ${!hasActiveFilters
+                  ? "bg-success text-white shadow-sm hover:bg-[#009b46]"
+                  : "bg-white border border-stone-200 text-stone-700 hover:border-stone-400 font-semibold px-3.5 sm:px-4"
+                  }`}
+              >
                 All
-              </Link>
+              </button>
 
-              <Link href="/puja?filter=Deity" className="bg-white border border-stone-200 text-stone-700 hover:border-stone-400 font-semibold px-3.5 sm:px-4 py-2 rounded-full text-xs sm:text-sm transition-colors whitespace-nowrap">
-                Deity
-              </Link>
+              {dynamicFilterGroups.map((group) => {
+                const selectedCount = (filters[group.label] || []).length;
+                const isSelected = selectedCount > 0;
+                return (
+                  <button
+                    key={group.label}
+                    type="button"
+                    onClick={() => openFilterModal(group.label)}
+                    className={`font-bold px-3.5 sm:px-4 py-2 rounded-full text-xs sm:text-sm transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 ${isSelected
+                      ? "bg-success text-white shadow-sm hover:bg-[#009b46]"
+                      : "bg-white border border-stone-200 text-stone-700 hover:border-stone-400 font-semibold"
+                      }`}
+                  >
+                    <span>{group.label === "Benefits" ? "Benefit" : group.label}</span>
+                    {selectedCount > 0 && (
+                      <span className="w-4 h-4 rounded-full bg-white text-success text-[10px] font-extrabold flex items-center justify-center shrink-0">
+                        {selectedCount}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
 
-              <Link href="/puja?filter=Dosha" className="bg-white border border-stone-200 text-stone-700 hover:border-stone-400 font-semibold px-3.5 sm:px-4 py-2 rounded-full text-xs sm:text-sm transition-colors whitespace-nowrap">
-                Dosha
-              </Link>
-
-              <Link href="/puja?filter=Benefits" className="bg-white border border-stone-200 text-stone-700 hover:border-stone-400 font-semibold px-3.5 sm:px-4 py-2 rounded-full text-xs sm:text-sm transition-colors whitespace-nowrap">
-                Benefit
-              </Link>
-
-              <Link href="/puja?filter=Location" className="bg-white border border-stone-200 text-stone-700 hover:border-stone-400 font-semibold px-3.5 sm:px-4 py-2 rounded-full text-xs sm:text-sm transition-colors whitespace-nowrap">
-                Location
-              </Link>
+              {hasActiveFilters && (
+                <button
+                  type="button"
+                  onClick={clearFilters}
+                  className="text-xs sm:text-sm font-semibold text-red-500 hover:text-red-700 underline px-2 py-1 cursor-pointer"
+                >
+                  Clear All
+                </button>
+              )}
             </div>
           </div>
+
+          {/* Filter Modal */}
+          {isFilterModalOpen && dynamicFilterGroups.length > 0 && (
+            <PujaFilterModal
+              filters={filters}
+              filterGroups={dynamicFilterGroups}
+              initialTab={filterModalInitialTab}
+              onClose={() => setIsFilterModalOpen(false)}
+              onApply={applyFilters}
+              onClear={clearFilters}
+            />
+          )}
 
           {/* Puja Cards Grid (Maximum 6 active Pujas loaded from Express API) */}
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 sm:gap-8 w-full max-w-full xl:max-w-none mx-auto">
@@ -217,10 +290,12 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
                   </div>
                 </div>
               ))
-            ) : pujas.length === 0 ? (
-              <div className="col-span-full py-12 text-center text-stone-400 font-medium">No active Pujas found.</div>
+            ) : filteredPujas.length === 0 ? (
+              <div className="col-span-full py-12 text-center text-stone-400 font-medium">
+                No active Pujas found for selected filters.
+              </div>
             ) : (
-              pujas.map((p) => {
+              filteredPujas.map((p) => {
                 const priceVal = p.price
                   ? `₹${p.price}`
                   : p.packages?.[0]?.priceINR
@@ -429,7 +504,7 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
             <ul className="flex flex-col gap-4 text-sm text-stone-600 font-medium">
               <li><Link href="mailto:support@astroved.com" className="hover:text-success transition-colors">support@astroved.com</Link></li>
               <li><Link href="/profile?tab=support" className="hover:text-success transition-colors">Contact Us</Link></li>
-              <li><Link href="https://wa.me/919677391109" target="_blank" rel="noopener noreferrer" className="hover:text-success transition-colors">WhatsApp: +91 9677391109</Link></li>
+              <li><Link href="https://wa.me/9195667776459566777645" target="_blank" rel="noopener noreferrer" className="hover:text-success transition-colors">WhatsApp: +91 95667776459566777645</Link></li>
             </ul>
           </div>
 
@@ -624,60 +699,60 @@ function PujaCard({ id, imageSrc, topTag, title, subtitle, location, date, price
             </div>
           </div>
 
-            {/* Bottom Footer Row: Price + Participate Button */}
-            <div className="flex items-center justify-between pt-0.5">
-              {/* Price */}
-              <div>
-                <span className="font-extrabold text-2xl sm:text-3xl text-[#1f1a17] leading-none block">{price}</span>
-                <span className="text-xs text-stone-500 font-semibold mt-0.5 block">Per Booking</span>
-              </div>
+          {/* Bottom Footer Row: Price + Participate Button */}
+          <div className="flex items-center justify-between pt-0.5">
+            {/* Price */}
+            <div>
+              <span className="font-extrabold text-2xl sm:text-3xl text-[#1f1a17] leading-none block">{price}</span>
+              <span className="text-xs text-stone-500 font-semibold mt-0.5 block">Per Booking</span>
+            </div>
 
-              {/* CTA Button */}
-              <div className="inline-flex items-center gap-2 bg-success hover:bg-[#009644] active:scale-95 text-white font-extrabold text-xs sm:text-sm px-5 py-2.5 sm:py-3 rounded-full shadow-md shadow-green-600/20 transition-all duration-200 group/btn">
-                <span>Participate Now</span>
-                <div className="w-5 h-5 rounded-full bg-white text-success flex items-center justify-center shrink-0">
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                  </svg>
-                </div>
+            {/* CTA Button */}
+            <div className="inline-flex items-center gap-2 bg-success hover:bg-[#009644] active:scale-95 text-white font-extrabold text-xs sm:text-sm px-5 py-2.5 sm:py-3 rounded-full shadow-md shadow-green-600/20 transition-all duration-200 group/btn">
+              <span>Participate Now</span>
+              <div className="w-5 h-5 rounded-full bg-white text-success flex items-center justify-center shrink-0">
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
               </div>
             </div>
           </div>
-        </Link>
-
-        {/* Top Right Floating Action Buttons (Wishlist & Share) */}
-        <div className="absolute top-5 right-5 flex flex-col gap-2 z-10">
-          {/* Wishlist Heart Button */}
-          {id && <WishlistButton itemId={id} />}
-
-          {/* Share Button */}
-          <button
-            type="button"
-            aria-label="Share puja"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              onShare?.({
-                title,
-                description: subtitle,
-                location,
-                url: window.location.origin + cardUrl,
-              });
-            }}
-            className="w-8 h-8 rounded-full bg-white/95 text-stone-700 hover:text-success flex items-center justify-center shadow-md backdrop-blur-sm transition-transform active:scale-95 hover:bg-white"
-          >
-            <svg className="w-4 h-4 fill-none stroke-current" strokeWidth="2" viewBox="0 0 24 24">
-              <circle cx="18" cy="5" r="3" />
-              <circle cx="6" cy="12" r="3" />
-              <circle cx="18" cy="19" r="3" />
-              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
-              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
-            </svg>
-          </button>
         </div>
+      </Link>
+
+      {/* Top Right Floating Action Buttons (Wishlist & Share) */}
+      <div className="absolute top-5 right-5 flex flex-col gap-2 z-10">
+        {/* Wishlist Heart Button */}
+        {id && <WishlistButton itemId={id} />}
+
+        {/* Share Button */}
+        <button
+          type="button"
+          aria-label="Share puja"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onShare?.({
+              title,
+              description: subtitle,
+              location,
+              url: window.location.origin + cardUrl,
+            });
+          }}
+          className="w-8 h-8 rounded-full bg-white/95 text-stone-700 hover:text-success flex items-center justify-center shadow-md backdrop-blur-sm transition-transform active:scale-95 hover:bg-white"
+        >
+          <svg className="w-4 h-4 fill-none stroke-current" strokeWidth="2" viewBox="0 0 24 24">
+            <circle cx="18" cy="5" r="3" />
+            <circle cx="6" cy="12" r="3" />
+            <circle cx="18" cy="19" r="3" />
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+          </svg>
+        </button>
       </div>
-    );
-  }
+    </div>
+  );
+}
 
 // --- Helper Data & Components ---
 

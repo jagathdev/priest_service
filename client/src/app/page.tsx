@@ -25,7 +25,7 @@ export default async function HomePage() {
           ? pujasData
           : [];
       const activeList = rawList.filter((item: any) => !item.status || item.status === "active");
-      initialPujas = activeList.slice(0, 6);
+      initialPujas = activeList;
     }
   } catch (err) {
     console.error("Error prefetching data for home page:", err);
