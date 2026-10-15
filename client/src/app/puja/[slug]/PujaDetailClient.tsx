@@ -1142,7 +1142,7 @@ export default function PujaDetailClient({
               {/* Mobile: Carousel */}
               <div className="sm:hidden relative">
                 <div className="relative h-64 rounded-2xl overflow-hidden border border-stone-200 shadow-xs">
-                  <img
+                  <Image
                     src={galleryList[galleryCarouselIdx] as string}
                     alt={`${puja?.title || "Puja"} - Sacred Ritual Photo ${galleryCarouselIdx + 1}`}
                     className="w-full h-full object-cover transition-all duration-300"
