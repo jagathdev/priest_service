@@ -2,7 +2,6 @@ import express from "express";
 
 import {
     createPaymentOrder,
-    razorpayWebhookResponse,
     verifyPayment,
 } from "../controllers/payment.controller.js";
 
@@ -21,11 +20,6 @@ router.post(
     "/verify",
     requireAuth,
     verifyPayment
-);
-
-router.post(
-    "/webhook-response",
-    razorpayWebhookResponse
 );
 
 router.post("/getRazorpayWebhook", getRazorpayWebhook);

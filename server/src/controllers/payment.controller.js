@@ -229,6 +229,13 @@ export const verifyPayment = async (req, res) => {
             });
         }
 
+        if (fetchedPayment.status !== "captured" && fetchedPayment.status !== "authorized") {
+            return res.status(400).json({
+                success: false,
+                message: "Payment not completed",
+            });
+        }
+
         // Check if an Order with that razorpayOrderId already exists
         const existingOrder = await Order.findOne({ razorpayOrderId });
 
@@ -236,6 +243,13 @@ export const verifyPayment = async (req, res) => {
             return res.status(404).json({
                 success: false,
                 message: "Order not found for the provided payment.",
+            });
+        }
+
+        if (req.user?.role !== "admin" && String(existingOrder.customer) !== String(req.user?.id)) {
+            return res.status(403).json({
+                success: false,
+                message: "Forbidden",
             });
         }
 
@@ -267,43 +281,6 @@ export const verifyPayment = async (req, res) => {
         return res.status(500).json({
             success: false,
             message: "Payment verification failed",
-        });
-    }
-};
-
-export const razorpayWebhookResponse = async (req, res) => {
-    try {
-        const { razorpayres } = req.body;
-
-        if (!razorpayres) {
-            return res.status(400).json({
-                success: false,
-                message: "razorpayres is required",
-            });
-        }
-
-        let razorpayData = razorpayres;
-        if (typeof razorpayres === "string") {
-            try {
-                razorpayData = JSON.parse(razorpayres);
-            } catch {
-                return res.status(400).json({
-                    success: false,
-                    message: "razorpayres must contain valid JSON",
-                });
-            }
-        }
-
-        return res.status(200).json({
-            success: true,
-            message: "Razorpay webhook response received",
-            data: razorpayData,
-        });
-    } catch (error) {
-        console.error("Razorpay Webhook Error:", error);
-        return res.status(500).json({
-            success: false,
-            message: "Failed to process Razorpay webhook response",
         });
     }
 };
