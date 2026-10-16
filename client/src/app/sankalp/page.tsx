@@ -8,6 +8,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import PromoCodeInput from "@/components/PromoCodeInput";
 import { useUser } from "@/contexts/UserContext";
+import { apiClient } from "@/services/api";
 
 interface RazorpayResponse {
   razorpay_order_id: string;
@@ -81,19 +82,15 @@ function SankalpContent() {
       if (userId && !profileFetchedRef.current) {
         profileFetchedRef.current = true;
         try {
-          const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
-          const res = await fetch(`${baseUrl}/api/users/profile/${userId}`);
-          if (res.ok) {
-            const data = await res.json();
-            if (data.success && data.data) {
-              if (data.data.whatsappNumber) {
-                whatsappPhone = data.data.whatsappNumber;
-              } else if (data.data.mobileNumber) {
-                whatsappPhone = data.data.mobileNumber;
-              }
-              if (data.data.name) name = data.data.name;
-              setUser((prevUser) => ({ ...(prevUser || {}), ...data.data }));
+          const data = await apiClient(`/api/users/profile/${userId}`);
+          if (data.success && data.data) {
+            if (data.data.whatsappNumber) {
+              whatsappPhone = data.data.whatsappNumber;
+            } else if (data.data.mobileNumber) {
+              whatsappPhone = data.data.mobileNumber;
             }
+            if (data.data.name) name = data.data.name;
+            setUser((prevUser) => ({ ...(prevUser || {}), ...data.data }));
           }
         } catch (err) {
           console.error("Error fetching user profile:", err);
@@ -278,11 +275,9 @@ function SankalpContent() {
     // Call updateProfile API to save devotee profile and whatsappNumber to backend database
     const uId = user?.id || user?._id;
     if (uId) {
-      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
       const nameToSave = formData.participants[0]?.trim() || user?.name || "Devotee";
-      fetch(`${baseUrl}/api/users/updateProfile`, {
+      apiClient(`/api/users/updateProfile`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           userId: uId,
           name: nameToSave,
@@ -290,7 +285,6 @@ function SankalpContent() {
           whatsappNumber: formData.whatsapp.trim(),
         }),
       })
-        .then((r) => r.json())
         .then((resData) => {
           if (resData.success && resData.data) {
             setUser({ ...user, ...resData.data, whatsappNumber: formData.whatsapp.trim() });

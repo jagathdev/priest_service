@@ -29,8 +29,19 @@ export function UserProvider({ children, initialUser }: { children: ReactNode; i
   const [user, setUser] = useState<User | null>(() => {
     if (initialUser) return initialUser;
     if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("mockUser");
+      const token = localStorage.getItem("token");
+
+      if (stored && !token) {
+        localStorage.removeItem("mockUser");
+        localStorage.removeItem("token");
+        document.cookie = "mockUser=; path=/; max-age=0;";
+        document.cookie = "token=; path=/; max-age=0;";
+        document.cookie = "userLogin=false; path=/; max-age=0;";
+        return null;
+      }
+
       if (document.cookie.includes("userLogin=true")) {
-        const stored = localStorage.getItem("mockUser");
         if (stored) {
           try {
             return JSON.parse(stored) as User;

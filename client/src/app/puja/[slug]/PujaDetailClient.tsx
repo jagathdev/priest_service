@@ -1145,6 +1145,9 @@ export default function PujaDetailClient({
                   <Image
                     src={galleryList[galleryCarouselIdx] as string}
                     alt={`${puja?.title || "Puja"} - Sacred Ritual Photo ${galleryCarouselIdx + 1}`}
+                    fill
+                    sizes="(max-width: 640px) 100vw, 33vw"
+                    unoptimized
                     className="w-full h-full object-cover transition-all duration-300"
                   />
                   {galleryList.length > 1 && (
