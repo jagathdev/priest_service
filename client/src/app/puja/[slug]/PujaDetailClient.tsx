@@ -7,7 +7,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import LoginModal from "@/components/auth/LoginModal";
 import { checkAuthStatus } from "@/lib/authCheck";
-import { XMarkIcon } from "@heroicons/react/24/solid";
+import { X } from "lucide-react";
 import WishlistButton from "@/components/common/WishlistButton";
 import PujaCountdownCard from "@/components/common/PujaCountdownCard";
 import ShareModal from "@/components/common/ShareModal";
@@ -1304,7 +1304,7 @@ export default function PujaDetailClient({
               onClick={() => setShowPackageModal(false)}
               className="absolute top-4 right-4 text-stone-400 hover:text-stone-700 p-2"
             >
-              <XMarkIcon className="w-6 h-6" />
+              <X className="w-6 h-6" />
             </button>
 
             <h3 className="text-2xl font-serif font-bold text-stone-900 mb-2">Select Package</h3>
