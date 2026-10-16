@@ -565,7 +565,7 @@ export const normalizePuja = (puja: any, offeringsMap: Record<string, any> = {})
 
 export async function getAllPujas() {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || 'https://priestservices.astroved.com';
+    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://priestservices.astroved.com';
     const res = await fetch(`${baseUrl}/api/pujas`, { cache: 'no-store' });
     if (res.ok) {
       const resData = await res.json();

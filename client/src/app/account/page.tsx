@@ -166,7 +166,7 @@ function AccountPageContent() {
   useEffect(() => {
     const userId = user?._id || user?.id;
     if (userId) {
-      const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
+      const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
       fetch(`${backendUrl}/api/orders/user/${userId}`)
         .then(res => res.json())
         .then(data => {
@@ -214,7 +214,7 @@ function AccountPageContent() {
     }
     setIsSubmittingHelp(true);
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
 
       const res = await fetch(`${baseUrl}/api/customerQueries`, {
         method: "POST",
@@ -263,7 +263,7 @@ function AccountPageContent() {
     if (!user || (!user.id && !user._id)) return;
     setLoadingWishlist(true);
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
       const res = await fetch(`${baseUrl}/api/wishlist/${user.id || user._id}`);
       const data = await res.json();
       if (data.success && data.data) {
@@ -292,8 +292,6 @@ function AccountPageContent() {
     setUser(null);
   };
 
-
-
   const getUserAuthHeaders = (): Record<string, string> => {
     if (typeof window === "undefined") return {};
     const match = document.cookie.match(/(?:^|;\s*)(?:token|adminToken)=([^;]+)/);
@@ -306,7 +304,7 @@ function AccountPageContent() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
 
       const res = await fetch(`${baseUrl}/api/users/updateProfile`, {
         method: "PUT",
@@ -402,7 +400,7 @@ function AccountPageContent() {
     if (!user) return;
     if (!validateAddressForm()) return;
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
 
       const newAddress = {
         type: addressFormData.type,
@@ -472,7 +470,7 @@ function AccountPageContent() {
     if (!window.confirm("Are you sure to delete the address?")) return;
 
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
 
       const updatedAddresses = (user.addresses || []).filter((a: Address) => a._id !== addressId && a.id !== addressId);
 
@@ -1210,7 +1208,7 @@ function AccountPageContent() {
                                     e.preventDefault();
                                     e.stopPropagation();
                                     try {
-                                      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
+                                      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
                                       await fetch(`${baseUrl}/api/wishlist/updateWishlist`, {
                                         method: "POST",
                                         headers: { "Content-Type": "application/json" },
@@ -1247,7 +1245,7 @@ function AccountPageContent() {
 
                                 <div className="mt-auto flex items-center justify-between pt-1">
                                   <div className="text-[16px] font-extrabold text-gray-900">₹{item.price || 516}</div>
-                                  <Link href={`/${item.serviceType?.toLowerCase() === 'pooja' ? 'puja' : (item.serviceType || 'puja')}/${item.slug || item.serviceId}`} prefetch={true} className="bg-success text-white text-[12px] font-bold pl-4 pr-1 py-1 rounded-full flex items-center gap-2 hover:bg-[#009b46] transition shadow-sm group">
+                                  <Link href={`/${item.serviceType?.toLowerCase() === 'pooja' ? 'puja' : (item.serviceType || 'puja')}/${item.slug || item.serviceId}`} prefetch={true} className="bg-[#14395C] text-white text-[12px] font-bold pl-4 pr-1 py-1 rounded-full flex items-center gap-2 hover:bg-[#0e273f] transition shadow-sm group">
                                     Book Now
                                     <div className="w-6 h-6 rounded-full bg-white/25 flex items-center justify-center shrink-0 group-hover:translate-x-0.5 transition-transform">
                                       <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1906,8 +1904,8 @@ function AccountPageContent() {
                         }
                       }}
                       className={`w-full border rounded-xl px-4 py-2.5 text-sm text-gray-800 focus:outline-none transition ${addressErrors.fullName
-                          ? "border-red-500 focus:border-red-500 bg-red-50/20"
-                          : "border-gray-250 focus:border-success"
+                        ? "border-red-500 focus:border-red-500 bg-red-50/20"
+                        : "border-gray-250 focus:border-success"
                         }`}
                     />
                     {addressErrors.fullName && (
@@ -1935,8 +1933,8 @@ function AccountPageContent() {
                         }
                       }}
                       className={`w-full border rounded-xl px-4 py-2.5 text-sm text-gray-800 focus:outline-none transition ${addressErrors.phone
-                          ? "border-red-500 focus:border-red-500 bg-red-50/20"
-                          : "border-gray-250 focus:border-success"
+                        ? "border-red-500 focus:border-red-500 bg-red-50/20"
+                        : "border-gray-250 focus:border-success"
                         }`}
                     />
                     {addressErrors.phone && (
@@ -1960,8 +1958,8 @@ function AccountPageContent() {
                       }
                     }}
                     className={`w-full border rounded-xl px-4 py-2.5 text-sm text-gray-800 focus:outline-none transition ${addressErrors.address
-                        ? "border-red-500 focus:border-red-500 bg-red-50/20"
-                        : "border-gray-250 focus:border-success"
+                      ? "border-red-500 focus:border-red-500 bg-red-50/20"
+                      : "border-gray-250 focus:border-success"
                       }`}
                   />
                   {addressErrors.address && (
@@ -1997,8 +1995,8 @@ function AccountPageContent() {
                         }
                       }}
                       className={`w-full border rounded-xl px-4 py-2.5 text-sm text-gray-800 focus:outline-none transition ${addressErrors.city
-                          ? "border-red-500 focus:border-red-500 bg-red-50/20"
-                          : "border-gray-250 focus:border-success"
+                        ? "border-red-500 focus:border-red-500 bg-red-50/20"
+                        : "border-gray-250 focus:border-success"
                         }`}
                     />
                     {addressErrors.city && (
@@ -2021,8 +2019,8 @@ function AccountPageContent() {
                         }
                       }}
                       className={`w-full border rounded-xl px-4 py-2.5 text-sm text-gray-800 focus:outline-none transition ${addressErrors.state
-                          ? "border-red-500 focus:border-red-500 bg-red-50/20"
-                          : "border-gray-250 focus:border-success"
+                        ? "border-red-500 focus:border-red-500 bg-red-50/20"
+                        : "border-gray-250 focus:border-success"
                         }`}
                     />
                     {addressErrors.state && (
@@ -2049,8 +2047,8 @@ function AccountPageContent() {
                         }
                       }}
                       className={`w-full border rounded-xl px-4 py-2.5 text-sm text-gray-800 focus:outline-none transition ${addressErrors.pincode
-                          ? "border-red-500 focus:border-red-500 bg-red-50/20"
-                          : "border-gray-250 focus:border-success"
+                        ? "border-red-500 focus:border-red-500 bg-red-50/20"
+                        : "border-gray-250 focus:border-success"
                         }`}
                     />
                     {addressErrors.pincode && (
@@ -2073,8 +2071,8 @@ function AccountPageContent() {
                         }
                       }}
                       className={`w-full border rounded-xl px-4 py-2.5 text-sm text-gray-800 focus:outline-none transition ${addressErrors.country
-                          ? "border-red-500 focus:border-red-500 bg-red-50/20"
-                          : "border-gray-250 focus:border-success"
+                        ? "border-red-500 focus:border-red-500 bg-red-50/20"
+                        : "border-gray-250 focus:border-success"
                         }`}
                     />
                     {addressErrors.country && (

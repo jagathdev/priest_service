@@ -603,7 +603,7 @@ export default function PujaClient({ initialPujas }: { initialPujas?: Puja[] }) 
                             <div className="text-[11px] text-gray-500 font-bold uppercase tracking-wider">Per Booking</div>
                           </div>
                           <div
-                            className="bg-[#009e5b] text-white text-[14px] font-bold px-7 py-3 min-w-[130px] justify-center rounded-full hover:bg-[#008c51] transition-all duration-200 flex items-center gap-2 shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-95"
+                            className="bg-[#14395C] text-white text-[14px] font-bold px-7 py-3 min-w-[130px] justify-center rounded-full hover:bg-[#0e273f] transition-all duration-200 flex items-center gap-2 shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-95"
                           >
                             <span>Book Now</span>
                             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7" /></svg>

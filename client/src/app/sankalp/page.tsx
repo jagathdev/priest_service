@@ -134,7 +134,7 @@ function SankalpContent() {
       setLoading(true);
       setError(null);
 
-      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
       const targetId = pujaId || slug;
 
       try {
@@ -278,7 +278,7 @@ function SankalpContent() {
     // Call updateProfile API to save devotee profile and whatsappNumber to backend database
     const uId = user?.id || user?._id;
     if (uId) {
-      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
       const nameToSave = formData.participants[0]?.trim() || user?.name || "Devotee";
       fetch(`${baseUrl}/api/users/updateProfile`, {
         method: "PUT",
@@ -914,7 +914,7 @@ function SankalpContent() {
                   ) : (
                     <button
                       onClick={step === 1 ? handleProceedToStep2 : handleFinalCheckout}
-                      className="w-full bg-success hover:bg-[#009644] active:scale-[0.99] text-white font-extrabold text-sm py-4 rounded-xl transition-all shadow-md mb-4"
+                      className="w-full bg-[#14395C] hover:bg-[#0e273f] active:scale-[0.99] text-white font-extrabold text-sm py-4 rounded-xl transition-all shadow-md mb-4"
                     >
                       {step === 1 ? "Continue" : "Continue with Payment"}
                     </button>

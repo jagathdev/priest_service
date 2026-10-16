@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { SparklesIcon, FireIcon, ShoppingBagIcon, BanknotesIcon } from "@heroicons/react/24/outline";
 
 export default async function AdminDashboard() {
-  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
+  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
   let stats = { pujas: 0, homas: 0, orders: 0, revenue: 0 };
   let recentBookings: any[] = [];
 
