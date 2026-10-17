@@ -98,7 +98,7 @@ export default function OtpClient() {
     try {
       const res = await authService.verifyOtpLegacy({ ...otpPayload, otp: otpValue });
       if (res.data && res.data.user) {
-        const authToken = res.data.token || (res as any).token;
+        const authToken = res.data?.token || (res as any)?.token || (res as any)?.data?.token;
         if (authToken) {
           localStorage.setItem("token", authToken);
           document.cookie = `token=${authToken}; path=/; max-age=604800;`;
