@@ -167,7 +167,14 @@ function AccountPageContent() {
     const userId = user?._id || user?.id;
     if (userId) {
       const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
-      fetch(`${backendUrl}/api/orders/user/${userId}`)
+      const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+
+      fetch(`${backendUrl}/api/orders/user/${userId}`, {
+        headers,
+        credentials: "include",
+      })
         .then(res => res.json())
         .then(data => {
           if (data.success && Array.isArray(data.data)) {
@@ -264,7 +271,14 @@ function AccountPageContent() {
     setLoadingWishlist(true);
     try {
       const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
-      const res = await fetch(`${baseUrl}/api/wishlist/${user.id || user._id}`);
+      const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+
+      const res = await fetch(`${baseUrl}/api/wishlist/${user.id || user._id}`, {
+        headers,
+        credentials: "include",
+      });
       const data = await res.json();
       if (data.success && data.data) {
         setWishlistItems(data.data);
@@ -1906,8 +1920,8 @@ function AccountPageContent() {
                         }
                       }}
                       className={`w-full border rounded-xl px-4 py-2.5 text-sm text-gray-800 focus:outline-none transition ${addressErrors.fullName
-                          ? "border-red-500 focus:border-red-500 bg-red-50/20"
-                          : "border-gray-250 focus:border-success"
+                        ? "border-red-500 focus:border-red-500 bg-red-50/20"
+                        : "border-gray-250 focus:border-success"
                         }`}
                     />
                     {addressErrors.fullName && (
@@ -1935,8 +1949,8 @@ function AccountPageContent() {
                         }
                       }}
                       className={`w-full border rounded-xl px-4 py-2.5 text-sm text-gray-800 focus:outline-none transition ${addressErrors.phone
-                          ? "border-red-500 focus:border-red-500 bg-red-50/20"
-                          : "border-gray-250 focus:border-success"
+                        ? "border-red-500 focus:border-red-500 bg-red-50/20"
+                        : "border-gray-250 focus:border-success"
                         }`}
                     />
                     {addressErrors.phone && (
@@ -1960,8 +1974,8 @@ function AccountPageContent() {
                       }
                     }}
                     className={`w-full border rounded-xl px-4 py-2.5 text-sm text-gray-800 focus:outline-none transition ${addressErrors.address
-                        ? "border-red-500 focus:border-red-500 bg-red-50/20"
-                        : "border-gray-250 focus:border-success"
+                      ? "border-red-500 focus:border-red-500 bg-red-50/20"
+                      : "border-gray-250 focus:border-success"
                       }`}
                   />
                   {addressErrors.address && (
@@ -1997,8 +2011,8 @@ function AccountPageContent() {
                         }
                       }}
                       className={`w-full border rounded-xl px-4 py-2.5 text-sm text-gray-800 focus:outline-none transition ${addressErrors.city
-                          ? "border-red-500 focus:border-red-500 bg-red-50/20"
-                          : "border-gray-250 focus:border-success"
+                        ? "border-red-500 focus:border-red-500 bg-red-50/20"
+                        : "border-gray-250 focus:border-success"
                         }`}
                     />
                     {addressErrors.city && (
@@ -2021,8 +2035,8 @@ function AccountPageContent() {
                         }
                       }}
                       className={`w-full border rounded-xl px-4 py-2.5 text-sm text-gray-800 focus:outline-none transition ${addressErrors.state
-                          ? "border-red-500 focus:border-red-500 bg-red-50/20"
-                          : "border-gray-250 focus:border-success"
+                        ? "border-red-500 focus:border-red-500 bg-red-50/20"
+                        : "border-gray-250 focus:border-success"
                         }`}
                     />
                     {addressErrors.state && (
@@ -2049,8 +2063,8 @@ function AccountPageContent() {
                         }
                       }}
                       className={`w-full border rounded-xl px-4 py-2.5 text-sm text-gray-800 focus:outline-none transition ${addressErrors.pincode
-                          ? "border-red-500 focus:border-red-500 bg-red-50/20"
-                          : "border-gray-250 focus:border-success"
+                        ? "border-red-500 focus:border-red-500 bg-red-50/20"
+                        : "border-gray-250 focus:border-success"
                         }`}
                     />
                     {addressErrors.pincode && (
@@ -2073,8 +2087,8 @@ function AccountPageContent() {
                         }
                       }}
                       className={`w-full border rounded-xl px-4 py-2.5 text-sm text-gray-800 focus:outline-none transition ${addressErrors.country
-                          ? "border-red-500 focus:border-red-500 bg-red-50/20"
-                          : "border-gray-250 focus:border-success"
+                        ? "border-red-500 focus:border-red-500 bg-red-50/20"
+                        : "border-gray-250 focus:border-success"
                         }`}
                     />
                     {addressErrors.country && (

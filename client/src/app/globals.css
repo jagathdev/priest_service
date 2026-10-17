@@ -6,11 +6,12 @@
 
 
 :root {
-  --brand-violet: #1f1f1f;
-  --brand-orange: #F47820;
-  --brand-orange-dark: #d95f13;
-  --brand-ink: #241a46;
-  --brand-surface: #fff8f0;
+  --brand-primary: #14395C;
+  --brand-secondary: #7B61FF;
+  --brand-accent: #F59E0B;
+  --brand-ink: #1E293B;
+  --brand-ink-secondary: #64748B;
+  --brand-surface: #FAFAFF;
 }
 
 html,

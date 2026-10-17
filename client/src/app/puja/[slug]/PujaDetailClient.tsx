@@ -440,7 +440,7 @@ export default function PujaDetailClient({
           <p className="text-stone-600 mb-6">The requested puja offering could not be found.</p>
           <Link
             href="/puja"
-            className="bg-[#00b050] text-white font-extrabold px-8 py-3 rounded-full hover:bg-[#009b46] transition-colors"
+            className="bg-[#14395C] text-white font-extrabold px-8 py-3 rounded-full hover:bg-[#0f2d4a] transition-colors"
           >
             Explore All Pujas
           </Link>
@@ -567,11 +567,11 @@ export default function PujaDetailClient({
   };
 
   return (
-    <main className="min-h-screen bg-white text-[#1f1f1f] font-sans">
+    <main className="min-h-screen bg-[#FAFAFF] text-[#1E293B] font-sans">
       <Navbar />
 
       {/* ── 1. Top Hero Section ── */}
-      <section className="bg-[#ffffff] border-b border-[#f0e4d0] py-8 sm:py-12">
+      <section className="bg-[#FAFAFF] border-b border-[#E2E8F0] py-8 sm:py-12">
         <div className="max-w-[1350px] mx-auto px-4 sm:px-6 lg:px-10">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 
@@ -626,7 +626,7 @@ export default function PujaDetailClient({
                       aria-label={`Go to slide ${idx + 1}`}
                       className={
                         idx === activeBannerIndex
-                          ? "w-7 h-2 bg-[#00b050] rounded-full transition-all cursor-pointer"
+                          ? "w-7 h-2 bg-[#14395C] rounded-full transition-all cursor-pointer"
                           : "w-2.5 h-2.5 bg-stone-300 hover:bg-stone-400 rounded-full transition-all cursor-pointer"
                       }
                     />
@@ -640,27 +640,27 @@ export default function PujaDetailClient({
                 <div className="flex items-center justify-between flex-1 py-0 px-0">
                   {/* Stat 1: Ratings */}
                   <div className="text-center flex-1 px-1">
-                    <span className="block text-sm sm:text-base lg:text-lg font-extrabold text-[#1f1a17] leading-tight">4.36L+</span>
-                    <span className="text-[10px] sm:text-xs text-stone-500 font-medium block mt-0.5 leading-tight">ratings</span>
+                    <span className="block text-sm sm:text-base lg:text-lg font-extrabold text-[#1E293B] leading-tight">4.36L+</span>
+                    <span className="text-[10px] sm:text-xs text-[#64748B] font-medium block mt-0.5 leading-tight">ratings</span>
                   </div>
 
-                  <div className="w-[1px] h-6 bg-stone-300/80 shrink-0" />
+                  <div className="w-[1px] h-6 bg-slate-200 shrink-0" />
 
                   {/* Stat 2: Pujas Conducted */}
                   <div className="text-center flex-1 px-1">
-                    <span className="block text-sm sm:text-base lg:text-lg font-extrabold text-[#1f1a17] leading-tight">24L+</span>
-                    <span className="text-[10px] sm:text-xs text-stone-500 font-medium block mt-0.5 leading-tight">pujas conducted</span>
+                    <span className="block text-sm sm:text-base lg:text-lg font-extrabold text-[#1E293B] leading-tight">24L+</span>
+                    <span className="text-[10px] sm:text-xs text-[#64748B] font-medium block mt-0.5 leading-tight">pujas conducted</span>
                   </div>
 
-                  <div className="w-[1px] h-6 bg-stone-300/80 shrink-0" />
+                  <div className="w-[1px] h-6 bg-slate-200 shrink-0" />
 
                   {/* Stat 3: Average Ratings */}
                   <div className="text-center flex-1 px-1">
                     <div className="flex items-center justify-center gap-0.5 sm:gap-1 leading-tight">
-                      <span className="text-sm sm:text-base lg:text-lg font-extrabold text-[#1f1a17]">4.9/5</span>
+                      <span className="text-sm sm:text-base lg:text-lg font-extrabold text-[#1E293B]">4.9/5</span>
                       <span className="text-amber-400 text-xs sm:text-sm">⭐</span>
                     </div>
-                    <span className="text-[10px] sm:text-xs text-stone-500 font-medium block mt-0.5 leading-tight">Average ratings</span>
+                    <span className="text-[10px] sm:text-xs text-[#64748B] font-medium block mt-0.5 leading-tight">Average ratings</span>
                   </div>
                 </div>
 
@@ -692,20 +692,20 @@ export default function PujaDetailClient({
             <div className="lg:col-span-6 flex flex-col lg:pl-[10px]">
               {/* Filigree Subtag */}
               <div className="flex items-center justify-center lg:justify-start gap-2 mb-2">
-                <div className="w-8 h-[1px] bg-[#F47820]/40" />
-                <span className="text-[#F47820] font-serif font-extrabold text-xs sm:text-[13px] tracking-wider uppercase flex items-center gap-1.5 whitespace-nowrap">
+                <div className="w-8 h-[1px] bg-[#F59E0B]/40" />
+                <span className="text-[#F59E0B] font-serif font-extrabold text-xs sm:text-[13px] tracking-wider uppercase flex items-center gap-1.5 whitespace-nowrap">
                   <span className="text-[10px]">♦</span> {badgeText} <span className="text-[10px]">♦</span>
                 </span>
-                <div className="w-8 h-[1px] bg-[#F47820]/40" />
+                <div className="w-8 h-[1px] bg-[#F59E0B]/40" />
               </div>
 
               {/* Title */}
-              <h1 className="font-serif font-bold text-[#1f1a17] text-2xl sm:text-3xl lg:text-4xl leading-snug mb-3 text-center lg:text-left">
+              <h1 className="font-serif font-bold text-[#1E293B] text-2xl sm:text-3xl lg:text-4xl leading-snug mb-3 text-center lg:text-left">
                 {puja.title}
               </h1>
 
               {/* Subtitle / Description */}
-              <p className="text-stone-600 text-sm sm:text-base font-medium leading-relaxed mb-6 text-center lg:text-left">
+              <p className="text-[#64748B] text-sm sm:text-base font-medium leading-relaxed mb-6 text-center lg:text-left">
                 {descriptionText}
               </p>
 
@@ -736,13 +736,13 @@ export default function PujaDetailClient({
                         key={pkg.id}
                         onClick={() => setSelectedPackageId(pkg.id)}
                         className={`relative border-2 rounded-2xl p-3.5 sm:p-2.5 lg:p-3 cursor-pointer transition-all flex flex-row items-center justify-start min-h-[96px] sm:min-h-[80px] lg:min-h-[85px] hover:shadow-xs ${isSelected
-                          ? "border-[#00b050] bg-[#eefbf3] shadow-xs"
-                          : "border-stone-200 hover:border-stone-300 bg-white"
+                          ? "border-[#14395C] bg-[#F1F5F9]/70 shadow-xs"
+                          : "border-[#E2E8F0] hover:border-[#CBD5E1] bg-white"
                           }`}
                       >
                         {/* Recommended Badge on Couple Package (idx === 1) */}
                         {idx === 1 && (
-                          <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#00b050] text-white text-[11px] font-bold px-3 py-0.5 rounded-full shadow-xs z-10 whitespace-nowrap">
+                          <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#14395C] text-white text-[11px] font-bold px-3 py-0.5 rounded-full shadow-xs z-10 whitespace-nowrap">
                             Recommended
                           </div>
                         )}
@@ -761,19 +761,19 @@ export default function PujaDetailClient({
 
                         {/* Details on the Right */}
                         <div className="flex-1 min-w-0 text-left space-y-0.5 sm:space-y-0.5">
-                          <h4 className="font-extrabold text-stone-900 text-sm sm:text-xs lg:text-[13px] leading-tight truncate">
+                          <h4 className="font-extrabold text-[#1E293B] text-sm sm:text-xs lg:text-[13px] leading-tight truncate">
                             {pkg.name}
                           </h4>
-                          <span className="text-xs sm:text-[11px] font-medium text-stone-500 block leading-tight truncate">
+                          <span className="text-xs sm:text-[11px] font-medium text-[#64748B] block leading-tight truncate">
                             {devoteesText}
                           </span>
                           <div className="flex items-center justify-between mt-1 sm:mt-0.5">
-                            <span className={`font-extrabold text-base sm:text-sm lg:text-base ${isSelected ? "text-[#00b050]" : "text-stone-900"}`}>
+                            <span className={`font-extrabold text-base sm:text-sm lg:text-base ${isSelected ? "text-[#14395C]" : "text-[#1E293B]"}`}>
                               ₹{displayPrice}
                             </span>
                             {/* Checkmark Badge on Selected Package */}
                             {isSelected && (
-                              <div className="w-5 h-5 rounded-full bg-[#00b050] text-white flex items-center justify-center shrink-0 shadow-xs ml-1">
+                              <div className="w-5 h-5 rounded-full bg-[#14395C] text-white flex items-center justify-center shrink-0 shadow-xs ml-1">
                                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3.5">
                                   <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                                 </svg>
@@ -791,7 +791,7 @@ export default function PujaDetailClient({
               <button
                 ref={heroCtaRef}
                 onClick={handleAddPujaToCart}
-                className="w-full bg-[#00b050] hover:bg-[#009644] active:scale-95 text-white font-extrabold text-xl sm:text-2xl py-4 sm:py-4.5 px-8 rounded-full shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-3 mb-4 tracking-wide"
+                className="w-full bg-[#14395C] hover:bg-[#0f2d4a] active:scale-95 text-white font-extrabold text-xl sm:text-2xl py-4 sm:py-4.5 px-8 rounded-full shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-3 mb-4 tracking-wide cursor-pointer"
               >
                 <span>₹{priceVal.toLocaleString("en-IN")}</span>
                 <span className="opacity-60 font-light">|</span>
@@ -804,18 +804,18 @@ export default function PujaDetailClient({
                   href="https://wa.me/9566777645"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full sm:flex-1 inline-flex items-center justify-center gap-2 bg-white border border-[#00b050] text-[#009644] hover:bg-green-50/60 font-extrabold text-xs sm:text-sm py-2.5 px-4 rounded-full transition-colors shadow-xs"
+                  className="w-full sm:flex-1 inline-flex items-center justify-center gap-2 bg-white border border-[#CBD5E1] hover:border-[#14395C] text-[#1E293B] hover:bg-slate-50 font-extrabold text-xs sm:text-sm py-2.5 px-4 rounded-full transition-colors shadow-xs"
                 >
-                  <svg className="w-5 h-5 shrink-0 fill-[#25D366]" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 shrink-0 fill-[#14395C]" viewBox="0 0 24 24">
                     <path d="M12.012 2c-5.506 0-9.989 4.478-9.99 9.984 0 1.758.459 3.474 1.33 4.982L2 22l5.144-1.348c1.455.793 3.097 1.21 4.864 1.21 5.505 0 9.989-4.478 9.99-9.985 0-5.506-4.484-9.984-9.986-9.984zm5.794 14.15c-.244.686-1.437 1.344-1.982 1.393-.526.048-1.018.257-3.418-.686-2.905-1.141-4.757-4.088-4.901-4.281-.144-.193-1.177-1.564-1.177-2.984 0-1.42.747-2.119 1.011-2.408.264-.289.576-.361.769-.361.192 0 .385.001.552.009.178.008.417-.067.653.498.243.582.83 2.023.902 2.168.072.144.12.312.024.504-.096.192-.144.312-.288.48-.144.168-.303.376-.432.504-.144.144-.294.302-.126.59.168.289.747 1.233 1.603 1.996 1.101.98 2.03 1.285 2.318 1.429.288.144.456.12.624-.072.168-.192.721-.84.913-1.128.192-.288.384-.24.648-.144.264.096 1.677.791 1.965.935.288.144.48.216.552.336.072.12.072.696-.172 1.382z" />
                   </svg>
                   <span>Book via WhatsApp</span>
                 </a>
                 <a
                   href="tel:+919677391108"
-                  className="w-full sm:flex-1 inline-flex items-center justify-center gap-2 bg-white border border-[#2563eb] text-[#2563eb] hover:bg-blue-50/60 font-extrabold text-xs sm:text-sm py-2.5 px-4 rounded-full transition-colors shadow-xs"
+                  className="w-full sm:flex-1 inline-flex items-center justify-center gap-2 bg-white border border-[#CBD5E1] hover:border-[#14395C] text-[#1E293B] hover:bg-slate-50 font-extrabold text-xs sm:text-sm py-2.5 px-4 rounded-full transition-colors shadow-xs"
                 >
-                  <svg className="w-4 h-4 min-w-[16px] min-h-[16px] fill-none stroke-[#2563eb]" strokeWidth="2" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 min-w-[16px] min-h-[16px] fill-none stroke-[#14395C]" strokeWidth="2" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                   </svg>
                   <span>Book via Call</span>
@@ -829,10 +829,10 @@ export default function PujaDetailClient({
       </section>
 
       {/* ── 2. Trust Strip Badges ── */}
-      <div className="w-full bg-[#f0f8f1] border-y border-green-100 py-3.5 sm:py-4.5 overflow-hidden">
+      <div className="w-full bg-[#F1F5F9] border-y border-slate-200 py-3.5 sm:py-4.5 overflow-hidden">
         {/* Continuous Marquee on Phone, Tablet (Tab 768px) and 1024px screens (< xl) */}
         <div className="md:hidden overflow-hidden w-full relative">
-          <div className="flex animate-marquee gap-8 sm:gap-12 items-center text-xs sm:text-sm font-bold text-[#009e5b]">
+          <div className="flex animate-marquee gap-8 sm:gap-12 items-center text-xs sm:text-sm font-bold text-[#14395C]">
             {[
               { icon: "🎥", text: "Puja Video Delivered Within 48 hours" },
               { icon: "✓", text: "Verified & Experienced Pandits" },
@@ -844,26 +844,26 @@ export default function PujaDetailClient({
               { icon: "📜", text: "100% Authentic Vedic Rituals" },
             ].map((b, idx) => (
               <span key={idx} className="flex items-center gap-2 shrink-0 whitespace-nowrap">
-                <span className="bg-green-100 rounded-full p-1">{b.icon}</span> {b.text}
+                <span className="bg-white rounded-full p-1 shadow-2xs text-[#14395C]">{b.icon}</span> {b.text}
               </span>
             ))}
           </div>
         </div>
 
         {/* Static spread layout on Tablet (md=768px) through xl */}
-        <div className="hidden md:flex xl:hidden w-full px-6 md:px-8 items-center justify-around gap-6 text-xs sm:text-sm font-bold text-[#009e5b] whitespace-nowrap">
-          <span className="flex items-center gap-2"><span className="bg-green-100 rounded-full p-1">🎥</span> Puja Video Delivered Within 48 hours</span>
-          <span className="flex items-center gap-2"><span className="bg-green-100 rounded-full p-1">✓</span> Verified &amp; Experienced Pandits</span>
-          <span className="flex items-center gap-2"><span className="bg-green-100 rounded-full p-1">🏛</span> Puja Performed in Sacred Temples</span>
-          <span className="flex items-center gap-2"><span className="bg-green-100 rounded-full p-1">📜</span> 100% Authentic Vedic Rituals</span>
+        <div className="hidden md:flex xl:hidden w-full px-6 md:px-8 items-center justify-around gap-6 text-xs sm:text-sm font-bold text-[#14395C] whitespace-nowrap">
+          <span className="flex items-center gap-2"><span className="bg-white rounded-full p-1 shadow-2xs text-[#14395C]">🎥</span> Puja Video Delivered Within 48 hours</span>
+          <span className="flex items-center gap-2"><span className="bg-white rounded-full p-1 shadow-2xs text-[#14395C]">✓</span> Verified &amp; Experienced Pandits</span>
+          <span className="flex items-center gap-2"><span className="bg-white rounded-full p-1 shadow-2xs text-[#14395C]">🏛</span> Puja Performed in Sacred Temples</span>
+          <span className="flex items-center gap-2"><span className="bg-white rounded-full p-1 shadow-2xs text-[#14395C]">📜</span> 100% Authentic Vedic Rituals</span>
         </div>
 
         {/* Standard layout on XL desktop screens (>= 1280px) */}
-        <div className="hidden xl:flex max-w-[1350px] mx-auto items-center justify-around gap-6 px-4 text-xs sm:text-sm font-bold text-[#009e5b] whitespace-nowrap">
-          <span className="flex items-center gap-2"><span className="bg-green-100 rounded-full p-1">🎥</span> Puja Video Delivered Within 48 hours</span>
-          <span className="flex items-center gap-2"><span className="bg-green-100 rounded-full p-1">✓</span> Verified &amp; Experienced Pandits</span>
-          <span className="flex items-center gap-2"><span className="bg-green-100 rounded-full p-1">🏛</span> Puja Performed in Sacred Temples</span>
-          <span className="flex items-center gap-2"><span className="bg-green-100 rounded-full p-1">📜</span> 100% Authentic Vedic Rituals</span>
+        <div className="hidden xl:flex max-w-[1350px] mx-auto items-center justify-around gap-6 px-4 text-xs sm:text-sm font-bold text-[#14395C] whitespace-nowrap">
+          <span className="flex items-center gap-2"><span className="bg-white rounded-full p-1 shadow-2xs text-[#14395C]">🎥</span> Puja Video Delivered Within 48 hours</span>
+          <span className="flex items-center gap-2"><span className="bg-white rounded-full p-1 shadow-2xs text-[#14395C]">✓</span> Verified &amp; Experienced Pandits</span>
+          <span className="flex items-center gap-2"><span className="bg-white rounded-full p-1 shadow-2xs text-[#14395C]">🏛</span> Puja Performed in Sacred Temples</span>
+          <span className="flex items-center gap-2"><span className="bg-white rounded-full p-1 shadow-2xs text-[#14395C]">📜</span> 100% Authentic Vedic Rituals</span>
         </div>
       </div>
 
@@ -958,11 +958,11 @@ export default function PujaDetailClient({
       </div>
 
       {/* ── 3. Sticky Sub-navigation Tabs Bar ── */}
-      <div className="sticky top-[60px] sm:top-[68px] lg:top-[70px] xl:top-[76px] z-30 bg-white/95 backdrop-blur-md border-b border-stone-200/90 shadow-xs pt-1 sm:pt-2 w-full">
+      <div className="sticky top-[60px] sm:top-[68px] lg:top-[70px] xl:top-[76px] z-30 bg-white/95 backdrop-blur-md border-b border-[#E2E8F0] shadow-xs pt-1 sm:pt-2 w-full">
         <div className="max-w-[1350px] mx-auto px-4 sm:px-6 lg:px-10">
           <div
             ref={tabsContainerRef}
-            className="w-full flex items-center justify-between overflow-x-auto no-scrollbar gap-2 sm:gap-4 text-xs sm:text-sm font-bold text-stone-600 scroll-smooth"
+            className="w-full flex items-center justify-between overflow-x-auto no-scrollbar gap-2 sm:gap-4 text-xs sm:text-sm font-bold text-[#64748B] scroll-smooth"
           >
             {subNavTabs.map((tab) => (
               <a
@@ -979,8 +979,8 @@ export default function PujaDetailClient({
                   }
                 }}
                 className={`py-2.5 sm:py-3.5 border-b-2 transition-colors whitespace-nowrap shrink-0 sm:shrink ${activeTab === tab.id
-                  ? "border-[#00b050] text-[#00b050]"
-                  : "border-transparent hover:text-stone-900"
+                  ? "border-[#14395C] text-[#14395C]"
+                  : "border-transparent hover:text-[#1E293B]"
                   }`}
               >
                 {tab.label}
@@ -998,25 +998,25 @@ export default function PujaDetailClient({
 
           {/* Section: About Puja */}
           <section id="about" className="scroll-mt-36">
-            <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1f1a17] mb-6">About puja</h2>
+            <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1E293B] mb-6">About puja</h2>
 
-            <div className="bg-[#ffffff] border border-[#f0e4d0] rounded-3xl p-6 sm:p-8 relative overflow-hidden">
-              <p className="text-stone-700 text-sm sm:text-base leading-relaxed font-medium mb-6">
+            <div className="bg-white border border-[#E2E8F0] rounded-3xl p-6 sm:p-8 relative overflow-hidden">
+              <p className="text-[#64748B] text-sm sm:text-base leading-relaxed font-medium mb-6">
                 {aboutText}
               </p>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 border-t border-[#f0e4d0] pt-6 text-xs text-stone-700">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 border-t border-[#E2E8F0] pt-6 text-xs text-stone-700">
                 <div>
-                  <span className="text-stone-400 font-bold block mb-1 uppercase tracking-wider">Occasion</span>
-                  <span className="font-extrabold text-stone-900">{puja.date || "Auspicious Tithis"}</span>
+                  <span className="text-[#94A3B8] font-bold block mb-1 uppercase tracking-wider">Occasion</span>
+                  <span className="font-extrabold text-[#1E293B]">{puja.date || "Auspicious Tithis"}</span>
                 </div>
                 <div>
-                  <span className="text-stone-400 font-bold block mb-1 uppercase tracking-wider">Duration</span>
-                  <span className="font-extrabold text-stone-900">~2 Hours</span>
+                  <span className="text-[#94A3B8] font-bold block mb-1 uppercase tracking-wider">Duration</span>
+                  <span className="font-extrabold text-[#1E293B]">~2 Hours</span>
                 </div>
                 <div>
-                  <span className="text-stone-400 font-bold block mb-1 uppercase tracking-wider">Venue</span>
-                  <span className="font-extrabold text-stone-900">Temple Yagashala</span>
+                  <span className="text-[#94A3B8] font-bold block mb-1 uppercase tracking-wider">Venue</span>
+                  <span className="font-extrabold text-[#1E293B]">Temple Yagashala</span>
                 </div>
               </div>
             </div>
@@ -1024,35 +1024,51 @@ export default function PujaDetailClient({
 
           {/* Section: Puja Benefits */}
           <section id="benefits" className="scroll-mt-36">
-            <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1f1a17] mb-6">Puja Benefits</h2>
+            <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1E293B] mb-6">Puja Benefits</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-              {benefitsList.map((b, idx) => (
-                <div key={idx} className="bg-white border border-stone-200/90 rounded-2xl p-5 flex items-start gap-4 shadow-xs hover:shadow-md transition-shadow">
-                  <div className="w-10 h-10 rounded-xl bg-[#800000] text-white flex items-center justify-center shrink-0 font-bold">
-                    {b.icon || "❖"}
+              {benefitsList.map((b, idx) => {
+                const iconPillStyles = [
+                  "bg-amber-100 text-[#F59E0B]",
+                  "bg-purple-100 text-[#7B61FF]",
+                  "bg-purple-100 text-[#7B61FF]",
+                  "bg-indigo-100 text-[#14395C]",
+                  "bg-indigo-100 text-[#14395C]",
+                ];
+                const pillStyle = iconPillStyles[idx % iconPillStyles.length];
+
+                return (
+                  <div key={idx} className="bg-white border border-[#E2E8F0] hover:border-[#CBD5E1] rounded-2xl p-5 flex items-start gap-4 shadow-xs hover:shadow-md transition-shadow">
+                    <div className={`w-10 h-10 rounded-xl ${pillStyle} flex items-center justify-center shrink-0 font-bold`}>
+                      {b.icon || "❖"}
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-[#1E293B] text-sm sm:text-base mb-1">{b.title}</h3>
+                      <p className="text-[#64748B] text-xs sm:text-sm leading-relaxed">{b.description}</p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="font-bold text-stone-900 text-sm sm:text-base mb-1">{b.title}</h3>
-                    <p className="text-stone-600 text-xs sm:text-sm leading-relaxed">{b.description}</p>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </section>
 
           {/* Section: Puja Procedure */}
           <section id="process" className="scroll-mt-36">
-            <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1f1a17] mb-6">Puja Procedure</h2>
+            <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1E293B] mb-6">Puja Procedure</h2>
             <div className="space-y-4">
               {processList.map((step, idx) => (
-                <div key={idx} className="bg-white border border-stone-200/90 rounded-2xl p-5 flex items-start gap-4 shadow-xs">
-                  <div className="w-10 h-10 rounded-xl bg-[#800000] text-white flex items-center justify-center shrink-0 font-bold text-sm">
-                    {String(idx + 1).padStart(2, "0")}
+                <div key={idx} className="bg-white border border-[#E2E8F0] hover:border-[#CBD5E1] rounded-2xl p-5 flex items-center justify-between gap-4 shadow-xs transition-all">
+                  <div className="flex items-center gap-4 flex-1 min-w-0">
+                    <div className="w-10 h-10 rounded-full bg-[#14395C] text-white flex items-center justify-center shrink-0 font-bold text-sm">
+                      {String(idx + 1).padStart(2, "0")}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-bold text-[#1E293B] text-sm sm:text-base mb-0.5">{step.title}</h3>
+                      <p className="text-[#64748B] text-xs sm:text-sm leading-relaxed">{step.description}</p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="font-bold text-stone-900 text-sm sm:text-base mb-1">{step.title}</h3>
-                    <p className="text-stone-600 text-xs sm:text-sm leading-relaxed">{step.description}</p>
-                  </div>
+                  <svg className="w-5 h-5 text-[#94A3B8] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                  </svg>
                 </div>
               ))}
             </div>
@@ -1060,8 +1076,8 @@ export default function PujaDetailClient({
 
           {/* Section: Temple Details */}
           <section id="temple" className="scroll-mt-36">
-            <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1f1a17] mb-6">Temple Details</h2>
-            <div className="bg-white border border-stone-200/90 rounded-3xl flex flex-col md:flex-row gap-6 items-center shadow-xs overflow-hidden">
+            <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1E293B] mb-6">Temple Details</h2>
+            <div className="bg-white border border-[#E2E8F0] rounded-3xl flex flex-col md:flex-row gap-6 items-center shadow-xs overflow-hidden">
               {templeImage && (
                 <div className="w-full md:w-1/3 h-48 rounded-2xl overflow-hidden bg-stone-100 shrink-0 relative">
                   <Image
@@ -1075,11 +1091,11 @@ export default function PujaDetailClient({
                 </div>
               )}
               <div className="flex-1 p-5 text-center sm:text-left">
-                <h3 className="font-serif font-bold text-stone-900 text-xl mb-2">{templeVenueText}</h3>
-                <p className="text-stone-600 text-xs sm:text-sm leading-relaxed font-medium mb-4">
+                <h3 className="font-serif font-bold text-[#1E293B] text-xl mb-2">{templeVenueText}</h3>
+                <p className="text-[#64748B] text-xs sm:text-sm leading-relaxed font-medium mb-4">
                   {templeNoteText}
                 </p>
-                <span className="inline-flex items-center justify-center sm:justify-start gap-1.5 text-xs font-bold text-[#F47820]">
+                <span className="inline-flex items-center justify-center sm:justify-start gap-1.5 text-xs font-bold text-[#F59E0B]">
                   📍 {templeLocationText}
                 </span>
               </div>
@@ -1088,19 +1104,19 @@ export default function PujaDetailClient({
 
           {/* Section: What will you receive */}
           <section id="receive" className="scroll-mt-36">
-            <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1f1a17] mb-6">What will you receive</h2>
+            <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1E293B] mb-6">What will you receive</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
               {inclusionsList.map((inc: any, idx: number) => {
                 const title = typeof inc === "string" ? inc : inc.title || inc.name || `Inclusion ${idx + 1}`;
                 const desc = typeof inc === "string" ? "Included in your sacred booking." : inc.description || "Included in your sacred booking.";
                 return (
-                  <div key={idx} className="bg-white border border-stone-200/90 rounded-2xl p-5 flex items-start gap-4 shadow-xs">
-                    <div className="w-10 h-10 rounded-xl bg-[#800000] text-white flex items-center justify-center shrink-0 font-bold text-sm">
+                  <div key={idx} className="bg-white border border-[#E2E8F0] rounded-2xl p-5 flex items-start gap-4 shadow-xs">
+                    <div className="w-10 h-10 rounded-full bg-[#14395C] text-white flex items-center justify-center shrink-0 font-bold text-sm">
                       {String(idx + 1).padStart(2, "0")}
                     </div>
                     <div>
-                      <h3 className="font-bold text-stone-900 text-sm sm:text-base mb-1">{title}</h3>
-                      {desc && <p className="text-stone-600 text-xs sm:text-sm leading-relaxed">{desc}</p>}
+                      <h3 className="font-bold text-[#1E293B] text-sm sm:text-base mb-1">{title}</h3>
+                      {desc && <p className="text-[#64748B] text-xs sm:text-sm leading-relaxed">{desc}</p>}
                     </div>
                   </div>
                 );
@@ -1110,22 +1126,22 @@ export default function PujaDetailClient({
 
           {/* Section: Frequently Asked Questions (FAQs) */}
           <section id="faqs" className="scroll-mt-36">
-            <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1f1a17] mb-6">Frequently Asked Questions (FAQs)</h2>
+            <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1E293B] mb-6">Frequently Asked Questions (FAQs)</h2>
             <div className="space-y-3">
               {faqList.map((faq, idx) => (
                 <div
                   key={idx}
                   onClick={() => setOpenFaqIndex(openFaqIndex === idx ? null : idx)}
-                  className={`border rounded-2xl px-5 py-4 transition-all duration-300 cursor-pointer select-none ${openFaqIndex === idx ? 'border-[#00b050] bg-white shadow-xs' : 'border-stone-200 bg-[#faf9f6]'}`}
+                  className={`border rounded-2xl px-5 py-4 transition-all duration-300 cursor-pointer select-none ${openFaqIndex === idx ? 'border-[#14395C] bg-white shadow-xs' : 'border-[#E2E8F0] bg-white hover:border-[#CBD5E1]'}`}
                 >
                   <div className="flex justify-between items-center">
-                    <h4 className="text-sm sm:text-base font-bold text-stone-800">{faq.question}</h4>
-                    <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ml-4 ${openFaqIndex === idx ? 'bg-[#00b050] text-white' : 'bg-stone-200 text-stone-600'}`}>
+                    <h4 className="text-sm sm:text-base font-bold text-[#1E293B]">{faq.question}</h4>
+                    <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ml-4 ${openFaqIndex === idx ? 'bg-[#14395C] text-white' : 'bg-slate-100 text-[#64748B]'}`}>
                       {openFaqIndex === idx ? '−' : '+'}
                     </div>
                   </div>
                   {openFaqIndex === idx && (
-                    <div className="mt-3 text-xs sm:text-sm text-stone-600 leading-relaxed border-t border-stone-100 pt-3">
+                    <div className="mt-3 text-xs sm:text-sm text-[#64748B] leading-relaxed border-t border-slate-100 pt-3">
                       {faq.answer}
                     </div>
                   )}
@@ -1137,11 +1153,11 @@ export default function PujaDetailClient({
           {/* Section: Puja Gallery */}
           {galleryList.length > 0 && (
             <section id="gallery" className="scroll-mt-36 pb-4 sm:pb-28 lg:pb-36">
-              <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1f1a17] mb-6">Puja Gallery</h2>
+              <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1E293B] mb-6">Puja Gallery</h2>
 
               {/* Mobile: Carousel */}
               <div className="sm:hidden relative">
-                <div className="relative h-64 rounded-2xl overflow-hidden border border-stone-200 shadow-xs">
+                <div className="relative h-64 rounded-2xl overflow-hidden border border-[#E2E8F0] shadow-xs">
                   <Image
                     src={galleryList[galleryCarouselIdx] as string}
                     alt={`${puja?.title || "Puja"} - Sacred Ritual Photo ${galleryCarouselIdx + 1}`}
@@ -1179,7 +1195,7 @@ export default function PujaDetailClient({
                         type="button"
                         onClick={() => setGalleryCarouselIdx(idx)}
                         aria-label={`Go to gallery image ${idx + 1}`}
-                        className={idx === galleryCarouselIdx ? "w-6 h-2 bg-[#00b050] rounded-full transition-all" : "w-2 h-2 bg-stone-300 hover:bg-stone-400 rounded-full transition-all"}
+                        className={idx === galleryCarouselIdx ? "w-6 h-2 bg-[#14395C] rounded-full transition-all" : "w-2 h-2 bg-stone-300 hover:bg-stone-400 rounded-full transition-all"}
                       />
                     ))}
                   </div>
@@ -1189,7 +1205,7 @@ export default function PujaDetailClient({
               {/* sm+ : Grid */}
               <div className="hidden sm:grid grid-cols-2 sm:grid-cols-3 gap-4">
                 {galleryList.map((img: string, idx: number) => (
-                  <div key={idx} className="h-48 rounded-2xl overflow-hidden border border-stone-200 shadow-xs relative">
+                  <div key={idx} className="h-48 rounded-2xl overflow-hidden border border-[#E2E8F0] shadow-xs relative">
                     <Image
                       src={img}
                       alt={`${puja?.title || "Puja"} - Sacred Ritual Photo ${idx + 1}`}
@@ -1210,30 +1226,29 @@ export default function PujaDetailClient({
         <div className="lg:col-span-4 space-y-6 pt-0 sm:pt-4 pb-16 sm:pb-20 lg:pb-36">
 
           {/* Dedicated Vedic Puja Sticky Card */}
-          <div className="bg-[#ffffff] border border-[#f0e4d0] rounded-3xl p-5 sm:p-6 pb-6 sm:pb-8 shadow-xs static lg:sticky lg:top-[140px] xl:top-[144px] space-y-4 sm:space-y-5 mb-0 lg:mb-28">
+          <div className="bg-white border border-[#E2E8F0] rounded-3xl p-5 sm:p-6 pb-6 sm:pb-8 shadow-xs static lg:sticky lg:top-[140px] xl:top-[144px] space-y-4 sm:space-y-5 mb-0 lg:mb-28">
             <div className="flex items-center gap-3">
-
               <div>
-                <h3 className="font-serif font-bold text-stone-900 text-base">Dedicated Vedic Puja</h3>
-                <span className="text-xs text-stone-500 font-semibold">100% Authentic Rituals</span>
+                <h3 className="font-serif font-bold text-[#1E293B] text-base">Dedicated Vedic Puja</h3>
+                <span className="text-xs text-[#64748B] font-semibold">100% Authentic Rituals</span>
               </div>
             </div>
 
-            <div className="space-y-2.5 text-xs sm:text-sm text-stone-700 font-medium">
+            <div className="space-y-2.5 text-xs sm:text-sm text-[#1E293B] font-medium">
               <div className="flex items-start gap-2.5">
-                <span className="text-[#00b050] font-bold text-base shrink-0">✓</span>
+                <span className="text-[#16a34a] font-bold text-base shrink-0">✓</span>
                 <span>Personalized Sankalpam performed with your Name, Gotra &amp; Wish</span>
               </div>
               <div className="flex items-start gap-2.5">
-                <span className="text-[#00b050] font-bold text-base shrink-0">✓</span>
+                <span className="text-[#16a34a] font-bold text-base shrink-0">✓</span>
                 <span>Full Puja Video Recording delivered on WhatsApp within 48 hours</span>
               </div>
             </div>
 
             {/* WhatsApp Agent Container with Dedicated Margin & Padding */}
-            <div className="border-t border-[#f0e4d0] pt-5 mt-4 mb-2 pb-1">
-              <h4 className="font-bold text-stone-900 text-sm mb-1.5">Unsure which puja to book?</h4>
-              <p className="text-stone-600 text-xs mb-3.5 leading-relaxed font-medium">
+            <div className="border-t border-[#E2E8F0] pt-5 mt-4 mb-2 pb-1">
+              <h4 className="font-bold text-[#1E293B] text-sm mb-1.5">Unsure which puja to book?</h4>
+              <p className="text-[#64748B] text-xs mb-3.5 leading-relaxed font-medium">
                 Our devotee care team is available in 11 languages, 12 hours a day. Reach them on WhatsApp.
               </p>
               <div className="mt-3 mb-1">
@@ -1241,7 +1256,7 @@ export default function PujaDetailClient({
                   href="https://wa.me/9566777645"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full bg-[#00b050] hover:bg-[#009644] text-white font-extrabold text-xs sm:text-sm py-3 px-4 rounded-full transition-colors flex items-center justify-center gap-2 shadow-sm"
+                  className="w-full bg-[#14395C] hover:bg-[#0f2d4a] text-white font-extrabold text-xs sm:text-sm py-3 px-4 rounded-full transition-colors flex items-center justify-center gap-2 shadow-sm cursor-pointer"
                 >
                   <svg className="w-5 h-5 shrink-0 fill-white" viewBox="0 0 24 24">
                     <path d="M12.012 2c-5.506 0-9.989 4.478-9.99 9.984 0 1.758.459 3.474 1.33 4.982L2 22l5.144-1.348c1.455.793 3.097 1.21 4.864 1.21 5.505 0 9.989-4.478 9.99-9.985 0-5.506-4.484-9.984-9.986-9.984zm5.794 14.15c-.244.686-1.437 1.344-1.982 1.393-.526.048-1.018.257-3.418-.686-2.905-1.141-4.757-4.088-4.901-4.281-.144-.193-1.177-1.564-1.177-2.984 0-1.42.747-2.119 1.011-2.408.264-.289.576-.361.769-.361.192 0 .385.001.552.009.178.008.417-.067.653.498.243.582.83 2.023.902 2.168.072.144.12.312.024.504-.096.192-.144.312-.288.48-.144.168-.303.376-.432.504-.144.144-.294.302-.126.59.168.289.747 1.233 1.603 1.996 1.101.98 2.03 1.285 2.318 1.429.288.144.456.12.624-.072.168-.192.721-.84.913-1.128.192-.288.384-.24.648-.144.264.096 1.677.791 1.965.935.288.144.48.216.552.336.072.12.072.696-.172 1.382z" />
@@ -1263,16 +1278,16 @@ export default function PujaDetailClient({
           : "translate-y-12 opacity-0 pointer-events-none"
           }`}
       >
-        <div className="bg-[#00b050] text-white rounded-2xl sm:rounded-3xl p-3 sm:py-3.5 sm:px-6 flex items-center justify-between shadow-2xl shadow-green-950/30 border border-green-400/20 backdrop-blur-md">
+        <div className="bg-[#14395C] text-white rounded-2xl sm:rounded-3xl p-3 sm:py-3.5 sm:px-6 flex items-center justify-between shadow-2xl shadow-slate-950/30 border border-slate-700/20 backdrop-blur-md">
           {/* Left Column: Lotus Icon + Uppercase Title + Price */}
           <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0 pr-3">
-            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white text-[#00b050] flex items-center justify-center shrink-0 shadow-sm">
-              <svg className="w-6 h-6 fill-[#00b050]" viewBox="0 0 24 24">
+            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white text-[#14395C] flex items-center justify-center shrink-0 shadow-sm">
+              <svg className="w-6 h-6 fill-[#14395C]" viewBox="0 0 24 24">
                 <path d="M12 3c-1.5 2.5-3 5-3 7.5 0 2.5 1.5 4.5 3 4.5s3-2 3-4.5C15 8 13.5 5.5 12 3zm0 14c-4.5 0-7.5-2.5-9-5 1.5 4.5 5.5 7.5 9 7.5s7.5-3 9-7.5c-1.5 2.5-4.5 5-9 5z" />
               </svg>
             </div>
             <div className="flex-1 min-w-0">
-              <span className="text-[10px] sm:text-xs font-extrabold text-green-100 tracking-wider uppercase block truncate">
+              <span className="text-[10px] sm:text-xs font-extrabold text-slate-200 tracking-wider uppercase block truncate">
                 {puja.title}
               </span>
               <span className="text-xl sm:text-2xl font-extrabold text-white block leading-tight mt-0.5">
@@ -1281,13 +1296,13 @@ export default function PujaDetailClient({
             </div>
           </div>
 
-          {/* Right Column: White Pill Button with Green Circle Arrow */}
+          {/* Right Column: White Pill Button with Navy Circle Arrow */}
           <button
             onClick={handleAddPujaToCart}
-            className="bg-white hover:bg-green-50 active:scale-95 text-[#00b050] font-extrabold text-xs sm:text-sm px-4 sm:px-6 py-2 sm:py-2.5 rounded-full shadow-md transition-all flex items-center gap-2 shrink-0 whitespace-nowrap cursor-pointer"
+            className="bg-white hover:bg-slate-100 active:scale-95 text-[#14395C] font-extrabold text-xs sm:text-sm px-4 sm:px-6 py-2 sm:py-2.5 rounded-full shadow-md transition-all flex items-center gap-2 shrink-0 whitespace-nowrap cursor-pointer"
           >
             <span>Book Now</span>
-            <div className="w-6 h-6 rounded-full bg-[#00b050] text-white flex items-center justify-center shrink-0">
+            <div className="w-6 h-6 rounded-full bg-[#14395C] text-white flex items-center justify-center shrink-0">
               <svg className="w-3.5 h-3.5 stroke-current" fill="none" viewBox="0 0 24 24" strokeWidth="3">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
               </svg>
@@ -1307,8 +1322,8 @@ export default function PujaDetailClient({
               <XMarkIcon className="w-6 h-6" />
             </button>
 
-            <h3 className="text-2xl font-serif font-bold text-stone-900 mb-2">Select Package</h3>
-            <p className="text-stone-600 text-xs sm:text-sm mb-6">Choose your desired package for sacred ritual participation.</p>
+            <h3 className="text-2xl font-serif font-bold text-[#1E293B] mb-2">Select Package</h3>
+            <p className="text-[#64748B] text-xs sm:text-sm mb-6">Choose your desired package for sacred ritual participation.</p>
 
             <div className="space-y-4 mb-6">
               {packagesList.map((pkg) => {
@@ -1318,17 +1333,17 @@ export default function PujaDetailClient({
                     key={pkg.id}
                     onClick={() => setSelectedPackageId(pkg.id)}
                     className={`border-2 rounded-2xl p-4 cursor-pointer transition-all flex items-center justify-between ${isSelected
-                      ? "border-[#00b050] bg-green-50/50 shadow-xs"
-                      : "border-stone-200 hover:border-stone-400 bg-white"
+                      ? "border-[#14395C] bg-[#F1F5F9]/60 shadow-xs"
+                      : "border-[#E2E8F0] hover:border-[#CBD5E1] bg-white"
                       }`}
                   >
                     <div>
-                      <h4 className="font-bold text-stone-900 text-base">{pkg.name}</h4>
-                      <p className="text-stone-600 text-xs mt-1">{pkg.description || "Includes personalized sankalpam and video proof."}</p>
+                      <h4 className="font-bold text-[#1E293B] text-base">{pkg.name}</h4>
+                      <p className="text-[#64748B] text-xs mt-1">{pkg.description || "Includes personalized sankalpam and video proof."}</p>
                     </div>
                     <div className="text-right">
-                      <span className="font-extrabold text-lg text-stone-900 block">₹{getDisplayPrice(pkg)}</span>
-                      <span className="text-[10px] font-bold text-[#00b050] uppercase">{isSelected ? "Selected ✓" : "Select"}</span>
+                      <span className="font-extrabold text-lg text-[#1E293B] block">₹{getDisplayPrice(pkg)}</span>
+                      <span className="text-[10px] font-bold text-[#14395C] uppercase">{isSelected ? "Selected ✓" : "Select"}</span>
                     </div>
                   </div>
                 );
@@ -1340,7 +1355,7 @@ export default function PujaDetailClient({
                 setShowPackageModal(false);
                 handleAddPujaToCart();
               }}
-              className="w-full bg-[#00b050] hover:bg-[#009644] text-white font-extrabold text-base py-3.5 rounded-full shadow-md transition-all"
+              className="w-full bg-[#14395C] hover:bg-[#0f2d4a] text-white font-extrabold text-base py-3.5 rounded-full shadow-md transition-all cursor-pointer"
             >
               Proceed to Details
             </button>

@@ -7,6 +7,8 @@ import Image from "next/image";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import PromoCodeInput from "@/components/PromoCodeInput";
+import LoginModal from "@/components/auth/LoginModal";
+import { checkAuthStatus } from "@/lib/authCheck";
 import { useUser } from "@/contexts/UserContext";
 
 interface RazorpayResponse {
@@ -55,6 +57,7 @@ function SankalpContent() {
   const [paymentMethod, setPaymentMethod] = useState("upi");
   const [isProcessing, setIsProcessing] = useState(false);
   const [loadingMsg, setLoadingMsg] = useState("");
+  const [showLoginModal, setShowLoginModal] = useState(false);
   const [appliedPromo, setAppliedPromo] = useState<{
     promoCode: string;
     promoId?: string;
@@ -82,7 +85,14 @@ function SankalpContent() {
         profileFetchedRef.current = true;
         try {
           const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
-          const res = await fetch(`${baseUrl}/api/users/profile/${userId}`);
+          const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+          const headers: Record<string, string> = { "Content-Type": "application/json" };
+          if (token) headers["Authorization"] = `Bearer ${token}`;
+
+          const res = await fetch(`${baseUrl}/api/users/profile/${userId}`, {
+            headers,
+            credentials: "include",
+          });
           if (res.ok) {
             const data = await res.json();
             if (data.success && data.data) {
@@ -269,9 +279,15 @@ function SankalpContent() {
   const isPhoneValid = /^[6-9]\d{9}$/.test(formData.whatsapp.trim());
   const areParticipantsValid = formData.participants.length > 0 && formData.participants.every(p => p.trim() && /^[a-zA-Z\s]+$/.test(p.trim()));
 
-  const handleProceedToStep2 = () => {
+  const handleProceedToStep2 = async () => {
     setShowErrors(true);
     if (!isPhoneValid || !areParticipantsValid) {
+      return;
+    }
+
+    const { is_user } = await checkAuthStatus();
+    if (!is_user && !user?.id && !user?._id) {
+      setShowLoginModal(true);
       return;
     }
 
@@ -280,9 +296,14 @@ function SankalpContent() {
     if (uId) {
       const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
       const nameToSave = formData.participants[0]?.trim() || user?.name || "Devotee";
+      const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+
       fetch(`${baseUrl}/api/users/updateProfile`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers,
+        credentials: "include",
         body: JSON.stringify({
           userId: uId,
           name: nameToSave,
@@ -371,9 +392,14 @@ function SankalpContent() {
       };
 
       setLoadingMsg("Creating order securely...");
+      const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+      const orderHeaders: Record<string, string> = { "Content-Type": "application/json" };
+      if (token) orderHeaders["Authorization"] = `Bearer ${token}`;
+
       const orderRes = await fetch(`${backendUrl}/api/payments/create-order`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: orderHeaders,
+        credentials: "include",
         body: JSON.stringify({
           customerId: mongoUserId,
           currencyCode: "INR",
@@ -446,9 +472,13 @@ function SankalpContent() {
         handler: async function (response: RazorpayResponse) {
           setLoadingMsg("Verifying payment...");
           try {
+            const verifyHeaders: Record<string, string> = { "Content-Type": "application/json" };
+            if (token) verifyHeaders["Authorization"] = `Bearer ${token}`;
+
             const verifyRes = await fetch(`${backendUrl}/api/payments/verify`, {
               method: "POST",
-              headers: { "Content-Type": "application/json" },
+              headers: verifyHeaders,
+              credentials: "include",
               body: JSON.stringify({
                 razorpayOrderId: response.razorpay_order_id,
                 razorpayPaymentId: response.razorpay_payment_id,
@@ -959,6 +989,16 @@ function SankalpContent() {
           )}
         </div>
       </main>
+
+      <LoginModal
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        onSuccess={() => {
+          setShowLoginModal(false);
+          setStep(2);
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }}
+      />
 
       <Footer />
     </>

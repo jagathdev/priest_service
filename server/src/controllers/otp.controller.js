@@ -1,3 +1,4 @@
+import jwt from "jsonwebtoken";
 import { sendOTP } from "../services/otp.service.js";
 import Otp from "../models/otp.js";
 import User from "../models/user.js";
@@ -186,16 +187,39 @@ export const verifyOtp = async (req, res) => {
         });
 
         // ==========================================
-        // SUCCESS RESPONSE
+        // GENERATE TOKEN & SUCCESS RESPONSE
         // ==========================================
+
+        const token = jwt.sign(
+            { id: user._id, role: "user" },
+            process.env.JWT_SECRET || "default_jwt_secret",
+            { expiresIn: "7d" }
+        );
+
+        res.cookie("token", token, {
+            httpOnly: false,
+            secure: process.env.NODE_ENV === "production",
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+            path: "/",
+            sameSite: "lax",
+        });
+
+        res.cookie("userLogin", "true", {
+            httpOnly: false,
+            secure: process.env.NODE_ENV === "production",
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+            path: "/",
+            sameSite: "lax",
+        });
 
         return res.status(200).json({
             success: true,
             is_user: true,
             message: "Login successful",
-
+            token,
             data: {
                 is_user: true,
+                token,
                 user: {
                     id: user._id,
                     mobileNumber: user.mobileNumber,

@@ -1,6 +1,6 @@
 import { NextResponse, NextRequest } from 'next/server';
 
-const USER_PROTECTED_PATHS = ['/payment', '/account', '/bookings', '/sankalp'];
+const USER_PROTECTED_PATHS = ['/payment', '/account', '/bookings'];
 
 function isUserProtectedPath(pathname: string) {
   return USER_PROTECTED_PATHS.some(
