@@ -9,7 +9,7 @@ import Image from "next/image";
 import { useUser } from "@/contexts/UserContext";
 import LoginModal from "@/components/auth/LoginModal";
 import BookingsTab from "@/components/account/BookingsTab";
-import { apiClient } from "@/services/api";
+import { apiClient, getAuthToken } from "@/services/api";
 
 interface User {
   id?: string;
@@ -166,7 +166,7 @@ function AccountPageContent() {
 
   useEffect(() => {
     const userId = user?._id || user?.id;
-    if (userId) {
+    if (userId && getAuthToken()) {
       apiClient(`/api/orders/user/${userId}`)
         .then(data => {
           if (data.success && Array.isArray(data.data)) {
@@ -259,7 +259,7 @@ function AccountPageContent() {
   }, []);
 
   const fetchWishlist = useCallback(async () => {
-    if (!user || (!user.id && !user._id)) return;
+    if (!user || (!user.id && !user._id) || !getAuthToken()) return;
     setLoadingWishlist(true);
     try {
       const data = await apiClient(`/api/wishlist/${user.id || user._id}`);

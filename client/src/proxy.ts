@@ -30,8 +30,9 @@ export async function proxy(request: NextRequest) {
 
   if (isUserProtectedPath(pathname)) {
     const isUserLoggedIn = request.cookies.get('userLogin')?.value === 'true';
+    const token = request.cookies.get('token')?.value;
 
-    if (!isUserLoggedIn) {
+    if (!isUserLoggedIn || !token) {
       const loginUrl = new URL('/auth/login', request.url);
       loginUrl.searchParams.set(
         'callbackUrl',

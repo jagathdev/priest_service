@@ -8,7 +8,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import PromoCodeInput from "@/components/PromoCodeInput";
 import { useUser } from "@/contexts/UserContext";
-import { apiClient } from "@/services/api";
+import { apiClient, getAuthToken } from "@/services/api";
 
 interface RazorpayResponse {
   razorpay_order_id: string;
@@ -79,7 +79,8 @@ function SankalpContent() {
       let whatsappPhone = userWhatsapp || searchParamsWa || userMobile || "";
       let name = userName || searchParamsName || "";
 
-      if (userId && !profileFetchedRef.current) {
+      const authToken = getAuthToken();
+      if (userId && authToken && !profileFetchedRef.current) {
         profileFetchedRef.current = true;
         try {
           const data = await apiClient(`/api/users/profile/${userId}`);
@@ -93,7 +94,7 @@ function SankalpContent() {
             setUser((prevUser) => ({ ...(prevUser || {}), ...data.data }));
           }
         } catch (err) {
-          console.error("Error fetching user profile:", err);
+          console.warn("Unable to fetch user profile:", err);
         }
       }
 
@@ -272,9 +273,9 @@ function SankalpContent() {
       return;
     }
 
-    // Call updateProfile API to save devotee profile and whatsappNumber to backend database
     const uId = user?.id || user?._id;
-    if (uId) {
+    const token = getAuthToken();
+    if (uId && token) {
       const nameToSave = formData.participants[0]?.trim() || user?.name || "Devotee";
       apiClient(`/api/users/updateProfile`, {
         method: "PUT",
@@ -290,7 +291,7 @@ function SankalpContent() {
             setUser({ ...user, ...resData.data, whatsappNumber: formData.whatsapp.trim() });
           }
         })
-        .catch(console.error);
+        .catch((err) => console.warn("Failed to update profile:", err));
     }
 
     setStep(2);

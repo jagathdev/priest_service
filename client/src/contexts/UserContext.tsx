@@ -27,37 +27,55 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export function UserProvider({ children, initialUser }: { children: ReactNode; initialUser?: User | null }) {
   const [user, setUser] = useState<User | null>(() => {
-    if (initialUser) return initialUser;
     if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("mockUser");
-      const token = localStorage.getItem("token");
+      try {
+        const stored = localStorage.getItem("mockUser");
+        let token = localStorage.getItem("token");
+        if (!token && typeof document !== "undefined") {
+          const match = document.cookie.match(/(?:^|;\s*)(?:token|adminToken)=([^;]+)/);
+          if (match && match[1]) token = decodeURIComponent(match[1]);
+        }
 
-      if (stored && !token) {
-        localStorage.removeItem("mockUser");
-        localStorage.removeItem("token");
-        document.cookie = "mockUser=; path=/; max-age=0;";
-        document.cookie = "token=; path=/; max-age=0;";
-        document.cookie = "userLogin=false; path=/; max-age=0;";
-        return null;
-      }
+        const isValidToken = token && token !== "undefined" && token !== "null" && token.trim() !== "";
 
-      if (document.cookie.includes("userLogin=true")) {
+        if (!isValidToken) {
+          localStorage.removeItem("mockUser");
+          localStorage.removeItem("token");
+          document.cookie = "mockUser=; path=/; max-age=0;";
+          document.cookie = "token=; path=/; max-age=0;";
+          document.cookie = "userLogin=false; path=/; max-age=0;";
+          return null;
+        }
+
+        if (initialUser && (initialUser.id || initialUser._id)) {
+          return initialUser;
+        }
+
         if (stored) {
-          try {
-            return JSON.parse(stored) as User;
-          } catch (e) {
-            console.error(e);
-            return {} as User;
+          const parsed = JSON.parse(stored);
+          if (parsed && typeof parsed === "object" && (parsed.id || parsed._id || parsed.mobileNumber || parsed.email)) {
+            return parsed as User;
           }
         }
-        return {} as User;
+      } catch (e) {
+        console.error("Error reading stored user:", e);
       }
+      return null;
     }
-    return null;
+    return initialUser || null;
   });
 
+
   useEffect(() => {
-    if (user && Object.keys(user).length > 0) {
+    const handleUnauthorized = () => {
+      setUser(null);
+    };
+    window.addEventListener("auth:unauthorized", handleUnauthorized);
+    return () => window.removeEventListener("auth:unauthorized", handleUnauthorized);
+  }, []);
+
+  useEffect(() => {
+    if (user && Object.keys(user).length > 0 && (user.id || user._id || user.mobileNumber || user.email)) {
       localStorage.setItem("mockUser", JSON.stringify(user));
       document.cookie = "mockUser=" + encodeURIComponent(JSON.stringify(user)) + "; path=/; max-age=604800;";
       document.cookie = "userLogin=true; path=/; max-age=604800;";
@@ -69,6 +87,7 @@ export function UserProvider({ children, initialUser }: { children: ReactNode; i
       document.cookie = "userLogin=false; path=/; max-age=0;";
     }
   }, [user]);
+
 
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 

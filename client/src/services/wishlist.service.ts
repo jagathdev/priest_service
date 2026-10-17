@@ -1,4 +1,4 @@
-import { apiClient } from './api';
+import { apiClient, getAuthToken } from './api';
 
 let getWishlistPromise: Promise<any> | null = null;
 let lastFetchTime = 0;
@@ -6,8 +6,8 @@ let lastUserId = '';
 
 export const wishlistService = {
   getWishlist(userId: string) {
-    // Basic validation to prevent invalid MongoDB ObjectId errors like "admin-1"
-    if (!userId || userId.length !== 24) {
+    // Basic validation to prevent invalid MongoDB ObjectId errors or calls when unauthenticated
+    if (!userId || userId.length !== 24 || !getAuthToken()) {
       return Promise.resolve({ success: true, data: [] });
     }
 
