@@ -63,6 +63,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         <noscript>
           <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-TRS65PJ" height="0" width="0" style={{ display: "none", visibility: "hidden" }}></iframe>
         </noscript>
+
         <Script
           id="meta-robots-script"
           strategy="beforeInteractive"
@@ -216,6 +217,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
             `,
           }}
         />
+
         <Providers serverUser={serverUser}>
           <div className="flex-1">
             {children}
