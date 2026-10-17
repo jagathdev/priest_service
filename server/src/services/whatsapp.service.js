@@ -250,3 +250,25 @@ export const sendOrderConfirmation = async ({
         );
     }
 };
+
+export const registerWhatsAppOptOut = async ({ mobileNumber }) => {
+    const mobile = validateMobile(mobileNumber);
+    await WhatsAppConsent.findOneAndUpdate(
+        { mobileNumber: mobile },
+        {
+            $set: {
+                mobileNumber: mobile,
+                optedIn: false,
+                optedOutAt: new Date(),
+            },
+        },
+        { upsert: true, returnDocument: "after" }
+    );
+
+    return {
+        success: true,
+        optedIn: false,
+        mobileNumber: mobile,
+    };
+};
+

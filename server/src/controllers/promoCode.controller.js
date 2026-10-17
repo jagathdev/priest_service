@@ -1,5 +1,4 @@
 import PromoCode from "../models/PromoCode.js";
-import PromoCodeUsage from "../models/PromoCodeUsage.js";
 
 import {
     validatePromoCode,
@@ -533,44 +532,4 @@ export const applyPromoCode = async (
     }
 };
 
-/*
- RECORD PROMO USAGE
-
- Call this ONLY after successful payment.
-
-*/
-
-export const recordPromoUsage = async ({
-    promoCodeId,
-    userId,
-    orderId,
-    discountAmount,
-}) => {
-    const existing =
-        await PromoCodeUsage.findOne({
-            orderId,
-        });
-
-    if (existing) {
-        return existing;
-    }
-
-    const usage =
-        await PromoCodeUsage.create({
-            promoCodeId,
-            userId,
-            orderId,
-            discountAmount,
-        });
-
-    await PromoCode.findByIdAndUpdate(
-        promoCodeId,
-        {
-            $inc: {
-                usedCount: 1,
-            },
-        }
-    );
-
-    return usage;
-};
+export { recordPromoUsage } from "../services/promoCode.service.js";

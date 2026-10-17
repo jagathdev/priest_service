@@ -1,11 +1,16 @@
+import crypto from "crypto";
 import axios from "axios";
 import Otp from "../models/otp.js";
 
-const OTP_EXPIRY_TIME = 2 * 60 * 1000; // 2 minutes
+const OTP_EXPIRY_TIME = 5 * 60 * 1000; // 5 minutes
 const RESEND_COOLDOWN = 60 * 1000; // 60 seconds
 
 export const generateOTP = () => {
-    return Math.floor(100000 + Math.random() * 900000).toString();
+    return crypto.randomInt(100000, 1000000).toString();
+};
+
+export const hashOtp = (otp) => {
+    return crypto.createHash("sha256").update(String(otp)).digest("hex");
 };
 
 export const sendOTP = async (mobileNumber) => {
@@ -16,7 +21,7 @@ export const sendOTP = async (mobileNumber) => {
         mobileNumber,
     });
 
-    // Check 10-second resend cooldown
+    // Check resend cooldown
     if (
         existingOtp &&
         existingOtp.resendAvailableAt &&
@@ -37,23 +42,25 @@ export const sendOTP = async (mobileNumber) => {
     }
 
     // Generate new OTP
-    const otp = generateOTP();
+    const rawOtp = generateOTP();
+    const hashedOtp = hashOtp(rawOtp);
 
     // OTP expires after 5 minutes
     const expiresAt = new Date(now.getTime() + OTP_EXPIRY_TIME);
 
-    // Resend allowed after 10 seconds
+    // Resend allowed after 60 seconds
     const resendAvailableAt = new Date(now.getTime() + RESEND_COOLDOWN);
 
-    // Save / update OTP
+    // Save / update OTP with hashed value and reset attempts
     await Otp.findOneAndUpdate(
         { mobileNumber },
         {
             mobileNumber,
-            otp,
+            otp: hashedOtp,
             expiresAt,
             resendAvailableAt,
             verified: false,
+            attempts: 0,
         },
         {
             upsert: true,
@@ -80,19 +87,25 @@ export const sendOTP = async (mobileNumber) => {
     }
 
     if (url.includes("{randomotp}")) {
-        url = url.replace("{randomotp}", otp);
+        url = url.replace("{randomotp}", rawOtp);
     } else {
-        url = url.replace("is+{}.", `is+${otp}.`);
+        url = url.replace("is+{}.", `is+${rawOtp}.`);
     }
 
-    // Send SMS request to 24x7sms gateway
-    const response = await axios.get(url);
-    // console.log(`[sendOTP] Sent to ${formattedPhone}, SMS Gateway Response:`, response.data);
+    // Send SMS request to 24x7sms gateway with timeout and sanitized logging
+    try {
+        await axios.get(url, { timeout: 8000 });
+    } catch (smsError) {
+        // Redact URL and credentials from error logs
+        console.error("[OTP Service] SMS Gateway dispatch failed:", smsError.code || smsError.message);
+        const err = new Error("Unable to deliver SMS verification code. Please try again shortly.");
+        err.statusCode = 502;
+        throw err;
+    }
 
     return {
         otpSent: true,
-        expiresIn: 300,
-        resendAfter: 10,
-        smsResponse: response.data,
+        expiresIn: 300, // 5 minutes in seconds
+        resendAfter: 60, // 60 seconds
     };
 };

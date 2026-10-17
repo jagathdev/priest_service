@@ -9,6 +9,7 @@ import Image from "next/image";
 import { useUser } from "@/contexts/UserContext";
 import LoginModal from "@/components/auth/LoginModal";
 import BookingsTab from "@/components/account/BookingsTab";
+import { apiClient, getAuthToken } from "@/services/api";
 
 interface User {
   id?: string;
@@ -165,10 +166,8 @@ function AccountPageContent() {
 
   useEffect(() => {
     const userId = user?._id || user?.id;
-    if (userId) {
-      const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
-      fetch(`${backendUrl}/api/orders/user/${userId}`)
-        .then(res => res.json())
+    if (userId && getAuthToken()) {
+      apiClient(`/api/orders/user/${userId}`)
         .then(data => {
           if (data.success && Array.isArray(data.data)) {
             setBookingsCount(data.data.length);
@@ -260,12 +259,10 @@ function AccountPageContent() {
   }, []);
 
   const fetchWishlist = useCallback(async () => {
-    if (!user || (!user.id && !user._id)) return;
+    if (!user || (!user.id && !user._id) || !getAuthToken()) return;
     setLoadingWishlist(true);
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
-      const res = await fetch(`${baseUrl}/api/wishlist/${user.id || user._id}`);
-      const data = await res.json();
+      const data = await apiClient(`/api/wishlist/${user.id || user._id}`);
       if (data.success && data.data) {
         setWishlistItems(data.data);
       }
@@ -1210,10 +1207,8 @@ function AccountPageContent() {
                                     e.preventDefault();
                                     e.stopPropagation();
                                     try {
-                                      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
-                                      await fetch(`${baseUrl}/api/wishlist/updateWishlist`, {
+                                      await apiClient(`/api/wishlist/updateWishlist`, {
                                         method: "POST",
-                                        headers: { "Content-Type": "application/json" },
                                         body: JSON.stringify({ userId: user?.id || user?._id, serviceId: item.serviceId, action: "remove" }),
                                       });
                                       fetchWishlist();

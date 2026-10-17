@@ -1,5 +1,6 @@
 import PromoCode from "../models/PromoCode.js";
 import PromoCodeUsage from "../models/PromoCodeUsage.js";
+import { normalizeServiceType } from "../utils/serviceType.js";
 
 const normalizeCode = (code) => {
     return String(code || "")
@@ -101,17 +102,20 @@ export const validatePromoCode = async ({
         throw error;
     }
 
+    const normalizedServiceType = normalizeServiceType(serviceType);
+
     if (
         promo.applicableServices !== "ALL" &&
-        promo.applicableServices !== serviceType
+        promo.applicableServices !== normalizedServiceType
     ) {
         const error = new Error(
-            `This promo code is not valid for ${serviceType.toLowerCase()}`
+            `This promo code is not valid for ${normalizedServiceType === "HOMA" ? "Homas" : "Pujas"}`
         );
 
         error.statusCode = 400;
         throw error;
     }
+
 
     if (
         promo.applicablePackages.length > 0 &&
@@ -213,4 +217,32 @@ export const validatePromoCode = async ({
         discountAmount,
         finalAmount,
     };
+};
+
+/**
+ * Record promo usage in PromoCodeUsage collection and increment usedCount.
+ */
+export const recordPromoUsage = async ({
+    promoCodeId,
+    userId,
+    orderId,
+    discountAmount,
+}) => {
+    const existing = await PromoCodeUsage.findOne({ orderId });
+    if (existing) {
+        return existing;
+    }
+
+    const usage = await PromoCodeUsage.create({
+        promoCodeId,
+        userId,
+        orderId,
+        discountAmount,
+    });
+
+    await PromoCode.findByIdAndUpdate(promoCodeId, {
+        $inc: { usedCount: 1 },
+    });
+
+    return usage;
 };

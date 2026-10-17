@@ -30,8 +30,9 @@ export async function proxy(request: NextRequest) {
 
   if (isUserProtectedPath(pathname)) {
     const isUserLoggedIn = request.cookies.get('userLogin')?.value === 'true';
+    const token = request.cookies.get('token')?.value;
 
-    if (!isUserLoggedIn) {
+    if (!isUserLoggedIn || !token) {
       const loginUrl = new URL('/auth/login', request.url);
       loginUrl.searchParams.set(
         'callbackUrl',
@@ -47,5 +48,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/api/admin/:path*', '/booking/:path*', '/bookings/:path*', '/payment/:path*'],
+  matcher: ['/admin/:path*', '/api/admin/:path*', '/booking/:path*', '/bookings/:path*', '/payment/:path*', '/account/:path*', '/sankalp/:path*'],
 };
