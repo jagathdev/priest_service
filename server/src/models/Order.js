@@ -32,7 +32,7 @@ const orderSchema = new mongoose.Schema(
         serviceType: {
             type: String,
             required: false,
-            enum: ['Pooja', 'Homa', 'Puja', 'pooja', 'homa', 'puja']
+            enum: ['Pooja', 'Homa', 'Puja', 'pooja', 'homa', 'puja', 'POOJA', 'HOMA']
         },
         customer: {
             type: mongoose.Schema.Types.ObjectId,

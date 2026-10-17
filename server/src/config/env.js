@@ -22,4 +22,9 @@ export function validateEnv() {
     console.error('JWT_SECRET must be at least 32 characters long.');
     process.exit(1);
   }
+
+  if (process.env.ADMIN_PASSWORD && process.env.ADMIN_PASSWORD.length < 8) {
+    console.error('ADMIN_PASSWORD must be at least 8 characters long.');
+    process.exit(1);
+  }
 }

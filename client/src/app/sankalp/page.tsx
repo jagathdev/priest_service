@@ -10,6 +10,7 @@ import PromoCodeInput from "@/components/PromoCodeInput";
 import LoginModal from "@/components/auth/LoginModal";
 import { checkAuthStatus } from "@/lib/authCheck";
 import { useUser } from "@/contexts/UserContext";
+import { apiClient, getAuthToken } from "@/services/api";
 
 interface RazorpayResponse {
   razorpay_order_id: string;
@@ -81,7 +82,8 @@ function SankalpContent() {
       let whatsappPhone = userWhatsapp || searchParamsWa || userMobile || "";
       let name = userName || searchParamsName || "";
 
-      if (userId && !profileFetchedRef.current) {
+      const authToken = getAuthToken();
+      if (userId && authToken && !profileFetchedRef.current) {
         profileFetchedRef.current = true;
         try {
           const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
@@ -106,7 +108,7 @@ function SankalpContent() {
             }
           }
         } catch (err) {
-          console.error("Error fetching user profile:", err);
+          console.warn("Unable to fetch user profile:", err);
         }
       }
 
@@ -291,33 +293,25 @@ function SankalpContent() {
       return;
     }
 
-    // Call updateProfile API to save devotee profile and whatsappNumber to backend database
     const uId = user?.id || user?._id;
-    if (uId) {
-      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
+    const token = getAuthToken();
+    if (uId && token) {
       const nameToSave = formData.participants[0]?.trim() || user?.name || "Devotee";
-      const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-      const headers: Record<string, string> = { "Content-Type": "application/json" };
-      if (token) headers["Authorization"] = `Bearer ${token}`;
-
-      fetch(`${baseUrl}/api/users/updateProfile`, {
+      apiClient('/api/users/updateProfile', {
         method: "PUT",
-        headers,
-        credentials: "include",
         body: JSON.stringify({
           userId: uId,
           name: nameToSave,
-          email: user?.email || "devotee@astroved.com",
+          email: user?.email || "",
           whatsappNumber: formData.whatsapp.trim(),
         }),
       })
-        .then((r) => r.json())
-        .then((resData) => {
-          if (resData.success && resData.data) {
+        .then((resData: any) => {
+          if (resData && resData.success && resData.data) {
             setUser({ ...user, ...resData.data, whatsappNumber: formData.whatsapp.trim() });
           }
         })
-        .catch(console.error);
+        .catch((err) => console.warn("Failed to update profile:", err));
     }
 
     setStep(2);
@@ -392,7 +386,7 @@ function SankalpContent() {
       };
 
       setLoadingMsg("Creating order securely...");
-      const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+      const token = getAuthToken();
       const orderHeaders: Record<string, string> = { "Content-Type": "application/json" };
       if (token) orderHeaders["Authorization"] = `Bearer ${token}`;
 
@@ -471,9 +465,11 @@ function SankalpContent() {
         },
         handler: async function (response: RazorpayResponse) {
           setLoadingMsg("Verifying payment...");
+          const targetOrderId = response.razorpay_order_id || orderId;
           try {
+            const verifyToken = getAuthToken();
             const verifyHeaders: Record<string, string> = { "Content-Type": "application/json" };
-            if (token) verifyHeaders["Authorization"] = `Bearer ${token}`;
+            if (verifyToken) verifyHeaders["Authorization"] = `Bearer ${verifyToken}`;
 
             const verifyRes = await fetch(`${backendUrl}/api/payments/verify`, {
               method: "POST",
@@ -488,17 +484,19 @@ function SankalpContent() {
             });
             const verifyData = await verifyRes.json();
             if (verifyData.success) {
-              const targetOrderId = response.razorpay_order_id || orderId;
               router.push(`/payment/success?razorpayOrderId=${encodeURIComponent(targetOrderId)}`);
             } else {
-              setError("Payment verification failed.");
+              setError(verifyData?.message || "Payment was not successful. Please retry.");
               setIsProcessing(false);
+              setLoadingMsg("");
+              return;
             }
-          } catch {
-            setError("Error verifying payment.");
-            setIsProcessing(false);
+          } catch (err: any) {
+            console.error("Payment verification caught error, redirecting to status page:", err);
+            router.push(`/payment/success?razorpayOrderId=${encodeURIComponent(targetOrderId)}`);
           }
         },
+
         modal: {
           ondismiss: function () {
             setIsProcessing(false);
@@ -609,14 +607,30 @@ function SankalpContent() {
               Loading sacred order details...
             </div>
           ) : error ? (
-            <div className="bg-red-50 border border-red-200 rounded-2xl p-6 text-center max-w-md mx-auto my-12">
-              <p className="text-red-600 font-bold mb-4">{error}</p>
-              <Link
-                href="/puja"
-                className="bg-success text-white font-bold py-2.5 px-6 rounded-full inline-block text-sm"
-              >
-                Browse Pujas
-              </Link>
+            <div className="bg-red-50 border border-red-200 rounded-2xl p-6 text-center max-w-md mx-auto my-12 shadow-sm">
+              <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-red-100 flex items-center justify-center text-red-600 text-xl font-bold">
+                ✕
+              </div>
+              <h2 className="text-lg font-bold text-stone-900 mb-2">Payment Failed</h2>
+              <p className="text-red-600 font-medium text-sm mb-6 leading-relaxed">{error}</p>
+              <div className="flex justify-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setError("");
+                    setStep(2);
+                  }}
+                  className="bg-success text-white font-bold py-2.5 px-6 rounded-full inline-block text-sm shadow-sm hover:opacity-90 transition-opacity"
+                >
+                  Retry Payment
+                </button>
+                <Link
+                  href="/puja"
+                  className="border border-stone-300 text-stone-700 font-bold py-2.5 px-6 rounded-full inline-block text-sm hover:bg-stone-50 transition-colors"
+                >
+                  Browse Pujas
+                </Link>
+              </div>
             </div>
           ) : (
             <div className="flex flex-col lg:flex-row gap-10 items-start">

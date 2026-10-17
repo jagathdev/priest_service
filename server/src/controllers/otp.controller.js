@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import jwt from "jsonwebtoken";
 import { sendOTP } from "../services/otp.service.js";
 import Otp from "../models/otp.js";
@@ -38,7 +39,7 @@ export const sendOtp = async (req, res) => {
             data: result,
         });
     } catch (error) {
-        console.error("Send OTP Error:", error);
+        console.error("Send OTP Error:", error.message);
 
         return res.status(error.statusCode || 500).json({
             success: false,
@@ -103,15 +104,6 @@ export const verifyOtp = async (req, res) => {
         }
 
         // ==========================================
-        // CHECK OTP ALREADY VERIFIED
-        // ==========================================
-
-        if (otpRecord.verified) {
-            // Already verified, proceed to login flow
-        }
-
-
-        // ==========================================
         // CHECK OTP EXPIRY
         // ==========================================
 
@@ -128,23 +120,51 @@ export const verifyOtp = async (req, res) => {
         }
 
         // ==========================================
-        // CHECK OTP
+        // CONCURRENCY-SAFE ATTEMPT INCREMENT (max 5)
         // ==========================================
 
-        if (otpRecord.otp !== enteredOtp) {
+        const updatedOtp = await Otp.findOneAndUpdate(
+            { _id: otpRecord._id, attempts: { $lt: 5 } },
+            { $inc: { attempts: 1 } },
+            { returnDocument: "after" }
+        );
+
+        if (!updatedOtp || updatedOtp.attempts > 5) {
+            await Otp.deleteOne({ _id: otpRecord._id });
             return res.status(400).json({
                 success: false,
-                message: "Invalid OTP.",
+                message: "Maximum OTP verification attempts exceeded. Please request a new OTP.",
             });
         }
 
         // ==========================================
-        // OTP VERIFIED
+        // TIMING-SAFE HASH COMPARISON
         // ==========================================
 
-        otpRecord.verified = true;
+        const enteredOtpHash = crypto.createHash("sha256").update(enteredOtp).digest("hex");
+        const storedHash = String(updatedOtp.otp || "");
+        let isMatch = false;
 
-        await otpRecord.save();
+        if (storedHash.length === 64) {
+            const bufStored = Buffer.from(storedHash, "utf-8");
+            const bufEntered = Buffer.from(enteredOtpHash, "utf-8");
+            isMatch = crypto.timingSafeEqual(bufStored, bufEntered);
+        }
+
+        if (!isMatch) {
+            const remainingAttempts = Math.max(0, 5 - updatedOtp.attempts);
+            if (remainingAttempts === 0) {
+                await Otp.deleteOne({ _id: updatedOtp._id });
+                return res.status(400).json({
+                    success: false,
+                    message: "Maximum OTP verification attempts exceeded. Please request a new OTP.",
+                });
+            }
+            return res.status(400).json({
+                success: false,
+                message: `Invalid OTP. ${remainingAttempts} attempt(s) remaining.`,
+            });
+        }
 
         // ==========================================
         // FIND USER
@@ -187,7 +207,7 @@ export const verifyOtp = async (req, res) => {
         });
 
         // ==========================================
-        // GENERATE TOKEN & SUCCESS RESPONSE
+        // GENERATE AUTH TOKEN & SUCCESS RESPONSE
         // ==========================================
 
         const token = jwt.sign(
