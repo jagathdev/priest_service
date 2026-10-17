@@ -1,17 +1,33 @@
 import jwt from 'jsonwebtoken';
 
+const extractToken = (req) => {
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    return authHeader.split(' ')[1];
+  }
+
+  if (req.headers.cookie) {
+    const isAdminRoute = Boolean(req.baseUrl?.startsWith('/api/admin') || req.originalUrl?.includes('/api/admin'));
+    if (isAdminRoute) {
+      const adminMatch = req.headers.cookie.match(/(?:^|;\s*)adminToken=([^;]+)/);
+      if (adminMatch) return decodeURIComponent(adminMatch[1]);
+    }
+
+    const userMatch = req.headers.cookie.match(/(?:^|;\s*)token=([^;]+)/);
+    if (userMatch) return decodeURIComponent(userMatch[1]);
+
+    if (!isAdminRoute) {
+      const fallbackAdminMatch = req.headers.cookie.match(/(?:^|;\s*)adminToken=([^;]+)/);
+      if (fallbackAdminMatch) return decodeURIComponent(fallbackAdminMatch[1]);
+    }
+  }
+
+  return null;
+};
+
 export const requireAuth = async (req, res, next) => {
   try {
-    let token = null;
-    const authHeader = req.headers.authorization;
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      token = authHeader.split(' ')[1];
-    } else if (req.headers.cookie) {
-      const match = req.headers.cookie.match(/(?:^|;\s*)(?:adminToken|token)=([^;]+)/);
-      if (match) {
-        token = decodeURIComponent(match[1]);
-      }
-    }
+    const token = extractToken(req);
 
     if (!token || token === 'undefined' || token === 'null' || !token.trim()) {
       return res.status(401).json({ success: false, message: 'Not authorized, no token' });
@@ -29,15 +45,15 @@ export const requireAuth = async (req, res, next) => {
       role: decoded.role
     };
 
-    // If userId exists in params, verify ownership
-    const paramUserId = req.params?.userId;
-    if (paramUserId && req.user.role !== 'admin' && String(paramUserId) !== String(req.user.id)) {
+    // Verify ownership if target user identifier is present in params or query
+    const targetUserId = req.params?.userId || req.query?.userId;
+    if (targetUserId && req.user.role !== 'admin' && String(targetUserId) !== String(req.user.id)) {
       return res.status(403).json({ success: false, message: 'Forbidden: access denied to requested resource' });
     }
 
     next();
   } catch (error) {
-    console.error('Auth middleware error:', error);
+    console.error('Auth middleware error:', error.message);
     res.status(401).json({ success: false, message: 'Not authorized' });
   }
 };
@@ -46,7 +62,7 @@ export const requireUserOrAdmin = (req, res, next) => {
   if (!req.user) {
     return res.status(401).json({ success: false, message: 'Not authorized, no token' });
   }
-  const targetUserId = req.params?.userId || req.body?.userId;
+  const targetUserId = req.params?.userId || req.body?.userId || req.query?.userId;
   if (targetUserId && req.user.role !== 'admin' && String(targetUserId) !== String(req.user.id)) {
     return res.status(403).json({ success: false, message: 'Forbidden: access denied' });
   }
@@ -63,18 +79,9 @@ export const requireAdmin = (req, res, next) => {
 
 export const optionalAuth = async (req, res, next) => {
   try {
-    let token = null;
-    const authHeader = req.headers.authorization;
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      token = authHeader.split(' ')[1];
-    } else if (req.headers.cookie) {
-      const match = req.headers.cookie.match(/(?:^|;\s*)(?:adminToken|token)=([^;]+)/);
-      if (match) {
-        token = decodeURIComponent(match[1]);
-      }
-    }
+    const token = extractToken(req);
 
-    if (token) {
+    if (token && token !== 'undefined' && token !== 'null' && token.trim()) {
       try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         req.user = {

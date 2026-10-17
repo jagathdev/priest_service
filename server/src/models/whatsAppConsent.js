@@ -17,6 +17,10 @@ const whatsappConsentSchema = new mongoose.Schema(
             type: Date,
             default: null,
         },
+        optedOutAt: {
+            type: Date,
+            default: null,
+        },
         source: {
             type: String,
             default: "WEB",

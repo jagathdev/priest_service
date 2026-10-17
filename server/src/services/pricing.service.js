@@ -2,9 +2,11 @@ import Puja from "../models/pujaModel.js";
 import Homa from "../models/homaModel.js";
 import Pooja from "../models/Pooja.js";
 import { validatePromoCode } from "./promoCode.service.js";
+import { normalizeServiceType } from "../utils/serviceType.js";
 
 const DEFAULT_EXTRA_PARTICIPANT_PRICE = 300;
 const DEFAULT_BASE_PRICE = 1251;
+
 
 export const calculateServicePrice = ({
     service,
@@ -81,35 +83,33 @@ export const calculateServicePrice = ({
  */
 export const computeServerPrice = async ({ serviceId, serviceType, packageId, participantsCount, offerings, promoCode, userId }) => {
     let service = null;
-    const typeUpper = (serviceType || "").toUpperCase();
+    const normalizedType = normalizeServiceType(serviceType);
 
-    if (typeUpper === "HOMA") {
+    if (normalizedType === "HOMA") {
         service = await Homa.findById(serviceId).lean();
-    } else if (typeUpper === "POOJA" || typeUpper === "PUJA") {
+    } else {
         service = await Puja.findById(serviceId).lean() || await Pooja.findById(serviceId).lean();
-    } else if (serviceId) {
+    }
+
+    if (!service && serviceId) {
         service = await Puja.findById(serviceId).lean() ||
-                  await Homa.findById(serviceId).lean() ||
-                  await Pooja.findById(serviceId).lean();
+            await Homa.findById(serviceId).lean() ||
+            await Pooja.findById(serviceId).lean();
     }
 
     if (!service) {
         const err = new Error("Selected service not found");
-        err.statusCode = 400;
+        err.statusCode = 404;
         throw err;
     }
 
-    if (service.status && service.status !== "active") {
+    const isInactive = (service.status && service.status !== "active") || service.isActive === false;
+    if (isInactive) {
         const err = new Error("Selected service is inactive");
         err.statusCode = 400;
         throw err;
     }
 
-    if (service.isActive === false) {
-        const err = new Error("Selected service is inactive");
-        err.statusCode = 400;
-        throw err;
-    }
 
     // Determine package
     const packages = service.packages || [];
@@ -133,9 +133,9 @@ export const computeServerPrice = async ({ serviceId, serviceType, packageId, pa
     }
 
     const rawBasePrice = selectedPackage?.priceINR ??
-                         selectedPackage?.price ??
-                         service.basePrice ??
-                         service.price;
+        selectedPackage?.price ??
+        service.basePrice ??
+        service.price;
 
     const basePrice = Number(rawBasePrice);
 
@@ -158,6 +158,13 @@ export const computeServerPrice = async ({ serviceId, serviceType, packageId, pa
     }
 
     const count = Math.max(1, Number(participantsCount) || 1);
+    const maxParticipants = Number(service.maxParticipants) || 20;
+    if (count > maxParticipants) {
+        const err = new Error(`Maximum ${maxParticipants} participants allowed for this service`);
+        err.statusCode = 400;
+        throw err;
+    }
+
     const extraParticipantCount = Math.max(0, count - defaultDevotees);
     const extraParticipantFee = extraParticipantCount * 300;
 
@@ -205,7 +212,7 @@ export const computeServerPrice = async ({ serviceId, serviceType, packageId, pa
         const promoRes = await validatePromoCode({
             code: promoCode,
             orderAmount: originalAmount,
-            serviceType: serviceType || "Puja",
+            serviceType: normalizedType,
             packageId: selectedPackage?.id || selectedPackage?._id || packageId,
             userId: userId || null,
         });
@@ -218,6 +225,8 @@ export const computeServerPrice = async ({ serviceId, serviceType, packageId, pa
 
     return {
         service,
+        serviceType: normalizedType,
+        selectedPackage,
         basePrice,
         extraParticipantCount,
         extraParticipantFee,
@@ -228,4 +237,4 @@ export const computeServerPrice = async ({ serviceId, serviceType, packageId, pa
         finalAmount,
         promoCodeId,
     };
-};
+};

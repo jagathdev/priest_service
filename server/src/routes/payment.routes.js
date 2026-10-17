@@ -6,7 +6,7 @@ import {
 } from "../controllers/payment.controller.js";
 
 import { getRazorpayWebhook } from "../controllers/razorpayWebhook.controller.js";
-import { requireAuth } from "../middlewares/auth.js";
+import { requireAuth, optionalAuth } from "../middlewares/auth.js";
 
 const router = express.Router();
 
@@ -18,9 +18,10 @@ router.post(
 
 router.post(
     "/verify",
-    requireAuth,
+    optionalAuth,
     verifyPayment
 );
+
 
 router.post("/getRazorpayWebhook", getRazorpayWebhook);
 

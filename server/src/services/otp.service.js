@@ -92,8 +92,16 @@ export const sendOTP = async (mobileNumber) => {
         url = url.replace("is+{}.", `is+${rawOtp}.`);
     }
 
-    // Send SMS request to 24x7sms gateway
-    await axios.get(url);
+    // Send SMS request to 24x7sms gateway with timeout and sanitized logging
+    try {
+        await axios.get(url, { timeout: 8000 });
+    } catch (smsError) {
+        // Redact URL and credentials from error logs
+        console.error("[OTP Service] SMS Gateway dispatch failed:", smsError.code || smsError.message);
+        const err = new Error("Unable to deliver SMS verification code. Please try again shortly.");
+        err.statusCode = 502;
+        throw err;
+    }
 
     return {
         otpSent: true,

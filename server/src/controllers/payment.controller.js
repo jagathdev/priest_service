@@ -10,20 +10,20 @@ import { computeServerPrice } from "../services/pricing.service.js";
 
 export const createPaymentOrder = async (req, res) => {
     try {
-        const {
-            amount,
-            totalamount,
-            receipt,
-            orderDetails,
-        } = req.body;
+        const { orderDetails } = req.body;
+
+        if (!orderDetails || typeof orderDetails !== "object") {
+            return res.status(400).json({
+                success: false,
+                message: "orderDetails are required to create a payment order",
+            });
+        }
 
         const customUniqueId = `${crypto.randomBytes(8).toString("hex").toUpperCase()}`;
-        const orderReceipt = receipt ? String(receipt) : customUniqueId;
+        const orderReceipt = `rcpt_${customUniqueId}`;
 
-        // Path A: New client sending orderDetails
-        if (orderDetails && typeof orderDetails === "object") {
-            const {
-                pooja,
+        const {
+            pooja,
                 serviceId,
                 serviceType,
                 customer,
@@ -58,11 +58,24 @@ export const createPaymentOrder = async (req, res) => {
                 });
             }
 
-            if (!Array.isArray(participants) || participants.length === 0) {
+            const cleanParticipants = (participants || [])
+                .map((p) => ({ name: typeof p === "string" ? p.trim() : (p?.name || "").trim() }))
+                .filter((p) => p.name.length > 0);
+
+            if (cleanParticipants.length === 0) {
                 return res.status(400).json({
                     success: false,
-                    message: "At least one participant is required",
+                    message: "At least one participant with a valid name is required",
                 });
+            }
+
+            // Validate booking date if provided
+            let parsedBookingDate = new Date();
+            if (orderDetails.bookingDate) {
+                const candidate = new Date(orderDetails.bookingDate);
+                if (!isNaN(candidate.getTime())) {
+                    parsedBookingDate = candidate;
+                }
             }
 
             // Recompute price on server
@@ -72,7 +85,7 @@ export const createPaymentOrder = async (req, res) => {
                     serviceId,
                     serviceType,
                     packageId,
-                    participantsCount: participants.length,
+                    participantsCount: cleanParticipants.length,
                     offerings,
                     promoCode,
                     userId: authenticatedUserId,
@@ -84,7 +97,7 @@ export const createPaymentOrder = async (req, res) => {
                 });
             }
 
-            const clientTotal = orderDetails.pricing?.total ?? totalamount ?? amount;
+            const clientTotal = orderDetails.pricing?.total;
             if (clientTotal !== undefined && clientTotal !== null) {
                 const clientVal = Number(clientTotal);
                 if (Math.abs(clientVal - pricingCalculation.finalAmount) > 0.01) {
@@ -96,13 +109,22 @@ export const createPaymentOrder = async (req, res) => {
             }
 
             // Create Razorpay Order
-            const razorpayOrder = await createRazorpayOrder({
-                amount: pricingCalculation.finalAmount,
-                receipt: orderReceipt,
-                notes: {
-                    uniqueId: customUniqueId,
-                },
-            });
+            let razorpayOrder;
+            try {
+                razorpayOrder = await createRazorpayOrder({
+                    amount: pricingCalculation.finalAmount,
+                    receipt: orderReceipt,
+                    notes: {
+                        uniqueId: customUniqueId,
+                    },
+                });
+            } catch (rzpErr) {
+                console.error("Razorpay order creation error:", rzpErr.message);
+                return res.status(502).json({
+                    success: false,
+                    message: "Payment gateway error creating order. Please try again.",
+                });
+            }
 
             // Create pending Order in Mongo
             let createdOrder;
@@ -110,19 +132,17 @@ export const createPaymentOrder = async (req, res) => {
                 createdOrder = await Order.create({
                     pooja: pooja || itemName || "Sacred Ritual",
                     serviceId: serviceId || null,
-                    serviceType: serviceType || "Pooja",
+                    serviceType: pricingCalculation.serviceType || serviceType || "POOJA",
                     customer: authenticatedUserId,
                     customerName: customerName || "Devotee",
                     itemName: itemName || pooja || "Sacred Ritual",
                     mobileNumber: mobileNumber || "",
                     whatsappNumber: String(whatsappNumber).trim(),
-                    participants: participants.map((p) => ({
-                        name: typeof p === "string" ? p.trim() : (p.name || "").trim(),
-                    })),
+                    participants: cleanParticipants,
                     gotra: gotra || "Kashyapa",
                     doesNotKnowGotra: Boolean(doesNotKnowGotra),
                     wish: wish || "",
-                    bookingDate: orderDetails.bookingDate ? new Date(orderDetails.bookingDate) : new Date(),
+                    bookingDate: parsedBookingDate,
                     razorpayOrderId: razorpayOrder.id,
                     uniqueId: customUniqueId,
                     promoCode: promoCode || "",
@@ -165,13 +185,6 @@ export const createPaymentOrder = async (req, res) => {
                     orderNumber: createdOrder.orderNumber,
                 },
             });
-        }
-
-        // Path B removed: arbitrary client amount not permitted
-        return res.status(400).json({
-            success: false,
-            message: "orderDetails are required to create a payment order",
-        });
     } catch (error) {
         console.error("Create Payment Order Error:", error);
         return res.status(500).json({
@@ -216,23 +229,20 @@ export const verifyPayment = async (req, res) => {
             fetchedPayment = await fetchRazorpayPayment(razorpayPaymentId);
         } catch (fetchErr) {
             console.error(`[verifyPayment] Razorpay API error fetching payment ${razorpayPaymentId}:`, fetchErr.message);
-            return res.status(502).json({
+            return res.status(202).json({
                 success: false,
-                message: "Unable to verify payment with payment gateway. Please try again or contact support.",
+                status: "inconclusive",
+                message: "Payment verification is in progress with the payment gateway. Please check status shortly.",
+                data: { razorpayOrderId, razorpayPaymentId },
             });
         }
 
         if (!fetchedPayment || !fetchedPayment.amount) {
-            return res.status(502).json({
+            return res.status(202).json({
                 success: false,
-                message: "Payment gateway returned invalid payment details.",
-            });
-        }
-
-        if (fetchedPayment.status !== "captured" && fetchedPayment.status !== "authorized") {
-            return res.status(400).json({
-                success: false,
-                message: "Payment not completed",
+                status: "inconclusive",
+                message: "Payment gateway returned pending payment details. Status check in progress.",
+                data: { razorpayOrderId, razorpayPaymentId },
             });
         }
 
@@ -246,36 +256,88 @@ export const verifyPayment = async (req, res) => {
             });
         }
 
-        if (req.user?.role !== "admin" && String(existingOrder.customer) !== String(req.user?.id)) {
+        if (req.user && req.user.role !== "admin" && String(existingOrder.customer) !== String(req.user.id)) {
             return res.status(403).json({
                 success: false,
-                message: "Forbidden",
+                message: "Forbidden: access denied to requested order",
             });
         }
 
-        const paymentPayload = fetchedPayment;
+        const paymentStatus = fetchedPayment.status;
 
-        const markResult = await markOrderPaid({ payment: paymentPayload });
+        if (paymentStatus === "captured") {
+            const markResult = await markOrderPaid({ payment: fetchedPayment });
 
-        if (markResult.status === "amount_mismatch") {
-            return res.status(409).json({
+            if (markResult.status === "amount_mismatch") {
+                return res.status(409).json({
+                    success: false,
+                    message: "Payment amount mismatch with order",
+                });
+            }
+
+            const finalizedOrder = markResult.order || existingOrder;
+
+            return res.status(200).json({
+                success: true,
+                status: "captured",
+                message: "Payment verified successfully",
+                data: {
+                    razorpayOrderId,
+                    razorpayPaymentId,
+                    orderId: finalizedOrder._id,
+                    orderNumber: finalizedOrder.orderNumber,
+                },
+            });
+        } else if (paymentStatus === "authorized") {
+            await Order.updateOne(
+                { _id: existingOrder._id, paymentStatus: { $ne: "paid" } },
+                {
+                    $set: {
+                        paymentStatus: "authorized",
+                        orderStatus: "confirmed",
+                        "paymentDetails.transactionId": razorpayPaymentId,
+                        "paymentDetails.paymentMethod": fetchedPayment.method || "Razorpay",
+                        "paymentDetails.paymentDate": new Date(),
+                    },
+                }
+            );
+
+            return res.status(200).json({
+                success: true,
+                status: "authorized",
+                message: "Payment authorized successfully",
+                data: {
+                    razorpayOrderId,
+                    razorpayPaymentId,
+                    orderId: existingOrder._id,
+                    orderNumber: existingOrder.orderNumber,
+                },
+            });
+        } else if (paymentStatus === "failed") {
+            await Order.updateOne(
+                { _id: existingOrder._id, paymentStatus: { $ne: "paid" } },
+                { $set: { paymentStatus: "failed" } }
+            );
+
+            return res.status(400).json({
                 success: false,
-                message: "Payment amount mismatch with order",
+                status: "failed",
+                message: fetchedPayment.error_description || "Payment failed at bank or gateway",
+            });
+        } else {
+            // "pending" or unknown status: return 202 to guide client to bounded polling
+            return res.status(202).json({
+                success: false,
+                status: "pending",
+                message: "Payment is currently processing at payment gateway",
+                data: {
+                    razorpayOrderId,
+                    razorpayPaymentId,
+                    orderId: existingOrder._id,
+                    orderNumber: existingOrder.orderNumber,
+                },
             });
         }
-
-        const finalizedOrder = markResult.order || existingOrder;
-
-        return res.status(200).json({
-            success: true,
-            message: "Payment verified successfully",
-            data: {
-                razorpayOrderId,
-                razorpayPaymentId,
-                orderId: finalizedOrder._id,
-                orderNumber: finalizedOrder.orderNumber,
-            },
-        });
     } catch (error) {
         console.error("Verify Payment Error:", error);
         return res.status(500).json({
@@ -283,4 +345,4 @@ export const verifyPayment = async (req, res) => {
             message: "Payment verification failed",
         });
     }
-};
+};

@@ -8,7 +8,7 @@ export const updateWishList = async (req, res) => {
     try {
         const userId = req.user?.role === "admin" && req.body?.userId
             ? req.body?.userId
-            : (req.user?.id || req.body?.userId);
+            : req.user?.id;
         const { serviceId } = req.body;
 
         // Validate user ID
@@ -117,7 +117,7 @@ export const getWishlist = async (req, res) => {
     try {
         const userId = req.user?.role === "admin" && req.params?.userId
             ? req.params?.userId
-            : (req.user?.id || req.params?.userId);
+            : req.user?.id;
 
         if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
             return res.status(400).json({

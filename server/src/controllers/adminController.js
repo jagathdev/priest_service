@@ -7,12 +7,18 @@ import Admin from "../models/Admin.js";
 import { escapeRegex } from "../utils/escapeRegex.js";
 export const adminLogin = async (req, res) => {
   try {
-    const { email, password } = req.body;
-    if (!email || !password) {
-      return res.status(400).json({ success: false, message: "Email and password are required" });
+    const { email, password } = req.body || {};
+    if (!email || !password || typeof email !== "string" || typeof password !== "string") {
+      return res.status(400).json({ success: false, message: "Valid email and password are required" });
     }
 
-    const admin = await Admin.findOne({ email });
+    const cleanEmail = email.trim().toLowerCase();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(cleanEmail)) {
+      return res.status(400).json({ success: false, message: "Invalid email format" });
+    }
+
+    const admin = await Admin.findOne({ email: cleanEmail });
     if (!admin) {
       return res.status(401).json({ success: false, message: "Invalid email or password" });
     }
@@ -38,7 +44,7 @@ export const adminLogin = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error("Admin login error:", error);
+    console.error("Admin login error:", error.message);
     return res.status(500).json({ success: false, message: "Failed to login" });
   }
 };

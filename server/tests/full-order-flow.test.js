@@ -5,6 +5,7 @@ import request from "supertest";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 
+import jwt from "jsonwebtoken";
 import app, { RAZORPAY_WEBHOOK_PATH } from "../src/app.js";
 import Order from "../src/models/Order.js";
 import Payment from "../src/models/Payment.js";
@@ -12,15 +13,50 @@ import WebhookEvent from "../src/models/WebhookEvent.js";
 import Puja from "../src/models/pujaModel.js";
 import paymentRouter from "../src/routes/payment.routes.js";
 import { toPaise } from "../src/utils/currency.js";
+import { setRazorpayInstance, resetRazorpayInstance } from "../src/services/payment.service.js";
 
 dotenv.config();
 
 test("Comprehensive Razorpay Webhook & Order Flow Integration Suite", async (t) => {
-    const mongoUri = process.env.MONGO_URI || process.env.MONGODB_URI;
+    const baseUri = process.env.TEST_MONGO_URI || process.env.MONGO_URI || process.env.MONGODB_URI;
+    // Always use an isolated test database so production data is never touched
+    const mongoUri = baseUri.replace(/\/([a-zA-Z0-9_-]+)(\?|$)/, '/$1_test$2');
     const testSecret = "test_webhook_secret_flow_123";
     process.env.RAZORPAY_WEBHOOK_SECRET = testSecret;
 
-    // Connect to database before running suite
+    // Mock Razorpay API so real external calls are never made during tests
+    setRazorpayInstance({
+        orders: {
+            create: async (params) => ({
+                id: `order_mock_${Date.now()}`,
+                entity: "order",
+                amount: params.amount,
+                currency: params.currency || "INR",
+                receipt: params.receipt,
+                notes: params.notes,
+                status: "created",
+            }),
+        },
+        payments: {
+            fetch: async (id) => {
+                const searchKey = id.replace(/^pay_/, "");
+                const order = await Order.findOne({
+                    razorpayOrderId: new RegExp(searchKey, "i")
+                });
+                return {
+                    id,
+                    entity: "payment",
+                    order_id: order?.razorpayOrderId || id.replace(/^pay_/, "order_"),
+                    amount: order ? toPaise(order.pricing?.total) : 110000,
+                    currency: "INR",
+                    status: "captured",
+                    method: "card",
+                };
+            },
+        },
+    });
+
+    // Connect to isolated test database before running suite
     await mongoose.connect(mongoUri);
 
     const testTag = `TEST_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
@@ -48,6 +84,7 @@ test("Comprehensive Razorpay Webhook & Order Flow Integration Suite", async (t) 
         await Order.deleteMany({ itemName: new RegExp(testTag) }).catch(() => {});
         await Payment.deleteMany({ razorpayPaymentId: new RegExp(testTag) }).catch(() => {});
         await WebhookEvent.deleteMany({ eventId: new RegExp(testTag) }).catch(() => {});
+        resetRazorpayInstance();
         await mongoose.disconnect().catch(() => {});
     });
 
@@ -271,10 +308,16 @@ test("Comprehensive Razorpay Webhook & Order Flow Integration Suite", async (t) 
 
     await t.test("create-order tests", async (t2) => {
         const dummyCustomerId = new mongoose.Types.ObjectId();
+        const testAuthToken = jwt.sign(
+            { id: dummyCustomerId.toString(), role: "user" },
+            process.env.JWT_SECRET || "test_jwt_secret_must_be_at_least_32_chars_long_12345",
+            { expiresIn: "1h" }
+        );
 
         await t2.test("create-order with orderDetails creates pending order with server price", async () => {
             const res = await request(app)
                 .post("/api/payments/create-order")
+                .set("Authorization", `Bearer ${testAuthToken}`)
                 .send({
                     orderDetails: {
                         pooja: `Vedic Puja ${testTag}`,
@@ -306,6 +349,7 @@ test("Comprehensive Razorpay Webhook & Order Flow Integration Suite", async (t) 
         await t2.test("tampered client price -> 400", async () => {
             const res = await request(app)
                 .post("/api/payments/create-order")
+                .set("Authorization", `Bearer ${testAuthToken}`)
                 .send({
                     orderDetails: {
                         pooja: `Vedic Puja ${testTag}`,
@@ -326,16 +370,16 @@ test("Comprehensive Razorpay Webhook & Order Flow Integration Suite", async (t) 
             assert.match(res.body.message, /Price mismatch/i);
         });
 
-        await t2.test("without orderDetails (old client) -> old behavior", async () => {
+        await t2.test("without orderDetails (Path B removed) -> returns 400", async () => {
             const res = await request(app)
                 .post("/api/payments/create-order")
+                .set("Authorization", `Bearer ${testAuthToken}`)
                 .send({
                     amount: 501,
                 });
 
-            assert.equal(res.status, 200);
-            assert.ok(res.body.data.orderId);
-            assert.equal(res.body.data.dbOrderId, undefined);
+            assert.equal(res.status, 400);
+            assert.match(res.body.message, /orderDetails are required/i);
         });
     });
 
@@ -663,39 +707,26 @@ test("Comprehensive Razorpay Webhook & Order Flow Integration Suite", async (t) 
         assert.equal(res.status, 200);
     });
 
-    // 13. verify with no pending order (old client fallback) still creates it
-    await t.test("verify with no pending order (old client) -> still creates it", async () => {
-        const oldClientOrderId = `order_oldclient_${testTag}`;
-        const oldClientPayId = `pay_oldclient_${testTag}`;
+    // 13. verify with no pending order -> returns 404 (manual order creation removed)
+    await t.test("verify with no pending order -> returns 404", async () => {
+        const unknownOrderId = `order_unknown_${testTag}`;
+        const unknownPayId = `pay_unknown_${testTag}`;
 
         const validSig = crypto
             .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
-            .update(`${oldClientOrderId}|${oldClientPayId}`)
+            .update(`${unknownOrderId}|${unknownPayId}`)
             .digest("hex");
 
         const res = await request(app)
             .post("/api/payments/verify")
             .send({
-                razorpayOrderId: oldClientOrderId,
-                razorpayPaymentId: oldClientPayId,
+                razorpayOrderId: unknownOrderId,
+                razorpayPaymentId: unknownPayId,
                 razorpaySignature: validSig,
-                orderDetails: {
-                    pooja: `Old Client Puja ${testTag}`,
-                    customer: new mongoose.Types.ObjectId(),
-                    customerName: "Old Devotee",
-                    whatsappNumber: "919876543210",
-                    participants: [{ name: "Old Devotee" }],
-                    pricing: { total: 1100 },
-                },
             });
 
-        assert.equal(res.status, 200);
-        assert.ok(res.body.data.orderId);
-
-        const createdOldOrder = await Order.findById(res.body.data.orderId);
-        assert.ok(createdOldOrder);
-        assert.equal(createdOldOrder.paymentStatus, "paid");
-        assert.equal(createdOldOrder.razorpayOrderId, oldClientOrderId);
+        assert.equal(res.status, 404);
+        assert.equal(res.body.message, "Order not found for the provided payment.");
     });
 
     // 14. status endpoint returns the right state and exposes no PII
@@ -754,7 +785,10 @@ test("Comprehensive Razorpay Webhook & Order Flow Integration Suite", async (t) 
             bookingDate: new Date(),
         });
 
-        const res = await request(app).get(`/api/orders/user/${testUserOid}`);
+        const userToken = jwt.sign({ id: testUserOid.toString(), role: "user" }, process.env.JWT_SECRET || "test_jwt_secret_must_be_at_least_32_chars_long_12345", { expiresIn: "1h" });
+        const res = await request(app)
+            .get(`/api/orders/user/${testUserOid}`)
+            .set("Authorization", `Bearer ${userToken}`);
         assert.equal(res.status, 200);
         assert.equal(res.body.data.length, 1);
         assert.equal(res.body.data[0].paymentStatus, "paid");
@@ -763,6 +797,7 @@ test("Comprehensive Razorpay Webhook & Order Flow Integration Suite", async (t) 
     // 16. offerings calculation on server in create-order
     await t.test("offerings are properly verified and calculated by backend in create-order", async () => {
         const devoteeUserOid = new mongoose.Types.ObjectId();
+        const devoteeToken = jwt.sign({ id: devoteeUserOid.toString(), role: "user" }, process.env.JWT_SECRET || "test_jwt_secret_must_be_at_least_32_chars_long_12345", { expiresIn: "1h" });
         // Individual Seva = 1251
         // Extra participant (2 participants for 1-devotee package) = +300
         // Offerings: Vastra Daan (501) + Kumkum Archana (101) = +602
@@ -772,6 +807,7 @@ test("Comprehensive Razorpay Webhook & Order Flow Integration Suite", async (t) 
         // 16a. Mismatch should fail if client passes incorrect price
         const mismatchRes = await request(app)
             .post("/api/payments/create-order")
+            .set("Authorization", `Bearer ${devoteeToken}`)
             .send({
                 customerId: devoteeUserOid,
                 totalamount: 1251, // Omitting offerings and extra participant
@@ -800,6 +836,7 @@ test("Comprehensive Razorpay Webhook & Order Flow Integration Suite", async (t) 
         // 16b. Correct price succeeds, creates order with offerings and offeringsAmount
         const successRes = await request(app)
             .post("/api/payments/create-order")
+            .set("Authorization", `Bearer ${devoteeToken}`)
             .send({
                 customerId: devoteeUserOid,
                 totalamount: expectedTotal,

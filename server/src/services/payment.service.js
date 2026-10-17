@@ -4,6 +4,14 @@ import { toPaise } from "../utils/currency.js";
 
 let razorpayInstance = null;
 
+export function setRazorpayInstance(mockInstance) {
+    razorpayInstance = mockInstance;
+}
+
+export function resetRazorpayInstance() {
+    razorpayInstance = null;
+}
+
 function getRazorpay() {
     if (!razorpayInstance) {
         razorpayInstance = new Razorpay({

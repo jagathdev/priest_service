@@ -39,7 +39,7 @@ export const sendOtp = async (req, res) => {
             data: result,
         });
     } catch (error) {
-        console.error("Send OTP Error:", error);
+        console.error("Send OTP Error:", error.message);
 
         return res.status(error.statusCode || 500).json({
             success: false,
@@ -104,27 +104,6 @@ export const verifyOtp = async (req, res) => {
         }
 
         // ==========================================
-        // CHECK OTP ALREADY VERIFIED
-        // ==========================================
-
-        if (otpRecord.verified) {
-            // Already verified, proceed to login flow
-        }
-
-
-        // ==========================================
-        // CHECK ATTEMPT LIMIT (max 5)
-        // ==========================================
-
-        if ((otpRecord.attempts || 0) >= 5) {
-            await Otp.deleteOne({ _id: otpRecord._id });
-            return res.status(400).json({
-                success: false,
-                message: "Maximum OTP verification attempts exceeded. Please request a new OTP.",
-            });
-        }
-
-        // ==========================================
         // CHECK OTP EXPIRY
         // ==========================================
 
@@ -141,38 +120,51 @@ export const verifyOtp = async (req, res) => {
         }
 
         // ==========================================
-        // CHECK OTP HASH
+        // CONCURRENCY-SAFE ATTEMPT INCREMENT (max 5)
+        // ==========================================
+
+        const updatedOtp = await Otp.findOneAndUpdate(
+            { _id: otpRecord._id, attempts: { $lt: 5 } },
+            { $inc: { attempts: 1 } },
+            { returnDocument: "after" }
+        );
+
+        if (!updatedOtp || updatedOtp.attempts > 5) {
+            await Otp.deleteOne({ _id: otpRecord._id });
+            return res.status(400).json({
+                success: false,
+                message: "Maximum OTP verification attempts exceeded. Please request a new OTP.",
+            });
+        }
+
+        // ==========================================
+        // TIMING-SAFE HASH COMPARISON
         // ==========================================
 
         const enteredOtpHash = crypto.createHash("sha256").update(enteredOtp).digest("hex");
-        const storedHash = otpRecord.otp;
-        const matches = (storedHash === enteredOtp || storedHash === enteredOtpHash);
+        const storedHash = String(updatedOtp.otp || "");
+        let isMatch = false;
 
-        if (!matches) {
-            const updatedAttempts = (otpRecord.attempts || 0) + 1;
-            if (updatedAttempts >= 5) {
-                await Otp.deleteOne({ _id: otpRecord._id });
+        if (storedHash.length === 64) {
+            const bufStored = Buffer.from(storedHash, "utf-8");
+            const bufEntered = Buffer.from(enteredOtpHash, "utf-8");
+            isMatch = crypto.timingSafeEqual(bufStored, bufEntered);
+        }
+
+        if (!isMatch) {
+            const remainingAttempts = Math.max(0, 5 - updatedOtp.attempts);
+            if (remainingAttempts === 0) {
+                await Otp.deleteOne({ _id: updatedOtp._id });
                 return res.status(400).json({
                     success: false,
                     message: "Maximum OTP verification attempts exceeded. Please request a new OTP.",
                 });
-            } else {
-                otpRecord.attempts = updatedAttempts;
-                await otpRecord.save();
-                return res.status(400).json({
-                    success: false,
-                    message: `Invalid OTP. ${5 - updatedAttempts} attempt(s) remaining.`,
-                });
             }
+            return res.status(400).json({
+                success: false,
+                message: `Invalid OTP. ${remainingAttempts} attempt(s) remaining.`,
+            });
         }
-
-        // ==========================================
-        // OTP VERIFIED
-        // ==========================================
-
-        otpRecord.verified = true;
-
-        await otpRecord.save();
 
         // ==========================================
         // FIND USER

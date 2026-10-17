@@ -33,12 +33,25 @@ process.on('uncaughtException', (err) => {
     process.exit(1);
 });
 
+import mongoose from 'mongoose';
+
 // Graceful Shutdown
+let isShuttingDown = false;
 const gracefulShutdown = () => {
+    if (isShuttingDown) return;
+    isShuttingDown = true;
     console.log('Received kill signal, shutting down gracefully.');
-    server.close(() => {
-        console.log('Closed out remaining connections.');
-        process.exit(0);
+
+    server.close(async () => {
+        console.log('Closed out remaining HTTP connections.');
+        try {
+            await mongoose.connection.close(false);
+            console.log('MongoDB connection closed cleanly.');
+            process.exit(0);
+        } catch (err) {
+            console.error('Error closing MongoDB connection during shutdown:', err);
+            process.exit(1);
+        }
     });
 
     // Force close after 10 seconds
