@@ -531,6 +531,12 @@ Comprehensive documentation for all REST API endpoints configured and mounted in
 - **Endpoint:** `/api/otp/sendOtp`
 - **Method:** `POST`
 - **Auth Required:** No
+- **Rate Limit:** `otpSendLimiter` (Max 5 requests per 10-minute window per IP + mobile key)
+- **Security & Constraints:**
+  - Enforces a 60-second cooldown between successive OTP requests for the same mobile number.
+  - Generates cryptographically secure 6-digit numeric OTPs.
+  - OTP values are securely hashed with SHA-256 before storage in MongoDB; plaintext OTP is never logged or stored.
+  - SMS gateway credentials and gateway URLs are masked/redacted in backend logs.
 - **Payload:**
 ```json
 {
@@ -552,6 +558,12 @@ Comprehensive documentation for all REST API endpoints configured and mounted in
 - **Endpoint:** `/api/otp/verifyOtp`
 - **Method:** `POST`
 - **Auth Required:** No
+- **Rate Limit:** `otpVerifyLimiter` (Max 10 requests per 10-minute window per IP + mobile key)
+- **Security & Constraints:**
+  - Verifies OTP using timing-safe SHA-256 hash comparison (`crypto.timingSafeEqual`) to prevent timing attacks.
+  - Atomic attempt counter via MongoDB `$inc: { attempts: 1 }`.
+  - Maximum 5 failed verification attempts allowed; exceeding 5 attempts immediately locks out and deletes the OTP record.
+  - OTP expires automatically after 10 minutes (enforced via MongoDB TTL and server validation).
 - **Payload:**
 ```json
 {
@@ -627,6 +639,8 @@ Comprehensive documentation for all REST API endpoints configured and mounted in
 - **Endpoint:** `/api/users/profile/:userId`
 - **Method:** `GET`
 - **Auth Required:** Yes (`Authorization: Bearer <user_token>`)
+- **Security & Authorization:**
+  - Enforces resource ownership / IDOR prevention: Non-admin users can only retrieve their own profile matching `req.user.id`. Requesting another user's profile returns `403 Forbidden`.
 - **Payload:** None
 - **Response:** `200 OK`
 ```json
@@ -649,7 +663,10 @@ Comprehensive documentation for all REST API endpoints configured and mounted in
 ### 7.3 Update User Profile
 - **Endpoint:** `/api/users/updateProfile`
 - **Method:** `PUT`
-- **Auth Required:** Optional (`Authorization: Bearer <user_token>` or provide `userId` directly in body)
+- **Auth Required:** Yes (`Authorization: Bearer <user_token>`)
+- **Security & Validation:**
+  - IDOR Protection: Profile updates are strictly pinned to the authenticated user (`req.user.id`). Non-admin users cannot update another user's profile.
+  - Strict Email Validation: Enforces genuine email format regex (`/^[^\s@]+@[^\s@]+\.[^\s@]+$/`). Fabricated placeholder emails are rejected with `400 Bad Request`.
 - **Payload:**
 ```json
 {
@@ -796,9 +813,12 @@ Comprehensive documentation for all REST API endpoints configured and mounted in
 ```
 
 ### 8.3 Get Orders for User
-- **Endpoint:** `/api/orders/user/:userId`
+- **Endpoint:** `/api/orders/user` (or `/api/orders/user/:userId`)
 - **Method:** `GET`
-- **Auth Required:** No
+- **Auth Required:** Yes (`Authorization: Bearer <user_token>`)
+- **Security & Authorization:**
+  - Retrieves orders strictly using the verified account identifier (`customer: req.user.id`), eliminating customer-entered phone regex lookups (IDOR prevention).
+  - Unpaid or abandoned orders (`paymentStatus: "pending"`) are filtered out from user order history until successful payment confirmation.
 - **Payload:** None
 - **Response:** `200 OK`
 ```json
@@ -850,11 +870,12 @@ Comprehensive documentation for all REST API endpoints configured and mounted in
 ### 9.1 Add / Remove Item from Wishlist
 - **Endpoint:** `/api/wishlist/updateWishlist`
 - **Method:** `POST`
-- **Auth Required:** No
+- **Auth Required:** Yes (`Authorization: Bearer <user_token>`)
+- **Security & Authorization:**
+  - Wishlist mutations are strictly pinned to the authenticated user (`req.user.id`).
 - **Payload:**
 ```json
 {
-  "userId": "6abd0358cd62648ac4fa1c4a",
   "itemId": "60d5ecb8b392d700153f93c2",
   "action": "add"
 }
@@ -873,9 +894,11 @@ Comprehensive documentation for all REST API endpoints configured and mounted in
 ```
 
 ### 9.2 Get Wishlist by User ID
-- **Endpoint:** `/api/wishlist/:userId`
+- **Endpoint:** `/api/wishlist` (or `/api/wishlist/:userId`)
 - **Method:** `GET`
-- **Auth Required:** No
+- **Auth Required:** Yes (`Authorization: Bearer <user_token>`)
+- **Security & Authorization:**
+  - Pinned to `req.user.id`. Non-admin users cannot read or modify another user's wishlist.
 - **Payload:** None
 - **Response:** `200 OK`
 ```json
@@ -939,21 +962,18 @@ Comprehensive documentation for all REST API endpoints configured and mounted in
 - **Endpoint:** `/api/payments/create-order`
 - **Method:** `POST`
 - **Auth Required:** No
-- **Description:** Validates order details, calculates server-verified prices for package, extra participants, offerings, and promo codes, generates Razorpay order, and creates a pending `Order` record in MongoDB.
+- **Security & Constraints:**
+  - `orderDetails` object is **strictly mandatory**. Path B (arbitrary direct amount without orderDetails) is completely removed; omitting `orderDetails` returns `400 Bad Request`.
+  - Server-side price calculation: The server recomputes prices using `computeServerPrice` based on package base price, per-extra participant fee (₹200), validated offerings, and validated promo discounts.
+  - Generates a cryptographically random receipt identifier on the server (`rcpt_<HEX>`).
+  - Automatically creates a pending `Order` record in MongoDB with `paymentStatus: "pending"`, `orderStatus: "created"`.
 - **Payload:**
 ```json
 {
-  "customerId": "6abd0358cd62648ac4fa1c4a",
-  "currencyCode": "INR",
-  "shoppingCartId": 0,
-  "serviceId": "6abd0362cd62648ac4fa1c4b",
-  "packageId": "pkg-1",
-  "promoCode": "FESTIVE50",
-  "totalamount": 2153,
   "orderDetails": {
     "pooja": "Rameshwaram Tharpanam",
     "serviceId": "6abd0362cd62648ac4fa1c4b",
-    "serviceType": "Pooja",
+    "serviceType": "POOJA",
     "customer": "6abd0358cd62648ac4fa1c4a",
     "customerName": "Jagathratchagan",
     "itemName": "Rameshwaram Tharpanam",
@@ -967,7 +987,6 @@ Comprehensive documentation for all REST API endpoints configured and mounted in
     "doesNotKnowGotra": false,
     "wish": "Peace and good health",
     "promoCode": "FESTIVE50",
-    "promoCodeId": "670985123456789abcdef012",
     "packageId": "pkg-1",
     "offerings": [
       {
@@ -983,14 +1002,12 @@ Comprehensive documentation for all REST API endpoints configured and mounted in
         "imageUrl": ""
       }
     ],
-    "originalAmount": 2153,
-    "discountAmount": 0,
     "pricing": {
       "basePrice": 1251,
       "extraParticipantCount": 1,
-      "extraParticipantAmount": 300,
+      "extraParticipantAmount": 200,
       "offeringsAmount": 602,
-      "total": 2153
+      "total": 2053
     }
   }
 }
@@ -1002,12 +1019,14 @@ Comprehensive documentation for all REST API endpoints configured and mounted in
   "message": "Payment order created successfully",
   "data": {
     "orderId": "order_TjGKDZrwmLS1kA",
-    "amount": 215300,
+    "amount": 205300,
     "currency": "INR",
     "notes": {
       "uniqueId": "A1B2C3D4E5F67890"
     },
-    "keyId": "rzp_test_xxxxxx"
+    "keyId": "rzp_test_xxxxxx",
+    "dbOrderId": "6ac06417d6fcac10cf339e5c",
+    "orderNumber": "ORD-123456-7890"
   }
 }
 ```
@@ -1016,50 +1035,43 @@ Comprehensive documentation for all REST API endpoints configured and mounted in
 - **Endpoint:** `/api/payments/verify`
 - **Method:** `POST`
 - **Auth Required:** No
-- **Description:** Verifies HMAC-SHA256 signature from Razorpay checkout. Races safely with the webhook via `markOrderPaid`. Transitions pending order to `paid`/`confirmed` and sends WhatsApp confirmation.
+- **Security & Constraints:**
+  - Verifies HMAC-SHA256 signature against Razorpay key secret.
+  - Fetches original payment status directly from Razorpay gateway API (`fetchRazorpayPayment`).
+  - No manual order creation fallback: If no pending order exists for `razorpayOrderId`, returns `404 Not Found` (`"Order not found for the provided payment."`).
+  - **Authentic Razorpay status conversion**:
+    - **`captured`**: Atomically transitions order to `paid` / `confirmed` via `markOrderPaid`. Returns `200 OK`.
+    - **`authorized`**: Updates order to `authorized`. Returns `200 OK`.
+    - **`failed`**: Does **NOT** convert the order to paid. Updates order `paymentStatus: "failed"` and returns `400 Bad Request` with `status: "failed"` and the gateway decline reason.
+    - **`pending` / `inconclusive`**: Returns `202 Accepted` with `status: "pending"` to guide client to bounded polling.
 - **Payload:**
 ```json
 {
   "razorpayOrderId": "order_TjGKDZrwmLS1kA",
   "razorpayPaymentId": "pay_TjGKajdznC2zO8",
-  "razorpaySignature": "457b1f686661120c09ba6b0db4794ce1a98ad8e3b8c1fa5e4d90bbda793e6983",
-  "orderDetails": {
-    "pooja": "Rameshwaram Tharpanam",
-    "serviceId": "6abd0362cd62648ac4fa1c4b",
-    "serviceType": "Pooja",
-    "customer": "6abd0358cd62648ac4fa1c4a",
-    "customerName": "Jagathratchagan",
-    "whatsappNumber": "919360270984",
-    "mobileNumber": "9360270984",
-    "participants": [
-      { "name": "Jagath" },
-      { "name": "Friend" }
-    ],
-    "offerings": [
-      { "name": "Vastra Daan", "priceINR": 501 },
-      { "name": "Kumkum Archana", "priceINR": 101 }
-    ],
-    "pricing": {
-      "basePrice": 1251,
-      "extraParticipantCount": 1,
-      "extraParticipantAmount": 300,
-      "offeringsAmount": 602,
-      "total": 2153
-    }
-  }
+  "razorpaySignature": "457b1f686661120c09ba6b0db4794ce1a98ad8e3b8c1fa5e4d90bbda793e6983"
 }
 ```
-- **Response:** `200 OK`
+- **Response (Captured Payment):** `200 OK`
 ```json
 {
   "success": true,
+  "status": "captured",
   "message": "Payment verified successfully",
   "data": {
     "razorpayOrderId": "order_TjGKDZrwmLS1kA",
     "razorpayPaymentId": "pay_TjGKajdznC2zO8",
     "orderId": "6ac06417d6fcac10cf339e5c",
-    "orderNumber": "PS-2026-000123"
+    "orderNumber": "ORD-123456-7890"
   }
+}
+```
+- **Response (Failed Payment):** `400 Bad Request`
+```json
+{
+  "success": false,
+  "status": "failed",
+  "message": "Payment failed at bank or gateway"
 }
 ```
 
@@ -1071,7 +1083,12 @@ Comprehensive documentation for all REST API endpoints configured and mounted in
   - `Content-Type: application/json`
   - `x-razorpay-signature: <hex-digest-of-raw-body-with-RAZORPAY_WEBHOOK_SECRET>`
   - `x-razorpay-event-id: <unique-event-id>`
-- **Description:** Production live webhook URL called by Razorpay servers on asynchronous payment events (`payment.captured`, `order.paid`, `payment.failed`). Uses raw-body HMAC SHA256 signature verification, idempotently logs into `WebhookEvent` and `Payment` models, finalizes orders via `markOrderPaid`, and triggers WhatsApp confirmation without risk of duplicate notifications.
+- **Security & Constraints:**
+  - Whitelisted from global rate limiting to prevent dropping webhook notifications.
+  - Raw-body buffer verification using `crypto.timingSafeEqual` to avoid timing attacks.
+  - Idempotent event processing: records `WebhookEvent` by `eventId`; duplicate events immediately return `200 OK`.
+  - Status downgrade protection: a late `payment.failed` event cannot overwrite an already `captured` payment.
+  - Converts orders strictly on `payment.captured` or `order.paid` via atomic `markOrderPaid`.
 - **Payload:** Standard Razorpay Webhook JSON payload
 ```json
 {
@@ -1084,7 +1101,7 @@ Comprehensive documentation for all REST API endpoints configured and mounted in
       "entity": {
         "id": "pay_TjGKajdznC2zO8",
         "entity": "payment",
-        "amount": 215300,
+        "amount": 205300,
         "currency": "INR",
         "status": "captured",
         "order_id": "order_TjGKDZrwmLS1kA",
@@ -1101,8 +1118,7 @@ Comprehensive documentation for all REST API endpoints configured and mounted in
 ```json
 {
   "success": true,
-  "message": "Webhook processed successfully",
-  "event": "payment.captured"
+  "message": "Webhook processed successfully"
 }
 ```
 
@@ -1145,12 +1161,16 @@ Comprehensive documentation for all REST API endpoints configured and mounted in
 - **Endpoint:** `/api/promos/apply`
 - **Method:** `POST`
 - **Auth Required:** Yes (`Authorization: Bearer <user_token>`)
+- **Security & Case Normalization:**
+  - Service type casing: Accepts standard variations (`POOJA`, `HOMA`, `Puja`, `Homa`, `pooja`, `homa`) and normalizes canonically to `POOJA` or `HOMA`.
+  - Promo applicability: Checks if code is valid for `"ALL"`, `"POOJA"`, or `"HOMA"`.
+  - Validates active status, start/end dates, order minimum amount, total usage limits, and per-user limits.
 - **Payload:**
 ```json
 {
   "code": "FESTIVE50",
   "orderAmount": 2000,
-  "serviceType": "pooja",
+  "serviceType": "POOJA",
   "packageId": "6abd0362cd62648ac4fa1c4b",
   "userId": "6abd0358cd62648ac4fa1c4a"
 }
@@ -1357,7 +1377,9 @@ Comprehensive documentation for all REST API endpoints configured and mounted in
 ### 13.1 Register WhatsApp Opt-in
 - **Endpoint:** `/api/whatsapp/opt-in`
 - **Method:** `POST`
-- **Auth Required:** No
+- **Auth Required:** Yes (`Authorization: Bearer <user_token>`)
+- **Security & Authorization:**
+  - Enforces phone ownership: User can only register opt-in consent for their own verified mobile number. Providing a mobile number belonging to another devotee returns `403 Forbidden`.
 - **Payload:**
 ```json
 {
@@ -1377,10 +1399,30 @@ Comprehensive documentation for all REST API endpoints configured and mounted in
 }
 ```
 
-### 13.2 Send WhatsApp Order Confirmation
+### 13.2 Register WhatsApp Opt-out
+- **Endpoint:** `/api/whatsapp/opt-out`
+- **Method:** `POST`
+- **Auth Required:** Yes (`Authorization: Bearer <user_token>`)
+- **Security & Authorization:**
+  - Revokes WhatsApp notifications consent for the authenticated user and sets `optedOutAt` timestamp in MongoDB.
+- **Payload:**
+```json
+{
+  "mobileNumber": "9360270984"
+}
+```
+- **Response:** `200 OK`
+```json
+{
+  "success": true,
+  "message": "Customer opt-out registered"
+}
+```
+
+### 13.3 Send WhatsApp Order Confirmation
 - **Endpoint:** `/api/whatsapp/order-confirmation`
 - **Method:** `POST`
-- **Auth Required:** No
+- **Auth Required:** No (Internal / payment service triggered)
 - **Payload:**
 ```json
 {
@@ -1412,12 +1454,17 @@ Comprehensive documentation for all REST API endpoints configured and mounted in
 ### 14.1 Admin Login
 - **Endpoint:** `/api/admin/login`
 - **Method:** `POST`
-- **Auth Required:** No (Rate limited via `loginLimiter`)
+- **Auth Required:** No
+- **Rate Limit:** `loginLimiter` (Strict rate limit on consecutive attempts)
+- **Security & Input Sanitization:**
+  - Validates email format using regex; rejects malformed inputs with `400 Bad Request`.
+  - Enforces password string type check to prevent NoSQL operator injection.
+  - Issues dedicated `adminToken` with admin claim verification.
 - **Payload:**
 ```json
 {
   "email": "admin@astroved.com",
-  "password": "password123"
+  "password": "StrongAdminPassword123!"
 }
 ```
 - **Response:** `200 OK`
