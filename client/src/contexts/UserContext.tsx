@@ -75,19 +75,16 @@ export function UserProvider({ children, initialUser }: { children: ReactNode; i
   }, []);
 
   useEffect(() => {
-    const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
-    const secureSuffix = isHttps ? "; Secure; SameSite=Lax" : "; SameSite=Lax";
-
     if (user && Object.keys(user).length > 0 && (user.id || user._id || user.mobileNumber || user.email)) {
       localStorage.setItem("mockUser", JSON.stringify(user));
-      document.cookie = "mockUser=" + encodeURIComponent(JSON.stringify(user)) + "; path=/; max-age=604800" + secureSuffix;
-      document.cookie = "userLogin=true; path=/; max-age=604800" + secureSuffix;
+      document.cookie = "mockUser=" + encodeURIComponent(JSON.stringify(user)) + "; path=/; max-age=604800;";
+      document.cookie = "userLogin=true; path=/; max-age=604800;";
     } else if (user === null) {
       localStorage.removeItem("mockUser");
       localStorage.removeItem("token");
-      document.cookie = "mockUser=; path=/; max-age=0" + secureSuffix;
-      document.cookie = "token=; path=/; max-age=0" + secureSuffix;
-      document.cookie = "userLogin=false; path=/; max-age=0" + secureSuffix;
+      document.cookie = "mockUser=; path=/; max-age=0;";
+      document.cookie = "token=; path=/; max-age=0;";
+      document.cookie = "userLogin=false; path=/; max-age=0;";
     }
   }, [user]);
 
