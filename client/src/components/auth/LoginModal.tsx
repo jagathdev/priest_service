@@ -139,11 +139,13 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
       if (verifyRes.data && verifyRes.data.user) {
         const u = verifyRes.data.user;
         const authToken = verifyRes.data.token || (verifyRes as any).token;
+        const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
+        const secureSuffix = isHttps ? "; Secure; SameSite=Lax" : "; SameSite=Lax";
         if (authToken) {
           localStorage.setItem("token", authToken);
-          document.cookie = `token=${authToken}; path=/; max-age=604800;`;
+          document.cookie = `token=${authToken}; path=/; max-age=604800${secureSuffix};`;
         }
-        document.cookie = "userLogin=true; path=/; max-age=604800;";
+        document.cookie = `userLogin=true; path=/; max-age=604800${secureSuffix};`;
         localStorage.setItem("mockUser", JSON.stringify(u));
         setUser(u);
         handleClose();

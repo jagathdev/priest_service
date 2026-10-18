@@ -99,12 +99,14 @@ export default function OtpClient() {
       const res = await authService.verifyOtpLegacy({ ...otpPayload, otp: otpValue });
       if (res.data && res.data.user) {
         const authToken = res.data?.token || (res as any)?.token || (res as any)?.data?.token;
+        const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
+        const secureSuffix = isHttps ? "; Secure; SameSite=Lax" : "; SameSite=Lax";
         if (authToken) {
           localStorage.setItem("token", authToken);
-          document.cookie = `token=${authToken}; path=/; max-age=604800;`;
+          document.cookie = `token=${authToken}; path=/; max-age=604800${secureSuffix};`;
         }
         setUser(res.data.user);
-        document.cookie = "userLogin=true; path=/; max-age=" + 60 * 60 * 24 * 7;
+        document.cookie = `userLogin=true; path=/; max-age=${60 * 60 * 24 * 7}${secureSuffix};`;
         localStorage.setItem("mockUser", JSON.stringify(res.data.user));
         redirectAfterLogin();
       } else {
