@@ -2,6 +2,14 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 
+// Module-level in-memory token fallback so non-React helpers (like apiClient) can read it directly
+let inMemoryUserToken: string | null = null;
+
+export const getInMemoryUserToken = (): string | null => inMemoryUserToken;
+export const setInMemoryUserToken = (token: string | null) => {
+  inMemoryUserToken = token;
+};
+
 export interface User {
   id?: string;
   _id?: string;
@@ -18,76 +26,91 @@ export interface User {
 interface UserContextType {
   user: User | null;
   setUser: React.Dispatch<React.SetStateAction<User | null>>;
+  token: string | null;
+  setToken: (token: string | null) => void;
   isLoginModalOpen: boolean;
   openLoginModal: () => void;
   closeLoginModal: () => void;
+  isHydrated: boolean;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export function UserProvider({ children, initialUser }: { children: ReactNode; initialUser?: User | null }) {
-  const [user, setUser] = useState<User | null>(() => {
-    if (typeof window !== "undefined") {
-      try {
-        const stored = localStorage.getItem("mockUser");
-        let token = localStorage.getItem("token");
-        if (!token && typeof document !== "undefined") {
-          const match = document.cookie.match(/(?:^|;\s*)(?:token|adminToken)=([^;]+)/);
-          if (match && match[1]) token = decodeURIComponent(match[1]);
-        }
+  const [isHydrated, setIsHydrated] = useState(false);
+  const [user, setUser] = useState<User | null>(initialUser || null);
+  const [token, setTokenState] = useState<string | null>(null);
 
-        const isValidToken = token && token !== "undefined" && token !== "null" && token.trim() !== "";
+  const setToken = (newToken: string | null) => {
+    setTokenState(newToken);
+    setInMemoryUserToken(newToken);
+  };
 
-        if (!isValidToken) {
-          localStorage.removeItem("mockUser");
-          localStorage.removeItem("token");
-          document.cookie = "mockUser=; path=/; max-age=0;";
-          document.cookie = "token=; path=/; max-age=0;";
-          document.cookie = "userLogin=false; path=/; max-age=0;";
-          return null;
-        }
+  // Initialize user from localStorage / cookies on client mount
+  useEffect(() => {
+    try {
+      let token = localStorage.getItem("token") || localStorage.getItem("adminToken");
+      if (!token && typeof document !== "undefined") {
+        const match = document.cookie.match(/(?:^|;\s*)(?:token|adminToken)=([^;]+)/);
+        if (match && match[1]) token = decodeURIComponent(match[1]);
+      }
 
-        if (initialUser && (initialUser.id || initialUser._id)) {
-          return initialUser;
-        }
+      const isValidToken = typeof token === "string" && token.trim() !== "" && token !== "undefined" && token !== "null";
+      if (isValidToken && typeof token === "string") {
+        setToken(token.trim());
+      }
+      const stored = localStorage.getItem("mockUser");
 
-        if (stored) {
+      if (stored) {
+        try {
           const parsed = JSON.parse(stored);
           if (parsed && typeof parsed === "object" && (parsed.id || parsed._id || parsed.mobileNumber || parsed.email)) {
-            return parsed as User;
+            setUser(parsed as User);
+            setIsHydrated(true);
+            return;
           }
+        } catch (e) {
+          console.error("Error parsing stored mockUser:", e);
         }
-      } catch (e) {
-        console.error("Error reading stored user:", e);
       }
-      return null;
-    }
-    return initialUser || null;
-  });
 
+      if (!isValidToken && !initialUser) {
+        setUser(null);
+      } else if (initialUser && (initialUser.id || initialUser._id)) {
+        setUser(initialUser);
+      }
+    } catch (e) {
+      console.error("Error reading stored user on mount:", e);
+    } finally {
+      setIsHydrated(true);
+    }
+  }, [initialUser]);
 
   useEffect(() => {
     const handleUnauthorized = () => {
       setUser(null);
+      setToken(null);
     };
     window.addEventListener("auth:unauthorized", handleUnauthorized);
     return () => window.removeEventListener("auth:unauthorized", handleUnauthorized);
   }, []);
 
+  // Sync state changes back to storage and cookies only after hydration
   useEffect(() => {
+    if (!isHydrated) return;
+
     if (user && Object.keys(user).length > 0 && (user.id || user._id || user.mobileNumber || user.email)) {
       localStorage.setItem("mockUser", JSON.stringify(user));
-      document.cookie = "mockUser=" + encodeURIComponent(JSON.stringify(user)) + "; path=/; max-age=604800;";
-      document.cookie = "userLogin=true; path=/; max-age=604800;";
+      document.cookie = "mockUser=" + encodeURIComponent(JSON.stringify(user)) + "; path=/; max-age=604800; SameSite=Lax";
+      document.cookie = "userLogin=true; path=/; max-age=604800; SameSite=Lax";
     } else if (user === null) {
       localStorage.removeItem("mockUser");
       localStorage.removeItem("token");
-      document.cookie = "mockUser=; path=/; max-age=0;";
-      document.cookie = "token=; path=/; max-age=0;";
-      document.cookie = "userLogin=false; path=/; max-age=0;";
+      document.cookie = "mockUser=; path=/; max-age=0; SameSite=Lax";
+      document.cookie = "token=; path=/; max-age=0; SameSite=Lax";
+      document.cookie = "userLogin=false; path=/; max-age=0; SameSite=Lax";
     }
-  }, [user]);
-
+  }, [user, isHydrated]);
 
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
@@ -95,7 +118,7 @@ export function UserProvider({ children, initialUser }: { children: ReactNode; i
   const closeLoginModal = () => setIsLoginModalOpen(false);
 
   return (
-    <UserContext.Provider value={{ user, setUser, isLoginModalOpen, openLoginModal, closeLoginModal }}>
+    <UserContext.Provider value={{ user, setUser, token, setToken, isLoginModalOpen, openLoginModal, closeLoginModal, isHydrated }}>
       {children}
     </UserContext.Provider>
   );

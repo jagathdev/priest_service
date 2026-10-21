@@ -1,12 +1,26 @@
+import { getInMemoryUserToken } from "@/contexts/UserContext";
+
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://priestservices.astroved.com';
 
 export const getAuthToken = (): string | null => {
-  if (typeof window === 'undefined') return null;
-
   const isValidToken = (t: any): t is string =>
     typeof t === 'string' && t.trim() !== '' && t !== 'undefined' && t !== 'null';
 
-  // 1. Check localStorage for 'token' or 'adminToken'
+  // 1. Check in-memory UserContext token
+  try {
+    const memoryToken = getInMemoryUserToken();
+    if (isValidToken(memoryToken)) return memoryToken.trim();
+  } catch {
+    // context not ready
+  }
+
+  // 2. Check environment variable token if provided
+  const envAdminToken = process.env.NEXT_PUBLIC_ADMIN_TOKEN;
+  if (isValidToken(envAdminToken)) return envAdminToken.trim();
+
+  if (typeof window === 'undefined') return null;
+
+  // 3. Fallback: Check localStorage
   try {
     const localToken = localStorage.getItem('token');
     if (isValidToken(localToken)) return localToken.trim();
@@ -17,7 +31,7 @@ export const getAuthToken = (): string | null => {
     // localStorage might not be accessible
   }
 
-  // 2. Check document.cookie for 'token' or 'adminToken'
+  // 4. Fallback: Check document.cookie
   if (typeof document !== 'undefined') {
     const match = document.cookie.match(/(?:^|;\s*)(?:token|adminToken)=([^;]+)/);
     if (match && isValidToken(match[1])) {

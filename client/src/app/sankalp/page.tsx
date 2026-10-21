@@ -79,33 +79,21 @@ function SankalpContent() {
   useEffect(() => {
     async function loadUserProfile() {
       // Prioritize saved WhatsApp number first; if empty, fallback to user's mobile number
-      let whatsappPhone = userWhatsapp || searchParamsWa || userMobile || "";
+      let whatsappPhone = userWhatsapp || userMobile || searchParamsWa || "";
       let name = userName || searchParamsName || "";
 
-      const authToken = getAuthToken();
-      if (userId && authToken && !profileFetchedRef.current) {
+      if (userId && !profileFetchedRef.current) {
         profileFetchedRef.current = true;
         try {
-          const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
-          const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-          const headers: Record<string, string> = { "Content-Type": "application/json" };
-          if (token) headers["Authorization"] = `Bearer ${token}`;
-
-          const res = await fetch(`${baseUrl}/api/users/profile/${userId}`, {
-            headers,
-            credentials: "include",
-          });
-          if (res.ok) {
-            const data = await res.json();
-            if (data.success && data.data) {
-              if (data.data.whatsappNumber) {
-                whatsappPhone = data.data.whatsappNumber;
-              } else if (data.data.mobileNumber) {
-                whatsappPhone = data.data.mobileNumber;
-              }
-              if (data.data.name) name = data.data.name;
-              setUser((prevUser) => ({ ...(prevUser || {}), ...data.data }));
+          const res = await apiClient(`/api/users/profile/${userId}`);
+          if (res && res.success && res.data) {
+            if (res.data.whatsappNumber) {
+              whatsappPhone = res.data.whatsappNumber;
+            } else if (res.data.mobileNumber) {
+              whatsappPhone = res.data.mobileNumber;
             }
+            if (res.data.name) name = res.data.name;
+            setUser((prevUser) => ({ ...(prevUser || {}), ...res.data }));
           }
         } catch (err) {
           console.warn("Unable to fetch user profile:", err);
@@ -113,7 +101,7 @@ function SankalpContent() {
       }
 
       setFormData((prev) => {
-        const nextWhatsapp = prev.whatsapp.trim() ? prev.whatsapp : (whatsappPhone || "");
+        const nextWhatsapp = (whatsappPhone || prev.whatsapp || "").replace(/\D/g, "").slice(0, 10);
         const nextParticipants = [...prev.participants];
         if (!nextParticipants[0]?.trim() && name) {
           nextParticipants[0] = name;

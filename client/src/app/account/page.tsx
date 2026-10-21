@@ -141,8 +141,7 @@ const ACCOUNT_TABS = [
 
 function AccountPageContent() {
   const searchParams = useSearchParams();
-  const { user, setUser } = useUser();
-  const [loading] = useState(false);
+  const { user, setUser, isHydrated } = useUser();
   const [activeTab, setActiveTab] = useState("profile");
 
   useEffect(() => {
@@ -192,12 +191,14 @@ function AccountPageContent() {
 
   useEffect(() => {
     const userId = user?._id || user?.id;
-    if (userId && getAuthToken()) {
+    if (userId) {
       setLoadingBookings(true);
       apiClient(`/api/orders/user/${userId}`)
         .then(data => {
-          if (data.success && Array.isArray(data.data)) {
+          if (data && data.success && Array.isArray(data.data)) {
             setBookingsCount(data.data.length);
+          } else if (Array.isArray(data)) {
+            setBookingsCount(data.length);
           } else {
             setBookingsCount(0);
           }
@@ -296,23 +297,34 @@ function AccountPageContent() {
   }, []);
 
   const fetchWishlist = useCallback(async () => {
-    if (!user || (!user.id && !user._id) || !getAuthToken()) return;
+    const userId = user?.id || user?._id;
+    if (!userId) {
+      setLoadingWishlist(false);
+      return;
+    }
     setLoadingWishlist(true);
     try {
-      const data = await apiClient(`/api/wishlist/${user.id || user._id}`);
-      if (data.success && data.data) {
+      const data = await apiClient(`/api/wishlist/${userId}`);
+      if (data && data.success && Array.isArray(data.data)) {
         setWishlistItems(data.data);
+      } else if (Array.isArray(data)) {
+        setWishlistItems(data);
+      } else {
+        setWishlistItems([]);
       }
     } catch (err) {
       console.error("Failed to fetch wishlist", err);
+      setWishlistItems([]);
     } finally {
       setLoadingWishlist(false);
     }
   }, [user]);
 
   useEffect(() => {
-    if (user) {
+    if (user?.id || user?._id) {
       fetchWishlist();
+    } else {
+      setLoadingWishlist(false);
     }
   }, [user, fetchWishlist]);
 
@@ -581,7 +593,7 @@ function AccountPageContent() {
     setShowAddressModal(true);
   };
 
-  if (loading) {
+  if (!isHydrated) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#fafafc]">
         <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>

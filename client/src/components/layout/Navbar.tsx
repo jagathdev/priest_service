@@ -190,8 +190,10 @@ export default function Navbar() {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const isUserLogin = document.cookie.includes("userLogin=true");
-      if (!isUserLogin) {
+      const isUserLoginCookie = document.cookie.includes("userLogin=true");
+      const hasToken = Boolean(localStorage.getItem("token") || localStorage.getItem("adminToken") || document.cookie.match(/(?:^|;\s*)(?:token|adminToken)=/));
+      const hasUser = Boolean(localStorage.getItem("mockUser"));
+      if (!isUserLoginCookie && !hasToken && !hasUser) {
         setUser(null);
       }
     }
