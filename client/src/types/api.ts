@@ -119,6 +119,7 @@ export interface Service {
   offerings: ServiceOffering[];
   recommendedServiceIds: string[];
   sectionOrder: string[];
+  trustBadges?: string[];
   createdAt: string;
   updatedAt: string;
 }

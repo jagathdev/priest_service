@@ -486,6 +486,8 @@ export const normalizePuja = (puja: any, offeringsMap: Record<string, any> = {})
   const parsedAdditional = parseStringArray(record.additionalImages || (record as any).additionalImageUrls);
   const parsedGallery = parseStringArray(record.gallery || (record as any).galleryUrl);
 
+  const parsedTrustBadges = parseStringArray(record.trustBadges);
+
   return {
     ...record,
     title: record.title || 'Untitled Puja',
@@ -494,6 +496,8 @@ export const normalizePuja = (puja: any, offeringsMap: Record<string, any> = {})
     imageUrl: typeof record.imageUrl === 'string' ? record.imageUrl.trim() : '',
     additionalImages: parsedAdditional.length > 0 ? parsedAdditional : undefined,
     gallery: parsedGallery.length > 0 ? parsedGallery : undefined,
+    trustBadges: parsedTrustBadges.length > 0 ? parsedTrustBadges : undefined,
+    templeImage: getStringField(record, 'templeImage') || (record as any).templeImageUrl || (record.details as any)?.templeImage,
     slug: record.slug || slugify(record.title || 'Untitled Puja'),
     eventDateTime: getStringField(record, 'eventDateTime') || undefined,
     showTimer: record.showTimer !== undefined ? Boolean(record.showTimer) : true,
@@ -506,6 +510,7 @@ export const normalizePuja = (puja: any, offeringsMap: Record<string, any> = {})
         about: getStringField(record, 'about'),
         templeName: getStringField(record, 'templeVenue') || getStringField(record, 'templeName'),
         templeLocation: getStringField(record, 'templeLocation') || record.location,
+        templeImage: getStringField(record, 'templeImage') || (record as any).templeImageUrl,
         templeNote: getStringField(record, 'templeNote'),
         stats: buildStatsFromFlatFields(record),
         benefits: buildSectionsFromFlatFields(record, 'benefit', []),
@@ -542,6 +547,8 @@ export const normalizePuja = (puja: any, offeringsMap: Record<string, any> = {})
           flatDetails.templeName || recordDetails.templeName || record.templeVenue || record.location || '',
         templeLocation:
           flatDetails.templeLocation || recordDetails.templeLocation || record.location || '',
+        templeImage:
+          flatDetails.templeImage || (recordDetails as any)?.templeImage || (record as any).templeImage || '',
         templeNote: flatDetails.templeNote || recordDetails.templeNote || record.templeNote || '',
       };
     })(),

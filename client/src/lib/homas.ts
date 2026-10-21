@@ -467,6 +467,8 @@ export const normalizePuja = (homa: any, offeringsMap: Record<string, any> = {})
   const parsedAdditional = parseStringArray(record.additionalImages || (record as any).additionalImageUrls);
   const parsedGallery = parseStringArray(record.gallery || (record as any).galleryUrl);
 
+  const parsedTrustBadges = parseStringArray(record.trustBadges);
+
   return {
     ...record,
     title: record.title || 'Untitled homa',
@@ -475,6 +477,7 @@ export const normalizePuja = (homa: any, offeringsMap: Record<string, any> = {})
     imageUrl: typeof record.imageUrl === 'string' ? record.imageUrl.trim() : '',
     additionalImages: parsedAdditional.length > 0 ? parsedAdditional : undefined,
     gallery: parsedGallery.length > 0 ? parsedGallery : undefined,
+    trustBadges: parsedTrustBadges.length > 0 ? parsedTrustBadges : undefined,
     slug: record.slug || slugify(record.title || 'Untitled homa'),
     eventDateTime: getStringField(record, 'eventDateTime') || undefined,
     showTimer: record.showTimer !== undefined ? Boolean(record.showTimer) : true,
