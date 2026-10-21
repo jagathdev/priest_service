@@ -692,11 +692,11 @@ export default function PujaDetailClient({
             <div className="lg:col-span-6 flex flex-col lg:pl-[10px]">
               {/* Filigree Subtag */}
               <div className="flex items-center justify-center lg:justify-start gap-2 mb-2">
-                <div className="w-8 h-[1px] bg-[#F59E0B]/40" />
-                <span className="text-[#F59E0B] font-serif font-extrabold text-xs sm:text-[13px] tracking-wider uppercase flex items-center gap-1.5 whitespace-nowrap">
+                <div className="w-8 h-[1px] bg-[#881337]/35" />
+                <span className="text-[#881337] font-serif font-extrabold text-xs sm:text-[13px] tracking-wider uppercase flex items-center gap-1.5 whitespace-nowrap">
                   <span className="text-[10px]">♦</span> {badgeText} <span className="text-[10px]">♦</span>
                 </span>
-                <div className="w-8 h-[1px] bg-[#F59E0B]/40" />
+                <div className="w-8 h-[1px] bg-[#881337]/35" />
               </div>
 
               {/* Title */}
@@ -979,7 +979,7 @@ export default function PujaDetailClient({
                   }
                 }}
                 className={`py-2.5 sm:py-3.5 border-b-2 transition-colors whitespace-nowrap shrink-0 sm:shrink ${activeTab === tab.id
-                  ? "border-[#14395C] text-[#14395C]"
+                  ? "border-[#881337] text-[#881337]"
                   : "border-transparent hover:text-[#1E293B]"
                   }`}
               >
@@ -998,7 +998,7 @@ export default function PujaDetailClient({
 
           {/* Section: About Puja */}
           <section id="about" className="scroll-mt-36">
-            <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1E293B] mb-6">About puja</h2>
+            <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#881337] mb-6">About puja</h2>
 
             <div className="bg-white border border-[#E2E8F0] rounded-3xl p-6 sm:p-8 relative overflow-hidden">
               <p className="text-[#64748B] text-sm sm:text-base leading-relaxed font-medium mb-6">
@@ -1024,7 +1024,7 @@ export default function PujaDetailClient({
 
           {/* Section: Puja Benefits */}
           <section id="benefits" className="scroll-mt-36">
-            <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1E293B] mb-6">Puja Benefits</h2>
+            <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#881337] mb-6">Puja Benefits</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
               {benefitsList.map((b, idx) => {
                 const iconPillStyles = [
@@ -1053,7 +1053,7 @@ export default function PujaDetailClient({
 
           {/* Section: Puja Procedure */}
           <section id="process" className="scroll-mt-36">
-            <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1E293B] mb-6">Puja Procedure</h2>
+            <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#881337] mb-6">Puja Procedure</h2>
             <div className="space-y-4">
               {processList.map((step, idx) => (
                 <div key={idx} className="bg-white border border-[#E2E8F0] hover:border-[#CBD5E1] rounded-2xl p-5 flex items-center justify-between gap-4 shadow-xs transition-all">
@@ -1076,7 +1076,7 @@ export default function PujaDetailClient({
 
           {/* Section: Temple Details */}
           <section id="temple" className="scroll-mt-36">
-            <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1E293B] mb-6">Temple Details</h2>
+            <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#881337] mb-6">Temple Details</h2>
             <div className="bg-white border border-[#E2E8F0] rounded-3xl flex flex-col md:flex-row gap-6 items-center shadow-xs overflow-hidden">
               {templeImage && (
                 <div className="w-full md:w-1/3 h-48 rounded-2xl overflow-hidden bg-stone-100 shrink-0 relative">
@@ -1095,7 +1095,7 @@ export default function PujaDetailClient({
                 <p className="text-[#64748B] text-xs sm:text-sm leading-relaxed font-medium mb-4">
                   {templeNoteText}
                 </p>
-                <span className="inline-flex items-center justify-center sm:justify-start gap-1.5 text-xs font-bold text-[#F59E0B]">
+                <span className="inline-flex items-center justify-center sm:justify-start gap-1.5 text-xs font-bold text-[#14395C]">
                   📍 {templeLocationText}
                 </span>
               </div>
@@ -1104,7 +1104,7 @@ export default function PujaDetailClient({
 
           {/* Section: What will you receive */}
           <section id="receive" className="scroll-mt-36">
-            <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1E293B] mb-6">What will you receive</h2>
+            <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#881337] mb-6">What will you receive</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
               {inclusionsList.map((inc: any, idx: number) => {
                 const title = typeof inc === "string" ? inc : inc.title || inc.name || `Inclusion ${idx + 1}`;
@@ -1126,7 +1126,7 @@ export default function PujaDetailClient({
 
           {/* Section: Frequently Asked Questions (FAQs) */}
           <section id="faqs" className="scroll-mt-36">
-            <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1E293B] mb-6">Frequently Asked Questions (FAQs)</h2>
+            <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#881337] mb-6">Frequently Asked Questions (FAQs)</h2>
             <div className="space-y-3">
               {faqList.map((faq, idx) => (
                 <div
@@ -1153,7 +1153,7 @@ export default function PujaDetailClient({
           {/* Section: Puja Gallery */}
           {galleryList.length > 0 && (
             <section id="gallery" className="scroll-mt-36 pb-4 sm:pb-28 lg:pb-36">
-              <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1E293B] mb-6">Puja Gallery</h2>
+              <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#881337] mb-6">Puja Gallery</h2>
 
               {/* Mobile: Carousel */}
               <div className="sm:hidden relative">

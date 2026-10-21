@@ -215,7 +215,7 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
                 type="button"
                 onClick={clearFilters}
                 className={`font-bold px-4 sm:px-5 py-2 rounded-full text-xs sm:text-sm transition-all whitespace-nowrap cursor-pointer ${!hasActiveFilters
-                  ? "bg-success text-white shadow-sm hover:bg-[#009b46]"
+                  ? "bg-[#14395C] text-white shadow-sm hover:bg-[#0e2740]"
                   : "bg-white border border-stone-200 text-stone-700 hover:border-stone-400 font-semibold px-3.5 sm:px-4"
                   }`}
               >
@@ -231,13 +231,13 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
                     type="button"
                     onClick={() => openFilterModal(group.label)}
                     className={`font-bold px-3.5 sm:px-4 py-2 rounded-full text-xs sm:text-sm transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 ${isSelected
-                      ? "bg-success text-white shadow-sm hover:bg-[#009b46]"
+                      ? "bg-[#14395C] text-white shadow-sm hover:bg-[#0e2740]"
                       : "bg-white border border-stone-200 text-stone-700 hover:border-stone-400 font-semibold"
                       }`}
                   >
                     <span>{group.label === "Benefits" ? "Benefit" : group.label}</span>
                     {selectedCount > 0 && (
-                      <span className="w-4 h-4 rounded-full bg-white text-success text-[10px] font-extrabold flex items-center justify-center shrink-0">
+                      <span className="w-4 h-4 rounded-full bg-white text-[#14395C] text-[10px] font-extrabold flex items-center justify-center shrink-0">
                         {selectedCount}
                       </span>
                     )}
@@ -330,7 +330,7 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
           <div className="text-center mt-10">
             <Link
               href="/puja"
-              className="inline-block text-success font-extrabold px-8 py-3 rounded-full border-2 border-success hover:bg-green-50 active:scale-95 transition-all text-base shadow-sm"
+              className="inline-block text-[#14395C] font-extrabold px-8 py-3 rounded-full border-2 border-[#14395C] hover:bg-[#14395C]/5 active:scale-95 transition-all text-base shadow-sm"
             >
               View All Pujas
             </Link>
@@ -369,7 +369,7 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
       </section>
 
       {/* ── 5. Trust Badges Strip (Marquee on 1024px and Tablet screens) ── */}
-      <div className="w-full bg-[#f0f8f1] border-y border-green-100 py-6 sm:py-8 overflow-hidden">
+      <div className="w-full bg-[#f0f4f8] border-y border-[#d6e2ed] py-6 sm:py-8 overflow-hidden">
         {/* Continuous Marquee on 1024px and Tablet screens (< xl) */}
         <div className="xl:hidden overflow-hidden w-full relative">
           <div className="flex animate-marquee gap-8 sm:gap-12 items-center">
@@ -409,7 +409,7 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
             <p className="text-gray-600 mb-8 text-sm max-w-[250px]">
               Our devotee care team is available in 11 languages, 12 hours a day. Reach them on WhatsApp, phone, or email.
             </p>
-            <button className="bg-accent text-white px-8 py-3 rounded-full font-bold shadow-md hover:bg-[#008c51] transition-colors">
+            <button className="bg-[#14395C] text-white px-8 py-3 rounded-full font-bold shadow-md hover:bg-[#0e2740] transition-colors">
               Speak to Devotee Care
             </button>
           </div>
@@ -471,8 +471,8 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
               </li>
             </ul>
           </div>
-          <Link href="/puja" className="bg-success hover:bg-[#009644] active:scale-95 text-white font-extrabold px-8 py-3.5 rounded-full text-sm sm:text-base transition-all inline-flex items-center gap-2.5 shadow-md shadow-green-600/20">
-            Find the Right Puja <div className="bg-white text-success rounded-full w-5 h-5 flex items-center justify-center shadow-sm"><svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7" /></svg></div>
+          <Link href="/puja" className="bg-[#14395C] hover:bg-[#0e2740] active:scale-95 text-white font-extrabold px-8 py-3.5 rounded-full text-sm sm:text-base transition-all inline-flex items-center gap-2.5 shadow-md shadow-[#14395C]/20">
+            Find the Right Puja <div className="bg-white text-[#14395C] rounded-full w-5 h-5 flex items-center justify-center shadow-sm"><svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7" /></svg></div>
           </Link>
         </div>
 
@@ -603,8 +603,8 @@ const galleryImages = [
 
 function Badge({ icon, text }: { icon: string; text: string }) {
   return (
-    <div className="flex items-center gap-2 text-xs md:text-sm font-bold text-[#009e5b]">
-      <span className="bg-green-100 rounded-full w-6 h-6 flex items-center justify-center text-sm">{icon}</span>
+    <div className="flex items-center gap-2 text-xs md:text-sm font-bold text-[#14395C]">
+      <span className="bg-[#14395C]/10 rounded-full w-6 h-6 flex items-center justify-center text-sm">{icon}</span>
       <span>{text}</span>
     </div>
   );
@@ -697,9 +697,9 @@ function PujaCard({ id, imageSrc, topTag, title, subtitle, location, date, price
             </div>
 
             {/* CTA Button */}
-            <div className="inline-flex items-center gap-2 bg-success hover:bg-[#009644] active:scale-95 text-white font-extrabold text-xs sm:text-sm px-5 py-2.5 sm:py-3 rounded-full shadow-md shadow-green-600/20 transition-all duration-200 group/btn">
+            <div className="inline-flex items-center gap-2 bg-[#14395C] hover:bg-[#0e2740] active:scale-95 text-white font-extrabold text-xs sm:text-sm px-5 py-2.5 sm:py-3 rounded-full shadow-md shadow-[#14395C]/20 transition-all duration-200 group/btn">
               <span>Participate Now</span>
-              <div className="w-5 h-5 rounded-full bg-white text-success flex items-center justify-center shrink-0">
+              <div className="w-5 h-5 rounded-full bg-white text-[#14395C] flex items-center justify-center shrink-0">
                 <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                 </svg>

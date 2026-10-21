@@ -158,22 +158,59 @@ function AccountPageContent() {
   const [saving, setSaving] = useState(false);
 
   const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([]);
-  const [loadingWishlist, setLoadingWishlist] = useState(false);
+  const [loadingWishlist, setLoadingWishlist] = useState(true);
 
   const addresses = user?.addresses || [];
-  const [bookingsCount, setBookingsCount] = useState(0);
+  const [loadingAddresses, setLoadingAddresses] = useState(!user?.addresses);
+  const [bookingsCount, setBookingsCount] = useState<number | null>(null);
+  const [loadingBookings, setLoadingBookings] = useState(true);
   const [subscriptionFilter, setSubscriptionFilter] = useState("All");
 
   useEffect(() => {
     const userId = user?._id || user?.id;
     if (userId && getAuthToken()) {
+      if (!user?.addresses || user.addresses.length === 0) {
+        setLoadingAddresses(true);
+      }
+      apiClient(`/api/users/profile/${userId}`)
+        .then(res => {
+          if (res.success && res.data) {
+            setUser(prev => ({ ...(prev || {}), ...res.data }));
+          }
+        })
+        .catch(err => {
+          console.error("Error fetching user profile addresses:", err);
+        })
+        .finally(() => {
+          setLoadingAddresses(false);
+        });
+    } else {
+      setLoadingAddresses(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?._id, user?.id, setUser]);
+
+  useEffect(() => {
+    const userId = user?._id || user?.id;
+    if (userId && getAuthToken()) {
+      setLoadingBookings(true);
       apiClient(`/api/orders/user/${userId}`)
         .then(data => {
           if (data.success && Array.isArray(data.data)) {
             setBookingsCount(data.data.length);
+          } else {
+            setBookingsCount(0);
           }
         })
-        .catch(err => console.error("Error fetching bookings count:", err));
+        .catch(err => {
+          console.error("Error fetching bookings count:", err);
+          setBookingsCount(0);
+        })
+        .finally(() => {
+          setLoadingBookings(false);
+        });
+    } else {
+      setLoadingBookings(false);
     }
   }, [user?._id, user?.id]);
   const [showAddressModal, setShowAddressModal] = useState(false);
@@ -547,7 +584,7 @@ function AccountPageContent() {
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#fafafc]">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-success"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -589,7 +626,7 @@ function AccountPageContent() {
               <p className="text-gray-500 max-w-sm mb-6">You must be logged in to access your account settings and history.</p>
               <button
                 onClick={() => setShowLoginModal(true)}
-                className="bg-success text-white font-bold py-2.5 px-8 rounded-full hover:bg-[#058a51] transition"
+                className="bg-primary text-white font-bold py-2.5 px-8 rounded-full hover:bg-[#0f2d4a] transition"
               >
                 Login Now
               </button>
@@ -604,7 +641,7 @@ function AccountPageContent() {
                   className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 sm:py-3.5 flex items-center justify-between shadow-2xs hover:border-gray-300 transition text-left cursor-pointer"
                 >
                   <div className="flex items-center gap-3">
-                    <svg className="w-5 h-5 text-success shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="w-5 h-5 text-primary shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 6h16M4 12h16M4 18h16" />
                     </svg>
                     <span className="font-bold text-gray-900 text-sm sm:text-base capitalize">
@@ -665,7 +702,7 @@ function AccountPageContent() {
                           setIsDrawerOpen(false);
                         }}
                         className={`w-full flex items-center gap-3.5 px-4 py-2.5 sm:py-3 rounded-2xl text-[14px] sm:text-[15px] transition text-left cursor-pointer ${isActive
-                          ? "bg-success text-white font-bold shadow-xs"
+                          ? "bg-primary text-white font-bold shadow-xs"
                           : "text-gray-900 font-semibold hover:bg-gray-50"
                           }`}
                       >
@@ -684,9 +721,9 @@ function AccountPageContent() {
                       setIsDrawerOpen(false);
                       handleLogout();
                     }}
-                    className="w-full border-2 border-success text-success hover:bg-green-50 font-bold py-2.5 sm:py-3 px-4 rounded-2xl flex items-center justify-center gap-2 text-[14px] sm:text-[15px] transition cursor-pointer"
+                    className="w-full border-2 border-primary text-primary hover:bg-slate-50 font-bold py-2.5 sm:py-3 px-4 rounded-2xl flex items-center justify-center gap-2 text-[14px] sm:text-[15px] transition cursor-pointer"
                   >
-                    <svg className="w-4 h-4 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                     </svg>
                     <span>Logout</span>
@@ -696,33 +733,37 @@ function AccountPageContent() {
 
               <div className="flex flex-col xl:flex-row gap-8 items-start">
                 {/* ── Left Sidebar Navigation (Desktop >= xl) ── */}
-                <aside className="hidden xl:flex flex-col gap-1.5 w-full xl:w-72 shrink-0 bg-white rounded-2xl border border-gray-200 shadow-xs p-4 xl:sticky xl:top-[120px] xl:max-h-[calc(100vh-140px)] xl:overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                  {ACCOUNT_TABS.map((tab) => (
-                    <button
-                      key={tab.id}
-                      type="button"
-                      onClick={() => setActiveTab(tab.id)}
-                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm transition ${activeTab === tab.id
-                        ? "bg-success text-white font-bold shadow-xs"
-                        : "text-gray-700 font-medium hover:bg-gray-50"
-                        }`}
-                    >
-                      {tab.icon(activeTab === tab.id)}
-                      <span>{tab.label}</span>
-                    </button>
-                  ))}
+                <aside className="hidden xl:flex flex-col gap-1 w-full xl:w-64 2xl:w-72 shrink-0 bg-white rounded-2xl border border-gray-200 shadow-xs p-3 xl:sticky xl:top-[90px] xl:max-h-[calc(100vh-105px)] overflow-y-auto">
+                  <div className="flex flex-col gap-1">
+                    {ACCOUNT_TABS.map((tab) => (
+                      <button
+                        key={tab.id}
+                        type="button"
+                        onClick={() => setActiveTab(tab.id)}
+                        className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm transition cursor-pointer ${activeTab === tab.id
+                          ? "bg-primary text-white font-bold shadow-xs"
+                          : "text-gray-700 font-medium hover:bg-gray-50"
+                          }`}
+                      >
+                        {tab.icon(activeTab === tab.id)}
+                        <span>{tab.label}</span>
+                      </button>
+                    ))}
+                  </div>
 
                   {/* Bottom Logout Button */}
-                  <button
-                    type="button"
-                    onClick={handleLogout}
-                    className="mt-6 border border-success text-success hover:bg-green-50 font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 text-xs sm:text-sm transition w-full"
-                  >
-                    <svg className="w-4 h-4 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                    </svg>
-                    <span>Logout</span>
-                  </button>
+                  <div className="pt-2 mt-auto">
+                    <button
+                      type="button"
+                      onClick={handleLogout}
+                      className="border border-primary text-primary hover:bg-slate-50 font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 text-xs sm:text-sm transition w-full cursor-pointer"
+                    >
+                      <svg className="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                      </svg>
+                      <span>Logout</span>
+                    </button>
+                  </div>
                 </aside>
 
                 {/* ── Right Main Content Area (Matching Image 3) ── */}
@@ -772,7 +813,7 @@ function AccountPageContent() {
                                   value={formData.name || ''}
                                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                   placeholder=""
-                                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-[14px] focus:outline-none focus:border-success transition"
+                                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-[14px] focus:outline-none focus:border-primary transition"
                                 />
                               </div>
                               <div className="mb-5">
@@ -782,7 +823,7 @@ function AccountPageContent() {
                                   value={formData.email || ''}
                                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                   placeholder=""
-                                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-[14px] focus:outline-none focus:border-success transition"
+                                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-[14px] focus:outline-none focus:border-primary transition"
                                 />
                               </div>
 
@@ -811,7 +852,7 @@ function AccountPageContent() {
                                     setShowEditModal(false);
                                   }}
                                   disabled={saving}
-                                  className="px-6 py-2.5 rounded-full bg-success text-white text-[14px] font-bold hover:bg-[#058a51] transition"
+                                  className="px-6 py-2.5 rounded-full bg-primary text-white text-[14px] font-bold hover:bg-[#0f2d4a] transition"
                                 >
                                   {saving ? 'Saving...' : 'Save Changes'}
                                 </button>
@@ -832,7 +873,7 @@ function AccountPageContent() {
                                       setFormData(user || {});
                                       setShowEditModal(true);
                                     }}
-                                    className="sm:hidden border border-success text-success hover:bg-green-50 text-xs font-bold px-3.5 py-1.5 rounded-full flex items-center gap-1.5 transition shrink-0 shadow-xs"
+                                    className="sm:hidden border border-primary text-primary hover:bg-slate-50 text-xs font-bold px-3.5 py-1.5 rounded-full flex items-center gap-1.5 transition shrink-0 shadow-xs"
                                   >
                                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
@@ -868,7 +909,7 @@ function AccountPageContent() {
                                   setFormData(user || {});
                                   setShowEditModal(true);
                                 }}
-                                className="hidden sm:flex border border-success text-success hover:bg-green-50 text-xs font-bold px-4 py-1.5 rounded-full items-center gap-1.5 transition self-start shadow-xs shrink-0"
+                                className="hidden sm:flex border border-primary text-primary hover:bg-slate-50 text-xs font-bold px-4 py-1.5 rounded-full items-center gap-1.5 transition self-start shadow-xs shrink-0"
                               >
                                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
@@ -895,11 +936,23 @@ function AccountPageContent() {
                               </svg>
                             </div>
                             <div>
-                              <h4 className="text-xs font-bold text-gray-900">My Bookings ({bookingsCount})</h4>
+                              <h4 className="text-xs font-bold text-gray-900 flex items-center gap-1.5">
+                                <span>My Bookings</span>
+                                {loadingBookings ? (
+                                  <span className="inline-flex items-center text-[10px] text-gray-400 font-normal">
+                                    <svg className="animate-spin h-3 w-3 text-gray-500 inline mr-0.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                  </span>
+                                ) : (
+                                  <span>({bookingsCount ?? 0})</span>
+                                )}
+                              </h4>
                               <p className="text-[11px] text-gray-500 font-medium leading-tight">View your all puja bookings and History</p>
                             </div>
                           </div>
-                          <div className="w-7 h-7 rounded-full bg-success text-white flex items-center justify-center text-xs font-bold shrink-0 ml-2">
+                          <div className="w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center text-xs font-bold shrink-0 ml-2">
                             ➔
                           </div>
                         </div>
@@ -916,11 +969,23 @@ function AccountPageContent() {
                               </svg>
                             </div>
                             <div>
-                              <h4 className="text-xs font-bold text-gray-900">My Wishlist ({wishlistItems.length})</h4>
+                              <h4 className="text-xs font-bold text-gray-900 flex items-center gap-1.5">
+                                <span>My Wishlist</span>
+                                {loadingWishlist ? (
+                                  <span className="inline-flex items-center text-[10px] text-gray-400 font-normal">
+                                    <svg className="animate-spin h-3 w-3 text-gray-500 inline mr-0.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                  </span>
+                                ) : (
+                                  <span>({wishlistItems.length})</span>
+                                )}
+                              </h4>
                               <p className="text-[11px] text-gray-500 font-medium leading-tight">View your saved pujas and services</p>
                             </div>
                           </div>
-                          <div className="w-7 h-7 rounded-full bg-success text-white flex items-center justify-center text-xs font-bold shrink-0 ml-2">
+                          <div className="w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center text-xs font-bold shrink-0 ml-2">
                             ➔
                           </div>
                         </div>
@@ -928,29 +993,41 @@ function AccountPageContent() {
                         {/* Card 3: My Addresses */}
                         <div
                           onClick={() => setActiveTab('address')}
-                          className="cursor-pointer bg-[#f0fdf4] border border-[#dcfce7] rounded-2xl p-4 flex items-center justify-between hover:shadow-sm transition"
+                          className="cursor-pointer bg-[#F1F5F9] border border-[#E2E8F0] rounded-2xl p-4 flex items-center justify-between hover:shadow-sm transition"
                         >
                           <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 rounded-full bg-white flex items-center justify-center text-success shrink-0 shadow-2xs">
+                            <div className="w-9 h-9 rounded-full bg-white flex items-center justify-center text-primary shrink-0 shadow-2xs">
                               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                               </svg>
                             </div>
                             <div>
-                              <h4 className="text-xs font-bold text-gray-900">My Addresses ({addresses.length})</h4>
+                              <h4 className="text-xs font-bold text-gray-900 flex items-center gap-1.5">
+                                <span>My Addresses</span>
+                                {loadingAddresses ? (
+                                  <span className="inline-flex items-center text-[10px] text-gray-400 font-normal">
+                                    <svg className="animate-spin h-3 w-3 text-gray-500 inline mr-0.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                  </span>
+                                ) : (
+                                  <span>({addresses.length})</span>
+                                )}
+                              </h4>
                               <p className="text-[11px] text-gray-500 font-medium leading-tight">Manage your saved delivery addresses</p>
                             </div>
                           </div>
-                          <div className="w-7 h-7 rounded-full bg-success text-white flex items-center justify-center text-xs font-bold shrink-0 ml-2">
+                          <div className="w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center text-xs font-bold shrink-0 ml-2">
                             ➔
                           </div>
                         </div>
                       </div>
 
                       {/* ── Green Security Banner (Matching Image 3) ── */}
-                      <div className="bg-[#e8f5e9] border border-[#c8e6c9] text-success text-xs font-bold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 mt-6">
-                        <svg className="w-4 h-4 text-success" fill="currentColor" viewBox="0 0 20 20">
+                      <div className="bg-[#F1F5F9] border border-[#CBD5E1] text-primary text-xs font-bold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 mt-6">
+                        <svg className="w-4 h-4 text-primary" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                         </svg>
                         <span>Your personal information is protected and securely stored.</span>
@@ -983,13 +1060,13 @@ function AccountPageContent() {
                           <button
                             onClick={() => setSubscriptionFilter("All")}
                             className={`px-3.5 py-1.5 sm:px-5 sm:py-2 rounded-full text-xs sm:text-sm font-bold flex items-center gap-1.5 border transition ${subscriptionFilter === "All"
-                              ? "border-success text-success bg-white shadow-sm"
+                              ? "border-primary text-primary bg-white shadow-sm"
                               : "border-transparent text-gray-700 bg-[#ebebeb] hover:bg-[#e0e0e0]"
                               }`}
                           >
                             All
                             {subscriptionFilter === "All" && (
-                              <div className="w-3.5 h-3.5 rounded-full bg-success text-white flex items-center justify-center">
+                              <div className="w-3.5 h-3.5 rounded-full bg-primary text-white flex items-center justify-center">
                                 <svg className="w-2 h-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
                                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                                 </svg>
@@ -1059,8 +1136,8 @@ function AccountPageContent() {
                         <div className="relative z-10">
                           <div className="flex items-center justify-between mb-6">
                             <div className="flex items-center gap-3">
-                              <div className="w-11 h-11 rounded-[10px] bg-[#e8f5e9] flex items-center justify-center shrink-0">
-                                <svg className="w-5 h-5 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <div className="w-11 h-11 rounded-[10px] bg-[#F1F5F9] flex items-center justify-center shrink-0">
+                                <svg className="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M3 10h18M7 15h1m4 0h1m-7 4h12a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                                 </svg>
                               </div>
@@ -1078,7 +1155,7 @@ function AccountPageContent() {
                             </p>
                           </div>
 
-                          <div className="flex items-center gap-1.5 text-success text-[12px] font-bold">
+                          <div className="flex items-center gap-1.5 text-primary text-[12px] font-bold">
                             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                             </svg>
@@ -1147,7 +1224,7 @@ function AccountPageContent() {
                       </div>
 
                       {/* Bottom Security Banner */}
-                      <div className="bg-[#e8f5e9] border border-[#c8e6c9] text-success text-[13px] font-bold py-4 px-5 rounded-2xl flex items-center gap-3">
+                      <div className="bg-[#F1F5F9] border border-[#CBD5E1] text-primary text-[13px] font-bold py-4 px-5 rounded-2xl flex items-center gap-3">
                         <svg className="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                         </svg>
@@ -1171,7 +1248,7 @@ function AccountPageContent() {
 
                       {loadingWishlist ? (
                         <div className="flex justify-center py-10">
-                          <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-t-2 border-success"></div>
+                          <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-t-2 border-primary"></div>
                         </div>
                       ) : wishlistItems.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-24 text-center bg-white rounded-2xl shadow-sm border border-gray-100">
@@ -1182,7 +1259,7 @@ function AccountPageContent() {
                           <p className="text-[13px] font-medium text-gray-500 mb-6">
                             Save your favorite pujas and homas to view them here later.
                           </p>
-                          <Link href="/" className="bg-success text-white px-6 py-2.5 rounded-full font-bold text-sm shadow-sm hover:bg-[#058a51] transition">
+                          <Link href="/" className="bg-primary text-white px-6 py-2.5 rounded-full font-bold text-sm shadow-sm hover:bg-[#0f2d4a] transition">
                             Explore Services
                           </Link>
                         </div>
@@ -1216,7 +1293,7 @@ function AccountPageContent() {
                                       console.error(error);
                                     }
                                   }}
-                                  className="absolute top-3 right-3 z-20 w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-md cursor-pointer hover:bg-white text-success"
+                                  className="absolute top-3 right-3 z-20 w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-md cursor-pointer hover:bg-white text-primary"
                                 >
                                   <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
                                     <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
@@ -1227,7 +1304,7 @@ function AccountPageContent() {
                               {/* Bottom Content Section */}
                               <div className="p-4 flex flex-col min-h-[150px]">
                                 <Link href={`/${item.serviceType?.toLowerCase() === 'pooja' ? 'puja' : (item.serviceType || 'puja')}/${item.slug || item.serviceId}`} prefetch={true} className="block mb-2">
-                                  <h3 className="text-[14px] font-extrabold text-gray-900 leading-[1.3] line-clamp-2 hover:text-success transition-colors">
+                                  <h3 className="text-[14px] font-extrabold text-gray-900 leading-[1.3] line-clamp-2 hover:text-primary transition-colors">
                                     {item.name}
                                   </h3>
                                 </Link>
@@ -1242,7 +1319,7 @@ function AccountPageContent() {
 
                                 <div className="mt-auto flex items-center justify-between pt-1">
                                   <div className="text-[16px] font-extrabold text-gray-900">₹{item.price || 516}</div>
-                                  <Link href={`/${item.serviceType?.toLowerCase() === 'pooja' ? 'puja' : (item.serviceType || 'puja')}/${item.slug || item.serviceId}`} prefetch={true} className="bg-success text-white text-[12px] font-bold pl-4 pr-1 py-1 rounded-full flex items-center gap-2 hover:bg-[#009b46] transition shadow-sm group">
+                                  <Link href={`/${item.serviceType?.toLowerCase() === 'pooja' ? 'puja' : (item.serviceType || 'puja')}/${item.slug || item.serviceId}`} prefetch={true} className="bg-primary text-white text-[12px] font-bold pl-4 pr-1 py-1 rounded-full flex items-center gap-2 hover:bg-[#0f2d4a] transition shadow-sm group">
                                     Book Now
                                     <div className="w-6 h-6 rounded-full bg-white/25 flex items-center justify-center shrink-0 group-hover:translate-x-0.5 transition-transform">
                                       <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1269,21 +1346,35 @@ function AccountPageContent() {
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                             </svg>
                           </div>
-                          <h1 className="text-xl sm:text-2xl font-bold font-serif text-[#333]">
-                            Saved Address <span className="text-gray-500 font-medium text-lg">({addresses.length})</span>
+                          <h1 className="text-xl sm:text-2xl font-bold font-serif text-[#333] flex items-center gap-1.5">
+                            <span>Saved Address</span>
+                            {loadingAddresses ? (
+                              <span className="inline-flex items-center text-sm text-gray-400 font-normal">
+                                <svg className="animate-spin h-4 w-4 text-gray-500 inline mr-0.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                              </span>
+                            ) : (
+                              <span className="text-gray-500 font-medium text-lg">({addresses.length})</span>
+                            )}
                           </h1>
                         </div>
-                        {addresses.length > 0 && (
+                        {addresses.length > 0 && !loadingAddresses && (
                           <button
                             onClick={() => openAddAddressModal()}
-                            className="bg-success text-white text-xs sm:text-sm font-bold px-4 py-2 sm:px-5 sm:py-2.5 rounded-full flex items-center gap-1.5 hover:bg-green-700 transition"
+                            className="bg-primary text-white text-xs sm:text-sm font-bold px-4 py-2 sm:px-5 sm:py-2.5 rounded-full flex items-center gap-1.5 hover:bg-[#0f2d4a] transition"
                           >
                             <span>+</span> Add New Address
                           </button>
                         )}
                       </div>
 
-                      {addresses.length === 0 ? (
+                      {loadingAddresses ? (
+                        <div className="flex justify-center py-16">
+                          <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-t-2 border-primary"></div>
+                        </div>
+                      ) : addresses.length === 0 ? (
                         <div className="border border-dashed border-[#dca3a3] bg-[#fdfaf8] rounded-2xl p-10 flex flex-col items-center justify-center text-center">
                           <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-sm mb-4">
                             <svg className="w-6 h-6 text-danger" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1295,7 +1386,7 @@ function AccountPageContent() {
                           <p className="text-[13px] text-gray-500 font-medium mb-6">Add a delivery address to check out faster next time.</p>
                           <button
                             onClick={() => openAddAddressModal()}
-                            className="bg-success text-white text-[13px] font-bold px-6 py-2.5 rounded-full flex items-center gap-1.5 hover:bg-green-700 transition"
+                            className="bg-primary text-white text-[13px] font-bold px-6 py-2.5 rounded-full flex items-center gap-1.5 hover:bg-[#0f2d4a] transition"
                           >
                             <span>+</span> Add New Address
                           </button>
@@ -1313,7 +1404,7 @@ function AccountPageContent() {
                                     {addr.type}
                                   </span>
                                   {addr.isDefault && (
-                                    <span className="bg-[#e8f5e9] text-success text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wide">
+                                    <span className="bg-[#F1F5F9] text-primary text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wide">
                                       Default
                                     </span>
                                   )}
@@ -1350,16 +1441,16 @@ function AccountPageContent() {
                               onClick={() => openAddAddressModal()}
                               className="border border-dashed border-[#a3e3c6] bg-[#e8fbf1] rounded-2xl p-5 flex flex-col items-center justify-center cursor-pointer hover:bg-[#d8f5e6] transition text-center min-h-[220px]"
                             >
-                              <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm mb-3 text-success">
+                              <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm mb-3 text-primary">
                                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" />
                                 </svg>
                               </div>
-                              <span className="text-success text-[14px] font-bold">Add a New Address</span>
+                              <span className="text-primary text-[14px] font-bold">Add a New Address</span>
                             </div>
                           </div>
 
-                          <div className="bg-[#e8f5e9] text-success text-[12px] font-bold px-4 py-3 rounded-xl flex items-center gap-2">
+                          <div className="bg-[#F1F5F9] text-primary text-[12px] font-bold px-4 py-3 rounded-xl flex items-center gap-2">
                             <svg className="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                             </svg>
@@ -1413,14 +1504,14 @@ function AccountPageContent() {
                               key={lang.name}
                               onClick={() => setSelectedLanguage(lang.name)}
                               className={`cursor-pointer rounded-2xl p-3 flex items-center justify-between border transition ${isSelected
-                                ? 'border-success bg-white shadow-sm'
-                                : 'border-gray-150 bg-white hover:border-success hover:shadow-sm'
+                                ? 'border-primary bg-white shadow-sm'
+                                : 'border-gray-150 bg-white hover:border-primary hover:shadow-sm'
                                 }`}
                             >
                               <div className="flex items-center gap-3">
                                 <div className={`w-11 h-11 rounded-xl flex items-center justify-center text-lg font-bold ${isSelected
-                                  ? 'bg-success text-white'
-                                  : 'bg-[#f0fdf4] text-success'
+                                  ? 'bg-primary text-white'
+                                  : 'bg-[#F1F5F9] text-primary'
                                   }`}>
                                   {lang.char}
                                 </div>
@@ -1430,7 +1521,7 @@ function AccountPageContent() {
                                 </div>
                               </div>
                               {isSelected && (
-                                <div className="w-6 h-6 rounded-full bg-success text-white flex items-center justify-center shrink-0">
+                                <div className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center shrink-0">
                                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                                   </svg>
@@ -1453,7 +1544,7 @@ function AccountPageContent() {
                         </div>
                       </div>
 
-                      <div className="bg-[#e8f5e9] text-success text-[12px] font-bold px-4 py-3 rounded-xl flex items-center gap-2">
+                      <div className="bg-[#F1F5F9] text-primary text-[12px] font-bold px-4 py-3 rounded-xl flex items-center gap-2">
                         <svg className="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                         </svg>
@@ -1609,7 +1700,7 @@ function AccountPageContent() {
                       </div>
 
                       {/* Bottom Banner */}
-                      <div className="bg-[#e8f5e9] text-success text-[12px] font-bold px-4 py-3 rounded-xl flex items-center gap-2">
+                      <div className="bg-[#F1F5F9] text-primary text-[12px] font-bold px-4 py-3 rounded-xl flex items-center gap-2">
                         <svg className="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                         </svg>
@@ -1636,28 +1727,28 @@ function AccountPageContent() {
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
                         {/* WhatsApp */}
                         <div className="bg-white border border-gray-150 rounded-2xl p-5 shadow-sm hover:shadow-md transition">
-                          <div className="w-10 h-10 rounded-xl bg-success text-white flex items-center justify-center mb-4">
+                          <div className="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center mb-4">
                             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                               <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 00-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
                             </svg>
                           </div>
                           <h4 className="text-[14px] font-bold text-gray-900 mb-1">WhatsApp Support</h4>
                           <p className="text-[11px] text-gray-500 mb-4">Reply within minutes</p>
-                          <button className="text-success text-[12px] font-bold flex items-center gap-1 hover:text-[#047a47]">
+                          <button className="text-primary text-[12px] font-bold flex items-center gap-1 hover:text-[#0f2d4a]">
                             +91 9566777645 <span>&rarr;</span>
                           </button>
                         </div>
 
                         {/* Call Support */}
                         <div className="bg-white border border-gray-150 rounded-2xl p-5 shadow-sm hover:shadow-md transition">
-                          <div className="w-10 h-10 rounded-xl bg-success text-white flex items-center justify-center mb-4">
+                          <div className="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center mb-4">
                             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                             </svg>
                           </div>
                           <h4 className="text-[14px] font-bold text-gray-900 mb-1">Call Support</h4>
                           <p className="text-[11px] text-gray-500 mb-4">10 AM - 7 PM, all days</p>
-                          <button className="text-success text-[12px] font-bold flex items-center gap-1 hover:text-[#047a47]">
+                          <button className="text-primary text-[12px] font-bold flex items-center gap-1 hover:text-[#0f2d4a]">
                             +91 9677391108 <span>&rarr;</span>
                           </button>
                         </div>
@@ -1671,7 +1762,7 @@ function AccountPageContent() {
                           </div>
                           <h4 className="text-[14px] font-bold text-gray-900 mb-1">Email Support</h4>
                           <p className="text-[11px] text-gray-500 mb-4">Response within 24 hours</p>
-                          <button className="text-success text-[12px] font-bold flex items-center gap-1 hover:text-[#047a47]">
+                          <button className="text-primary text-[12px] font-bold flex items-center gap-1 hover:text-[#0f2d4a]">
                             support@astroved.com <span>&rarr;</span>
                           </button>
                         </div>
@@ -1687,7 +1778,7 @@ function AccountPageContent() {
                             className="w-full flex items-center justify-between p-5 text-left transition hover:bg-gray-50"
                           >
                             <span className="text-[14px] font-bold text-gray-900">How do I book a puja?</span>
-                            <span className="text-success font-bold text-xl leading-none">
+                            <span className="text-primary font-bold text-xl leading-none">
                               {openFaq === 1 ? '×' : '+'}
                             </span>
                           </button>
@@ -1705,7 +1796,7 @@ function AccountPageContent() {
                             className="w-full flex items-center justify-between p-5 text-left transition hover:bg-gray-50"
                           >
                             <span className="text-[14px] font-bold text-gray-900">When will I receive my puja video?</span>
-                            <span className="text-success font-bold text-xl leading-none">
+                            <span className="text-primary font-bold text-xl leading-none">
                               {openFaq === 2 ? '×' : '+'}
                             </span>
                           </button>
@@ -1723,7 +1814,7 @@ function AccountPageContent() {
                             className="w-full flex items-center justify-between p-5 text-left transition hover:bg-gray-50"
                           >
                             <span className="text-[14px] font-bold text-gray-900">Can I edit my devotee details after booking?</span>
-                            <span className="text-success font-bold text-xl leading-none">
+                            <span className="text-primary font-bold text-xl leading-none">
                               {openFaq === 3 ? '×' : '+'}
                             </span>
                           </button>
@@ -1750,12 +1841,12 @@ function AccountPageContent() {
                               placeholder="Enter your full name"
                               value={helpFormData.name}
                               onChange={(e) => setHelpFormData({ ...helpFormData, name: e.target.value })}
-                              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-[13px] text-gray-800 focus:outline-none focus:border-success"
+                              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-[13px] text-gray-800 focus:outline-none focus:border-primary"
                             />
                           </div>
                           <div>
                             <label className="text-[12px] font-bold text-gray-800 block mb-1.5">Mobile Number <span className="text-red-500">*</span></label>
-                            <div className="flex border border-gray-200 rounded-xl overflow-hidden focus-within:border-success">
+                            <div className="flex border border-gray-200 rounded-xl overflow-hidden focus-within:border-primary">
                               <span className="bg-gray-50 border-r border-gray-200 px-4 py-2.5 text-[13px] text-gray-700 font-medium">
                                 +91
                               </span>
@@ -1779,7 +1870,7 @@ function AccountPageContent() {
                               placeholder="your.email@example.com"
                               value={helpFormData.email}
                               onChange={(e) => setHelpFormData({ ...helpFormData, email: e.target.value })}
-                              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-[13px] text-gray-800 focus:outline-none focus:border-success"
+                              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-[13px] text-gray-800 focus:outline-none focus:border-primary"
                             />
                           </div>
                           <div>
@@ -1789,7 +1880,7 @@ function AccountPageContent() {
                               placeholder="e.g. VM123456789"
                               value={helpFormData.bookingId}
                               onChange={(e) => setHelpFormData({ ...helpFormData, bookingId: e.target.value })}
-                              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-[13px] text-gray-800 focus:outline-none focus:border-success"
+                              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-[13px] text-gray-800 focus:outline-none focus:border-primary"
                             />
                           </div>
                         </div>
@@ -1799,7 +1890,7 @@ function AccountPageContent() {
                           <select
                             value={helpFormData.subject}
                             onChange={(e) => setHelpFormData({ ...helpFormData, subject: e.target.value })}
-                            className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-[13px] text-gray-800 focus:outline-none focus:border-success bg-white appearance-none"
+                            className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-[13px] text-gray-800 focus:outline-none focus:border-primary bg-white appearance-none"
                           >
                             <option value="" disabled>Select a subject</option>
                             <option value="Booking Issue">Booking Issue</option>
@@ -1817,7 +1908,7 @@ function AccountPageContent() {
                             value={helpFormData.message}
                             onChange={(e) => setHelpFormData({ ...helpFormData, message: e.target.value })}
                             maxLength={1000}
-                            className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-[13px] text-gray-800 focus:outline-none focus:border-success resize-none"
+                            className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-[13px] text-gray-800 focus:outline-none focus:border-primary resize-none"
                           ></textarea>
                           <div className="text-right text-[10px] text-gray-400 mt-1">
                             {helpFormData.message.length} / 1000
@@ -1829,7 +1920,7 @@ function AccountPageContent() {
                             type="checkbox"
                             checked={helpFormData.consent}
                             onChange={(e) => setHelpFormData({ ...helpFormData, consent: e.target.checked })}
-                            className="mt-0.5 w-3.5 h-3.5 rounded border-gray-300 text-success focus:ring-success"
+                            className="mt-0.5 w-3.5 h-3.5 rounded border-gray-300 text-primary focus:ring-primary"
                           />
                           <span className="text-[11px] font-medium text-gray-600">I authorize astroved to send notifications via SMS / WhatsApp / email. <span className="text-red-500">*</span></span>
                         </label>
@@ -1837,7 +1928,7 @@ function AccountPageContent() {
                         <button
                           onClick={handleHelpSubmit}
                           disabled={isSubmittingHelp}
-                          className={`bg-success text-white text-[13px] font-bold px-6 py-2.5 rounded-full flex items-center gap-1.5 transition w-max ${isSubmittingHelp ? 'opacity-70 cursor-not-allowed' : 'hover:bg-[#058a51]'}`}
+                          className={`bg-primary text-white text-[13px] font-bold px-6 py-2.5 rounded-full flex items-center gap-1.5 transition w-max ${isSubmittingHelp ? 'opacity-70 cursor-not-allowed' : 'hover:bg-[#0f2d4a]'}`}
                         >
                           {isSubmittingHelp ? 'Submitting...' : 'Submit Request'} {!isSubmittingHelp && <span>&rarr;</span>}
                         </button>
@@ -1875,7 +1966,7 @@ function AccountPageContent() {
                       type="button"
                       onClick={() => setAddressFormData(prev => ({ ...prev, type }))}
                       className={`px-5 py-2 rounded-full text-sm font-bold border transition ${addressFormData.type === type
-                        ? 'bg-success text-white border-success'
+                        ? 'bg-primary text-white border-primary'
                         : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
                         }`}
                     >
@@ -1902,7 +1993,7 @@ function AccountPageContent() {
                       }}
                       className={`w-full border rounded-xl px-4 py-2.5 text-sm text-gray-800 focus:outline-none transition ${addressErrors.fullName
                         ? "border-red-500 focus:border-red-500 bg-red-50/20"
-                        : "border-gray-250 focus:border-success"
+                        : "border-gray-250 focus:border-primary"
                         }`}
                     />
                     {addressErrors.fullName && (
@@ -1931,7 +2022,7 @@ function AccountPageContent() {
                       }}
                       className={`w-full border rounded-xl px-4 py-2.5 text-sm text-gray-800 focus:outline-none transition ${addressErrors.phone
                         ? "border-red-500 focus:border-red-500 bg-red-50/20"
-                        : "border-gray-250 focus:border-success"
+                        : "border-gray-250 focus:border-primary"
                         }`}
                     />
                     {addressErrors.phone && (
@@ -1956,7 +2047,7 @@ function AccountPageContent() {
                     }}
                     className={`w-full border rounded-xl px-4 py-2.5 text-sm text-gray-800 focus:outline-none transition ${addressErrors.address
                       ? "border-red-500 focus:border-red-500 bg-red-50/20"
-                      : "border-gray-250 focus:border-success"
+                      : "border-gray-250 focus:border-primary"
                       }`}
                   />
                   {addressErrors.address && (
@@ -1971,7 +2062,7 @@ function AccountPageContent() {
                     placeholder="Nearby landmark / area"
                     value={addressFormData.landmark}
                     onChange={(e) => setAddressFormData(p => ({ ...p, landmark: e.target.value }))}
-                    className="w-full border border-gray-250 rounded-xl px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:border-success"
+                    className="w-full border border-gray-250 rounded-xl px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:border-primary"
                   />
                 </div>
 
@@ -1993,7 +2084,7 @@ function AccountPageContent() {
                       }}
                       className={`w-full border rounded-xl px-4 py-2.5 text-sm text-gray-800 focus:outline-none transition ${addressErrors.city
                         ? "border-red-500 focus:border-red-500 bg-red-50/20"
-                        : "border-gray-250 focus:border-success"
+                        : "border-gray-250 focus:border-primary"
                         }`}
                     />
                     {addressErrors.city && (
@@ -2017,7 +2108,7 @@ function AccountPageContent() {
                       }}
                       className={`w-full border rounded-xl px-4 py-2.5 text-sm text-gray-800 focus:outline-none transition ${addressErrors.state
                         ? "border-red-500 focus:border-red-500 bg-red-50/20"
-                        : "border-gray-250 focus:border-success"
+                        : "border-gray-250 focus:border-primary"
                         }`}
                     />
                     {addressErrors.state && (
@@ -2045,7 +2136,7 @@ function AccountPageContent() {
                       }}
                       className={`w-full border rounded-xl px-4 py-2.5 text-sm text-gray-800 focus:outline-none transition ${addressErrors.pincode
                         ? "border-red-500 focus:border-red-500 bg-red-50/20"
-                        : "border-gray-250 focus:border-success"
+                        : "border-gray-250 focus:border-primary"
                         }`}
                     />
                     {addressErrors.pincode && (
@@ -2069,7 +2160,7 @@ function AccountPageContent() {
                       }}
                       className={`w-full border rounded-xl px-4 py-2.5 text-sm text-gray-800 focus:outline-none transition ${addressErrors.country
                         ? "border-red-500 focus:border-red-500 bg-red-50/20"
-                        : "border-gray-250 focus:border-success"
+                        : "border-gray-250 focus:border-primary"
                         }`}
                     />
                     {addressErrors.country && (
@@ -2083,7 +2174,7 @@ function AccountPageContent() {
                     type="checkbox"
                     checked={addressFormData.isDefault}
                     onChange={(e) => setAddressFormData(p => ({ ...p, isDefault: e.target.checked }))}
-                    className="w-4 h-4 rounded border-gray-300 text-success focus:ring-success"
+                    className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
                   />
                   <span className="text-[13px] font-medium text-gray-800">Set as default address</span>
                 </label>
@@ -2100,7 +2191,7 @@ function AccountPageContent() {
                 <button
                   type="button"
                   onClick={handleSaveAddress}
-                  className="px-6 py-2.5 rounded-full bg-success text-white text-sm font-bold hover:bg-green-700 transition"
+                  className="px-6 py-2.5 rounded-full bg-primary text-white text-sm font-bold hover:bg-[#0f2d4a] transition"
                 >
                   {addressFormData._id ? "Update Address" : "Add Address"}
                 </button>

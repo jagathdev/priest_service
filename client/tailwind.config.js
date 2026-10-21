@@ -13,7 +13,7 @@ module.exports = {
       colors: {
         primary: '#14395C',
         secondary: '#7B61FF',
-        accent: '#F59E0B',
+        accent: '#881337',
         ink: '#1E293B',
         surface: '#FAFAFF',
         success: '#16a34a',

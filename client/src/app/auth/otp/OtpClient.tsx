@@ -74,10 +74,10 @@ export default function OtpClient() {
     return () => window.clearTimeout(timer);
   }, [resendSeconds]);
 
-  const redirectAfterLogin = () => {
-    const callbackUrl = new URLSearchParams(window.location.search).get("callbackUrl") || "/dashboard";
-    router.push(callbackUrl);
-  };
+  // const redirectAfterLogin = () => {
+  //   const callbackUrl = new URLSearchParams(window.location.search).get("callbackUrl") || "/dashboard";
+  //   router.push(callbackUrl);
+  // };
 
   const handleVerifyOtp = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -106,7 +106,7 @@ export default function OtpClient() {
         setUser(res.data.user);
         document.cookie = "userLogin=true; path=/; max-age=" + 60 * 60 * 24 * 7;
         localStorage.setItem("mockUser", JSON.stringify(res.data.user));
-        redirectAfterLogin();
+        // redirectAfterLogin();
       } else {
         throw new Error("Invalid response from server");
       }

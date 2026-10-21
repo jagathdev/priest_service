@@ -32,14 +32,14 @@ export async function proxy(request: NextRequest) {
     const isUserLoggedIn = request.cookies.get('userLogin')?.value === 'true';
     const token = request.cookies.get('token')?.value;
 
-    if (!isUserLoggedIn || !token) {
-      const loginUrl = new URL('/auth/login', request.url);
-      loginUrl.searchParams.set(
-        'callbackUrl',
-        `${request.nextUrl.pathname}${request.nextUrl.search}`
-      );
-      return NextResponse.redirect(loginUrl);
-    }
+    // if (!isUserLoggedIn || !token) {
+    //   const loginUrl = new URL('/auth/login', request.url);
+    //   loginUrl.searchParams.set(
+    //     'callbackUrl',
+    //     `${request.nextUrl.pathname}${request.nextUrl.search}`
+    //   );
+    //   return NextResponse.redirect(loginUrl);
+    // }
 
     return NextResponse.next();
   }

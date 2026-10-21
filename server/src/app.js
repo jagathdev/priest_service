@@ -34,31 +34,42 @@ app.use((req, res, next) => {
 });
 
 // Parse CORS origins from CLIENT_URLS environment variable
-const getCorsOrigins = () => {
-    const defaultOrigins = [
-        "https://priestservices.astroved.com",
-        "http://localhost:8565",
-        "http://localhost:3000",
-        "https://priest-service.vercel.app"
-    ];
-    if (process.env.CLIENT_URLS) {
-        const parsed = process.env.CLIENT_URLS.split(",")
-            .map((url) => url.trim())
-            .filter(Boolean);
-        return parsed.length > 0 ? parsed : defaultOrigins;
-    }
-    return defaultOrigins;
-};
+const allowedOrigins = [
+    "http://localhost:8565",
+    "http://localhost:3000",
+    "https://priestservices.astroved.com",
+    "https://priest-service.vercel.app"
+];
+
+if (process.env.CLIENT_URLS) {
+    process.env.CLIENT_URLS.split(",")
+        .map((url) => url.trim())
+        .filter(Boolean)
+        .forEach((url) => {
+            if (!allowedOrigins.includes(url)) {
+                allowedOrigins.push(url);
+            }
+        });
+}
 
 // Middlewares
 app.use(
     cors({
-        origin: getCorsOrigins(),
+        origin: (origin, callback) => {
+            // Allow requests with no origin (like mobile apps, curl, or Postman)
+            if (!origin) return callback(null, true);
+            if (allowedOrigins.includes(origin)) {
+                return callback(null, true);
+            }
+            return callback(new Error(`CORS blocked for origin: ${origin}`));
+        },
         methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
         allowedHeaders: ["Content-Type", "Authorization"],
         credentials: true,
+        optionsSuccessStatus: 200,
     })
 );
+
 
 // Apply global rate limiter to all /api routes
 app.use('/api', globalLimiter);
