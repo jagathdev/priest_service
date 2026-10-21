@@ -1,8 +1,16 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import Image from "next/image";
-import { PencilSquareIcon, PlusIcon, TrashIcon, EyeIcon, Bars3Icon } from "@heroicons/react/24/outline";
+import {
+  PencilSquareIcon,
+  PlusIcon,
+  TrashIcon,
+  EyeIcon,
+  Bars3Icon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+} from "@heroicons/react/24/outline";
 
 /** Puja card date stored as DD-MM-YYYY; native date input uses YYYY-MM-DD */
 function ddmmyyyyToIso(value: string): string {
@@ -18,6 +26,59 @@ function isoToDdmmyyyy(iso: string): string {
   if (!iso || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) return "";
   const [y, mo, d] = iso.split("-");
   return `${d}-${mo}-${y}`;
+}
+
+function getSectionIcon(section: string): string {
+  switch (section) {
+    case "Basic & Header Info":
+      return "⚡";
+    case "Media & Banners":
+      return "🖼️";
+    case "Trust & Assurances":
+    case "Trust & Highlights":
+    case "Trust Badges":
+      return "🛡️";
+    case "Schedule & Muhurat":
+      return "⏳";
+    case "Temple & Location":
+      return "🛕";
+    case "Packages & Pricing":
+      return "₹";
+    case "About & Sacred Details":
+      return "📖";
+    case "Vedic Filters":
+      return "🕉️";
+    case "FAQs & Layout":
+      return "❓";
+    default:
+      return "📝";
+  }
+}
+
+interface SectionTheme {
+  gradient: string;
+  iconBg: string;
+  badgeBg: string;
+  badgeText: string;
+  borderColor: string;
+  hoverBorder: string;
+  cardBg: string;
+  pillHover: string;
+}
+
+const UNIFIED_SECTION_THEME: SectionTheme = {
+  gradient: "from-primary via-[#6c5ce7] to-[#5657e8]",
+  iconBg: "bg-gradient-to-br from-primary to-[#5657e8] shadow-md shadow-primary/25",
+  badgeBg: "bg-primary/10",
+  badgeText: "text-primary",
+  borderColor: "border-slate-200/90",
+  hoverBorder: "hover:border-primary/40",
+  cardBg: "bg-white",
+  pillHover: "hover:border-primary hover:bg-primary/5 hover:text-primary",
+};
+
+function getSectionTheme(_section?: string): SectionTheme {
+  return UNIFIED_SECTION_THEME;
 }
 
 interface SubField {
@@ -52,6 +113,7 @@ interface Field {
   objectSchema?: SubField[];
   referenceEndpoint?: string;
   referenceLabelField?: string;
+  section?: string;
 }
 
 interface ContentManagerProps {
@@ -321,7 +383,16 @@ export default function ContentManager({
       return;
     }
 
-    setFormData({});
+    const initialDraft: Record<string, unknown> = {};
+    if (fields.some((f) => f.name === "trustBadges")) {
+      initialDraft.trustBadges = [
+        type === "homa" ? "Homa Video Delivered Within 48 hours" : "Puja Video Delivered Within 48 hours",
+        "Verified & Experienced Pandits",
+        type === "homa" ? "Homa Performed in Sacred Temples" : "Puja Performed in Sacred Temples",
+        "100% Authentic Vedic Rituals",
+      ];
+    }
+    setFormData(initialDraft);
     setFormError(null);
     setEditingId(null);
     setIsAdding(true);
@@ -345,6 +416,15 @@ export default function ContentManager({
         return;
       }
       if (field.type === "array-string" || field.type === "array-object" || field.type === "reference-array" || field.type === "section-order") {
+        if (field.name === "trustBadges" && (!Array.isArray(raw) || raw.length === 0)) {
+          draft[field.name] = [
+            type === "homa" ? "Homa Video Delivered Within 48 hours" : "Puja Video Delivered Within 48 hours",
+            "Verified & Experienced Pandits",
+            type === "homa" ? "Homa Performed in Sacred Temples" : "Puja Performed in Sacred Temples",
+            "100% Authentic Vedic Rituals",
+          ];
+          return;
+        }
         draft[field.name] = Array.isArray(raw) && raw.length > 0 ? raw : (field.type === "section-order" ? field.options || [] : []);
         return;
       }
@@ -550,34 +630,480 @@ export default function ContentManager({
   const prevFilterKey = useMemo(() => searchQuery + JSON.stringify(activeFilters), [searchQuery, activeFilters]);
   useEffect(() => { setCurrentPage(1); }, [prevFilterKey]);
 
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-brand-ink">{title}</h1>
-        <div className="flex items-center gap-2">
-          {isAdding && (
-            <button
-              form="content-manager-form"
-              type="submit"
-              disabled={submitting}
-              className="flex items-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-[#5657e8] disabled:opacity-50"
+  const sectionGroups = useMemo(() => {
+    const groups: { name: string; fields: Field[] }[] = [];
+    const map = new Map<string, Field[]>();
+
+    fields.forEach((field) => {
+      const secName = field.section || "General Information";
+      if (!map.has(secName)) {
+        map.set(secName, []);
+        groups.push({ name: secName, fields: map.get(secName)! });
+      }
+      map.get(secName)!.push(field);
+    });
+
+    return groups;
+  }, [fields]);
+
+  const navScrollRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const checkScrollability = useCallback(() => {
+    const el = navScrollRef.current;
+    if (!el) return;
+    const hasOverflow = el.scrollWidth > el.clientWidth;
+    setCanScrollLeft(el.scrollLeft > 10);
+    setCanScrollRight(hasOverflow && el.scrollLeft + el.clientWidth < el.scrollWidth - 10);
+  }, []);
+
+  useEffect(() => {
+    if (!isAdding) return;
+    const t1 = setTimeout(checkScrollability, 100);
+    const t2 = setTimeout(checkScrollability, 400);
+    window.addEventListener("resize", checkScrollability);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      window.removeEventListener("resize", checkScrollability);
+    };
+  }, [isAdding, checkScrollability, sectionGroups]);
+
+  const scrollNav = (direction: "left" | "right") => {
+    const el = navScrollRef.current;
+    if (!el) return;
+    const distance = 260;
+    el.scrollBy({ left: direction === "left" ? -distance : distance, behavior: "smooth" });
+    setTimeout(checkScrollability, 300);
+  };
+
+  const renderField = (field: Field) => {
+    const isPrice =
+      field.type === "number" ||
+      field.name.toLowerCase().includes("price") ||
+      field.name.toLowerCase().includes("inr");
+
+    return (
+      <div className="space-y-1.5">
+        <div className="flex items-center justify-between">
+          <label htmlFor={field.name} className="block text-xs font-bold uppercase tracking-wider text-slate-700">
+            {field.label} {field.required && <span className="text-red-500 font-bold">*</span>}
+          </label>
+          {field.type === "url" && formData[field.name] && (
+            <a
+              href={String(formData[field.name])}
+              target="_blank"
+              rel="noreferrer"
+              className="text-[11px] text-primary hover:underline font-bold inline-flex items-center gap-1"
             >
-              {submitting ? "Saving..." : editingId ? "Update Item" : "Save Item"}
-            </button>
-          )}
-          {(!hideAddButton || isAdding) && (
-            <button
-              onClick={handleOpenAdd}
-              className={`flex items-center rounded-md px-4 py-2 text-sm font-medium text-white ${isAdding
-                ? "bg-gray-500 hover:bg-gray-600"
-                : "bg-primary hover:bg-[#5657e8]"
-                }`}
-            >
-              {isAdding ? "Cancel" : <><PlusIcon className="mr-2 h-5 w-5" /> Add New</>}
-            </button>
+              View link ↗
+            </a>
           )}
         </div>
+
+        {field.type === "date-ddmmyyyy" ? (
+          <input
+            type="date"
+            id={field.name}
+            name={field.name}
+            required={field.required}
+            value={ddmmyyyyToIso(String(formData[field.name] ?? ""))}
+            onChange={(e) => {
+              const iso = e.target.value;
+              setFormData((prev: Record<string, unknown>) => ({
+                ...prev,
+                [field.name]: iso ? isoToDdmmyyyy(iso) : "",
+              }));
+            }}
+            className="block w-full rounded-xl border border-slate-200 bg-slate-50/70 px-3.5 py-2.5 text-sm text-gray-900 focus:bg-white focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/10 shadow-2xs transition-all"
+          />
+        ) : field.type === "datetime-local" ? (
+          <input
+            type="datetime-local"
+            id={field.name}
+            name={field.name}
+            required={field.required}
+            placeholder={field.placeholder}
+            value={formData[field.name] || ""}
+            onChange={handleInputChange}
+            className="block w-full rounded-xl border border-slate-200 bg-slate-50/70 px-3.5 py-2.5 text-sm text-gray-900 focus:bg-white focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/10 shadow-2xs transition-all"
+          />
+        ) : field.type === "reference-array" ? (
+          <div className="space-y-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {referenceData[field.name]?.map((item: any) => {
+                const isChecked = (formData[field.name] || []).includes(String(item._id));
+                return (
+                  <label
+                    key={item._id}
+                    className={`flex items-center gap-2.5 p-3.5 rounded-xl border text-sm cursor-pointer transition-all ${
+                      isChecked
+                        ? "border-primary bg-gradient-to-r from-primary/10 via-indigo-50/60 to-white text-primary font-bold shadow-xs"
+                        : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-300"
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={isChecked}
+                      onChange={(e) => {
+                        const checked = e.target.checked;
+                        setFormData((prev: any) => {
+                          const arr = prev[field.name] || [];
+                          if (checked) {
+                            return { ...prev, [field.name]: [...arr, String(item._id)] };
+                          }
+                          return { ...prev, [field.name]: arr.filter((id: string) => id !== String(item._id)) };
+                        });
+                      }}
+                      className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary accent-primary"
+                    />
+                    <span className="truncate">{item[field.referenceLabelField || "name"] || item.title}</span>
+                  </label>
+                );
+              })}
+              {!referenceData[field.name] && <div className="text-sm text-slate-400 py-2">Loading options...</div>}
+              {referenceData[field.name]?.length === 0 && <div className="text-sm text-slate-400 py-2">No items available.</div>}
+            </div>
+          </div>
+        ) : field.type === "section-order" ? (
+          <div className="space-y-2.5 rounded-2xl border border-slate-200 bg-slate-50/60 p-4">
+            <p className="text-xs text-slate-500 mb-2">Drag and drop the cards below to change the live page section sequence:</p>
+            {(Array.isArray(formData[field.name]) && formData[field.name].length > 0 ? formData[field.name] : field.options || []).map((item: string, idx: number) => (
+              <div
+                key={item}
+                draggable
+                onDragStart={() => setDraggedItemIndex(idx)}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  if (draggedItemIndex === null || draggedItemIndex === idx) return;
+                  const currentOrder = Array.isArray(formData[field.name]) && formData[field.name].length > 0 ? formData[field.name] : field.options || [];
+                  const newOrder = [...currentOrder];
+                  const [draggedItem] = newOrder.splice(draggedItemIndex, 1);
+                  newOrder.splice(idx, 0, draggedItem);
+                  setFormData((prev: any) => ({ ...prev, [field.name]: newOrder }));
+                  setDraggedItemIndex(null);
+                }}
+                className="flex items-center gap-3 p-3.5 bg-white border border-slate-200/90 rounded-xl cursor-grab active:cursor-grabbing hover:border-primary hover:shadow-md transition-all"
+              >
+                <span className="flex h-7 w-7 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-indigo-600 text-xs font-bold text-white shadow-xs">
+                  {idx + 1}
+                </span>
+                <Bars3Icon className="h-5 w-5 text-slate-400" />
+                <span className="font-bold text-slate-800 capitalize text-sm">{item.replace(/-/g, " ")}</span>
+              </div>
+            ))}
+          </div>
+        ) : field.type === "array-string" ? (
+          <div className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50/60 p-4">
+            {(Array.isArray(formData[field.name]) && formData[field.name].length > 0 ? formData[field.name] : []).map((val: string, idx: number) => (
+              <div key={idx} className="flex items-center gap-2">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-600 shadow-2xs">
+                  {idx + 1}
+                </span>
+                <input
+                  type="text"
+                  value={val}
+                  onChange={(e) => handleArrayChange(field.name, idx, e.target.value)}
+                  placeholder={field.placeholder || "Enter value"}
+                  className="block w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-sm text-gray-900 focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/10 shadow-2xs"
+                />
+                {field.name.toLowerCase().includes("image") && Boolean(val) && (
+                  <img
+                    src={val}
+                    alt="Preview"
+                    className="h-9 w-9 rounded-xl object-cover border border-slate-200 bg-white shrink-0 shadow-2xs"
+                    onError={(e) => { (e.target as HTMLElement).style.display = "none"; }}
+                  />
+                )}
+                <button
+                  type="button"
+                  onClick={() => removeArrayItem(field.name, idx, field.label)}
+                  className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-red-200 bg-red-50 text-red-600 hover:bg-red-500 hover:text-white transition-all shadow-2xs"
+                  title="Remove item"
+                >
+                  <TrashIcon className="h-4 w-4" />
+                </button>
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={() => addArrayItem(field.name, "array-string")}
+              className="group inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-violet-500/10 via-primary/15 to-indigo-500/10 border-2 border-primary/30 px-4 py-2.5 text-xs font-bold text-primary hover:from-primary hover:to-[#5657e8] hover:text-white hover:border-transparent transition-all duration-200 shadow-xs w-full justify-center"
+            >
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-white group-hover:bg-white group-hover:text-primary transition-colors shadow-xs">
+                <PlusIcon className="h-3.5 w-3.5 stroke-[3]" />
+              </span>
+              <span>Add Item to {field.label}</span>
+            </button>
+          </div>
+        ) : field.type === "array-object" ? (
+          <div className="space-y-4">
+            {(Array.isArray(formData[field.name]) ? formData[field.name] : []).map((val: any, idx: number) => {
+              const itemTitle = val.name || val.title || val.question || `${field.label} #${idx + 1}`;
+              const hasPrice = val.priceINR !== undefined && val.priceINR !== "" && !isNaN(Number(val.priceINR));
+              const isPackageOrOffering = field.name === "packages" || field.name === "offerings";
+
+              return (
+                <div
+                  key={idx}
+                  className={`relative rounded-2xl border ${
+                    isPackageOrOffering
+                      ? "border-amber-300/80 bg-gradient-to-br from-amber-50/50 via-white to-orange-50/30 hover:border-amber-400"
+                      : "border-slate-200/90 bg-gradient-to-br from-slate-50/50 via-white to-indigo-50/20 hover:border-primary/40"
+                  } p-5 shadow-xs hover:shadow-md transition-all duration-200`}
+                >
+                  <div className="flex items-center justify-between pb-3.5 mb-4 border-b border-gray-100">
+                    <div className="flex items-center gap-2.5">
+                      <span
+                        className={`flex h-6 w-6 items-center justify-center rounded-lg ${
+                          isPackageOrOffering
+                            ? "bg-gradient-to-br from-amber-500 to-orange-600 text-white"
+                            : "bg-gradient-to-br from-primary to-indigo-600 text-white"
+                        } text-[11px] font-bold shadow-xs`}
+                      >
+                        #{idx + 1}
+                      </span>
+                      <span className="text-sm font-bold text-gray-900">
+                        {itemTitle}
+                      </span>
+                      {hasPrice && (
+                        <span className="inline-flex items-center rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 px-3 py-0.5 text-xs font-bold shadow-2xs">
+                          ₹{Number(val.priceINR).toLocaleString("en-IN")}
+                        </span>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeArrayItem(field.name, idx, field.label)}
+                      className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-bold text-red-600 bg-red-50 hover:bg-red-500 hover:text-white border border-red-200/60 transition-all"
+                    >
+                      <TrashIcon className="h-4 w-4" /> Delete
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    {field.objectSchema?.map((sub) => {
+                      const isSubPrice = sub.name.toLowerCase().includes("price") || sub.name.toLowerCase().includes("inr");
+                      const isFullSpan = sub.type === "textarea" || sub.name === "description" || sub.name === "answer";
+
+                      return (
+                        <div key={sub.name} className={isFullSpan ? "sm:col-span-2" : ""}>
+                          <label className="block text-xs font-bold text-slate-700 mb-1">
+                            {sub.label}
+                          </label>
+                          {sub.type === "textarea" ? (
+                            <textarea
+                              value={val[sub.name] || ""}
+                              onChange={(e) => handleArrayChange(field.name, idx, e.target.value, sub.name)}
+                              rows={2}
+                              placeholder={sub.placeholder}
+                              className="block w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/10 shadow-2xs"
+                            />
+                          ) : sub.type === "select" ? (
+                            <select
+                              value={val[sub.name] || ""}
+                              onChange={(e) => handleArrayChange(field.name, idx, e.target.value, sub.name)}
+                              className="block w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-sm text-gray-900 focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/10 shadow-2xs"
+                            >
+                              <option value="">-- Select {sub.label} --</option>
+                              {sub.options?.map((opt) => (
+                                <option key={opt} value={opt}>{opt}</option>
+                              ))}
+                            </select>
+                          ) : isSubPrice ? (
+                            <div className="relative rounded-xl shadow-2xs">
+                              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-bold shadow-xs">₹</span>
+                              </div>
+                              <input
+                                type="number"
+                                value={val[sub.name] ?? ""}
+                                onChange={(e) => handleArrayChange(field.name, idx, e.target.value, sub.name)}
+                                placeholder={sub.placeholder || "Price in INR (₹)"}
+                                className="block w-full rounded-xl border border-slate-200 bg-white pl-11 pr-3.5 py-2 text-sm text-gray-900 focus:border-amber-500 focus:outline-none focus:ring-4 focus:ring-amber-500/15 shadow-2xs"
+                              />
+                            </div>
+                          ) : (
+                            <div>
+                              <input
+                                type={sub.type}
+                                value={val[sub.name] || ""}
+                                onChange={(e) => handleArrayChange(field.name, idx, e.target.value, sub.name)}
+                                placeholder={sub.placeholder}
+                                className="block w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/10 shadow-2xs"
+                              />
+                              {sub.type === "url" && Boolean(val[sub.name]) && (
+                                <div className="mt-1.5 flex items-center gap-2">
+                                  <img
+                                    src={val[sub.name]}
+                                    alt="Preview"
+                                    className="h-8 w-8 rounded-lg object-cover border border-slate-200 shadow-2xs"
+                                    onError={(e) => { (e.target as HTMLElement).style.display = "none"; }}
+                                  />
+                                  <span className="text-[11px] text-slate-400 truncate max-w-xs">{val[sub.name]}</span>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+
+            <button
+              type="button"
+              onClick={() => addArrayItem(field.name, "array-object")}
+              className="group inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-primary via-[#6c5ce7] to-[#5657e8] px-5 py-3 text-xs font-bold text-white hover:brightness-110 active:scale-[0.99] transition-all shadow-md shadow-primary/25 w-full justify-center"
+            >
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white/25 text-white group-hover:rotate-90 transition-transform">
+                <PlusIcon className="h-3.5 w-3.5 stroke-[3]" />
+              </span>
+              <span>Add New {field.label}</span>
+            </button>
+          </div>
+        ) : field.type === "textarea" || field.type === "json" ? (
+          <textarea
+            id={field.name}
+            name={field.name}
+            required={field.required}
+            placeholder={field.placeholder}
+            value={formData[field.name] || ""}
+            onChange={handleInputChange}
+            rows={field.type === "json" ? 8 : (field.name === "about" || field.name === "description" ? 4 : 3)}
+            className="block w-full rounded-xl border border-slate-200 bg-slate-50/70 px-3.5 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:bg-white focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/10 shadow-2xs transition-all"
+          />
+        ) : field.type === "select" ? (
+          <select
+            id={field.name}
+            name={field.name}
+            required={field.required}
+            value={formData[field.name] || ""}
+            onChange={handleInputChange}
+            className="block w-full rounded-xl border border-slate-200 bg-slate-50/70 px-3.5 py-2.5 text-sm text-gray-900 focus:bg-white focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/10 shadow-2xs transition-all"
+          >
+            <option value="">-- Select {field.label} --</option>
+            {field.options?.map((opt) => (
+              <option key={opt} value={opt}>
+                {opt}
+              </option>
+            ))}
+          </select>
+        ) : field.type === "checkbox" ? (
+          <label className="flex items-center gap-3 p-3.5 rounded-2xl border border-slate-200 bg-slate-50/60 hover:bg-white hover:border-primary/40 cursor-pointer shadow-2xs transition-all">
+            <input
+              type="checkbox"
+              id={field.name}
+              name={field.name}
+              checked={formData[field.name] !== undefined ? Boolean(formData[field.name]) : true}
+              onChange={handleInputChange}
+              className="h-5 w-5 rounded-md border-slate-300 text-primary focus:ring-primary cursor-pointer accent-primary"
+            />
+            <div className="flex-1">
+              <span className="text-sm font-bold text-slate-800">{field.label}</span>
+              {field.placeholder && <p className="text-xs text-slate-500 mt-0.5">{field.placeholder}</p>}
+            </div>
+          </label>
+        ) : isPrice ? (
+          <div className="relative rounded-xl shadow-2xs">
+            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+              <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-bold shadow-xs">₹</span>
+            </div>
+            <input
+              type="number"
+              id={field.name}
+              name={field.name}
+              required={field.required}
+              placeholder={field.placeholder || "0"}
+              value={formData[field.name] ?? ""}
+              onChange={handleInputChange}
+              className="block w-full rounded-xl border border-slate-200 bg-slate-50/70 pl-11 pr-3.5 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:bg-white focus:border-amber-500 focus:outline-none focus:ring-4 focus:ring-amber-500/15 shadow-2xs transition-all"
+            />
+          </div>
+        ) : (
+          <div>
+            <input
+              type={field.type === "url" ? "text" : field.type}
+              id={field.name}
+              name={field.name}
+              required={field.required}
+              placeholder={field.placeholder}
+              value={formData[field.name] || ""}
+              onChange={handleInputChange}
+              list={field.options ? `${field.name}-options` : undefined}
+              className="block w-full rounded-xl border border-slate-200 bg-slate-50/70 px-3.5 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:bg-white focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/10 shadow-2xs transition-all"
+            />
+            {field.options && (
+              <datalist id={`${field.name}-options`}>
+                {field.options.map((opt) => (
+                  <option key={opt} value={opt} />
+                ))}
+              </datalist>
+            )}
+            {field.type === "url" && Boolean(formData[field.name]) && (
+              <div className="mt-2.5 flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50/80 p-2.5 shadow-2xs">
+                <img
+                  src={String(formData[field.name])}
+                  alt={field.label}
+                  className="h-12 w-12 rounded-lg object-cover border border-slate-200 bg-white shrink-0 shadow-2xs"
+                  onError={(e) => { (e.target as HTMLElement).style.display = "none"; }}
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-bold text-slate-800">Live Preview</p>
+                  <p className="text-[11px] text-slate-400 truncate font-mono">{String(formData[field.name])}</p>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
+    );
+  };
+
+  return (
+    <div className="min-h-full">
+      {/* Sticky Header Bar: Flush at top:0 with zero gap/hole */}
+      <div className="sticky top-0 z-30 w-full bg-[#f3f0ff] border-b border-[#e8e2ff] px-4 md:px-6 py-4 shadow-xs">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-brand-ink">
+              {isAdding
+                ? (editingId ? (formData.title || title.slice(0, -1)) : `Add New ${title.slice(0, -1)}`)
+                : title}
+            </h1>
+          </div>
+          <div className="flex items-center gap-2">
+            {isAdding && (
+              <button
+                form="content-manager-form"
+                type="submit"
+                disabled={submitting}
+                className="flex items-center rounded-xl bg-gradient-to-r from-primary to-[#5657e8] px-5 py-2 text-sm font-bold text-white hover:brightness-110 active:scale-[0.99] disabled:opacity-50 shadow-md shadow-primary/25 transition-all"
+              >
+                {submitting ? "Saving..." : editingId ? "Update Item" : "Save Item"}
+              </button>
+            )}
+            {(!hideAddButton || isAdding) && (
+              <button
+                onClick={handleOpenAdd}
+                className={`flex items-center rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-xs transition-all ${isAdding
+                  ? "bg-gray-600 hover:bg-gray-700"
+                  : "bg-primary hover:bg-[#5657e8]"
+                  }`}
+              >
+                {isAdding ? "Cancel" : <><PlusIcon className="mr-1.5 h-4 w-4 stroke-[3]" /> Add New</>}
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Main Page Content Body with padding */}
+      <div className="p-4 md:p-6 space-y-6">
 
       {!isAdding && (
         <div className="rounded-lg border border-[#e8e2ff] bg-white p-4 shadow-sm">
@@ -641,238 +1167,142 @@ export default function ContentManager({
       )}
 
       {isAdding && (
-        <div className="rounded-lg border border-[#e8e2ff] bg-white p-6 shadow-sm">
-          <h2 className="mb-4 text-lg font-medium text-brand-ink">
-            {editingId ? `Edit ${title.slice(0, -1)}` : `Add New ${title.slice(0, -1)}`}
-          </h2>
-          <form id="content-manager-form" onSubmit={handleSubmit} className="space-y-4">
+        <div className="space-y-8 pt-2">
+          {/* Quick Jump Pill Navigation with Scroll Arrows */}
+          {sectionGroups.length > 1 && (
+            <div className="sticky top-16 z-20 -mx-2 flex items-center rounded-2xl border border-gray-200/90 bg-white/95 px-2 py-2 backdrop-blur-md shadow-xs">
+              {/* Left Arrow Button */}
+              {canScrollLeft && (
+                <button
+                  type="button"
+                  onClick={() => scrollNav("left")}
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-700 hover:bg-gray-100 hover:text-primary transition-all shadow-xs mr-1.5"
+                  title="Scroll sections left"
+                  aria-label="Scroll left"
+                >
+                  <ChevronLeftIcon className="h-4 w-4 stroke-[2.5]" />
+                </button>
+              )}
+
+              <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400 pl-2 pr-1 shrink-0">
+                Sections:
+              </span>
+
+              {/* Scrollable Container */}
+              <div
+                ref={navScrollRef}
+                onScroll={checkScrollability}
+                className="flex items-center gap-2 overflow-x-auto scroll-smooth py-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden flex-1"
+              >
+                {sectionGroups.map((group, idx) => {
+                  const theme = getSectionTheme(group.name);
+                  return (
+                    <button
+                      key={group.name}
+                      type="button"
+                      onClick={() => {
+                        const el = document.getElementById(`section-${idx}`);
+                        if (el) {
+                          el.scrollIntoView({ behavior: "smooth", block: "start" });
+                        }
+                      }}
+                      className={`inline-flex shrink-0 items-center gap-2 rounded-xl border border-gray-200/80 bg-white px-3.5 py-1.5 text-xs font-semibold text-gray-700 ${theme.pillHover} hover:shadow-xs transition-all duration-150`}
+                    >
+                      <span className="text-sm">{getSectionIcon(group.name)}</span>
+                      <span>{group.name}</span>
+                      <span className={`rounded-full ${theme.badgeBg} ${theme.badgeText} px-2 py-0.5 text-[10px] font-bold`}>
+                        {group.fields.length}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Right Arrow Button when required */}
+              {canScrollRight && (
+                <button
+                  type="button"
+                  onClick={() => scrollNav("right")}
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-r from-primary to-[#5657e8] text-white shadow-md shadow-primary/30 hover:brightness-110 active:scale-95 transition-all ml-1.5 animate-pulse hover:animate-none"
+                  title="More sections"
+                  aria-label="Scroll right"
+                >
+                  <ChevronRightIcon className="h-4 w-4 stroke-[3]" />
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Form with Unique Colorful Sections and Top Spacing */}
+          <form id="content-manager-form" onSubmit={handleSubmit} className="space-y-8 pt-2">
             {formError ? (
-              <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+              <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-semibold text-red-700 shadow-xs">
                 {formError}
               </div>
             ) : null}
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              {fields.map((field) => (
-                <div
-                  key={field.name}
-                  className={`${field.type === "textarea" || field.type === "json" || field.type === "array-string" || field.type === "array-object" || field.type === "reference-array" ? "sm:col-span-2" : ""} border-b border-gray-200 pb-4`}
-                >
-                  <label htmlFor={field.name} className="block text-sm font-medium text-gray-700 mb-1">
-                    {field.label}
-                  </label>
 
-                  {field.type === "date-ddmmyyyy" ? (
-                    <input
-                      type="date"
-                      id={field.name}
-                      name={field.name}
-                      required={field.required}
-                      value={ddmmyyyyToIso(String(formData[field.name] ?? ""))}
-                      onChange={(e) => {
-                        const iso = e.target.value;
-                        setFormData((prev: Record<string, unknown>) => ({
-                          ...prev,
-                          [field.name]: iso ? isoToDdmmyyyy(iso) : "",
-                        }));
-                      }}
-                      className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-primary focus:outline-none focus:ring-ink sm:text-sm"
-                    />
-                  ) : field.type === "reference-array" ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
-                      {referenceData[field.name]?.map((item: any) => (
-                        <label key={item._id} className="flex items-center gap-2 text-sm text-gray-700 bg-gray-50 px-3 py-2 rounded-md border border-gray-200 cursor-pointer hover:bg-gray-100 transition-colors">
-                          <input
-                            type="checkbox"
-                            checked={(formData[field.name] || []).includes(String(item._id))}
-                            onChange={(e) => {
-                              const checked = e.target.checked;
-                              setFormData((prev: any) => {
-                                const arr = prev[field.name] || [];
-                                if (checked) {
-                                  return { ...prev, [field.name]: [...arr, String(item._id)] };
-                                }
-                                return { ...prev, [field.name]: arr.filter((id: string) => id !== String(item._id)) };
-                              });
-                            }}
-                            className="h-4 w-4 rounded border-gray-300 text-ink focus:ring-ink"
-                          />
-                          {item[field.referenceLabelField || "name"]}
-                        </label>
-                      ))}
-                      {!referenceData[field.name] && <div className="text-sm text-gray-500">Loading...</div>}
-                      {referenceData[field.name]?.length === 0 && <div className="text-sm text-gray-500">No items available.</div>}
-                    </div>
-                  ) : field.type === "section-order" ? (
-                    <div className="space-y-2 mt-2">
-                      {(Array.isArray(formData[field.name]) && formData[field.name].length > 0 ? formData[field.name] : field.options || []).map((item: string, idx: number) => (
-                        <div
-                          key={item}
-                          draggable
-                          onDragStart={() => setDraggedItemIndex(idx)}
-                          onDragOver={(e) => e.preventDefault()}
-                          onDrop={(e) => {
-                            e.preventDefault();
-                            if (draggedItemIndex === null || draggedItemIndex === idx) return;
-                            const currentOrder = Array.isArray(formData[field.name]) && formData[field.name].length > 0 ? formData[field.name] : field.options || [];
-                            const newOrder = [...currentOrder];
-                            const [draggedItem] = newOrder.splice(draggedItemIndex, 1);
-                            newOrder.splice(idx, 0, draggedItem);
-                            setFormData((prev: any) => ({ ...prev, [field.name]: newOrder }));
-                            setDraggedItemIndex(null);
-                          }}
-                          className="flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-lg cursor-move hover:border-primary transition-colors"
-                        >
-                          <Bars3Icon className="h-5 w-5 text-gray-400" />
-                          <span className="font-medium text-gray-700 capitalize">{item.replace(/-/g, " ")}</span>
+            {sectionGroups.map((group, groupIdx) => {
+              const theme = getSectionTheme(group.name);
+              return (
+                <div
+                  key={group.name}
+                  id={`section-${groupIdx}`}
+                  className={`group relative overflow-hidden rounded-2xl border ${theme.borderColor} ${theme.cardBg} shadow-xs hover:shadow-md ${theme.hoverBorder} transition-all duration-300 scroll-mt-44`}
+                >
+                  {/* Top Colorful Gradient Header Accent Line */}
+                  <div className={`h-1.5 w-full bg-gradient-to-r ${theme.gradient}`} />
+
+                  <div className="p-7 md:p-8 pt-8">
+                    {/* Section Header */}
+                    <div className="flex items-start justify-between pb-5 mb-7 border-b border-gray-100 pt-1">
+                      <div className="flex items-center gap-3.5">
+                        <span className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${theme.iconBg} text-xl text-white shadow-md transition-transform group-hover:scale-105 duration-200`}>
+                          {getSectionIcon(group.name)}
+                        </span>
+                        <div>
+                          <h3 className="text-lg font-bold text-gray-900">{group.name}</h3>
                         </div>
-                      ))}
-                      <p className="text-xs text-gray-500 mt-2">Drag and drop to reorder sections on the frontend.</p>
+                      </div>
                     </div>
-                  ) : field.type === "array-string" ? (
-                    <div className="space-y-3 rounded-lg border border-gray-200 bg-gray-50 p-4">
-                      {(Array.isArray(formData[field.name]) && formData[field.name].length > 0 ? formData[field.name] : []).map((val: string, idx: number) => (
-                        <div key={idx} className="flex gap-2">
-                          <input
-                            type="text"
-                            value={val}
-                            onChange={(e) => handleArrayChange(field.name, idx, e.target.value)}
-                            placeholder={field.placeholder || "Enter value"}
-                            className="block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-primary focus:outline-none focus:ring-ink sm:text-sm"
-                          />
-                          <button type="button" onClick={() => removeArrayItem(field.name, idx, field.label)} className="text-red-500 hover:text-red-700 bg-white border border-red-200 px-2 rounded-md">
-                            <TrashIcon className="h-5 w-5" />
-                          </button>
-                        </div>
-                      ))}
-                      <button
-                        type="button"
-                        onClick={() => addArrayItem(field.name, "array-string")}
-                        className="inline-flex items-center gap-1 rounded-md bg-white border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                      >
-                        <PlusIcon className="h-4 w-4" /> Add {field.label}
-                      </button>
-                    </div>
-                  ) : field.type === "array-object" ? (
-                    <div className="space-y-4">
-                      {(Array.isArray(formData[field.name]) ? formData[field.name] : []).map((val: any, idx: number) => (
-                        <div key={idx} className="relative rounded-lg border border-gray-200 bg-gray-50 p-4">
-                          <button type="button" onClick={() => removeArrayItem(field.name, idx, field.label)} className="absolute right-2 top-2 text-red-500 hover:text-red-700">
-                            <TrashIcon className="h-5 w-5" />
-                          </button>
-                          <div className="grid grid-cols-1 gap-4 mt-2">
-                            {field.objectSchema?.map(sub => (
-                              <div key={sub.name}>
-                                <label className="block text-xs font-medium text-gray-700">{sub.label}</label>
-                                {sub.type === "textarea" ? (
-                                  <textarea
-                                    value={val[sub.name] || ""}
-                                    onChange={(e) => handleArrayChange(field.name, idx, e.target.value, sub.name)}
-                                    rows={2}
-                                    placeholder={sub.placeholder}
-                                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-primary focus:outline-none focus:ring-ink sm:text-sm"
-                                  />
-                                ) : sub.type === "select" ? (
-                                  <select
-                                    value={val[sub.name] || ""}
-                                    onChange={(e) => handleArrayChange(field.name, idx, e.target.value, sub.name)}
-                                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-primary focus:outline-none focus:ring-ink sm:text-sm"
-                                  >
-                                    <option value="">-- Select {sub.label} --</option>
-                                    {sub.options?.map(opt => (
-                                      <option key={opt} value={opt}>{opt}</option>
-                                    ))}
-                                  </select>
-                                ) : (
-                                  <input
-                                    type={sub.type}
-                                    value={val[sub.name] || ""}
-                                    onChange={(e) => handleArrayChange(field.name, idx, e.target.value, sub.name)}
-                                    placeholder={sub.placeholder || (sub.name.toLowerCase().includes("price") ? "$ Price" : undefined)}
-                                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-primary focus:outline-none focus:ring-ink sm:text-sm"
-                                  />
-                                )}
-                              </div>
-                            ))}
+
+                    {/* Grid of Fields */}
+                    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                      {group.fields.map((field) => {
+                        const isFullSpan =
+                          field.type === "textarea" ||
+                          field.type === "json" ||
+                          field.type === "array-string" ||
+                          field.type === "array-object" ||
+                          field.type === "reference-array" ||
+                          field.type === "section-order";
+
+                        return (
+                          <div key={field.name} className={isFullSpan ? "sm:col-span-2" : ""}>
+                            {renderField(field)}
                           </div>
-                        </div>
-                      ))}
-                      <button type="button" onClick={() => addArrayItem(field.name, "array-object")} className="mt-3 inline-flex text-sm text-ink font-medium hover:underline">
-                        + Add {field.label}
-                      </button>
+                        );
+                      })}
                     </div>
-                  ) : field.type === "textarea" || field.type === "json" ? (
-                    <textarea
-                      id={field.name}
-                      name={field.name}
-                      required={field.required}
-                      placeholder={field.placeholder}
-                      value={formData[field.name] || ""}
-                      onChange={handleInputChange}
-                      rows={field.type === "json" ? 8 : 3}
-                      className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-primary focus:outline-none focus:ring-ink sm:text-sm"
-                    />
-                  ) : field.type === "select" ? (
-                    <select
-                      id={field.name}
-                      name={field.name}
-                      required={field.required}
-                      value={formData[field.name] || ""}
-                      onChange={handleInputChange}
-                      className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-primary focus:outline-none focus:ring-ink sm:text-sm"
-                    >
-                      <option value="">-- Select {field.label} --</option>
-                      {field.options?.map((opt) => (
-                        <option key={opt} value={opt}>
-                          {opt}
-                        </option>
-                      ))}
-                    </select>
-                  ) : field.type === "checkbox" ? (
-                    <div className="flex items-center gap-3 mt-2">
-                      <input
-                        type="checkbox"
-                        id={field.name}
-                        name={field.name}
-                        checked={formData[field.name] !== undefined ? Boolean(formData[field.name]) : true}
-                        onChange={handleInputChange}
-                        className="h-5 w-5 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
-                      />
-                      <label htmlFor={field.name} className="text-sm font-medium text-gray-700 cursor-pointer">
-                        {field.placeholder || `Enable ${field.label}`}
-                      </label>
-                    </div>
-                  ) : (
-                    <>
-                      <input
-                        type={field.type === "url" ? "text" : field.type}
-                        id={field.name}
-                        name={field.name}
-                        required={field.required}
-                        placeholder={field.placeholder || (field.name.toLowerCase().includes("price") ? "$ Price" : undefined)}
-                        value={formData[field.name] || ""}
-                        onChange={handleInputChange}
-                        list={field.options ? `${field.name}-options` : undefined}
-                        className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-primary focus:outline-none focus:ring-ink sm:text-sm"
-                      />
-                      {field.options && (
-                        <datalist id={`${field.name}-options`}>
-                          {field.options.map((opt) => (
-                            <option key={opt} value={opt} />
-                          ))}
-                        </datalist>
-                      )}
-                    </>
-                  )}
+                  </div>
                 </div>
-              ))}
-            </div>
-            <div className="flex justify-end">
+              );
+            })}
+
+            {/* Form Actions Row (Inline at bottom of form, non-floating) */}
+            <div className="flex items-center justify-end gap-3 pt-6 pb-12 border-t border-gray-200/80">
+              <button
+                type="button"
+                onClick={handleOpenAdd}
+                className="rounded-xl border border-gray-300 bg-white px-5 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors shadow-xs"
+              >
+                Cancel
+              </button>
               <button
                 type="submit"
                 disabled={submitting}
-                className="rounded-md bg-primary px-6 py-2 text-sm font-medium text-white hover:bg-[#5657e8] disabled:opacity-50"
+                className="rounded-xl bg-gradient-to-r from-primary via-[#6c5ce7] to-[#5657e8] px-7 py-2.5 text-sm font-bold text-white hover:brightness-110 active:scale-[0.99] disabled:opacity-50 transition-all shadow-md shadow-primary/30 flex items-center gap-2"
               >
-                {submitting ? "Saving..." : editingId ? "Update Item" : "Save Item"}
+                {submitting ? "Saving..." : editingId ? "Update Changes" : "Save Entry"}
               </button>
             </div>
           </form>
@@ -1054,6 +1484,8 @@ export default function ContentManager({
           )}
         </div>
       )}
+
+      </div>
 
       {/* Review Detail Modal */}
       {viewingReview && (

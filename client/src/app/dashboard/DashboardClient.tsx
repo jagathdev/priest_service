@@ -368,30 +368,48 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
         </div>
       </section>
 
-      {/* ── 5. Trust Badges Strip (Marquee on 1024px and Tablet screens) ── */}
+      {/* ── 5. Trust Badges Strip (Marquee below 1440px screen size) ── */}
       <div className="w-full bg-[#f0f8f1] border-y border-green-100 py-6 sm:py-8 overflow-hidden">
-        {/* Continuous Marquee on 1024px and Tablet screens (< xl) */}
-        <div className="xl:hidden overflow-hidden w-full relative">
-          <div className="flex animate-marquee gap-8 sm:gap-12 items-center">
-            {[
-              { icon: "🎥", text: "Puja Video Delivered Within 48 hours" },
-              { icon: "✓", text: "Verified & Experienced Pandits" },
-              { icon: "🏛", text: "Puja Performed in Sacred Temples" },
-              { icon: "📜", text: "100% Authentic Vedic Rituals" },
-              { icon: "🎥", text: "Puja Video Delivered Within 48 hours" },
-              { icon: "✓", text: "Verified & Experienced Pandits" },
-              { icon: "🏛", text: "Puja Performed in Sacred Temples" },
-              { icon: "📜", text: "100% Authentic Vedic Rituals" }
-            ].map((b, idx) => (
-              <div key={idx} className="shrink-0">
-                <Badge icon={b.icon} text={b.text} />
-              </div>
-            ))}
+        {/* Continuous Marquee on all screens below 1440px */}
+        <div className="badge-marquee-below-1440 min-[1440px]:hidden overflow-hidden w-full relative">
+          <div className="flex animate-marquee">
+            <div className="flex shrink-0 items-center gap-8 sm:gap-12 pr-8 sm:pr-12">
+              {[
+                { icon: "🎥", text: "Puja Video Delivered Within 48 hours" },
+                { icon: "✓", text: "Verified & Experienced Pandits" },
+                { icon: "🏛", text: "Puja Performed in Sacred Temples" },
+                { icon: "📜", text: "100% Authentic Vedic Rituals" },
+                { icon: "🎥", text: "Puja Video Delivered Within 48 hours" },
+                { icon: "✓", text: "Verified & Experienced Pandits" },
+                { icon: "🏛", text: "Puja Performed in Sacred Temples" },
+                { icon: "📜", text: "100% Authentic Vedic Rituals" }
+              ].map((b, idx) => (
+                <div key={`d1-${idx}`} className="shrink-0">
+                  <Badge icon={b.icon} text={b.text} />
+                </div>
+              ))}
+            </div>
+            <div className="flex shrink-0 items-center gap-8 sm:gap-12 pr-8 sm:pr-12" aria-hidden="true">
+              {[
+                { icon: "🎥", text: "Puja Video Delivered Within 48 hours" },
+                { icon: "✓", text: "Verified & Experienced Pandits" },
+                { icon: "🏛", text: "Puja Performed in Sacred Temples" },
+                { icon: "📜", text: "100% Authentic Vedic Rituals" },
+                { icon: "🎥", text: "Puja Video Delivered Within 48 hours" },
+                { icon: "✓", text: "Verified & Experienced Pandits" },
+                { icon: "🏛", text: "Puja Performed in Sacred Temples" },
+                { icon: "📜", text: "100% Authentic Vedic Rituals" }
+              ].map((b, idx) => (
+                <div key={`d2-${idx}`} className="shrink-0">
+                  <Badge icon={b.icon} text={b.text} />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* Standard flex layout on XL desktop screens (>= 1280px) */}
-        <div className="hidden xl:flex max-w-[1350px] mx-auto items-center justify-center gap-12 px-10">
+        {/* Standard flex layout on 1440px and wider desktop screens (>= 1440px) */}
+        <div className="badge-static-1440 hidden min-[1440px]:flex max-w-[1350px] mx-auto items-center justify-center gap-12 px-10">
           <Badge icon="🎥" text="Puja Video Delivered Within 48 hours" />
           <Badge icon="✓" text="Verified & Experienced Pandits" />
           <Badge icon="🏛" text="Puja Performed in Sacred Temples" />
@@ -407,7 +425,7 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
 
             <h2 className="text-4xl md:text-5xl font-bold text-[#4a2e21] font-serif mb-4 leading-tight">Doubts?<br />We re Here.</h2>
             <p className="text-gray-600 mb-8 text-sm max-w-[250px]">
-              Our devotee care team is available in 11 languages, 12 hours a day. Reach them on WhatsApp, phone, or email.
+              Our devotee care team is available 24/7. Reach them on WhatsApp, phone, or email.
             </p>
             <button className="bg-accent text-white px-8 py-3 rounded-full font-bold shadow-md hover:bg-[#008c51] transition-colors">
               Speak to Devotee Care

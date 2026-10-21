@@ -58,6 +58,8 @@ interface Puja {
   date?: string;
   eventDateTime?: string;
   showTimer?: boolean;
+  buttonText?: string;
+  trustBadges?: string[];
   slug: string;
   price?: number;
   productId?: number;
@@ -145,22 +147,33 @@ export default function PujaDetailClient({
     }
   }, [activeTab]);
 
-  // Scroll handler to show bottom sticky bar only after user scrolls past "About puja" / hero CTA
+  // Scroll handler to show bottom sticky bar ONLY after user has scrolled into the below sections
   useEffect(() => {
     const handleScroll = () => {
+      // If user is near the top (in hero), NEVER show the sticky bar
+      if (window.scrollY < 350) {
+        setShowStickyBar(false);
+        return;
+      }
+
       const aboutSec = document.getElementById("about");
       const heroCta = heroCtaRef.current;
 
+      // If the hero CTA button is still on screen, do not show sticky bar yet
+      if (heroCta) {
+        const ctaRect = heroCta.getBoundingClientRect();
+        if (ctaRect.bottom > 40) {
+          setShowStickyBar(false);
+          return;
+        }
+      }
+
       if (aboutSec) {
         const aboutRect = aboutSec.getBoundingClientRect();
-        // Show after scrolling down to or past the About Puja section
-        setShowStickyBar(aboutRect.top <= 300);
-      } else if (heroCta) {
-        const ctaRect = heroCta.getBoundingClientRect();
-        // Show after hero Book Now button has completely scrolled above the screen
-        setShowStickyBar(ctaRect.bottom <= 0);
+        // Only show once user is actively viewing/scrolling the below sections
+        setShowStickyBar(aboutRect.top <= 140);
       } else {
-        setShowStickyBar(window.scrollY > 450);
+        setShowStickyBar(window.scrollY > 600);
       }
     };
 
@@ -235,6 +248,63 @@ export default function PujaDetailClient({
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Scroll-triggered viewport reveal observer (only appears when element enters viewport for the first time)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const revealEl = (el: HTMLElement) => {
+      el.setAttribute("data-revealed", "true");
+      el.classList.add("is-revealed");
+    };
+
+    const checkAndReveal = () => {
+      const windowHeight = window.innerHeight || document.documentElement.clientHeight;
+      const elements = document.querySelectorAll<HTMLElement>("[data-reveal]:not([data-revealed='true'])");
+      elements.forEach((el) => {
+        const rect = el.getBoundingClientRect();
+        if (rect.top <= windowHeight - 30) {
+          revealEl(el);
+        }
+      });
+    };
+
+    let observer: IntersectionObserver | null = null;
+    if (typeof IntersectionObserver !== "undefined") {
+      observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              revealEl(entry.target as HTMLElement);
+              observer?.unobserve(entry.target);
+            }
+          });
+        },
+        {
+          threshold: 0,
+          rootMargin: "0px 0px -30px 0px",
+        }
+      );
+
+      const elements = document.querySelectorAll<HTMLElement>("[data-reveal]:not([data-revealed='true'])");
+      elements.forEach((el) => observer?.observe(el));
+    }
+
+    checkAndReveal();
+    window.addEventListener("scroll", checkAndReveal, { passive: true });
+    window.addEventListener("resize", checkAndReveal, { passive: true });
+
+    const timer1 = setTimeout(checkAndReveal, 100);
+    const timer2 = setTimeout(checkAndReveal, 350);
+
+    return () => {
+      observer?.disconnect();
+      window.removeEventListener("scroll", checkAndReveal);
+      window.removeEventListener("resize", checkAndReveal);
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+    };
+  }, [loading, puja]);
 
 
 
@@ -566,12 +636,67 @@ export default function PujaDetailClient({
     setActiveBannerIndex((prev) => (prev + 1) % bannerImages.length);
   };
 
+  const renderAboutContent = (text: string) => {
+    if (!text) return null;
+
+    let blocks: string[] = [];
+    if (text.includes("\n")) {
+      blocks = text
+        .split("\n")
+        .map((p) => p.trim())
+        .filter(Boolean);
+    } else {
+      const sentences = text.match(/[^.!?]+[.!?]+(\s|$)/g);
+      if (sentences && sentences.length > 1) {
+        blocks = sentences.map((s) => s.trim()).filter(Boolean);
+      } else {
+        blocks = [text];
+      }
+    }
+
+    if (blocks.length <= 1) {
+      return (
+        <p className="text-stone-700 text-sm sm:text-base leading-relaxed font-medium mb-6">
+          {text}
+        </p>
+      );
+    }
+
+    const [lead, ...details] = blocks;
+
+    return (
+      <div className="space-y-4 mb-6">
+        <div className="bg-[#faf6f0] border-l-4 border-[#F47820] rounded-r-2xl p-4 sm:p-5 shadow-2xs">
+          <p className="text-stone-800 text-sm sm:text-[15px] font-semibold leading-relaxed">
+            {lead}
+          </p>
+        </div>
+
+        <div className="space-y-2.5 pt-1">
+          {details.map((point, idx) => (
+            <div
+              key={idx}
+              className="flex items-start gap-3 bg-white/90 border border-[#f0e4d0] rounded-xl p-3 sm:p-3.5 hover:shadow-xs transition-all"
+            >
+              <span className="w-5 h-5 rounded-full bg-amber-100 text-[#F47820] flex items-center justify-center shrink-0 text-xs font-bold mt-0.5 shadow-2xs">
+                ✦
+              </span>
+              <p className="text-stone-700 text-xs sm:text-sm leading-relaxed font-medium">
+                {point}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <main className="min-h-screen bg-white text-[#1f1f1f] font-sans">
       <Navbar />
 
       {/* ── 1. Top Hero Section ── */}
-      <section className="bg-[#ffffff] border-b border-[#f0e4d0] py-8 sm:py-12">
+      <section data-reveal className="bg-[#ffffff] border-b border-[#f0e4d0] py-8 sm:py-12">
         <div className="max-w-[1350px] mx-auto px-4 sm:px-6 lg:px-10">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 
@@ -635,51 +760,48 @@ export default function PujaDetailClient({
               )}
 
               {/* Desktop Only (>=1024px): Frameless Ratings / Stat & Action Strip Under Image */}
-              <div className="hidden lg:flex flex-row items-center justify-between gap-2.5 sm:gap-3 mt-3 w-full">
+              <div className="hidden lg:flex flex-row items-center justify-between gap-2 xl:gap-3 mt-3 w-full">
                 {/* Stats Container */}
                 <div className="flex items-center justify-between flex-1 py-0 px-0">
-                  {/* Stat 1: Ratings */}
-                  <div className="text-center flex-1 px-1">
-                    <span className="block text-sm sm:text-base lg:text-lg font-extrabold text-[#1f1a17] leading-tight">4.36L+</span>
-                    <span className="text-[10px] sm:text-xs text-stone-500 font-medium block mt-0.5 leading-tight">ratings</span>
+                  {/* Stat 1: Poojas Performed */}
+                  <div className="text-center flex-1 px-0.5 xl:px-1">
+                    <span className="block text-sm lg:text-[14px] xl:text-base 2xl:text-lg font-extrabold text-[#1f1a17] leading-tight whitespace-nowrap">10M+</span>
+                    <span className="text-[10px] xl:text-[11px] 2xl:text-xs text-stone-500 font-medium block mt-0.5 leading-tight">poojas performed</span>
                   </div>
 
-                  <div className="w-[1px] h-6 bg-stone-300/80 shrink-0" />
+                  <div className="w-[1px] h-5 xl:h-6 bg-stone-300/80 shrink-0" />
 
-                  {/* Stat 2: Pujas Conducted */}
-                  <div className="text-center flex-1 px-1">
-                    <span className="block text-sm sm:text-base lg:text-lg font-extrabold text-[#1f1a17] leading-tight">24L+</span>
-                    <span className="text-[10px] sm:text-xs text-stone-500 font-medium block mt-0.5 leading-tight">pujas conducted</span>
+                  {/* Stat 2: Scholars and Priests */}
+                  <div className="text-center flex-1 px-0.5 xl:px-1">
+                    <span className="block text-sm lg:text-[14px] xl:text-base 2xl:text-lg font-extrabold text-[#1f1a17] leading-tight whitespace-nowrap">180+</span>
+                    <span className="text-[10px] xl:text-[11px] 2xl:text-xs text-stone-500 font-medium block mt-0.5 leading-tight">scholars and priests</span>
                   </div>
 
-                  <div className="w-[1px] h-6 bg-stone-300/80 shrink-0" />
+                  <div className="w-[1px] h-5 xl:h-6 bg-stone-300/80 shrink-0" />
 
-                  {/* Stat 3: Average Ratings */}
-                  <div className="text-center flex-1 px-1">
-                    <div className="flex items-center justify-center gap-0.5 sm:gap-1 leading-tight">
-                      <span className="text-sm sm:text-base lg:text-lg font-extrabold text-[#1f1a17]">4.9/5</span>
-                      <span className="text-amber-400 text-xs sm:text-sm">⭐</span>
-                    </div>
-                    <span className="text-[10px] sm:text-xs text-stone-500 font-medium block mt-0.5 leading-tight">Average ratings</span>
+                  {/* Stat 3: Years of Vedic Expertise */}
+                  <div className="text-center flex-1 px-0.5 xl:px-1">
+                    <span className="block text-sm lg:text-[14px] xl:text-base 2xl:text-lg font-extrabold text-[#1f1a17] leading-tight whitespace-nowrap">25+ years</span>
+                    <span className="text-[10px] xl:text-[11px] 2xl:text-xs text-stone-500 font-medium block mt-0.5 leading-tight">of Vedic expertise</span>
                   </div>
                 </div>
 
                 {/* Action Buttons: Wishlist & Share */}
-                <div className="flex items-center justify-end gap-2 shrink-0">
+                <div className="flex items-center justify-end gap-1.5 xl:gap-2 shrink-0">
                   <WishlistButton
                     itemId={puja._id}
                     text="Wishlist"
-                    className="flex-initial border border-stone-300 hover:border-stone-500 bg-white text-stone-800 font-medium text-xs sm:text-sm px-3.5 sm:px-4 py-1.5 rounded-full flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-xs"
-                    iconClassName="w-3.5 h-3.5 sm:w-4 sm:h-4"
+                    className="flex-initial border border-stone-300 hover:border-stone-500 bg-white text-stone-800 font-medium text-xs xl:text-sm px-3 xl:px-4 py-1.5 rounded-full flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-xs"
+                    iconClassName="w-3.5 h-3.5 xl:w-4 xl:h-4"
                   />
 
                   <button
                     type="button"
                     aria-label="Share puja"
                     onClick={() => setShareModalOpen(true)}
-                    className="flex-initial border border-stone-300 hover:border-stone-500 bg-white text-stone-800 font-medium text-xs sm:text-sm px-3.5 sm:px-4 py-1.5 rounded-full flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-xs"
+                    className="flex-initial border border-stone-300 hover:border-stone-500 bg-white text-stone-800 font-medium text-xs xl:text-sm px-3 xl:px-4 py-1.5 rounded-full flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-xs"
                   >
-                    <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-none stroke-current" strokeWidth="2" viewBox="0 0 24 24">
+                    <svg className="w-3.5 h-3.5 xl:w-4 xl:h-4 fill-none stroke-current" strokeWidth="2" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
                     </svg>
                     <span>Share</span>
@@ -714,7 +836,7 @@ export default function PujaDetailClient({
                 templeVenue={templeVenueText || "Kamrup Teerth Kshetra"}
                 location={puja.location || puja.templeLocation || "Guwahati, Assam"}
                 dateText={puja.date || "Saturday, 10 October"}
-                occasionText={puja.subtitle || puja.badge || (puja as any).tithis || "Mahalaya Amavasya"}
+                occasionText={puja.subtitle || (puja as any).occasion || (puja as any).dateOccasion || puja.badge || (puja as any).tithis || "Mahalaya Amavasya"}
                 eventDateTime={puja.eventDateTime}
                 showTimer={puja.showTimer}
                 title="Reserve your sankalp"
@@ -795,7 +917,7 @@ export default function PujaDetailClient({
               >
                 <span>₹{priceVal.toLocaleString("en-IN")}</span>
                 <span className="opacity-60 font-light">|</span>
-                <span>Book Now</span>
+                <span>{puja.buttonText || "Book Now"}</span>
               </button>
 
               {/* Secondary WhatsApp & Call Buttons */}
@@ -829,65 +951,73 @@ export default function PujaDetailClient({
       </section>
 
       {/* ── 2. Trust Strip Badges ── */}
-      <div className="w-full bg-[#f0f8f1] border-y border-green-100 py-3.5 sm:py-4.5 overflow-hidden">
-        {/* Continuous Marquee on Phone, Tablet (Tab 768px) and 1024px screens (< xl) */}
-        <div className="md:hidden overflow-hidden w-full relative">
-          <div className="flex animate-marquee gap-8 sm:gap-12 items-center text-xs sm:text-sm font-bold text-[#009e5b]">
-            {[
-              { icon: "🎥", text: "Puja Video Delivered Within 48 hours" },
-              { icon: "✓", text: "Verified & Experienced Pandits" },
-              { icon: "🏛", text: "Puja Performed in Sacred Temples" },
-              { icon: "📜", text: "100% Authentic Vedic Rituals" },
-              { icon: "🎥", text: "Puja Video Delivered Within 48 hours" },
-              { icon: "✓", text: "Verified & Experienced Pandits" },
-              { icon: "🏛", text: "Puja Performed in Sacred Temples" },
-              { icon: "📜", text: "100% Authentic Vedic Rituals" },
-            ].map((b, idx) => (
-              <span key={idx} className="flex items-center gap-2 shrink-0 whitespace-nowrap">
-                <span className="bg-green-100 rounded-full p-1">{b.icon}</span> {b.text}
-              </span>
-            ))}
+      {(() => {
+        const defaultBadges = [
+          { icon: "🎥", text: "Puja Video Delivered Within 48 hours" },
+          { icon: "✓", text: "Verified & Experienced Pandits" },
+          { icon: "🏛", text: "Puja Performed in Sacred Temples" },
+          { icon: "📜", text: "100% Authentic Vedic Rituals" },
+        ];
+        const icons = ["🎥", "✓", "🏛", "📜", "⭐", "✨"];
+        const badgeList = (Array.isArray(puja.trustBadges) && puja.trustBadges.length > 0)
+          ? puja.trustBadges.map((text, i) => ({ icon: icons[i % icons.length], text }))
+          : defaultBadges;
+
+        // Two identical tracks with badges repeated twice each, separated with pr-8 sm:pr-12 for 100% seamless infinite loop without blank gaps below 1440px
+        const trackBadges = [...badgeList, ...badgeList];
+
+        return (
+          <div data-reveal className="w-full bg-[#f0f8f1] border-y border-green-100 py-3.5 sm:py-4.5 overflow-hidden">
+            {/* Continuous Marquee on all screens below 1440px */}
+            <div className="badge-marquee-below-1440 min-[1440px]:hidden overflow-hidden w-full relative">
+              <div className="flex animate-marquee">
+                <div className="flex shrink-0 items-center gap-8 sm:gap-12 pr-8 sm:pr-12 text-xs sm:text-sm font-bold text-[#009e5b]">
+                  {trackBadges.map((b, idx) => (
+                    <span key={`t1-${idx}`} className="flex items-center gap-2 shrink-0 whitespace-nowrap">
+                      <span className="bg-green-100 rounded-full p-1">{b.icon}</span> {b.text}
+                    </span>
+                  ))}
+                </div>
+                <div className="flex shrink-0 items-center gap-8 sm:gap-12 pr-8 sm:pr-12 text-xs sm:text-sm font-bold text-[#009e5b]" aria-hidden="true">
+                  {trackBadges.map((b, idx) => (
+                    <span key={`t2-${idx}`} className="flex items-center gap-2 shrink-0 whitespace-nowrap">
+                      <span className="bg-green-100 rounded-full p-1">{b.icon}</span> {b.text}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Static spread layout on 1440px and wider desktop screens (>= 1440px) */}
+            <div className="badge-static-1440 hidden min-[1440px]:flex max-w-[1350px] mx-auto items-center justify-around gap-6 px-4 text-xs sm:text-sm font-bold text-[#009e5b] whitespace-nowrap">
+              {badgeList.map((b, idx) => (
+                <span key={idx} className="flex items-center gap-2">
+                  <span className="bg-green-100 rounded-full p-1">{b.icon}</span> {b.text}
+                </span>
+              ))}
+            </div>
           </div>
-        </div>
-
-        {/* Static spread layout on Tablet (md=768px) through xl */}
-        <div className="hidden md:flex xl:hidden w-full px-6 md:px-8 items-center justify-around gap-6 text-xs sm:text-sm font-bold text-[#009e5b] whitespace-nowrap">
-          <span className="flex items-center gap-2"><span className="bg-green-100 rounded-full p-1">🎥</span> Puja Video Delivered Within 48 hours</span>
-          <span className="flex items-center gap-2"><span className="bg-green-100 rounded-full p-1">✓</span> Verified &amp; Experienced Pandits</span>
-          <span className="flex items-center gap-2"><span className="bg-green-100 rounded-full p-1">🏛</span> Puja Performed in Sacred Temples</span>
-          <span className="flex items-center gap-2"><span className="bg-green-100 rounded-full p-1">📜</span> 100% Authentic Vedic Rituals</span>
-        </div>
-
-        {/* Standard layout on XL desktop screens (>= 1280px) */}
-        <div className="hidden xl:flex max-w-[1350px] mx-auto items-center justify-around gap-6 px-4 text-xs sm:text-sm font-bold text-[#009e5b] whitespace-nowrap">
-          <span className="flex items-center gap-2"><span className="bg-green-100 rounded-full p-1">🎥</span> Puja Video Delivered Within 48 hours</span>
-          <span className="flex items-center gap-2"><span className="bg-green-100 rounded-full p-1">✓</span> Verified &amp; Experienced Pandits</span>
-          <span className="flex items-center gap-2"><span className="bg-green-100 rounded-full p-1">🏛</span> Puja Performed in Sacred Temples</span>
-          <span className="flex items-center gap-2"><span className="bg-green-100 rounded-full p-1">📜</span> 100% Authentic Vedic Rituals</span>
-        </div>
-      </div>
+        );
+      })()}
 
       {/* ── 2b. Ratings Stats & Action Strip (Wishlist & Share) Above Nav Tabs (Below 1000px only) ── */}
-      <div className="lg:hidden w-full bg-white border-b border-stone-200/90 py-3 sm:py-3.5">
+      <div data-reveal className="lg:hidden w-full bg-white border-b border-stone-200/90 py-3 sm:py-3.5">
         {/* Mobile layout: stats left, buttons right */}
         <div className="md:hidden w-full px-4 sm:px-6 flex items-center justify-between gap-3">
           <div className="flex items-start gap-3 sm:gap-6 overflow-x-auto no-scrollbar py-0.5">
             <div className="text-left shrink-0">
-              <span className="block text-xs font-extrabold text-[#1f1a17] leading-tight">4.36L+</span>
-              <span className="text-[10px] text-stone-500 font-medium block mt-0.5 leading-tight">ratings</span>
+              <span className="block text-xs font-extrabold text-[#1f1a17] leading-tight">10M+</span>
+              <span className="text-[10px] text-stone-500 font-medium block mt-0.5 leading-tight">poojas performed</span>
             </div>
             <div className="w-[1px] self-stretch bg-stone-200 shrink-0" />
             <div className="text-left shrink-0">
-              <span className="block text-xs font-extrabold text-[#1f1a17] leading-tight">24L+</span>
-              <span className="text-[10px] text-stone-500 font-medium block mt-0.5 leading-tight">pujas<br />conducted</span>
+              <span className="block text-xs font-extrabold text-[#1f1a17] leading-tight">180+</span>
+              <span className="text-[10px] text-stone-500 font-medium block mt-0.5 leading-tight">scholars and priests</span>
             </div>
             <div className="w-[1px] self-stretch bg-stone-200 shrink-0" />
             <div className="text-left shrink-0">
-              <div className="flex items-center gap-0.5 leading-tight">
-                <span className="text-xs font-extrabold text-[#1f1a17]">4.9/5</span>
-                <span className="text-amber-400 text-xs">⭐</span>
-              </div>
-              <span className="text-[10px] text-stone-500 font-medium block mt-0.5 leading-tight">Avg. ratings</span>
+              <span className="block text-xs font-extrabold text-[#1f1a17] leading-tight">25+ years</span>
+              <span className="text-[10px] text-stone-500 font-medium block mt-0.5 leading-tight">of Vedic expertise</span>
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
@@ -913,23 +1043,20 @@ export default function PujaDetailClient({
         <div className="hidden md:flex lg:hidden w-full px-6 md:px-8 items-center">
           {/* Stat 1 */}
           <div className="flex-1 flex flex-col items-center justify-center text-center">
-            <span className="block text-base font-extrabold text-[#1f1a17] leading-tight">4.36L+</span>
-            <span className="text-xs text-stone-500 font-medium block mt-0.5 leading-tight">ratings</span>
+            <span className="block text-base font-extrabold text-[#1f1a17] leading-tight">10M+</span>
+            <span className="text-xs text-stone-500 font-medium block mt-0.5 leading-tight">poojas performed</span>
           </div>
           <div className="w-[1px] h-7 bg-stone-200 shrink-0" />
           {/* Stat 2 */}
           <div className="flex-1 flex flex-col items-center justify-center text-center">
-            <span className="block text-base font-extrabold text-[#1f1a17] leading-tight">24L+</span>
-            <span className="text-xs text-stone-500 font-medium block mt-0.5 leading-tight">pujas conducted</span>
+            <span className="block text-base font-extrabold text-[#1f1a17] leading-tight">180+</span>
+            <span className="text-xs text-stone-500 font-medium block mt-0.5 leading-tight">scholars and priests</span>
           </div>
           <div className="w-[1px] h-7 bg-stone-200 shrink-0" />
           {/* Stat 3 */}
           <div className="flex-1 flex flex-col items-center justify-center text-center">
-            <div className="flex items-center justify-center gap-1 leading-tight">
-              <span className="text-base font-extrabold text-[#1f1a17]">4.9/5</span>
-              <span className="text-amber-400 text-sm">⭐</span>
-            </div>
-            <span className="text-xs text-stone-500 font-medium block mt-0.5 leading-tight">Average ratings</span>
+            <span className="block text-base font-extrabold text-[#1f1a17] leading-tight">25+ years</span>
+            <span className="text-xs text-stone-500 font-medium block mt-0.5 leading-tight">of Vedic expertise</span>
           </div>
           <div className="w-[1px] h-7 bg-stone-200 shrink-0" />
           {/* Wishlist */}
@@ -997,37 +1124,32 @@ export default function PujaDetailClient({
         <div className="lg:col-span-8 space-y-12">
 
           {/* Section: About Puja */}
-          <section id="about" className="scroll-mt-36">
+          <section id="about" data-reveal className="scroll-mt-36">
             <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1f1a17] mb-6">About puja</h2>
 
             <div className="bg-[#ffffff] border border-[#f0e4d0] rounded-3xl p-6 sm:p-8 relative overflow-hidden">
-              <p className="text-stone-700 text-sm sm:text-base leading-relaxed font-medium mb-6">
-                {aboutText}
-              </p>
+              {renderAboutContent(aboutText)}
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 border-t border-[#f0e4d0] pt-6 text-xs text-stone-700">
+              <div className="flex flex-row items-center justify-around gap-6 border-t border-[#f0e4d0] pt-6 text-xs text-stone-700">
                 <div>
                   <span className="text-stone-400 font-bold block mb-1 uppercase tracking-wider">Occasion</span>
-                  <span className="font-extrabold text-stone-900">{puja.date || "Auspicious Tithis"}</span>
+                  <span className="font-extrabold text-stone-900 text-sm sm:text-base">{puja.date || "Auspicious Tithis"}</span>
                 </div>
-                <div>
-                  <span className="text-stone-400 font-bold block mb-1 uppercase tracking-wider">Duration</span>
-                  <span className="font-extrabold text-stone-900">~2 Hours</span>
-                </div>
+                <div className="w-px h-8 bg-[#f0e4d0]" />
                 <div>
                   <span className="text-stone-400 font-bold block mb-1 uppercase tracking-wider">Venue</span>
-                  <span className="font-extrabold text-stone-900">Temple Yagashala</span>
+                  <span className="font-extrabold text-stone-900 text-sm sm:text-base">{templeVenueText || "Temple Yagashala"}</span>
                 </div>
               </div>
             </div>
           </section>
 
           {/* Section: Puja Benefits */}
-          <section id="benefits" className="scroll-mt-36">
+          <section id="benefits" data-reveal className="scroll-mt-36">
             <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1f1a17] mb-6">Puja Benefits</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
               {benefitsList.map((b, idx) => (
-                <div key={idx} className="bg-white border border-stone-200/90 rounded-2xl p-5 flex items-start gap-4 shadow-xs hover:shadow-md transition-shadow">
+                <div key={idx} data-reveal data-delay={((idx % 4) * 100).toString()} className="bg-white border border-stone-200/90 rounded-2xl p-5 flex items-start gap-4 shadow-xs hover:shadow-md transition-shadow">
                   <div className="w-10 h-10 rounded-xl bg-[#800000] text-white flex items-center justify-center shrink-0 font-bold">
                     {b.icon || "❖"}
                   </div>
@@ -1041,11 +1163,11 @@ export default function PujaDetailClient({
           </section>
 
           {/* Section: Puja Procedure */}
-          <section id="process" className="scroll-mt-36">
+          <section id="process" data-reveal className="scroll-mt-36">
             <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1f1a17] mb-6">Puja Procedure</h2>
             <div className="space-y-4">
               {processList.map((step, idx) => (
-                <div key={idx} className="bg-white border border-stone-200/90 rounded-2xl p-5 flex items-start gap-4 shadow-xs">
+                <div key={idx} data-reveal data-delay={((idx % 4) * 100).toString()} className="bg-white border border-stone-200/90 rounded-2xl p-5 flex items-start gap-4 shadow-xs">
                   <div className="w-10 h-10 rounded-xl bg-[#800000] text-white flex items-center justify-center shrink-0 font-bold text-sm">
                     {String(idx + 1).padStart(2, "0")}
                   </div>
@@ -1059,7 +1181,7 @@ export default function PujaDetailClient({
           </section>
 
           {/* Section: Temple Details */}
-          <section id="temple" className="scroll-mt-36">
+          <section id="temple" data-reveal className="scroll-mt-36">
             <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1f1a17] mb-6">Temple Details</h2>
             <div className="bg-white border border-stone-200/90 rounded-3xl flex flex-col md:flex-row gap-6 items-center shadow-xs overflow-hidden">
               {templeImage && (
@@ -1087,14 +1209,14 @@ export default function PujaDetailClient({
           </section>
 
           {/* Section: What will you receive */}
-          <section id="receive" className="scroll-mt-36">
+          <section id="receive" data-reveal className="scroll-mt-36">
             <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1f1a17] mb-6">What will you receive</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
               {inclusionsList.map((inc: any, idx: number) => {
                 const title = typeof inc === "string" ? inc : inc.title || inc.name || `Inclusion ${idx + 1}`;
                 const desc = typeof inc === "string" ? "Included in your sacred booking." : inc.description || "Included in your sacred booking.";
                 return (
-                  <div key={idx} className="bg-white border border-stone-200/90 rounded-2xl p-5 flex items-start gap-4 shadow-xs">
+                  <div key={idx} data-reveal data-delay={((idx % 4) * 100).toString()} className="bg-white border border-stone-200/90 rounded-2xl p-5 flex items-start gap-4 shadow-xs">
                     <div className="w-10 h-10 rounded-xl bg-[#800000] text-white flex items-center justify-center shrink-0 font-bold text-sm">
                       {String(idx + 1).padStart(2, "0")}
                     </div>
@@ -1109,7 +1231,7 @@ export default function PujaDetailClient({
           </section>
 
           {/* Section: Frequently Asked Questions (FAQs) */}
-          <section id="faqs" className="scroll-mt-36">
+          <section id="faqs" data-reveal className="scroll-mt-36">
             <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1f1a17] mb-6">Frequently Asked Questions (FAQs)</h2>
             <div className="space-y-3">
               {faqList.map((faq, idx) => (
@@ -1136,7 +1258,7 @@ export default function PujaDetailClient({
 
           {/* Section: Puja Gallery */}
           {galleryList.length > 0 && (
-            <section id="gallery" className="scroll-mt-36 pb-4 sm:pb-28 lg:pb-36">
+            <section id="gallery" data-reveal className="scroll-mt-36 pb-4 sm:pb-28 lg:pb-36">
               <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1f1a17] mb-6">Puja Gallery</h2>
 
               {/* Mobile: Carousel */}
@@ -1210,7 +1332,7 @@ export default function PujaDetailClient({
         <div className="lg:col-span-4 space-y-6 pt-0 sm:pt-4 pb-16 sm:pb-20 lg:pb-36">
 
           {/* Dedicated Vedic Puja Sticky Card */}
-          <div className="bg-[#ffffff] border border-[#f0e4d0] rounded-3xl p-5 sm:p-6 pb-6 sm:pb-8 shadow-xs static lg:sticky lg:top-[140px] xl:top-[144px] space-y-4 sm:space-y-5 mb-0 lg:mb-28">
+          <div data-reveal className="bg-[#ffffff] border border-[#f0e4d0] rounded-3xl p-5 sm:p-6 pb-6 sm:pb-8 shadow-xs static lg:sticky lg:top-[140px] xl:top-[144px] space-y-4 sm:space-y-5 mb-0 lg:mb-28">
             <div className="flex items-center gap-3">
 
               <div>
@@ -1234,7 +1356,7 @@ export default function PujaDetailClient({
             <div className="border-t border-[#f0e4d0] pt-5 mt-4 mb-2 pb-1">
               <h4 className="font-bold text-stone-900 text-sm mb-1.5">Unsure which puja to book?</h4>
               <p className="text-stone-600 text-xs mb-3.5 leading-relaxed font-medium">
-                Our devotee care team is available in 11 languages, 12 hours a day. Reach them on WhatsApp.
+                Our devotee care team is available 24/7. Reach them on WhatsApp.
               </p>
               <div className="mt-3 mb-1">
                 <a
@@ -1286,7 +1408,7 @@ export default function PujaDetailClient({
             onClick={handleAddPujaToCart}
             className="bg-white hover:bg-green-50 active:scale-95 text-[#00b050] font-extrabold text-xs sm:text-sm px-4 sm:px-6 py-2 sm:py-2.5 rounded-full shadow-md transition-all flex items-center gap-2 shrink-0 whitespace-nowrap cursor-pointer"
           >
-            <span>Book Now</span>
+            <span>{puja.buttonText || "Book Now"}</span>
             <div className="w-6 h-6 rounded-full bg-[#00b050] text-white flex items-center justify-center shrink-0">
               <svg className="w-3.5 h-3.5 stroke-current" fill="none" viewBox="0 0 24 24" strokeWidth="3">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
