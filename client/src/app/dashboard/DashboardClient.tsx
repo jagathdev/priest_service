@@ -583,39 +583,29 @@ const galleryImages = [
     aspect: "w-[160px] sm:w-[190px] h-[270px] sm:h-[310px]", // Tall
   },
   {
-    src: "/images/Navagraha-Shanti-Puja.jpg",
-    alt: "Navagraha Shanti Puja",
-    aspect: "w-[210px] sm:w-[250px] h-[160px] sm:h-[180px]", // Small
+    src: "/images/anchineyar.jpg",
+    alt: "anchineyar",
+    aspect: "w-[160px] sm:w-[190px] h-[270px] sm:h-[310px]", // Tall
   },
   {
-    src: "/images/maa-kali.jpg",
-    alt: "Maa Kali Puja",
+    src: "/images/lakshmi_puja.jpg",
+    alt: "lakshmi_puja",
     aspect: "w-[200px] sm:w-[240px] h-[170px] sm:h-[190px]", // Medium-small
   },
   {
-    src: "/images/Lakshmi-Homam.jpg",
-    alt: "Lakshmi Homam",
+    src: "/images/varahi_amman.jpg",
+    alt: "varahi_amman",
     aspect: "w-[210px] sm:w-[250px] h-[150px] sm:h-[165px]", // Small
   },
   {
-    src: "/images/Maa-saraswathi.jpg",
-    alt: "Maa Saraswathi Puja",
+    src: "/images/perumal.jpg",
+    alt: "perumal",
     aspect: "w-[160px] sm:w-[190px] h-[310px] sm:h-[350px]", // Very Tall
   },
   {
-    src: "/images/Ganesh-Chaturthi-Mahapuja.jpg",
-    alt: "Sacred Homam Fire",
+    src: "/images/perumal_puja.jpg",
+    alt: "perumal_puja",
     aspect: "w-[210px] sm:w-[250px] h-[160px] sm:h-[180px]", // Medium-small
-  },
-  {
-    src: "/images/Lakshmi-Homam.jpg",
-    alt: "Vedic Priest at Kolam Altar",
-    aspect: "w-[160px] sm:w-[190px] h-[310px] sm:h-[350px]", // Very Tall
-  },
-  {
-    src: "/images/Navagraha-Shanti-Puja.jpg",
-    alt: "Shiva Lingam Abhishekam",
-    aspect: "w-[160px] sm:w-[190px] h-[310px] sm:h-[350px]", // Very Tall
   },
 ];
 
@@ -627,9 +617,6 @@ function Badge({ icon, text }: { icon: string; text: string }) {
     </div>
   );
 }
-
-
-
 interface PujaCardProps {
   id?: string;
   imageSrc: string | { src: string };
