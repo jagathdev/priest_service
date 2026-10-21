@@ -167,8 +167,8 @@ export default function LoginMethods() {
           return;
         }
 
-        const callbackUrl = new URLSearchParams(window.location.search).get("callbackUrl") || "/admin";
-        window.location.href = callbackUrl;
+        // const callbackUrl = new URLSearchParams(window.location.search).get("callbackUrl") || "/admin";
+        // window.location.href = callbackUrl;
         return;
       }
 
@@ -179,15 +179,15 @@ export default function LoginMethods() {
           email,
         } as any);
 
-        const callbackUrl = new URLSearchParams(window.location.search).get("callbackUrl");
-        const params = new URLSearchParams({
-          method: "email",
-          email,
-        });
+        // const callbackUrl = new URLSearchParams(window.location.search).get("callbackUrl");
+        // const params = new URLSearchParams({
+        //   method: "email",
+        //   email,
+        // });
 
-        if (callbackUrl) params.set("callbackUrl", callbackUrl);
+        // if (callbackUrl) params.set("callbackUrl", callbackUrl);
 
-        window.location.href = `/auth/otp?${params.toString()}`;
+        // window.location.href = `/auth/otp?${params.toString()}`;
         return;
       }
 
@@ -199,16 +199,17 @@ export default function LoginMethods() {
         number,
       });
 
-      const callbackUrl = new URLSearchParams(window.location.search).get("callbackUrl");
-      const params = new URLSearchParams({
-        method,
-        country: DEFAULT_COUNTRY.isoCode,
-        number,
-      });
+      // const callbackUrl = new URLSearchParams(window.location.search).get("callbackUrl");
+      // const params = new URLSearchParams({
+      //   method,
+      //   country: DEFAULT_COUNTRY.isoCode,
+      //   number,
+      // });
 
-      if (callbackUrl) params.set("callbackUrl", callbackUrl);
+      // if (callbackUrl) params.set("callbackUrl", callbackUrl);
 
-      window.location.href = `/auth/otp?${params.toString()}`;
+      // window.location.href = `/auth/otp?${params.toString()}`;
+      return;
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed");
     } finally {
