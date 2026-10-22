@@ -6,7 +6,7 @@ import React, { useState, useEffect } from "react";
 import Navbar from "@/components/layout/Navbar";
 import WishlistButton from "@/components/common/WishlistButton";
 
-import HeroSection from "@/components/home/HeroSection";
+import HeroSection, { get1024BannerImage } from "@/components/home/HeroSection";
 import PujaFilterModal, {
   FilterState,
   defaultFilters,
@@ -14,6 +14,7 @@ import PujaFilterModal, {
   matchesPujaFilters,
 } from "@/components/common/PujaFilterModal";
 import ShareModal, { ShareData } from "@/components/common/ShareModal";
+import GalleryLightboxModal from "@/components/common/GalleryLightboxModal";
 
 export default function DashboardClient({ initialHeroBanners, initialPujas }: { initialHeroBanners?: any[], initialPujas?: any[] }) {
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
@@ -24,6 +25,8 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
   const [fetchedPujas, setFetchedPujas] = useState(initialPujas && initialPujas.length > 0);
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [shareData, setShareData] = useState<ShareData>({});
+  const [galleryLightboxOpen, setGalleryLightboxOpen] = useState(false);
+  const [galleryLightboxIdx, setGalleryLightboxIdx] = useState(0);
 
   useEffect(() => {
     async function fetchPujas() {
@@ -201,7 +204,7 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
 
       {/* ── 3. Our Pujas Section ── */}
       <section className="py-12 bg-white">
-        <div className="max-w-[1350px] mx-auto px-4 sm:px-6 lg:px-10">
+        <div className="max-w-[1350px] mx-auto px-3 min-[360px]:px-4 sm:px-6 lg:px-10">
 
           {/* Header Row & Category Filters */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
@@ -270,11 +273,18 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
           )}
 
           {/* Puja Cards Grid (Maximum 6 active Pujas loaded from Express API) */}
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 sm:gap-8 w-full max-w-full xl:max-w-none mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 sm:gap-8 w-full max-w-full xl:max-w-none mx-auto">
             {!fetchedPujas ? (
               Array.from({ length: 3 }).map((_, i) => (
-                <div key={`skeleton-${i}`} className="bg-white rounded-3xl h-[450px] animate-pulse border border-stone-200 p-3 shadow-sm flex flex-col">
-                  <div className="w-full h-[235px] bg-stone-100 rounded-2xl mb-4 flex items-center justify-center">
+                <div
+                  key={`skeleton-${i}`}
+                  className={`bg-white rounded-3xl h-[450px] animate-pulse border border-stone-200 p-3 shadow-sm flex flex-col ${
+                    i === 2
+                      ? "lg:col-span-2 lg:max-w-[480px] lg:w-full lg:mx-auto xl:col-span-1 xl:max-w-none xl:mx-0"
+                      : ""
+                  }`}
+                >
+                  <div className="w-full aspect-[4/3] xl:aspect-auto xl:h-[235px] bg-stone-100 rounded-xl min-[375px]:rounded-2xl mb-4 flex items-center justify-center">
                     <svg className="w-8 h-8 text-stone-300 animate-spin" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -294,7 +304,7 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
                 No active Pujas found for selected filters.
               </div>
             ) : (
-              filteredPujas.map((p) => {
+              filteredPujas.map((p, idx) => {
                 const priceVal = p.price
                   ? `₹${p.price}`
                   : p.packages?.[0]?.priceINR
@@ -305,23 +315,33 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
                 const slugVal = p.slug || (p.title ? p.title.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-") : "");
                 const topTagVal = p.badge || p.shortTitle || p.subtitle;
                 const descriptionVal = p.description || p.subtitle;
+                const isRemainingCenteredOn1024 =
+                  filteredPujas.length % 2 === 1 && idx === filteredPujas.length - 1;
                 return (
-                  <PujaCard
+                  <div
                     key={p._id}
-                    id={p._id}
-                    imageSrc={p.imageUrl ? (p.imageUrl.startsWith("http") || p.imageUrl.startsWith("/") ? p.imageUrl : `/${p.imageUrl}`) : ""}
-                    topTag={topTagVal}
-                    title={p.title}
-                    subtitle={descriptionVal}
-                    location={p.location || p.filterLocation || p.templeVenue}
-                    date={p.date}
-                    price={priceVal}
-                    slug={slugVal}
-                    onShare={(sharePayload) => {
-                      setShareData(sharePayload);
-                      setShareModalOpen(true);
-                    }}
-                  />
+                    className={`flex flex-col ${
+                      isRemainingCenteredOn1024
+                        ? "lg:col-span-2 lg:max-w-[480px] lg:w-full lg:mx-auto xl:col-span-1 xl:max-w-none xl:mx-0"
+                        : ""
+                    }`}
+                  >
+                    <PujaCard
+                      id={p._id}
+                      imageSrc={p.imageUrl ? (p.imageUrl.startsWith("http") || p.imageUrl.startsWith("/") ? p.imageUrl : `/${p.imageUrl}`) : ""}
+                      topTag={topTagVal}
+                      title={p.title}
+                      subtitle={descriptionVal}
+                      location={p.location || p.filterLocation || p.templeVenue}
+                      date={p.date}
+                      price={priceVal}
+                      slug={slugVal}
+                      onShare={(sharePayload) => {
+                        setShareData(sharePayload);
+                        setShareModalOpen(true);
+                      }}
+                    />
+                  </div>
                 );
               })
             )}
@@ -347,11 +367,15 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
 
         {/* Marquee Row Container anchored at Bottom of Font */}
         <div className="relative z-10 overflow-hidden w-full pt-12 min-[375px]:pt-14 sm:pt-20 md:pt-24 pb-2">
-          <div className="flex animate-marquee gap-4 sm:gap-6 items-end">
+          <div className="flex animate-marquee-slow gap-4 sm:gap-6 items-end">
             {/* Repeat list twice for continuous infinite marquee */}
             {[...galleryImages, ...galleryImages].map((img, idx) => (
               <div
                 key={idx}
+                onClick={() => {
+                  setGalleryLightboxIdx(idx % galleryImages.length);
+                  setGalleryLightboxOpen(true);
+                }}
                 className={`relative shrink-0 rounded-2xl sm:rounded-3xl overflow-hidden shadow-sm border border-stone-200/80 group cursor-pointer transition-transform duration-300 hover:scale-[1.02] ${img.aspect}`}
               >
                 <Image
@@ -361,7 +385,13 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
                   sizes="(max-width: 640px) 160px, 250px"
                   className="object-cover object-center"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <div className="absolute inset-0 bg-black/25 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-full bg-white/90 text-stone-800 flex items-center justify-center shadow-lg transform scale-90 group-hover:scale-100 transition-transform">
+                    <svg className="w-5 h-5 text-stone-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7" />
+                    </svg>
+                  </div>
+                </div>
               </div>
             ))}
           </div>
@@ -387,11 +417,48 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
                 <Badge icon={b.icon} text={b.text} />
               </div>
             ))}
+      {/* ── 5. Trust Badges Strip (Marquee below 1440px screen size) ── */}
+      <div className="w-full bg-[#f0f8f1] border-y border-green-100 py-6 sm:py-8 overflow-hidden">
+        {/* Continuous Marquee on all screens below 1440px */}
+        <div className="badge-marquee-below-1440 min-[1440px]:hidden overflow-hidden w-full relative">
+          <div className="flex animate-marquee">
+            <div className="flex shrink-0 items-center gap-8 sm:gap-12 pr-8 sm:pr-12">
+              {[
+                { icon: "🎥", text: "Puja Video Delivered Within 48 hours" },
+                { icon: "✓", text: "Verified & Experienced Pandits" },
+                { icon: "🏛", text: "Puja Performed in Sacred Temples" },
+                { icon: "📜", text: "100% Authentic Vedic Rituals" },
+                { icon: "🎥", text: "Puja Video Delivered Within 48 hours" },
+                { icon: "✓", text: "Verified & Experienced Pandits" },
+                { icon: "🏛", text: "Puja Performed in Sacred Temples" },
+                { icon: "📜", text: "100% Authentic Vedic Rituals" }
+              ].map((b, idx) => (
+                <div key={`d1-${idx}`} className="shrink-0">
+                  <Badge icon={b.icon} text={b.text} />
+                </div>
+              ))}
+            </div>
+            <div className="flex shrink-0 items-center gap-8 sm:gap-12 pr-8 sm:pr-12" aria-hidden="true">
+              {[
+                { icon: "🎥", text: "Puja Video Delivered Within 48 hours" },
+                { icon: "✓", text: "Verified & Experienced Pandits" },
+                { icon: "🏛", text: "Puja Performed in Sacred Temples" },
+                { icon: "📜", text: "100% Authentic Vedic Rituals" },
+                { icon: "🎥", text: "Puja Video Delivered Within 48 hours" },
+                { icon: "✓", text: "Verified & Experienced Pandits" },
+                { icon: "🏛", text: "Puja Performed in Sacred Temples" },
+                { icon: "📜", text: "100% Authentic Vedic Rituals" }
+              ].map((b, idx) => (
+                <div key={`d2-${idx}`} className="shrink-0">
+                  <Badge icon={b.icon} text={b.text} />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* Standard flex layout on XL desktop screens (>= 1280px) */}
-        <div className="hidden xl:flex max-w-[1350px] mx-auto items-center justify-center gap-12 px-10">
+        {/* Standard flex layout on 1440px and wider desktop screens (>= 1440px) */}
+        <div className="badge-static-1440 hidden min-[1440px]:flex max-w-[1350px] mx-auto items-center justify-center gap-12 px-10">
           <Badge icon="🎥" text="Puja Video Delivered Within 48 hours" />
           <Badge icon="✓" text="Verified & Experienced Pandits" />
           <Badge icon="🏛" text="Puja Performed in Sacred Temples" />
@@ -407,7 +474,7 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
 
             <h2 className="text-4xl md:text-5xl font-bold text-[#4a2e21] font-serif mb-4 leading-tight">Doubts?<br />We re Here.</h2>
             <p className="text-gray-600 mb-8 text-sm max-w-[250px]">
-              Our devotee care team is available in 11 languages, 12 hours a day. Reach them on WhatsApp, phone, or email.
+              Our devotee care team is available 24/7. Reach them on WhatsApp, phone, or email.
             </p>
             <button className="bg-[#14395C] text-white px-8 py-3 rounded-full font-bold shadow-md hover:bg-[#0e2740] transition-colors">
               Speak to Devotee Care
@@ -552,6 +619,14 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
         onClose={() => setShareModalOpen(false)}
         data={shareData}
       />
+
+      {/* Puja Gallery Lightbox Modal */}
+      <GalleryLightboxModal
+        isOpen={galleryLightboxOpen}
+        onClose={() => setGalleryLightboxOpen(false)}
+        images={galleryImages}
+        initialIndex={galleryLightboxIdx}
+      />
     </main>
   );
 }
@@ -560,44 +635,49 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
 
 const galleryImages = [
   {
-    src: "/images/Ganesh-Chaturthi-Mahapuja.jpg",
+    src: "/Service images/mam_puja.jpg",
     alt: "Ganesh Chaturthi Mahapuja",
     aspect: "w-[160px] sm:w-[190px] h-[270px] sm:h-[310px]", // Tall
   },
   {
-    src: "/images/Navagraha-Shanti-Puja.jpg",
-    alt: "Navagraha Shanti Puja",
-    aspect: "w-[210px] sm:w-[250px] h-[160px] sm:h-[180px]", // Small
-  },
-  {
-    src: "/images/maa-kali.jpg",
-    alt: "Maa Kali Puja",
+    src: "/Service images/maha_homam.jpeg",
+    alt: "lakshmi_puja",
     aspect: "w-[200px] sm:w-[240px] h-[170px] sm:h-[190px]", // Medium-small
   },
   {
-    src: "/images/Lakshmi-Homam.jpg",
-    alt: "Lakshmi Homam",
+    src: "/Service images/shreem.jpg",
+    alt: "anchineyar",
+    aspect: "w-[160px] sm:w-[190px] h-[270px] sm:h-[310px]", // Tall
+  },
+  {
+    src: "/Service images/g3.jpg",
+    alt: "varahi_amman",
     aspect: "w-[210px] sm:w-[250px] h-[150px] sm:h-[165px]", // Small
   },
   {
-    src: "/images/Maa-saraswathi.jpg",
-    alt: "Maa Saraswathi Puja",
+    src: "/Service images/lord_perumal.jpeg",
+    alt: "perumal",
     aspect: "w-[160px] sm:w-[190px] h-[310px] sm:h-[350px]", // Very Tall
   },
   {
-    src: "/images/Ganesh-Chaturthi-Mahapuja.jpg",
-    alt: "Sacred Homam Fire",
+    src: "/images/perumal_puja.jpg",
+    alt: "perumal_puja",
     aspect: "w-[210px] sm:w-[250px] h-[160px] sm:h-[180px]", // Medium-small
   },
   {
-    src: "/images/Lakshmi-Homam.jpg",
-    alt: "Vedic Priest at Kolam Altar",
-    aspect: "w-[160px] sm:w-[190px] h-[310px] sm:h-[350px]", // Very Tall
+    src: "/Service images/golu.jpeg",
+    alt: "anchineyar",
+    aspect: "w-[160px] sm:w-[190px] h-[270px] sm:h-[310px]", // Tall
   },
   {
-    src: "/images/Navagraha-Shanti-Puja.jpg",
-    alt: "Shiva Lingam Abhishekam",
-    aspect: "w-[160px] sm:w-[190px] h-[310px] sm:h-[350px]", // Very Tall
+    src: "/Service images/group_shreem.jpeg",
+    alt: "lakshmi_puja",
+    aspect: "w-[200px] sm:w-[240px] h-[170px] sm:h-[190px]", // Medium-small
+  },
+  {
+    src: "/Service images/g2.jpg",
+    alt: "Sacred Vedic Homa Ritual",
+    aspect: "w-[200px] sm:w-[240px] h-[170px] sm:h-[190px]", // Medium-small
   },
 ];
 
@@ -609,9 +689,6 @@ function Badge({ icon, text }: { icon: string; text: string }) {
     </div>
   );
 }
-
-
-
 interface PujaCardProps {
   id?: string;
   imageSrc: string | { src: string };
@@ -627,20 +704,25 @@ interface PujaCardProps {
 
 function PujaCard({ id, imageSrc, topTag, title, subtitle, location, date, price, slug, onShare }: PujaCardProps) {
   const cardUrl = slug ? `/puja/${slug}` : "/puja";
+  const rawImg = (typeof imageSrc === "string" ? imageSrc : (imageSrc as any)?.src) || "/images/Ganesh-Chaturthi-Mahapuja.jpg";
+  const img1024 = get1024BannerImage(rawImg);
 
   return (
-    <div className="bg-white rounded-3xl border border-stone-200/80 p-2.5 sm:p-3 shadow-sm hover:shadow-lg hover:shadow-stone-900/15 transition-all duration-300 flex flex-col group text-left relative">
+    <div className="bg-white rounded-2xl min-[375px]:rounded-3xl border border-stone-200/80 p-2 min-[375px]:p-2.5 sm:p-3 shadow-sm hover:shadow-lg hover:shadow-stone-900/15 transition-all duration-300 flex flex-col group text-left relative h-full">
       <Link href={cardUrl} className="flex flex-col flex-1 cursor-pointer block">
         {/* Top Banner Image Container with Subtle Space */}
-        <div className="relative w-full h-[260px] sm:h-[340px] md:h-[400px] lg:h-[450px] xl:h-[235px] rounded-2xl overflow-hidden mb-2 sm:mb-2.5 bg-stone-100 shrink-0">
-          <Image
-            src={(typeof imageSrc === "string" ? imageSrc : (imageSrc as any)?.src) || "/images/Ganesh-Chaturthi-Mahapuja.jpg"}
-            alt={title}
-            fill
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            unoptimized
-            className="w-full h-full object-cover object-center"
-          />
+        <div className="relative w-full aspect-[4/3] xl:aspect-auto xl:h-[235px] rounded-xl min-[375px]:rounded-2xl overflow-hidden mb-2 sm:mb-2.5 bg-stone-100 shrink-0">
+          <picture className="absolute inset-0 w-full h-full block">
+            <source
+              media="(min-width: 1024px) and (max-width: 1279px)"
+              srcSet={img1024}
+            />
+            <img
+              src={rawImg}
+              alt={title}
+              className="w-full h-full object-cover object-center"
+            />
+          </picture>
         </div>
 
         {/* Card Body Container */}

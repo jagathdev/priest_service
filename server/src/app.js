@@ -55,14 +55,12 @@ if (process.env.CLIENT_URLS) {
 // Middlewares
 app.use(
     cors({
-        origin: (origin, callback) => {
-            // Allow requests with no origin (like mobile apps, curl, or Postman)
-            if (!origin) return callback(null, true);
-            if (allowedOrigins.includes(origin)) {
-                return callback(null, true);
-            }
-            return callback(new Error(`CORS blocked for origin: ${origin}`));
-        },
+        origin: [
+            "https://priestservices.astroved.com",
+            "http://localhost:8565",
+            "http://127.0.0.1:8565",
+            "https://priest-service.vercel.app"
+        ],
         methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
         allowedHeaders: ["Content-Type", "Authorization"],
         credentials: true,

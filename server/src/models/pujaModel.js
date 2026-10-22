@@ -61,6 +61,7 @@ const pujaSchema = new mongoose.Schema(
     additionalImages: [{ type: String }],
     location: { type: String, default: "" },
     templeVenue: { type: String, default: "" },
+    templeImage: { type: String, default: "" },
     templeNote: { type: String, default: "" },
 
     // Filters
@@ -99,6 +100,7 @@ const pujaSchema = new mongoose.Schema(
     offerings: [offeringSchema],
     recommendedHomaIds: [{ type: String }],
     sectionOrder: [{ type: String }],
+    trustBadges: [{ type: String }],
   },
   {
     timestamps: true,

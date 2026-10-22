@@ -73,7 +73,7 @@ function pujaMatchesFilters(
 ): boolean {
   if (searchQuery.trim()) {
     const q = searchQuery.toLowerCase();
-    const searchMatches = [puja.title, puja.subtitle, puja.description, puja.location, puja.badge]
+    const searchMatches = [puja.title, puja.shortTitle, puja.subtitle, puja.description, puja.location, puja.badge]
       .filter(Boolean)
       .some((text) => text?.toLowerCase().includes(q));
     if (!searchMatches) return false;
@@ -541,17 +541,26 @@ export default function PujaClient({ initialPujas }: { initialPujas?: Puja[] }) 
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:gap-8 lg:grid-cols-3">
-              {displayedPujas.map((puja: Puja) => {
+            <div className={`grid grid-cols-1 gap-6 sm:grid-cols-2 lg:gap-8 ${
+              displayedPujas.length === 3
+                ? "lg:grid-cols-2 xl:grid-cols-3 max-w-[980px] xl:max-w-[1350px] mx-auto w-full"
+                : "lg:grid-cols-3 max-w-[1350px] mx-auto w-full"
+            }`}>
+              {displayedPujas.map((puja: Puja, idx: number) => {
                 const fullUrl = typeof window !== 'undefined' ? `${window.location.origin}/puja/${puja.slug || slugify(puja.title)}` : '';
+                const isThirdCenteredOn1024 = displayedPujas.length === 3 && idx === 2;
                 return (
                   <div
                     key={puja._id}
                     onClick={() => router.push(`/puja/${puja.slug || slugify(puja.title)}`)}
-                    className="bg-white rounded-2xl shadow-md border border-gray-200 flex flex-col overflow-hidden group hover:shadow-2xl hover:shadow-stone-900/15 hover:-translate-y-1.5 transition-all duration-300 relative cursor-pointer"
+                    className={`bg-white rounded-2xl shadow-md border border-gray-200 flex flex-col overflow-hidden group hover:shadow-2xl hover:shadow-stone-900/15 hover:-translate-y-1.5 transition-all duration-300 relative cursor-pointer ${
+                      isThirdCenteredOn1024
+                        ? "sm:col-span-2 sm:max-w-[460px] sm:w-full sm:mx-auto xl:col-span-1 xl:max-w-none xl:mx-0"
+                        : ""
+                    }`}
                   >
                     <div className="flex flex-col flex-1 block">
-                      <div className="relative h-[260px] sm:h-[275px] w-full shrink-0 overflow-hidden">
+                      <div className="relative w-full aspect-[4/3] sm:aspect-auto sm:h-[275px] shrink-0 overflow-hidden">
                         <Image
                           src={getPujaImageUrl(puja.imageUrl)}
                           alt={puja.title}
@@ -568,13 +577,15 @@ export default function PujaClient({ initialPujas }: { initialPujas?: Puja[] }) 
                       </div>
 
                       <div className="p-6 flex flex-col flex-1 text-left">
-                        <div className="flex items-center gap-2 mb-2">
-                          <div className="w-8 h-[1px] bg-accent/40" />
-                          <span className="text-accent font-serif font-extrabold text-xs sm:text-[13px] tracking-wider uppercase flex items-center gap-1.5">
-                            <span className="text-[10px]">♦</span> {puja.subtitle} <span className="text-[10px]">♦</span>
-                          </span>
-                          <div className="w-8 h-[1px] bg-accent/40" />
-                        </div>
+                        {(puja.shortTitle || puja.subtitle) && (
+                          <div className="flex items-center justify-center gap-2 mb-2 w-full text-center">
+                            <div className="w-8 h-[1px] bg-accent/40" />
+                            <span className="text-accent font-serif font-extrabold text-xs sm:text-[13px] tracking-wider uppercase flex items-center gap-1.5 text-center">
+                              <span className="text-[10px]">♦</span> {puja.shortTitle || puja.subtitle} <span className="text-[10px]">♦</span>
+                            </span>
+                            <div className="w-8 h-[1px] bg-accent/40" />
+                          </div>
+                        )}
 
 
                         <h3 className="text-[20px] sm:text-[21px] font-serif font-extrabold text-gray-900 mb-2 leading-snug line-clamp-2">
@@ -605,7 +616,7 @@ export default function PujaClient({ initialPujas }: { initialPujas?: Puja[] }) 
                           <div
                             className="bg-[#14395C] text-white text-[14px] font-bold px-7 py-3 min-w-[130px] justify-center rounded-full hover:bg-[#0f2d4a] transition-all duration-200 flex items-center gap-2 shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-95"
                           >
-                            <span>Book Now</span>
+                            <span>{puja.buttonText || "Book Now"}</span>
                             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7" /></svg>
                           </div>
                         </div>

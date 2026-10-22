@@ -209,6 +209,7 @@ export default function LoginMethods() {
       // if (callbackUrl) params.set("callbackUrl", callbackUrl);
 
       // window.location.href = `/auth/otp?${params.toString()}`;
+      return;
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed");
     } finally {

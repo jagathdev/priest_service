@@ -52,148 +52,308 @@ const PUJA_ADMIN_FILTER_GROUPS = [
 
 export default function AdminPujasPage() {
   const fields = [
-    { name: "title", label: "Main Title", type: "text", required: true },
-    { name: "productId", label: "AstroVed Product ID", type: "number", placeholder: "e.g. 10, 24, 27" },
-    { name: "status", label: "Status", type: "text", options: ["active", "inactive"], placeholder: "active" },
-    { name: "slug", label: "Slug (optional)", type: "text", placeholder: "1100000-lakshmi-beej-mantra-jaap-19th-april-26" },
-    { name: "shortTitle", label: "Short Title (on image)", type: "text" },
-    { name: "subtitle", label: "Subtitle (Pink Text)", type: "text" },
-    { name: "badge", label: "Badge (e.g. Special Event)", type: "text" },
-    { name: "description", label: "Description", type: "textarea" },
-    { name: "imageUrl", label: "Main Image URL", type: "url" },
+    // ── 1. Basic & Header Info ──
+    {
+      name: "title",
+      label: "Main Title",
+      type: "text",
+      required: true,
+      placeholder: "e.g. Rameshwaram Tharpanam",
+      section: "Basic & Header Info",
+    },
+    {
+      name: "shortTitle",
+      label: "Short Title (Centered Top Tag)",
+      type: "text",
+      placeholder: "e.g. Sacred Ancestral Offering",
+      section: "Basic & Header Info",
+    },
+    {
+      name: "badge",
+      label: "Badge (e.g. Special Event)",
+      type: "text",
+      placeholder: "Special Event / Recommended",
+      section: "Basic & Header Info",
+    },
+    {
+      name: "status",
+      label: "Status",
+      type: "select",
+      options: ["active", "inactive"],
+      placeholder: "active",
+      section: "Basic & Header Info",
+    },
+    {
+      name: "slug",
+      label: "Slug (URL identifier)",
+      type: "text",
+      placeholder: "e.g. rameshwaram-tharpanam",
+      section: "Basic & Header Info",
+    },
+    {
+      name: "buttonText",
+      label: "Primary Button Text",
+      type: "text",
+      placeholder: "Book Now / Participate",
+      section: "Basic & Header Info",
+    },
+
+    // ── 2. Media & Banners ──
+    {
+      name: "imageUrl",
+      label: "Main Banner Image URL",
+      type: "url",
+      placeholder: "https://example.com/banner.jpg",
+      section: "Media & Banners",
+    },
     {
       name: "additionalImages",
       label: "Additional Banner Image URLs (Carousel)",
       type: "array-string",
-      placeholder: "https://example.com/banner-extra.jpg"
+      placeholder: "https://example.com/banner-extra.jpg",
+      section: "Media & Banners",
     },
-    { name: "location", label: "Temple/Location", type: "text" },
-    { name: "templeVenue", label: "Temple Venue Name", type: "text", placeholder: "Shri Gajalakshmi Temple" },
-    { name: "templeImage", label: "Temple Image URL (optional)", type: "url", placeholder: "https://example.com/temple.jpg" },
-    { name: "templeNote", label: "Temple Venue Note", type: "textarea", placeholder: "Short temple significance or venue note." },
+    {
+      name: "gallery",
+      label: "Gallery Image URLs",
+      type: "array-string",
+      placeholder: "https://example.com/gallery.jpg",
+      section: "Media & Banners",
+    },
+
+    // ── 3. Trust & Assurances ──
+    {
+      name: "trustBadges",
+      label: "Trust Highlights (Strip below Banner)",
+      type: "array-string",
+      placeholder: "e.g. Pooja recording shared within 48 hours",
+      section: "Trust & Assurances",
+    },
+
+    // ── 4. Schedule & Muhurat ──
+    {
+      name: "date",
+      label: "Puja Date (DD-MM-YYYY)",
+      type: "date-ddmmyyyy",
+      section: "Schedule & Muhurat",
+    },
+    {
+      name: "subtitle",
+      label: "Date Occasion / Ceremony Tag (e.g. Beside Date)",
+      type: "text",
+      placeholder: "e.g. Sacred Ancestral Offering",
+      section: "Schedule & Muhurat",
+    },
+    {
+      name: "eventDateTime",
+      label: "Countdown Date & Time",
+      type: "datetime-local",
+      placeholder: "2026-04-19T18:30",
+      section: "Schedule & Muhurat",
+    },
+    {
+      name: "showTimer",
+      label: "Show Countdown Timer",
+      type: "checkbox",
+      placeholder: "Show live countdown timer on page",
+      section: "Schedule & Muhurat",
+    },
+
+    // ── 4. Temple & Location ──
+    {
+      name: "templeVenue",
+      label: "Temple Venue Name",
+      type: "text",
+      placeholder: "e.g. Shri Gajalakshmi Temple",
+      section: "Temple & Location",
+    },
+    {
+      name: "location",
+      label: "Location State / City",
+      type: "text",
+      placeholder: "e.g. Tamil Nadu, Rameshwaram",
+      section: "Temple & Location",
+    },
+    {
+      name: "templeImage",
+      label: "Temple Image URL",
+      type: "url",
+      placeholder: "https://example.com/temple.jpg",
+      section: "Temple & Location",
+    },
+    {
+      name: "templeLocation",
+      label: "Temple Location (Details Section Address)",
+      type: "text",
+      placeholder: "e.g. Rameshwaram, Tamil Nadu",
+      section: "Temple & Location",
+    },
+    {
+      name: "templeNote",
+      label: "Temple Significance Note",
+      type: "textarea",
+      placeholder: "Short temple significance or venue note.",
+      section: "Temple & Location",
+    },
+
+    // ── 5. Packages & Pricing (INR Only) ──
+    {
+      name: "packages",
+      label: "Packages (INR)",
+      type: "array-object",
+      section: "Packages & Pricing",
+      objectSchema: [
+        {
+          name: "name",
+          label: "Package Name",
+          type: "select",
+          options: [
+            "Individual Puja",
+            "Couple Puja",
+            "Partner Puja",
+            "Family Puja",
+            "Family + Bhog",
+            "Joint Family + Bhog",
+          ],
+        },
+
+        {
+          name: "priceINR",
+          label: "Price (INR ₹)",
+          type: "number",
+          placeholder: "Price in INR",
+        },
+
+
+      ],
+    },
+    {
+      name: "offerings",
+      label: "Prasadam & Offerings (INR)",
+      type: "array-object",
+      section: "Packages & Pricing",
+      objectSchema: [
+        { name: "name", label: "Offering Name", type: "text", placeholder: "e.g. Special Prasadam Box" },
+        { name: "priceINR", label: "Price (INR ₹)", type: "number", placeholder: "Price in INR" },
+        { name: "description", label: "Description", type: "textarea", placeholder: "Offering details" },
+        { name: "imageUrl", label: "Image URL", type: "url", placeholder: "https://example.com/offering.jpg" },
+        { name: "badge", label: "Badge (Optional)", type: "text", placeholder: "e.g. Popular, Sacred" },
+      ],
+    },
+
+    // ── 6. About & Sacred Details ──
+    {
+      name: "description",
+      label: "Short Description (Hero Summary)",
+      type: "textarea",
+      placeholder: "Short summary shown in the top hero section...",
+      section: "About & Sacred Details",
+    },
+    {
+      name: "about",
+      label: "About Puja (In-depth Overview)",
+      type: "textarea",
+      placeholder: "Detailed explanation of the puja history and spiritual significance...",
+      section: "About & Sacred Details",
+    },
+    {
+      name: "ritualSummary",
+      label: "Ritual Summary / Highlights",
+      type: "textarea",
+      placeholder: "Summary of ritual proceedings and sacred chantings...",
+      section: "About & Sacred Details",
+    },
+    {
+      name: "inclusions",
+      label: "What Will You Receive (Inclusions)",
+      type: "array-string",
+      placeholder: "e.g. Puja Video Delivered Within 48 hours, Sanctified Prasad box",
+      section: "About & Sacred Details",
+    },
+    {
+      name: "benefits",
+      label: "Puja Benefits",
+      type: "array-object",
+      section: "About & Sacred Details",
+      objectSchema: [
+        { name: "title", label: "Benefit Title", type: "text", placeholder: "e.g. Removes Ancestral Doshas" },
+        { name: "description", label: "Benefit Description", type: "textarea", placeholder: "Detailed benefit description..." },
+      ],
+    },
+    {
+      name: "process",
+      label: "Puja Procedure / Steps",
+      type: "array-object",
+      section: "About & Sacred Details",
+      objectSchema: [
+        { name: "title", label: "Step Title", type: "text", placeholder: "e.g. Sankalpam & Ganesha Puja" },
+        { name: "description", label: "Step Description", type: "textarea", placeholder: "How this step is performed..." },
+      ],
+    },
+
+    // ── 7. Vedic Filters & Categorization ──
     {
       name: "deity",
-      label: "Deity (Filter)",
+      label: "Deity",
       type: "select",
-      options: ["Ganapathi", "Lakshmi", "Shiva", "Vishnu", "Hanuman", "Durga", "Saraswati"]
+      options: ["Ganapathi", "Lakshmi", "Shiva", "Vishnu", "Hanuman", "Durga", "Saraswati"],
+      section: "Vedic Filters",
     },
     {
       name: "tithis",
-      label: "Tithis (Filter)",
+      label: "Tithis",
       type: "select",
-      options: ["Ekadashi", "Purnima", "Amavasya", "Pradosh", "Navami"]
+      options: ["Ekadashi", "Purnima", "Amavasya", "Pradosh", "Navami"],
+      section: "Vedic Filters",
     },
     {
       name: "dosha",
-      label: "Dosha (Filter)",
+      label: "Dosha",
       type: "select",
-      options: ["Mangal Dosha", "Kala Sarpa", "Pitru Dosha", "Shani Dosha"]
+      options: ["Mangal Dosha", "Kala Sarpa", "Pitru Dosha", "Shani Dosha"],
+      section: "Vedic Filters",
     },
     {
       name: "benefit",
-      label: "Benefit (Filter)",
+      label: "Primary Benefit",
       type: "select",
-      options: ["Prosperity", "Protection", "Peace", "Health", "Career", "Marriage"]
+      options: ["Prosperity", "Protection", "Peace", "Health", "Career", "Marriage"],
+      section: "Vedic Filters",
     },
     {
       name: "filterLocation",
       label: "Location State (Filter)",
       type: "select",
-      options: ["Tamil Nadu", "Karnataka", "Kerala", "Uttar Pradesh", "Andhra Pradesh", "Rajasthan"]
-    },
-    { name: "date", label: "Date (DD-MM-YYYY)", type: "date-ddmmyyyy" },
-    { name: "eventDateTime", label: "Countdown Date & Time", type: "datetime-local", placeholder: "2026-04-19T18:30" },
-    { name: "showTimer", label: "Show Countdown Timer", type: "checkbox", placeholder: "Show countdown timer on page" },
-    { name: "buttonText", label: "Button Text", type: "text" },
-    { name: "metaTitle", label: "SEO Meta Title (for SEO)", type: "text", placeholder: "Custom title for search engines" },
-    { name: "metaDescription", label: "SEO Meta Description (for SEO)", type: "textarea", placeholder: "Custom description for search engines" },
-    { name: "metaKeywords", label: "SEO Meta Keywords (for SEO) (comma-separated)", type: "text", placeholder: "lakshmi puja, akshaya tritiya, wealth" },
-
-    { name: "heroTitle", label: "Hero Title", type: "text" },
-    { name: "heroSubtitle", label: "Hero Subtitle", type: "textarea" },
-    { name: "strengthFor", label: "Strength/Use For", type: "textarea" },
-    { name: "ritualSummary", label: "Ritual Summary", type: "textarea" },
-    { name: "about", label: "About Puja", type: "textarea" },
-    { name: "templeLocation", label: "Temple Location (Details Section)", type: "text" },
-    {
-      name: "gallery",
-      label: "Gallery Image URLs",
-      type: "array-string",
-      placeholder: "https://example.com/image.jpg"
+      options: ["Tamil Nadu", "Karnataka", "Kerala", "Uttar Pradesh", "Andhra Pradesh", "Rajasthan"],
+      section: "Vedic Filters",
     },
 
-    {
-      name: "benefits",
-      label: "Benefits",
-      type: "array-object",
-      objectSchema: [
-        { name: "title", label: "Title", type: "text" },
-        { name: "description", label: "Description", type: "textarea" }
-      ]
-    },
-    {
-      name: "process",
-      label: "Process Steps",
-      type: "array-object",
-      objectSchema: [
-        { name: "title", label: "Title", type: "text" },
-        { name: "description", label: "Description", type: "textarea" }
-      ]
-    },
-    {
-      name: "inclusions",
-      label: "Inclusions",
-      type: "array-string",
-      placeholder: "e.g. Experienced pandit-led ritual"
-    },
+    // ── 8. FAQs & Page Ordering ──
     {
       name: "faq",
-      label: "FAQs",
+      label: "Frequently Asked Questions",
       type: "array-object",
+      section: "FAQs & Layout",
       objectSchema: [
-        { name: "question", label: "Question", type: "text" },
-        { name: "answer", label: "Answer", type: "textarea" }
-      ]
-    },
-    {
-      name: "packages",
-      label: "Packages",
-      type: "array-object",
-      objectSchema: [
-        { name: "name", label: "Package Name", type: "select", options: ["Individual Puja", "Couple Puja", "Partner Puja", "Family Puja", "Family + Bhog", "Joint Family + Bhog"] },
-        { name: "devoteeCount", label: "Devotee Subtitle (e.g. 1 Devotee, 2 Devotees)", type: "text", placeholder: "1 Devotee" },
-        { name: "priceINR", label: "Price (INR)", type: "number" },
-        { name: "priceUSD", label: "Price (USD)", type: "number" },
-        { name: "priceMYR", label: "Price (MYR)", type: "number" },
-        { name: "description", label: "Description (optional)", type: "textarea" },
-        { name: "imageUrl", label: "Package Avatar Image URL (optional)", type: "url" }
-      ]
-    },
-    {
-      name: "offerings",
-      label: "Prasadam & Offerings",
-      type: "array-object",
-      objectSchema: [
-        { name: "name", label: "Offering Name", type: "text" },
-        { name: "priceINR", label: "Price (INR)", type: "number" },
-        { name: "description", label: "Description", type: "textarea" },
-        { name: "imageUrl", label: "Image URL", type: "url" },
-        { name: "badge", label: "Badge (Optional)", type: "text" }
-      ]
+        { name: "question", label: "Question", type: "text", placeholder: "e.g. Do I need to be physically present?" },
+        { name: "answer", label: "Answer", type: "textarea", placeholder: "Detailed answer for devotees..." },
+      ],
     },
     {
       name: "recommendedHomaIds",
-      label: "Select Recommended Homas",
+      label: "Recommended Homas",
       type: "reference-array",
       referenceEndpoint: "https://priestservices.astroved.com/api/homas",
-      referenceLabelField: "title"
+      referenceLabelField: "title",
+      section: "FAQs & Layout",
     },
     {
       name: "sectionOrder",
       label: "Frontend Section Order",
       type: "section-order",
-      options: ["about", "benefits", "process", "temple", "packages", "reviews", "faqs", "recommendations"]
-    }
+      options: ["about", "benefits", "process", "temple", "packages", "reviews", "faqs", "recommendations"],
+      section: "FAQs & Layout",
+    },
   ];
 
   return (
@@ -201,7 +361,7 @@ export default function AdminPujasPage() {
       type="puja"
       title="Pujas"
       fields={fields as any}
-      searchFields={["title", "subtitle", "description", "location", "slug", "badge", "shortTitle"]}
+      searchFields={["title", "shortTitle", "description", "location", "slug", "badge"]}
       filterGroups={PUJA_ADMIN_FILTER_GROUPS}
       dynamicPujaLocationFromItems
     />

@@ -26,7 +26,7 @@ export function matchesPujaFilters(
 ): boolean {
   if (searchQuery.trim()) {
     const q = searchQuery.toLowerCase();
-    const searchMatches = [puja.title, puja.subtitle, puja.description, puja.location, puja.badge]
+    const searchMatches = [puja.title, puja.shortTitle, puja.subtitle, puja.description, puja.location, puja.badge]
       .filter(Boolean)
       .some((text) => text?.toLowerCase().includes(q));
     if (!searchMatches) return false;

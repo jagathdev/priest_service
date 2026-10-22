@@ -41,6 +41,41 @@ body {
   animation-play-state: paused;
 }
 
+.animate-marquee-slow {
+  display: flex;
+  width: max-content;
+  animation: marquee 80s linear infinite;
+}
+
+.animate-marquee-slow:hover {
+  animation-play-state: paused;
+}
+
+/* Trust Badge responsive layout: Continuous Marquee below 1440px screen size, static spaced layout on >= 1440px */
+@media (max-width: 1439px) {
+  .badge-marquee-below-1440 {
+    display: block !important;
+  }
+  .badge-static-1440 {
+    display: none !important;
+  }
+  .badge-static-1440-grid {
+    display: none !important;
+  }
+}
+
+@media (min-width: 1440px) {
+  .badge-marquee-below-1440 {
+    display: none !important;
+  }
+  .badge-static-1440 {
+    display: flex !important;
+  }
+  .badge-static-1440-grid {
+    display: grid !important;
+  }
+}
+
 /* Hide scrollbar for Chrome, Safari and Opera */
 .no-scrollbar::-webkit-scrollbar,
 .scrollbar-hide::-webkit-scrollbar {
@@ -194,6 +229,45 @@ input[type="password"]:-webkit-autofill:active {
 
 .animate-fade-in-scale {
   animation: fadeInScale 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Scroll-triggered viewport reveal system */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+[data-reveal].is-revealed,
+[data-reveal][data-revealed="true"],
+[data-revealed="true"] {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+[data-reveal][data-delay="100"] {
+  transition-delay: 100ms;
+}
+[data-reveal][data-delay="150"] {
+  transition-delay: 150ms;
+}
+[data-reveal][data-delay="200"] {
+  transition-delay: 200ms;
+}
+[data-reveal][data-delay="250"] {
+  transition-delay: 250ms;
+}
+[data-reveal][data-delay="300"] {
+  transition-delay: 300ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
 }
 
 /* Hide AstroVed floating chat widget, chat bubble, and popup completely */
