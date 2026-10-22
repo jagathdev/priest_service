@@ -33,7 +33,10 @@ export default function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
 
   const handleLogout = () => {
-    document.cookie = "adminToken=; path=/; max-age=0";
+    document.cookie = "adminToken=; path=/; max-age=0; SameSite=Lax";
+    try {
+      localStorage.removeItem("adminToken");
+    } catch {}
     router.push("/admin/login");
   };
 

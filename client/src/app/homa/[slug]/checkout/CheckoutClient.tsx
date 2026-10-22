@@ -84,7 +84,7 @@ export default function CheckoutClient({ homa }: { homa: any }) {
               <>
                 {/* Whatsapp Number */}
                 <div>
-                  <label className="block text-gray-900 font-bold text-[15px] mb-3 flex items-center gap-2">
+                  <label className="text-gray-900 font-bold text-[15px] mb-3 flex items-center gap-2">
                     Your WhatsApp Number <i className="fa-solid fa-pen text-xs text-green-600"></i>
                   </label>
                   <div className="relative group">

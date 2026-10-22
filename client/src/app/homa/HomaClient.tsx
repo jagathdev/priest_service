@@ -368,7 +368,7 @@ export default function HomaClient({ initialHomas }: { initialHomas?: Homa[] }) 
                         onClick={() => router.push(`/homa/${homa.slug || slugify(homa.title)}`)}
                         className="bg-white rounded-2xl border border-gray-200/90 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.12),0_2px_6px_-1px_rgba(0,0,0,0.08)] hover:shadow-[0_12px_28px_-6px_rgba(0,0,0,0.18),0_8px_10px_-6px_rgba(0,0,0,0.1)] transition-all duration-300 overflow-hidden flex flex-col group relative cursor-pointer"
                       >
-                        <div className="flex flex-col flex-1 block">
+                        <div className="flex flex-col flex-1">
                           {/* ── Top Image Container ── */}
                           <div className="relative h-[210px] w-full overflow-hidden bg-gray-100 shrink-0">
                             <Image

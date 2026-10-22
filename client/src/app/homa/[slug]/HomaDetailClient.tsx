@@ -1114,7 +1114,7 @@ export default function HomaDetailClient({
       </div>
 
       {/* ── 4. Main 2-Column Body Layout ── */}
-      <div className="max-w-[1350px] mx-auto px-4 sm:px-6 lg:px-10 py-10 grid grid-cols-1 lg:grid-cols-12 gap-10">
+      <div className="max-w-[1350px] mx-auto px-4 sm:px-6 lg:px-10 pt-6 pb-20 sm:pb-24 lg:pb-36 grid grid-cols-1 lg:grid-cols-12 gap-y-8 lg:gap-10">
 
         {/* Left Column (8 cols) */}
         <div className="lg:col-span-8 space-y-12">
@@ -1254,7 +1254,7 @@ export default function HomaDetailClient({
 
           {/* Section: Homa Gallery */}
           {galleryList.length > 0 && (
-            <section id="gallery" data-reveal className="scroll-mt-32 pb-28 sm:pb-36">
+            <section id="gallery" data-reveal className="scroll-mt-32 pb-0 lg:pb-30">
               <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1f1a17] mb-6">Homa Gallery</h2>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {galleryList.map((img: string, idx: number) => (
@@ -1290,10 +1290,10 @@ export default function HomaDetailClient({
         </div>
 
         {/* Right Sidebar Column (4 cols) */}
-        <div className="lg:col-span-4 space-y-6 pt-2 sm:pt-4 pb-36 lg:pb-44">
+        <div className="lg:col-span-4 space-y-6 pt-0 pb-16 sm:pb-20 lg:pb-36">
 
           {/* Dedicated Vedic Homa Sticky Card */}
-          <div data-reveal className="bg-[#fdfbf7] border border-[#f0e4d0] rounded-3xl p-5 sm:p-6 pb-7 sm:pb-8 shadow-xs sticky top-[140px] lg:top-[144px] space-y-4 sm:space-y-5 mb-36">
+          <div data-reveal className="bg-[#fdfbf7] border border-[#f0e4d0] rounded-3xl p-5 sm:p-6 pb-7 sm:pb-8 shadow-xs static lg:sticky lg:top-[140px] xl:top-[144px] space-y-4 sm:space-y-5 mb-0 lg:mb-28">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-[#800000] text-white flex items-center justify-center font-bold shrink-0">🔥</div>
               <div>

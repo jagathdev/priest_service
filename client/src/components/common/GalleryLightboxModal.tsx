@@ -1,7 +1,16 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
+
+const emptySubscribe = () => () => {};
+function useIsMounted() {
+  return useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false
+  );
+}
 
 export interface LightboxImageItem {
   src: string;
@@ -23,12 +32,18 @@ export default function GalleryLightboxModal({
   images,
   initialIndex = 0,
 }: GalleryLightboxModalProps) {
-  const [mounted, setMounted] = useState(false);
+  const mounted = useIsMounted();
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
+  const [prevTrigger, setPrevTrigger] = useState({ isOpen, initialIndex, len: images.length });
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
 
-  // Sync index when initialIndex changes or modal opens
-  useEffect(() => {
+  // Sync index when initialIndex, isOpen, or images.length changes
+  if (
+    prevTrigger.isOpen !== isOpen ||
+    prevTrigger.initialIndex !== initialIndex ||
+    prevTrigger.len !== images.length
+  ) {
+    setPrevTrigger({ isOpen, initialIndex, len: images.length });
     if (isOpen) {
       const validIndex =
         images.length > 0
@@ -36,11 +51,7 @@ export default function GalleryLightboxModal({
           : 0;
       setCurrentIndex(validIndex);
     }
-  }, [isOpen, initialIndex, images.length]);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  }
 
   const total = images.length;
 
@@ -216,6 +227,7 @@ export default function GalleryLightboxModal({
             aria-label="Go to previous photo"
             className="hidden sm:flex absolute left-1/2 -translate-x-[110%] top-1/2 -translate-y-1/2 z-10 max-h-[66vh] max-w-[32vw] items-center justify-end opacity-25 hover:opacity-45 transition-all duration-300 cursor-pointer pointer-events-auto select-none"
           >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={prevSrc}
               alt="Previous photo preview"
@@ -229,6 +241,7 @@ export default function GalleryLightboxModal({
           className="relative z-20 flex items-center justify-center max-h-[75vh] sm:max-h-[78vh] md:max-h-[82vh] max-w-[90vw] sm:max-w-[78vw] md:max-w-[65vw] pointer-events-auto"
           onClick={(e) => e.stopPropagation()}
         >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             key={currentSrc}
             src={currentSrc}
@@ -244,6 +257,7 @@ export default function GalleryLightboxModal({
             aria-label="Go to next photo"
             className="hidden sm:flex absolute left-1/2 translate-x-[10%] top-1/2 -translate-y-1/2 z-10 max-h-[66vh] max-w-[32vw] items-center justify-start opacity-25 hover:opacity-45 transition-all duration-300 cursor-pointer pointer-events-auto select-none"
           >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={nextSrc}
               alt="Next photo preview"

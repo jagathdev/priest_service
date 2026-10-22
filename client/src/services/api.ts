@@ -20,7 +20,22 @@ export const getAuthToken = (): string | null => {
 
   if (typeof window === 'undefined') return null;
 
-  // 3. Fallback: Check localStorage
+  // 3. Admin-specific preference when on /admin routes
+  const isAdminRoute = typeof window !== 'undefined' && window.location.pathname.startsWith('/admin');
+  if (isAdminRoute) {
+    try {
+      const localAdminToken = localStorage.getItem('adminToken');
+      if (isValidToken(localAdminToken)) return localAdminToken.trim();
+    } catch { }
+
+    const adminMatch = document.cookie.match(/(?:^|;\s*)adminToken=([^;]+)/);
+    if (adminMatch && isValidToken(adminMatch[1])) {
+      const decoded = decodeURIComponent(adminMatch[1]);
+      if (isValidToken(decoded)) return decoded.trim();
+    }
+  }
+
+  // 4. Fallback: Check localStorage
   try {
     const localToken = localStorage.getItem('token');
     if (isValidToken(localToken)) return localToken.trim();
@@ -31,9 +46,15 @@ export const getAuthToken = (): string | null => {
     // localStorage might not be accessible
   }
 
-  // 4. Fallback: Check document.cookie
+  // 5. Fallback: Check document.cookie
   if (typeof document !== 'undefined') {
-    const match = document.cookie.match(/(?:^|;\s*)(?:token|adminToken)=([^;]+)/);
+    const adminMatch = document.cookie.match(/(?:^|;\s*)adminToken=([^;]+)/);
+    if (adminMatch && isValidToken(adminMatch[1]) && isAdminRoute) {
+      const decoded = decodeURIComponent(adminMatch[1]);
+      if (isValidToken(decoded)) return decoded.trim();
+    }
+
+    const match = document.cookie.match(/(?:^|;\s*)token=([^;]+)/) || document.cookie.match(/(?:^|;\s*)adminToken=([^;]+)/);
     if (match && isValidToken(match[1])) {
       const decoded = decodeURIComponent(match[1]);
       if (isValidToken(decoded)) return decoded.trim();

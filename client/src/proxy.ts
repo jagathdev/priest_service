@@ -29,8 +29,8 @@ export async function proxy(request: NextRequest) {
   }
 
   if (isUserProtectedPath(pathname)) {
-    const isUserLoggedIn = request.cookies.get('userLogin')?.value === 'true';
-    const token = request.cookies.get('token')?.value;
+    // const isUserLoggedIn = request.cookies.get('userLogin')?.value === 'true';
+    // const token = request.cookies.get('token')?.value;
 
     // if (!isUserLoggedIn || !token) {
     //   const loginUrl = new URL('/auth/login', request.url);

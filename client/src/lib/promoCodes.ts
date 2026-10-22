@@ -4,10 +4,15 @@ const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.
 
 const getAdminAuthHeaders = (): Record<string, string> => {
     if (typeof window === "undefined") return {};
-    const match = document.cookie.match(/(?:^|;\s*)(?:adminToken|token)=([^;]+)/);
-    const cookieToken = match ? decodeURIComponent(match[1]) : null;
-    const localToken = localStorage.getItem("adminToken") || localStorage.getItem("token");
-    const token = cookieToken || localToken;
+    const adminCookieMatch = document.cookie.match(/(?:^|;\s*)adminToken=([^;]+)/);
+    const adminCookieToken = adminCookieMatch ? decodeURIComponent(adminCookieMatch[1]) : null;
+    const adminLocalToken = localStorage.getItem("adminToken");
+
+    const userCookieMatch = document.cookie.match(/(?:^|;\s*)token=([^;]+)/);
+    const userCookieToken = userCookieMatch ? decodeURIComponent(userCookieMatch[1]) : null;
+    const userLocalToken = localStorage.getItem("token");
+
+    const token = adminCookieToken || adminLocalToken || userCookieToken || userLocalToken;
     return token ? { Authorization: `Bearer ${token}` } : {};
 };
 

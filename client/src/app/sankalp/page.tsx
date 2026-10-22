@@ -777,12 +777,14 @@ function SankalpContent() {
                       <h3 className="text-base font-extrabold text-stone-900 mb-4">Payment Method</h3>
                       <div className="grid grid-cols-2 gap-4">
                         <div
+                          onClick={() => setPaymentMethod("upi")}
                           className={`border rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer transition-colors ${paymentMethod === "upi" ? "border-[#14395C] bg-[#14395C]/5 shadow-sm" : "border-stone-200 hover:border-[#14395C]"}`}
                         >
                           <svg className={`w-8 h-8 mb-2 ${paymentMethod === "upi" ? "text-[#14395C]" : "text-stone-400"}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
                           <span className={`text-xs font-bold text-center ${paymentMethod === "upi" ? "text-[#14395C]" : "text-stone-700"}`}>Cards / Netbanking / UPI</span>
                         </div>
                         <div
+                          onClick={() => setPaymentMethod("qr")}
                           className={`border rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer transition-colors ${paymentMethod === "qr" ? "border-[#14395C] bg-[#14395C]/5 shadow-sm" : "border-stone-200 hover:border-[#14395C]"}`}
                         >
                           <svg className={`w-8 h-8 mb-2 ${paymentMethod === "qr" ? "text-[#14395C]" : "text-stone-400"}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" /></svg>

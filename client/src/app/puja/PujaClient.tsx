@@ -532,23 +532,16 @@ export default function PujaClient({ initialPujas }: { initialPujas?: Puja[] }) 
               </button>
             </div>
           ) : (
-            <div className={`grid grid-cols-1 gap-6 sm:grid-cols-2 lg:gap-8 ${displayedPujas.length === 3
-                ? "lg:grid-cols-2 xl:grid-cols-3 max-w-[980px] xl:max-w-[1350px] mx-auto w-full"
-                : "lg:grid-cols-3 max-w-[1350px] mx-auto w-full"
-              }`}>
-              {displayedPujas.map((puja: Puja, idx: number) => {
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 lg:gap-8 max-w-[1350px] mx-auto w-full">
+              {displayedPujas.map((puja: Puja) => {
                 const fullUrl = typeof window !== 'undefined' ? `${window.location.origin}/puja/${puja.slug || slugify(puja.title)}` : '';
-                const isThirdCenteredOn1024 = displayedPujas.length === 3 && idx === 2;
                 return (
                   <div
                     key={puja._id}
                     onClick={() => router.push(`/puja/${puja.slug || slugify(puja.title)}`)}
-                    className={`bg-white rounded-2xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.12),0_2px_6px_-1px_rgba(0,0,0,0.08)] border border-gray-200/90 flex flex-col overflow-hidden group hover:shadow-[0_14px_30px_-6px_rgba(0,0,0,0.18),0_10px_12px_-6px_rgba(0,0,0,0.1)] hover:-translate-y-1 transition-all duration-300 relative cursor-pointer ${isThirdCenteredOn1024
-                        ? "sm:col-span-2 sm:max-w-[460px] sm:w-full sm:mx-auto xl:col-span-1 xl:max-w-none xl:mx-0"
-                        : ""
-                      }`}
+                    className="bg-white rounded-2xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.12),0_2px_6px_-1px_rgba(0,0,0,0.08)] border border-gray-200/90 flex flex-col overflow-hidden group hover:shadow-[0_14px_30px_-6px_rgba(0,0,0,0.18),0_10px_12px_-6px_rgba(0,0,0,0.1)] hover:-translate-y-1 transition-all duration-300 relative cursor-pointer"
                   >
-                    <div className="flex flex-col flex-1 block">
+                    <div className="flex flex-col flex-1">
                       <div className="relative w-full aspect-[4/3] sm:aspect-auto sm:h-[275px] shrink-0 overflow-hidden">
                         <Image
                           src={getPujaImageUrl(puja.imageUrl)}

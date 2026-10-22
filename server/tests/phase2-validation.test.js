@@ -94,6 +94,37 @@ test("Phase 2 Validation: Authorization & Cross-User Resource Access (IDOR)", as
         assert.equal(res.body.success, false);
         assert.match(res.body.message, /Not authorized as an admin/);
     });
+
+    await t.test("Standard User cannot update puja via PUT /api/pujas/:id", async () => {
+        const res = await request(app)
+            .put("/api/pujas/660000000000000000000050")
+            .set("Authorization", `Bearer ${tokenUserA}`)
+            .send({ title: "Unauthorized Attempt" });
+        assert.equal(res.status, 403);
+        assert.equal(res.body.success, false);
+        assert.match(res.body.message, /Not authorized as an admin/);
+    });
+
+    await t.test("Admin can access PUT /api/pujas/:id even when user token cookie is present", async () => {
+        const res = await request(app)
+            .put("/api/pujas/660000000000000000000050")
+            .set("Cookie", [`token=${tokenUserA}; adminToken=${tokenAdmin}`])
+            .send({ title: "Authorized Admin Update" });
+        // Should pass authentication/authorization (not 401 or 403)
+        assert.notEqual(res.status, 401);
+        assert.notEqual(res.status, 403);
+    });
+
+    await t.test("Admin with Bearer user token but valid adminToken cookie passes authorization", async () => {
+        const res = await request(app)
+            .put("/api/pujas/660000000000000000000050")
+            .set("Authorization", `Bearer ${tokenUserA}`)
+            .set("Cookie", [`adminToken=${tokenAdmin}`])
+            .send({ title: "Authorized Admin Update with Fallback" });
+        // Should pass authentication/authorization (not 401 or 403)
+        assert.notEqual(res.status, 401);
+        assert.notEqual(res.status, 403);
+    });
 });
 
 test("Phase 2 Validation: OTP Expiration, Concurrency-Safe Attempts & Hash Comparison", async (t) => {

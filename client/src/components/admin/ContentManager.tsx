@@ -226,10 +226,15 @@ export default function ContentManager({
 
   const getAdminAuthHeaders = useCallback((): Record<string, string> => {
     if (typeof window === "undefined") return {};
-    const match = document.cookie.match(/(?:^|;\s*)(?:adminToken|token)=([^;]+)/);
-    const cookieToken = match ? decodeURIComponent(match[1]) : null;
-    const localToken = localStorage.getItem("adminToken") || localStorage.getItem("token");
-    const token = cookieToken || localToken;
+    const adminCookieMatch = document.cookie.match(/(?:^|;\s*)adminToken=([^;]+)/);
+    const adminCookieToken = adminCookieMatch ? decodeURIComponent(adminCookieMatch[1]) : null;
+    const adminLocalToken = localStorage.getItem("adminToken");
+
+    const userCookieMatch = document.cookie.match(/(?:^|;\s*)token=([^;]+)/);
+    const userCookieToken = userCookieMatch ? decodeURIComponent(userCookieMatch[1]) : null;
+    const userLocalToken = localStorage.getItem("token");
+
+    const token = adminCookieToken || adminLocalToken || userCookieToken || userLocalToken;
     return token ? { Authorization: `Bearer ${token}` } : {};
   }, []);
 
@@ -737,11 +742,10 @@ export default function ContentManager({
                 return (
                   <label
                     key={item._id}
-                    className={`flex items-center gap-2.5 p-3.5 rounded-xl border text-sm cursor-pointer transition-all ${
-                      isChecked
+                    className={`flex items-center gap-2.5 p-3.5 rounded-xl border text-sm cursor-pointer transition-all ${isChecked
                         ? "border-primary bg-gradient-to-r from-primary/10 via-indigo-50/60 to-white text-primary font-bold shadow-xs"
                         : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-300"
-                    }`}
+                      }`}
                   >
                     <input
                       type="checkbox"
@@ -810,6 +814,7 @@ export default function ContentManager({
                   className="block w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-sm text-gray-900 focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/10 shadow-2xs"
                 />
                 {field.name.toLowerCase().includes("image") && Boolean(val) && (
+                  /* eslint-disable-next-line @next/next/no-img-element */
                   <img
                     src={val}
                     alt="Preview"
@@ -848,20 +853,18 @@ export default function ContentManager({
               return (
                 <div
                   key={idx}
-                  className={`relative rounded-2xl border ${
-                    isPackageOrOffering
+                  className={`relative rounded-2xl border ${isPackageOrOffering
                       ? "border-amber-300/80 bg-gradient-to-br from-amber-50/50 via-white to-orange-50/30 hover:border-amber-400"
                       : "border-slate-200/90 bg-gradient-to-br from-slate-50/50 via-white to-indigo-50/20 hover:border-primary/40"
-                  } p-5 shadow-xs hover:shadow-md transition-all duration-200`}
+                    } p-5 shadow-xs hover:shadow-md transition-all duration-200`}
                 >
                   <div className="flex items-center justify-between pb-3.5 mb-4 border-b border-gray-100">
                     <div className="flex items-center gap-2.5">
                       <span
-                        className={`flex h-6 w-6 items-center justify-center rounded-lg ${
-                          isPackageOrOffering
+                        className={`flex h-6 w-6 items-center justify-center rounded-lg ${isPackageOrOffering
                             ? "bg-gradient-to-br from-amber-500 to-orange-600 text-white"
                             : "bg-gradient-to-br from-primary to-indigo-600 text-white"
-                        } text-[11px] font-bold shadow-xs`}
+                          } text-[11px] font-bold shadow-xs`}
                       >
                         #{idx + 1}
                       </span>
@@ -936,6 +939,7 @@ export default function ContentManager({
                               />
                               {sub.type === "url" && Boolean(val[sub.name]) && (
                                 <div className="mt-1.5 flex items-center gap-2">
+                                  {/* eslint-disable-next-line @next/next/no-img-element */}
                                   <img
                                     src={val[sub.name]}
                                     alt="Preview"
@@ -1046,6 +1050,7 @@ export default function ContentManager({
             )}
             {field.type === "url" && Boolean(formData[field.name]) && (
               <div className="mt-2.5 flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50/80 p-2.5 shadow-2xs">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={String(formData[field.name])}
                   alt={field.label}
@@ -1105,385 +1110,385 @@ export default function ContentManager({
       {/* Main Page Content Body with padding */}
       <div className="p-4 md:p-6 space-y-6">
 
-      {!isAdding && (
-        <div className="rounded-lg border border-[#e8e2ff] bg-white p-4 shadow-sm">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={`Search ${title.toLowerCase()}...`}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-primary focus:outline-none focus:ring-ink sm:max-w-sm"
-            />
-            {effectiveFilterGroups.length > 0 && (
-              <button
-                type="button"
-                onClick={() => setIsFilterOpen((prev) => !prev)}
-                className="rounded-md border border-[#d8ceff] bg-white px-4 py-2 text-sm font-medium text-[#000000] hover:bg-[#f3f0ff]"
-              >
-                Filter
-              </button>
+        {!isAdding && (
+          <div className="rounded-lg border border-[#e8e2ff] bg-white p-4 shadow-sm">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={`Search ${title.toLowerCase()}...`}
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-primary focus:outline-none focus:ring-ink sm:max-w-sm"
+              />
+              {effectiveFilterGroups.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setIsFilterOpen((prev) => !prev)}
+                  className="rounded-md border border-[#d8ceff] bg-white px-4 py-2 text-sm font-medium text-[#000000] hover:bg-[#f3f0ff]"
+                >
+                  Filter
+                </button>
+              )}
+            </div>
+
+            {isFilterOpen && effectiveFilterGroups.length > 0 && (
+              <div className="mt-4 rounded-md border border-gray-200 bg-gray-50 p-4">
+                <div className="flex flex-wrap items-end gap-3">
+                  {effectiveFilterGroups.map((group) => (
+                    <label key={group.label} className="min-w-40 flex-1 text-sm text-gray-700 sm:max-w-56">
+                      <span className="mb-1 block font-medium">{group.label}</span>
+                      <select
+                        value={activeFilters[group.label] ?? "All"}
+                        onChange={(e) =>
+                          setActiveFilters((prev) => ({ ...prev, [group.label]: e.target.value }))
+                        }
+                        className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-ink"
+                      >
+                        {group.options.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.value}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const cleared: Record<string, string> = {};
+                      effectiveFilterGroups.forEach((g) => {
+                        cleared[g.label] = "All";
+                      });
+                      setActiveFilters(cleared);
+                    }}
+                    className="shrink-0 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  >
+                    Clear filters
+                  </button>
+                </div>
+              </div>
             )}
           </div>
+        )}
 
-          {isFilterOpen && effectiveFilterGroups.length > 0 && (
-            <div className="mt-4 rounded-md border border-gray-200 bg-gray-50 p-4">
-              <div className="flex flex-wrap items-end gap-3">
-                {effectiveFilterGroups.map((group) => (
-                  <label key={group.label} className="min-w-40 flex-1 text-sm text-gray-700 sm:max-w-56">
-                    <span className="mb-1 block font-medium">{group.label}</span>
-                    <select
-                      value={activeFilters[group.label] ?? "All"}
-                      onChange={(e) =>
-                        setActiveFilters((prev) => ({ ...prev, [group.label]: e.target.value }))
-                      }
-                      className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-ink"
-                    >
-                      {group.options.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.value}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                ))}
-                <button
-                  type="button"
-                  onClick={() => {
-                    const cleared: Record<string, string> = {};
-                    effectiveFilterGroups.forEach((g) => {
-                      cleared[g.label] = "All";
-                    });
-                    setActiveFilters(cleared);
-                  }}
-                  className="shrink-0 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                >
-                  Clear filters
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
+        {isAdding && (
+          <div className="space-y-8 pt-2">
+            {/* Quick Jump Pill Navigation with Scroll Arrows */}
+            {sectionGroups.length > 1 && (
+              <div className="sticky top-16 z-20 -mx-2 flex items-center rounded-2xl border border-gray-200/90 bg-white/95 px-2 py-2 backdrop-blur-md shadow-xs">
+                {/* Left Arrow Button */}
+                {canScrollLeft && (
+                  <button
+                    type="button"
+                    onClick={() => scrollNav("left")}
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-700 hover:bg-gray-100 hover:text-primary transition-all shadow-xs mr-1.5"
+                    title="Scroll sections left"
+                    aria-label="Scroll left"
+                  >
+                    <ChevronLeftIcon className="h-4 w-4 stroke-[2.5]" />
+                  </button>
+                )}
 
-      {isAdding && (
-        <div className="space-y-8 pt-2">
-          {/* Quick Jump Pill Navigation with Scroll Arrows */}
-          {sectionGroups.length > 1 && (
-            <div className="sticky top-16 z-20 -mx-2 flex items-center rounded-2xl border border-gray-200/90 bg-white/95 px-2 py-2 backdrop-blur-md shadow-xs">
-              {/* Left Arrow Button */}
-              {canScrollLeft && (
-                <button
-                  type="button"
-                  onClick={() => scrollNav("left")}
-                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-700 hover:bg-gray-100 hover:text-primary transition-all shadow-xs mr-1.5"
-                  title="Scroll sections left"
-                  aria-label="Scroll left"
-                >
-                  <ChevronLeftIcon className="h-4 w-4 stroke-[2.5]" />
-                </button>
-              )}
+                <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400 pl-2 pr-1 shrink-0">
+                  Sections:
+                </span>
 
-              <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400 pl-2 pr-1 shrink-0">
-                Sections:
-              </span>
-
-              {/* Scrollable Container */}
-              <div
-                ref={navScrollRef}
-                onScroll={checkScrollability}
-                className="flex items-center gap-2 overflow-x-auto scroll-smooth py-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden flex-1"
-              >
-                {sectionGroups.map((group, idx) => {
-                  const theme = getSectionTheme(group.name);
-                  return (
-                    <button
-                      key={group.name}
-                      type="button"
-                      onClick={() => {
-                        const el = document.getElementById(`section-${idx}`);
-                        if (el) {
-                          el.scrollIntoView({ behavior: "smooth", block: "start" });
-                        }
-                      }}
-                      className={`inline-flex shrink-0 items-center gap-2 rounded-xl border border-gray-200/80 bg-white px-3.5 py-1.5 text-xs font-semibold text-gray-700 ${theme.pillHover} hover:shadow-xs transition-all duration-150`}
-                    >
-                      <span className="text-sm">{getSectionIcon(group.name)}</span>
-                      <span>{group.name}</span>
-                      <span className={`rounded-full ${theme.badgeBg} ${theme.badgeText} px-2 py-0.5 text-[10px] font-bold`}>
-                        {group.fields.length}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Right Arrow Button when required */}
-              {canScrollRight && (
-                <button
-                  type="button"
-                  onClick={() => scrollNav("right")}
-                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-r from-primary to-[#5657e8] text-white shadow-md shadow-primary/30 hover:brightness-110 active:scale-95 transition-all ml-1.5 animate-pulse hover:animate-none"
-                  title="More sections"
-                  aria-label="Scroll right"
-                >
-                  <ChevronRightIcon className="h-4 w-4 stroke-[3]" />
-                </button>
-              )}
-            </div>
-          )}
-
-          {/* Form with Unique Colorful Sections and Top Spacing */}
-          <form id="content-manager-form" onSubmit={handleSubmit} className="space-y-8 pt-2">
-            {formError ? (
-              <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-semibold text-red-700 shadow-xs">
-                {formError}
-              </div>
-            ) : null}
-
-            {sectionGroups.map((group, groupIdx) => {
-              const theme = getSectionTheme(group.name);
-              return (
+                {/* Scrollable Container */}
                 <div
-                  key={group.name}
-                  id={`section-${groupIdx}`}
-                  className={`group relative overflow-hidden rounded-2xl border ${theme.borderColor} ${theme.cardBg} shadow-xs hover:shadow-md ${theme.hoverBorder} transition-all duration-300 scroll-mt-44`}
+                  ref={navScrollRef}
+                  onScroll={checkScrollability}
+                  className="flex items-center gap-2 overflow-x-auto scroll-smooth py-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden flex-1"
                 >
-                  {/* Top Colorful Gradient Header Accent Line */}
-                  <div className={`h-1.5 w-full bg-gradient-to-r ${theme.gradient}`} />
-
-                  <div className="p-7 md:p-8 pt-8">
-                    {/* Section Header */}
-                    <div className="flex items-start justify-between pb-5 mb-7 border-b border-gray-100 pt-1">
-                      <div className="flex items-center gap-3.5">
-                        <span className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${theme.iconBg} text-xl text-white shadow-md transition-transform group-hover:scale-105 duration-200`}>
-                          {getSectionIcon(group.name)}
+                  {sectionGroups.map((group, idx) => {
+                    const theme = getSectionTheme(group.name);
+                    return (
+                      <button
+                        key={group.name}
+                        type="button"
+                        onClick={() => {
+                          const el = document.getElementById(`section-${idx}`);
+                          if (el) {
+                            el.scrollIntoView({ behavior: "smooth", block: "start" });
+                          }
+                        }}
+                        className={`inline-flex shrink-0 items-center gap-2 rounded-xl border border-gray-200/80 bg-white px-3.5 py-1.5 text-xs font-semibold text-gray-700 ${theme.pillHover} hover:shadow-xs transition-all duration-150`}
+                      >
+                        <span className="text-sm">{getSectionIcon(group.name)}</span>
+                        <span>{group.name}</span>
+                        <span className={`rounded-full ${theme.badgeBg} ${theme.badgeText} px-2 py-0.5 text-[10px] font-bold`}>
+                          {group.fields.length}
                         </span>
-                        <div>
-                          <h3 className="text-lg font-bold text-gray-900">{group.name}</h3>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Right Arrow Button when required */}
+                {canScrollRight && (
+                  <button
+                    type="button"
+                    onClick={() => scrollNav("right")}
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-r from-primary to-[#5657e8] text-white shadow-md shadow-primary/30 hover:brightness-110 active:scale-95 transition-all ml-1.5 animate-pulse hover:animate-none"
+                    title="More sections"
+                    aria-label="Scroll right"
+                  >
+                    <ChevronRightIcon className="h-4 w-4 stroke-[3]" />
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* Form with Unique Colorful Sections and Top Spacing */}
+            <form id="content-manager-form" onSubmit={handleSubmit} className="space-y-8 pt-2">
+              {formError ? (
+                <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-semibold text-red-700 shadow-xs">
+                  {formError}
+                </div>
+              ) : null}
+
+              {sectionGroups.map((group, groupIdx) => {
+                const theme = getSectionTheme(group.name);
+                return (
+                  <div
+                    key={group.name}
+                    id={`section-${groupIdx}`}
+                    className={`group relative overflow-hidden rounded-2xl border ${theme.borderColor} ${theme.cardBg} shadow-xs hover:shadow-md ${theme.hoverBorder} transition-all duration-300 scroll-mt-44`}
+                  >
+                    {/* Top Colorful Gradient Header Accent Line */}
+                    <div className={`h-1.5 w-full bg-gradient-to-r ${theme.gradient}`} />
+
+                    <div className="p-7 md:p-8 pt-8">
+                      {/* Section Header */}
+                      <div className="flex items-start justify-between pb-5 mb-7 border-b border-gray-100 pt-1">
+                        <div className="flex items-center gap-3.5">
+                          <span className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${theme.iconBg} text-xl text-white shadow-md transition-transform group-hover:scale-105 duration-200`}>
+                            {getSectionIcon(group.name)}
+                          </span>
+                          <div>
+                            <h3 className="text-lg font-bold text-gray-900">{group.name}</h3>
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    {/* Grid of Fields */}
-                    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                      {group.fields.map((field) => {
-                        const isFullSpan =
-                          field.type === "textarea" ||
-                          field.type === "json" ||
-                          field.type === "array-string" ||
-                          field.type === "array-object" ||
-                          field.type === "reference-array" ||
-                          field.type === "section-order";
+                      {/* Grid of Fields */}
+                      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                        {group.fields.map((field) => {
+                          const isFullSpan =
+                            field.type === "textarea" ||
+                            field.type === "json" ||
+                            field.type === "array-string" ||
+                            field.type === "array-object" ||
+                            field.type === "reference-array" ||
+                            field.type === "section-order";
 
-                        return (
-                          <div key={field.name} className={isFullSpan ? "sm:col-span-2" : ""}>
-                            {renderField(field)}
-                          </div>
-                        );
-                      })}
+                          return (
+                            <div key={field.name} className={isFullSpan ? "sm:col-span-2" : ""}>
+                              {renderField(field)}
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
 
-            {/* Form Actions Row (Inline at bottom of form, non-floating) */}
-            <div className="flex items-center justify-end gap-3 pt-6 pb-12 border-t border-gray-200/80">
-              <button
-                type="button"
-                onClick={handleOpenAdd}
-                className="rounded-xl border border-gray-300 bg-white px-5 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors shadow-xs"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={submitting}
-                className="rounded-xl bg-gradient-to-r from-primary via-[#6c5ce7] to-[#5657e8] px-7 py-2.5 text-sm font-bold text-white hover:brightness-110 active:scale-[0.99] disabled:opacity-50 transition-all shadow-md shadow-primary/30 flex items-center gap-2"
-              >
-                {submitting ? "Saving..." : editingId ? "Update Changes" : "Save Entry"}
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
-
-      {!isAdding && (
-        <div className="overflow-x-auto rounded-lg border border-[#e8e2ff] bg-white shadow-sm">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                {reviewMode ? (
-                  <>
-                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">User Name</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Service</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Rating</th>
-                  </>
-                ) : (
-                  fields.slice(0, 3).map((field) => (
-                    <th key={field.name} className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                      {field.label}
-                    </th>
-                  ))
-                )}
-                <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 min-w-[200px]">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200 bg-white">
-              {loading ? (
-                <tr><td colSpan={4} className="px-6 py-4 text-center text-sm text-gray-500">Loading...</td></tr>
-              ) : pagedItems.length === 0 ? (
-                <tr><td colSpan={4} className="px-6 py-4 text-center text-sm text-gray-500">No items found.</td></tr>
-              ) : (
-                pagedItems.map((item) => (
-                  <tr key={item._id}>
-                    {reviewMode ? (
-                      <>
-                        <td className="px-6 py-4 text-sm text-gray-900">
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium">{item.name}</span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-700 max-w-[180px] truncate">{item.service || item.type || "—"}</td>
-                        <td className="px-6 py-4 text-sm text-gray-700">{item.rating ? `${'★'.repeat(Number(item.rating))} (${item.rating})` : "—"}</td>
-                      </>
-                    ) : (
-                      fields.slice(0, 3).map((field) => (
-                        <td key={field.name} className="whitespace-nowrap px-6 py-4 text-sm text-gray-900 max-w-[200px] truncate">
-                          {field.type === "url" && item[field.name] ? (
-                            <div className="flex items-center">
-                              <Image src={item[field.name]} alt="" width={32} height={32} unoptimized className="h-8 w-8 rounded object-cover mr-2" />
-                              <span className="truncate max-w-[150px]">{item[field.name]}</span>
-                            </div>
-                          ) : (
-                            <span className="truncate max-w-[200px] block" title={String(item[field.name] ?? "")}>{item[field.name]}</span>
-                          )}
-                        </td>
-                      ))
-                    )}
-                    <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium min-w-[200px]">
-                      <div className="flex items-center justify-end gap-3">
-                        {reviewMode ? (
-                          <>
-                            <button
-                              onClick={() => setViewingReview(item)}
-                              className="text-[#000000] hover:text-[#4647c4]"
-                              title="View review"
-                            >
-                              <EyeIcon className="h-5 w-5" />
-                            </button>
-                            <button
-                              onClick={async () => {
-                                const nextStatus = item.approved ? false : true;
-                                const payload = { ...item, approved: nextStatus };
-                                delete payload._id;
-                                const res = await fetch(`/api/admin/content?type=${type}&id=${item._id}`, {
-                                  method: "PUT",
-                                  headers: { "Content-Type": "application/json" },
-                                  body: JSON.stringify(payload),
-                                });
-                                if (res.ok) fetchItems();
-                              }}
-                              className={`rounded-md border px-2 py-1 text-xs font-semibold ${item.approved
-                                ? "border-red-300 text-red-600 hover:bg-red-50"
-                                : "border-green-400 text-green-700 hover:bg-green-50"
-                                }`}
-                            >
-                              {item.approved ? "Unapprove" : "Approve"}
-                            </button>
-                            <button onClick={() => handleEdit(item)} className="text-[#000000] hover:text-[#4647c4]" aria-label="Edit review" title="Edit review">
-                              <PencilSquareIcon className="h-5 w-5" />
-                            </button>
-                            <button onClick={() => handleDelete(item._id)} className="text-red-600 hover:text-red-900" aria-label="Delete" title="Delete review">
-                              <TrashIcon className="h-5 w-5" />
-                            </button>
-                          </>
-                        ) : (
-                          <>
-                            {(type === "puja" || type === "homa" || type === "home-banner" || type === "hero-banner" || type === "heroBanner") && (
-                              <>
-                                <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${item.status === "inactive" || item.isActive === false ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"}`}>
-                                  {item.status === "inactive" || item.isActive === false ? "Inactive" : "Active"}
-                                </span>
-                                <button
-                                  onClick={async () => {
-                                    const isCurrentActive = item.isActive !== false && item.status !== "inactive";
-                                    const nextStatus = isCurrentActive ? false : true;
-                                    const payload = { ...item, isActive: nextStatus, status: isCurrentActive ? "inactive" : "active" }; delete payload._id;
-                                    const res = await fetch(getEndpoint(type, item._id), { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
-                                    if (res.ok) fetchItems();
-                                  }}
-                                  className="rounded-md border border-gray-300 px-2 py-1 text-xs text-gray-700 hover:bg-gray-50"
-                                >
-                                  Mark {item.isActive !== false && item.status !== "inactive" ? "Inactive" : "Active"}
-                                </button>
-                                {(type === "puja" || type === "homa") && (
-                                  <a href={`/${type}/${item.slug || String(item.title || "").toLowerCase().replace(/[^a-z0-9\s-]/g, "").trim().replace(/\s+/g, "-")}`} target="_blank" rel="noreferrer" className="text-[#000000] hover:text-[#4647c4]" title={`View ${type}`}>
-                                    <EyeIcon className="h-5 w-5" />
-                                  </a>
-                                )}
-                              </>
-                            )}
-                            {type === "chadhava" && (
-                              <a href={`/chadhava/${item.slug || String(item.title || "").toLowerCase().replace(/[^a-z0-9\s-]/g, "").trim().replace(/\s+/g, "-")}`} target="_blank" rel="noreferrer" className="text-[#000000] hover:text-[#4647c4]" title="View chadhava">
-                                <EyeIcon className="h-5 w-5" />
-                              </a>
-                            )}
-                            <button onClick={() => handleEdit(item)} className="text-[#000000] hover:text-[#4647c4]" aria-label="Edit item">
-                              <PencilSquareIcon className="h-5 w-5" />
-                            </button>
-                            <button onClick={() => handleDelete(item._id)} className="text-red-600 hover:text-red-900" aria-label="Delete item">
-                              <TrashIcon className="h-5 w-5" />
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between border-t border-gray-200 bg-white px-6 py-3">
-              <p className="text-sm text-gray-500">
-                Showing {(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, filteredItems.length)} of {filteredItems.length}
-              </p>
-              <div className="flex items-center gap-1">
+              {/* Form Actions Row (Inline at bottom of form, non-floating) */}
+              <div className="flex items-center justify-end gap-3 pt-6 pb-12 border-t border-gray-200/80">
                 <button
-                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                  disabled={currentPage === 1}
-                  className="rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-40"
+                  type="button"
+                  onClick={handleOpenAdd}
+                  className="rounded-xl border border-gray-300 bg-white px-5 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors shadow-xs"
                 >
-                  Previous
+                  Cancel
                 </button>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                  <button
-                    key={page}
-                    onClick={() => setCurrentPage(page)}
-                    className={`rounded-md border px-3 py-1.5 text-sm ${page === currentPage
-                      ? "border-primary bg-primary text-white"
-                      : "border-gray-300 text-gray-700 hover:bg-gray-50"
-                      }`}
-                  >
-                    {page}
-                  </button>
-                ))}
                 <button
-                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={currentPage === totalPages}
-                  className="rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-40"
+                  type="submit"
+                  disabled={submitting}
+                  className="rounded-xl bg-gradient-to-r from-primary via-[#6c5ce7] to-[#5657e8] px-7 py-2.5 text-sm font-bold text-white hover:brightness-110 active:scale-[0.99] disabled:opacity-50 transition-all shadow-md shadow-primary/30 flex items-center gap-2"
                 >
-                  Next
+                  {submitting ? "Saving..." : editingId ? "Update Changes" : "Save Entry"}
                 </button>
               </div>
-            </div>
-          )}
-        </div>
-      )}
+            </form>
+          </div>
+        )}
+
+        {!isAdding && (
+          <div className="overflow-x-auto rounded-lg border border-[#e8e2ff] bg-white shadow-sm">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  {reviewMode ? (
+                    <>
+                      <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">User Name</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Service</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Rating</th>
+                    </>
+                  ) : (
+                    fields.slice(0, 3).map((field) => (
+                      <th key={field.name} className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                        {field.label}
+                      </th>
+                    ))
+                  )}
+                  <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 min-w-[200px]">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200 bg-white">
+                {loading ? (
+                  <tr><td colSpan={4} className="px-6 py-4 text-center text-sm text-gray-500">Loading...</td></tr>
+                ) : pagedItems.length === 0 ? (
+                  <tr><td colSpan={4} className="px-6 py-4 text-center text-sm text-gray-500">No items found.</td></tr>
+                ) : (
+                  pagedItems.map((item) => (
+                    <tr key={item._id}>
+                      {reviewMode ? (
+                        <>
+                          <td className="px-6 py-4 text-sm text-gray-900">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium">{item.name}</span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-700 max-w-[180px] truncate">{item.service || item.type || "—"}</td>
+                          <td className="px-6 py-4 text-sm text-gray-700">{item.rating ? `${'★'.repeat(Number(item.rating))} (${item.rating})` : "—"}</td>
+                        </>
+                      ) : (
+                        fields.slice(0, 3).map((field) => (
+                          <td key={field.name} className="whitespace-nowrap px-6 py-4 text-sm text-gray-900 max-w-[200px] truncate">
+                            {field.type === "url" && item[field.name] ? (
+                              <div className="flex items-center">
+                                <Image src={item[field.name]} alt="" width={32} height={32} unoptimized className="h-8 w-8 rounded object-cover mr-2" />
+                                <span className="truncate max-w-[150px]">{item[field.name]}</span>
+                              </div>
+                            ) : (
+                              <span className="truncate max-w-[200px] block" title={String(item[field.name] ?? "")}>{item[field.name]}</span>
+                            )}
+                          </td>
+                        ))
+                      )}
+                      <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium min-w-[200px]">
+                        <div className="flex items-center justify-end gap-3">
+                          {reviewMode ? (
+                            <>
+                              <button
+                                onClick={() => setViewingReview(item)}
+                                className="text-[#000000] hover:text-[#4647c4]"
+                                title="View review"
+                              >
+                                <EyeIcon className="h-5 w-5" />
+                              </button>
+                              <button
+                                onClick={async () => {
+                                  const nextStatus = item.approved ? false : true;
+                                  const payload = { ...item, approved: nextStatus };
+                                  delete payload._id;
+                                  const res = await fetch(`/api/admin/content?type=${type}&id=${item._id}`, {
+                                    method: "PUT",
+                                    headers: { "Content-Type": "application/json" },
+                                    body: JSON.stringify(payload),
+                                  });
+                                  if (res.ok) fetchItems();
+                                }}
+                                className={`rounded-md border px-2 py-1 text-xs font-semibold ${item.approved
+                                  ? "border-red-300 text-red-600 hover:bg-red-50"
+                                  : "border-green-400 text-green-700 hover:bg-green-50"
+                                  }`}
+                              >
+                                {item.approved ? "Unapprove" : "Approve"}
+                              </button>
+                              <button onClick={() => handleEdit(item)} className="text-[#000000] hover:text-[#4647c4]" aria-label="Edit review" title="Edit review">
+                                <PencilSquareIcon className="h-5 w-5" />
+                              </button>
+                              <button onClick={() => handleDelete(item._id)} className="text-red-600 hover:text-red-900" aria-label="Delete" title="Delete review">
+                                <TrashIcon className="h-5 w-5" />
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              {(type === "puja" || type === "homa" || type === "home-banner" || type === "hero-banner" || type === "heroBanner") && (
+                                <>
+                                  <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${item.status === "inactive" || item.isActive === false ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"}`}>
+                                    {item.status === "inactive" || item.isActive === false ? "Inactive" : "Active"}
+                                  </span>
+                                  <button
+                                    onClick={async () => {
+                                      const isCurrentActive = item.isActive !== false && item.status !== "inactive";
+                                      const nextStatus = isCurrentActive ? false : true;
+                                      const payload = { ...item, isActive: nextStatus, status: isCurrentActive ? "inactive" : "active" }; delete payload._id;
+                                      const res = await fetch(getEndpoint(type, item._id), { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+                                      if (res.ok) fetchItems();
+                                    }}
+                                    className="rounded-md border border-gray-300 px-2 py-1 text-xs text-gray-700 hover:bg-gray-50"
+                                  >
+                                    Mark {item.isActive !== false && item.status !== "inactive" ? "Inactive" : "Active"}
+                                  </button>
+                                  {(type === "puja" || type === "homa") && (
+                                    <a href={`/${type}/${item.slug || String(item.title || "").toLowerCase().replace(/[^a-z0-9\s-]/g, "").trim().replace(/\s+/g, "-")}`} target="_blank" rel="noreferrer" className="text-[#000000] hover:text-[#4647c4]" title={`View ${type}`}>
+                                      <EyeIcon className="h-5 w-5" />
+                                    </a>
+                                  )}
+                                </>
+                              )}
+                              {type === "chadhava" && (
+                                <a href={`/chadhava/${item.slug || String(item.title || "").toLowerCase().replace(/[^a-z0-9\s-]/g, "").trim().replace(/\s+/g, "-")}`} target="_blank" rel="noreferrer" className="text-[#000000] hover:text-[#4647c4]" title="View chadhava">
+                                  <EyeIcon className="h-5 w-5" />
+                                </a>
+                              )}
+                              <button onClick={() => handleEdit(item)} className="text-[#000000] hover:text-[#4647c4]" aria-label="Edit item">
+                                <PencilSquareIcon className="h-5 w-5" />
+                              </button>
+                              <button onClick={() => handleDelete(item._id)} className="text-red-600 hover:text-red-900" aria-label="Delete item">
+                                <TrashIcon className="h-5 w-5" />
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between border-t border-gray-200 bg-white px-6 py-3">
+                <p className="text-sm text-gray-500">
+                  Showing {(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, filteredItems.length)} of {filteredItems.length}
+                </p>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className="rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-40"
+                  >
+                    Previous
+                  </button>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`rounded-md border px-3 py-1.5 text-sm ${page === currentPage
+                        ? "border-primary bg-primary text-white"
+                        : "border-gray-300 text-gray-700 hover:bg-gray-50"
+                        }`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                  <button
+                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                    className="rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-40"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
       </div>
 

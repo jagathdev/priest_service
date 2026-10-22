@@ -1101,7 +1101,7 @@ export default function PujaDetailClient({
       </div>
 
       {/* ── 4. Main 2-Column Body Layout ── */}
-      <div className="max-w-[1350px] mx-auto px-4 sm:px-6 lg:px-10 pt-6 pb-12 sm:pt-8 sm:pb-16 lg:py-10 grid grid-cols-1 lg:grid-cols-12 gap-10">
+      <div className="max-w-[1350px] mx-auto px-4 sm:px-6 lg:px-10 pt-6 pb-20 sm:pb-24 lg:pb-36 grid grid-cols-1 lg:grid-cols-12 gap-y-8 lg:gap-10">
 
         {/* Left Column (8 cols) */}
         <div className="lg:col-span-8 space-y-12">
@@ -1241,7 +1241,7 @@ export default function PujaDetailClient({
 
           {/* Section: Puja Gallery */}
           {galleryList.length > 0 && (
-            <section id="gallery" data-reveal className="scroll-mt-36 pb-4 sm:pb-28 lg:pb-36">
+            <section id="gallery" data-reveal className="scroll-mt-36 pb-0 lg:pb-30">
               <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1f1a17] mb-6">Puja Gallery</h2>
 
               {/* Mobile: Carousel */}
@@ -1345,7 +1345,7 @@ export default function PujaDetailClient({
         </div>
 
         {/* Right Sidebar Column (4 cols) */}
-        <div className="lg:col-span-4 space-y-6 pt-0 sm:pt-4 pb-16 sm:pb-20 lg:pb-36">
+        <div className="lg:col-span-4 space-y-6 pt-0 pb-16 sm:pb-20 lg:pb-36">
 
           {/* Dedicated Vedic Puja Sticky Card */}
           <div data-reveal className="bg-[#ffffff] border border-[#f0e4d0] rounded-3xl p-5 sm:p-6 pb-6 sm:pb-8 shadow-xs static lg:sticky lg:top-[140px] xl:top-[144px] space-y-4 sm:space-y-5 mb-0 lg:mb-28">

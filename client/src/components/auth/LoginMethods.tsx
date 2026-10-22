@@ -161,8 +161,11 @@ export default function LoginMethods() {
 
         if (data.success || data.token) {
           const token = data.token || "";
-          // Set cookie for authentication
-          document.cookie = `adminToken=${token}; path=/; max-age=86400`;
+          // Set cookie and localStorage for authentication
+          document.cookie = `adminToken=${token}; path=/; max-age=86400; SameSite=Lax`;
+          try {
+            localStorage.setItem("adminToken", token);
+          } catch {}
           window.location.href = "/admin";
           return;
         }

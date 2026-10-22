@@ -1319,7 +1319,7 @@ function AccountPageContent() {
                           {wishlistItems.map((item) => (
                             <div key={item.wishlistId} className="bg-white border border-gray-200/90 rounded-2xl overflow-hidden shadow-[0_4px_20px_-4px_rgba(0,0,0,0.12),0_2px_6px_-1px_rgba(0,0,0,0.08)] hover:shadow-[0_10px_25px_-5px_rgba(0,0,0,0.16),0_8px_10px_-6px_rgba(0,0,0,0.1)] transition-all duration-300">
                               {/* Top Image Section - Full Bleed */}
-                              <Link href={`/${item.serviceType?.toLowerCase() === 'pooja' ? 'puja' : (item.serviceType || 'puja')}/${item.slug || item.serviceId}`} prefetch={true} className="relative h-[200px] w-full flex overflow-hidden group cursor-pointer block">
+                              <Link href={`/${item.serviceType?.toLowerCase() === 'pooja' ? 'puja' : (item.serviceType || 'puja')}/${item.slug || item.serviceId}`} prefetch={true} className="relative h-[200px] w-full block overflow-hidden group cursor-pointer">
                                 <Image
                                   src={typeof item.image === "string" ? (item.image.startsWith("http") || item.image.startsWith("/") ? item.image : `/${item.image}`) : ((item.image as any)?.src || "/subrahmanya_swamy_hero.png")}
                                   alt={item.name || "Service Image"}

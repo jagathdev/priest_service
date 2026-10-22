@@ -76,17 +76,6 @@ export default function MyPujaBookings() {
     router.push("/");
   };
 
-  // Generate a mock future date for scheduled
-  const getScheduledDate = (dateStr: string) => {
-    const d = new Date(dateStr);
-    d.setDate(d.getDate() + 17);
-    return d.toLocaleDateString("en-GB", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-    });
-  };
-
   const filteredBookings = bookings.filter((b) => {
     if (filter === "All") return true;
     if (filter === "Ongoing") return b.orderStatus !== "completed" && b.orderStatus !== "cancelled";

@@ -351,7 +351,7 @@ export default function AdminOrdersPage() {
             <input
               type="text"
               placeholder="Search devotee or order ID..."
-              className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-success focus:border-success block w-full pl-3 pr-10 py-2.5 outline-none transition shadow-sm w-[240px]"
+              className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-success focus:border-success block w-[240px] pl-3 pr-10 py-2.5 outline-none transition shadow-sm"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />

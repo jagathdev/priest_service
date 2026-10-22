@@ -278,10 +278,7 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
               Array.from({ length: 3 }).map((_, i) => (
                 <div
                   key={`skeleton-${i}`}
-                  className={`bg-white rounded-3xl h-[450px] animate-pulse border border-stone-200 p-3 shadow-sm flex flex-col ${i === 2
-                    ? "lg:col-span-2 lg:max-w-[480px] lg:w-full lg:mx-auto xl:col-span-1 xl:max-w-none xl:mx-0"
-                    : ""
-                    }`}
+                  className="bg-white rounded-3xl h-[450px] animate-pulse border border-stone-200 p-3 shadow-sm flex flex-col"
                 >
                   <div className="w-full aspect-[4/3] xl:aspect-auto xl:h-[235px] bg-stone-100 rounded-xl min-[375px]:rounded-2xl mb-4 flex items-center justify-center">
                     <svg className="w-8 h-8 text-stone-300 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -303,7 +300,7 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
                 No active Pujas found for selected filters.
               </div>
             ) : (
-              filteredPujas.map((p, idx) => {
+              filteredPujas.map((p) => {
                 const priceVal = p.price
                   ? `₹${p.price}`
                   : p.packages?.[0]?.priceINR
@@ -314,15 +311,10 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
                 const slugVal = p.slug || (p.title ? p.title.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-") : "");
                 const topTagVal = p.badge || p.shortTitle || p.subtitle;
                 const descriptionVal = p.description || p.subtitle;
-                const isRemainingCenteredOn1024 =
-                  filteredPujas.length % 2 === 1 && idx === filteredPujas.length - 1;
                 return (
                   <div
                     key={p._id}
-                    className={`flex flex-col ${isRemainingCenteredOn1024
-                      ? "lg:col-span-2 lg:max-w-[480px] lg:w-full lg:mx-auto xl:col-span-1 xl:max-w-none xl:mx-0"
-                      : ""
-                      }`}
+                    className="flex flex-col"
                   >
                     <PujaCard
                       id={p._id}
@@ -691,7 +683,7 @@ function PujaCard({ id, imageSrc, topTag, title, subtitle, location, date, price
 
   return (
     <div className="bg-white rounded-2xl min-[375px]:rounded-3xl border border-stone-200/90 p-2 min-[375px]:p-2.5 sm:p-3 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.12),0_2px_6px_-1px_rgba(0,0,0,0.08)] hover:shadow-[0_12px_28px_-6px_rgba(0,0,0,0.18),0_8px_10px_-6px_rgba(0,0,0,0.1)] transition-all duration-300 flex flex-col group text-left relative h-full">
-      <Link href={cardUrl} className="flex flex-col flex-1 cursor-pointer block">
+      <Link href={cardUrl} className="flex flex-col flex-1 cursor-pointer">
         {/* Top Banner Image Container with Subtle Space */}
         <div className="relative w-full aspect-[4/3] xl:aspect-auto xl:h-[235px] rounded-xl min-[375px]:rounded-2xl overflow-hidden mb-2 sm:mb-2.5 bg-stone-100 shrink-0">
           <picture className="absolute inset-0 w-full h-full block">

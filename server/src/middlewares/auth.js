@@ -1,13 +1,51 @@
 import jwt from 'jsonwebtoken';
 
+const isLikelyAdminRoute = (req) => {
+  return Boolean(
+    req.baseUrl?.startsWith('/api/admin') ||
+    req.originalUrl?.includes('/api/admin') ||
+    req.headers.referer?.includes('/admin') ||
+    (req.method !== 'GET' && (
+      req.baseUrl?.startsWith('/api/pujas') ||
+      req.originalUrl?.includes('/api/pujas') ||
+      req.baseUrl?.startsWith('/api/homas') ||
+      req.originalUrl?.includes('/api/homas') ||
+      req.baseUrl?.startsWith('/api/hero-banners') ||
+      req.originalUrl?.includes('/api/hero-banners') ||
+      req.baseUrl?.startsWith('/api/promos') ||
+      req.originalUrl?.includes('/api/promos')
+    ))
+  );
+};
+
 const extractToken = (req) => {
   const authHeader = req.headers.authorization;
+  const isAdminRoute = isLikelyAdminRoute(req);
+
   if (authHeader && authHeader.startsWith('Bearer ')) {
-    return authHeader.split(' ')[1];
+    const headerToken = authHeader.split(' ')[1];
+    if (headerToken && headerToken !== 'undefined' && headerToken !== 'null' && headerToken.trim()) {
+      // If this is an admin route/context, ensure the header token has admin privileges.
+      // If it's a non-admin token but a valid adminToken cookie exists, prefer adminToken.
+      if (isAdminRoute && req.headers?.cookie) {
+        try {
+          const decoded = jwt.decode(headerToken);
+          if (decoded && decoded.role === 'admin') {
+            return headerToken;
+          }
+          const adminMatch = req.headers.cookie.match(/(?:^|;\s*)adminToken=([^;]+)/);
+          if (adminMatch) {
+            return decodeURIComponent(adminMatch[1]);
+          }
+        } catch {
+          // If decoding fails, return headerToken
+        }
+      }
+      return headerToken;
+    }
   }
 
   if (req.headers.cookie) {
-    const isAdminRoute = Boolean(req.baseUrl?.startsWith('/api/admin') || req.originalUrl?.includes('/api/admin'));
     if (isAdminRoute) {
       const adminMatch = req.headers.cookie.match(/(?:^|;\s*)adminToken=([^;]+)/);
       if (adminMatch) return decodeURIComponent(adminMatch[1]);
@@ -37,7 +75,21 @@ export const requireAuth = async (req, res, next) => {
     try {
       decoded = jwt.verify(token, process.env.JWT_SECRET);
     } catch (err) {
-      return res.status(401).json({ success: false, message: 'Not authorized, token failed' });
+      // If token failed but we have an adminToken cookie in admin context, try that
+      if (req.headers?.cookie && isLikelyAdminRoute(req)) {
+        const adminMatch = req.headers.cookie.match(/(?:^|;\s*)adminToken=([^;]+)/);
+        if (adminMatch) {
+          try {
+            decoded = jwt.verify(decodeURIComponent(adminMatch[1]), process.env.JWT_SECRET);
+          } catch {
+            return res.status(401).json({ success: false, message: 'Not authorized, token failed' });
+          }
+        } else {
+          return res.status(401).json({ success: false, message: 'Not authorized, token failed' });
+        }
+      } else {
+        return res.status(401).json({ success: false, message: 'Not authorized, token failed' });
+      }
     }
 
     req.user = {
@@ -71,10 +123,29 @@ export const requireUserOrAdmin = (req, res, next) => {
 
 export const requireAdmin = (req, res, next) => {
   if (req.user && req.user.role === 'admin') {
-    next();
-  } else {
-    res.status(403).json({ success: false, message: 'Not authorized as an admin' });
+    return next();
   }
+
+  // Extra safety fallback: Check if request carries a valid adminToken in cookies
+  if (req.headers?.cookie) {
+    const adminMatch = req.headers.cookie.match(/(?:^|;\s*)adminToken=([^;]+)/);
+    if (adminMatch) {
+      try {
+        const decoded = jwt.verify(decodeURIComponent(adminMatch[1]), process.env.JWT_SECRET);
+        if (decoded && decoded.role === 'admin') {
+          req.user = {
+            id: decoded.id,
+            role: decoded.role,
+          };
+          return next();
+        }
+      } catch {
+        // Invalid or expired admin token
+      }
+    }
+  }
+
+  return res.status(403).json({ success: false, message: 'Not authorized as an admin' });
 };
 
 export const optionalAuth = async (req, res, next) => {
