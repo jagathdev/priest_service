@@ -476,15 +476,6 @@ export default function PujaClient({ initialPujas }: { initialPujas?: Puja[] }) 
             <h2 className="text-[19px] min-[360px]:text-[22px] min-[390px]:text-2xl sm:text-3xl lg:text-4xl font-serif font-bold text-[#5c2424] whitespace-nowrap tracking-tight sm:tracking-normal">
               Upcoming Online Pujas
             </h2>
-            {hasActiveFilters && (
-              <button
-                type="button"
-                onClick={clearFilters}
-                className="text-xs sm:text-sm font-semibold text-red-500 hover:text-red-700 underline shrink-0 whitespace-nowrap"
-              >
-                Clear Filters
-              </button>
-            )}
           </div>
 
           {/* Quick Categories Filter row */}
@@ -541,11 +532,10 @@ export default function PujaClient({ initialPujas }: { initialPujas?: Puja[] }) 
               </button>
             </div>
           ) : (
-            <div className={`grid grid-cols-1 gap-6 sm:grid-cols-2 lg:gap-8 ${
-              displayedPujas.length === 3
+            <div className={`grid grid-cols-1 gap-6 sm:grid-cols-2 lg:gap-8 ${displayedPujas.length === 3
                 ? "lg:grid-cols-2 xl:grid-cols-3 max-w-[980px] xl:max-w-[1350px] mx-auto w-full"
                 : "lg:grid-cols-3 max-w-[1350px] mx-auto w-full"
-            }`}>
+              }`}>
               {displayedPujas.map((puja: Puja, idx: number) => {
                 const fullUrl = typeof window !== 'undefined' ? `${window.location.origin}/puja/${puja.slug || slugify(puja.title)}` : '';
                 const isThirdCenteredOn1024 = displayedPujas.length === 3 && idx === 2;
@@ -553,11 +543,10 @@ export default function PujaClient({ initialPujas }: { initialPujas?: Puja[] }) 
                   <div
                     key={puja._id}
                     onClick={() => router.push(`/puja/${puja.slug || slugify(puja.title)}`)}
-                    className={`bg-white rounded-2xl shadow-md border border-gray-200 flex flex-col overflow-hidden group hover:shadow-2xl hover:shadow-stone-900/15 hover:-translate-y-1.5 transition-all duration-300 relative cursor-pointer ${
-                      isThirdCenteredOn1024
+                    className={`bg-white rounded-2xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.12),0_2px_6px_-1px_rgba(0,0,0,0.08)] border border-gray-200/90 flex flex-col overflow-hidden group hover:shadow-[0_14px_30px_-6px_rgba(0,0,0,0.18),0_10px_12px_-6px_rgba(0,0,0,0.1)] hover:-translate-y-1 transition-all duration-300 relative cursor-pointer ${isThirdCenteredOn1024
                         ? "sm:col-span-2 sm:max-w-[460px] sm:w-full sm:mx-auto xl:col-span-1 xl:max-w-none xl:mx-0"
                         : ""
-                    }`}
+                      }`}
                   >
                     <div className="flex flex-col flex-1 block">
                       <div className="relative w-full aspect-[4/3] sm:aspect-auto sm:h-[275px] shrink-0 overflow-hidden">

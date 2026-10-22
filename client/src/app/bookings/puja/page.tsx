@@ -232,7 +232,43 @@ export default function MyPujaBookings() {
 
               {/* Bookings List */}
               {!fetched ? (
-                <div className="space-y-4 min-h-[400px]"></div>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 min-h-[400px]">
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <div
+                      key={`mybooking-skel-${i}`}
+                      className="bg-white rounded-2xl sm:rounded-3xl border border-[#E2E8F0] p-4 sm:p-6 shadow-xs animate-pulse flex flex-col justify-between"
+                    >
+                      <div className="flex justify-between items-center mb-3">
+                        <div className="h-4 w-24 bg-stone-200/80 rounded-md" />
+                        <div className="h-4 w-28 bg-stone-200/80 rounded-md" />
+                      </div>
+                      <hr className="border-stone-100 my-2" />
+                      <div className="flex items-start gap-3 sm:gap-4 my-2">
+                        <div className="w-20 h-16 sm:w-28 sm:h-20 bg-stone-200/80 rounded-xl shrink-0" />
+                        <div className="flex-1 space-y-2 py-1">
+                          <div className="h-4 w-3/4 bg-stone-200/80 rounded-md" />
+                          <div className="h-3 w-1/2 bg-stone-100 rounded-md" />
+                        </div>
+                      </div>
+                      <div className="mt-4 pt-3 border-t border-stone-100 flex justify-between items-center px-4">
+                        <div className="flex flex-col items-center gap-1.5">
+                          <div className="w-10 h-10 rounded-full bg-stone-200/80" />
+                          <div className="w-12 h-2.5 bg-stone-200/80 rounded-md" />
+                        </div>
+                        <div className="flex-1 h-0.5 bg-stone-200/70 mx-2" />
+                        <div className="flex flex-col items-center gap-1.5">
+                          <div className="w-10 h-10 rounded-full bg-stone-100" />
+                          <div className="w-16 h-2.5 bg-stone-100 rounded-md" />
+                        </div>
+                        <div className="flex-1 h-0.5 bg-stone-200/70 mx-2" />
+                        <div className="flex flex-col items-center gap-1.5">
+                          <div className="w-10 h-10 rounded-full bg-stone-100" />
+                          <div className="w-14 h-2.5 bg-stone-100 rounded-md" />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               ) : filteredBookings.length === 0 ? (
                 <div className="border border-gray-200 rounded-2xl p-16 text-center bg-white shadow-sm">
                   <div className="text-5xl text-gray-200 mb-4">
@@ -362,7 +398,7 @@ export default function MyPujaBookings() {
                                 </div>
                                 <p className={`text-[12px] font-bold leading-tight ${booking.orderStatus === 'scheduled' || booking.orderStatus === 'performed' || booking.orderStatus === 'completed' ? 'text-gray-900' : 'text-[#a8a19d]'}`}>Puja Scheduled</p>
                                 <p className={`text-[11px] font-bold mt-0.5 ${booking.orderStatus === 'scheduled' || booking.orderStatus === 'performed' || booking.orderStatus === 'completed' ? 'text-gray-600' : 'text-[#a8a19d]'}`}>
-                                  {booking.scheduledDate ? `on ${formatDate(booking.scheduledDate)}` : `on ${getScheduledDate(booking.bookingDate)}`}
+                                  {booking.scheduledDate ? `on ${formatDate(booking.scheduledDate)}` : "Date to be scheduled"}
                                 </p>
                               </div>
 

@@ -49,6 +49,13 @@ const STATUS_CONFIG: Record<
     dot: "bg-rose-500",
     border: "border-rose-200",
   },
+  refunded: {
+    label: "Refunded",
+    bg: "bg-emerald-50",
+    text: "text-emerald-800",
+    dot: "bg-emerald-600",
+    border: "border-emerald-300",
+  },
 };
 
 function StatusDropdown({
@@ -217,7 +224,7 @@ export default function AdminOrdersPage() {
     if (!dateStr) return;
 
     const selectedDate = new Date(dateStr);
-    const newStatus = "completed";
+    const newStatus = "scheduled";
 
     // Optimistically update UI
     setData(prev => ({

@@ -279,8 +279,8 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
                 <div
                   key={`skeleton-${i}`}
                   className={`bg-white rounded-3xl h-[450px] animate-pulse border border-stone-200 p-3 shadow-sm flex flex-col ${i === 2
-                      ? "lg:col-span-2 lg:max-w-[480px] lg:w-full lg:mx-auto xl:col-span-1 xl:max-w-none xl:mx-0"
-                      : ""
+                    ? "lg:col-span-2 lg:max-w-[480px] lg:w-full lg:mx-auto xl:col-span-1 xl:max-w-none xl:mx-0"
+                    : ""
                     }`}
                 >
                   <div className="w-full aspect-[4/3] xl:aspect-auto xl:h-[235px] bg-stone-100 rounded-xl min-[375px]:rounded-2xl mb-4 flex items-center justify-center">
@@ -320,8 +320,8 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
                   <div
                     key={p._id}
                     className={`flex flex-col ${isRemainingCenteredOn1024
-                        ? "lg:col-span-2 lg:max-w-[480px] lg:w-full lg:mx-auto xl:col-span-1 xl:max-w-none xl:mx-0"
-                        : ""
+                      ? "lg:col-span-2 lg:max-w-[480px] lg:w-full lg:mx-auto xl:col-span-1 xl:max-w-none xl:mx-0"
+                      : ""
                       }`}
                   >
                     <PujaCard
@@ -455,9 +455,12 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
             <p className="text-gray-600 mb-8 text-sm max-w-[250px]">
               Our devotee care team is available 24/7. Reach them on WhatsApp, phone, or email.
             </p>
-            <button className="bg-[#14395C] text-white px-8 py-3 rounded-full font-bold shadow-md hover:bg-[#0e2740] transition-colors">
+            <a
+              href="tel:+919677391108"
+              className="inline-block bg-[#14395C] text-white px-8 py-3 rounded-full font-bold shadow-md hover:bg-[#0e2740] transition-colors text-center"
+            >
               Speak to Devotee Care
-            </button>
+            </a>
           </div>
 
           {/* Right: Accordion */}
@@ -687,7 +690,7 @@ function PujaCard({ id, imageSrc, topTag, title, subtitle, location, date, price
   const img1024 = get1024BannerImage(rawImg);
 
   return (
-    <div className="bg-white rounded-2xl min-[375px]:rounded-3xl border border-stone-200/80 p-2 min-[375px]:p-2.5 sm:p-3 shadow-sm hover:shadow-lg hover:shadow-stone-900/15 transition-all duration-300 flex flex-col group text-left relative h-full">
+    <div className="bg-white rounded-2xl min-[375px]:rounded-3xl border border-stone-200/90 p-2 min-[375px]:p-2.5 sm:p-3 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.12),0_2px_6px_-1px_rgba(0,0,0,0.08)] hover:shadow-[0_12px_28px_-6px_rgba(0,0,0,0.18),0_8px_10px_-6px_rgba(0,0,0,0.1)] transition-all duration-300 flex flex-col group text-left relative h-full">
       <Link href={cardUrl} className="flex flex-col flex-1 cursor-pointer block">
         {/* Top Banner Image Container with Subtle Space */}
         <div className="relative w-full aspect-[4/3] xl:aspect-auto xl:h-[235px] rounded-xl min-[375px]:rounded-2xl overflow-hidden mb-2 sm:mb-2.5 bg-stone-100 shrink-0">

@@ -595,9 +595,42 @@ function AccountPageContent() {
 
   if (!isHydrated) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#fafafc]">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
-      </div>
+      <>
+        <Navbar />
+        <main className="min-h-screen bg-[#fafafc] pb-16 font-sans">
+          <div className="mx-auto max-w-[1350px] px-4 sm:px-6 lg:px-10 py-3.5 border-b border-gray-150 bg-white">
+            <div className="h-4 w-48 bg-stone-200/80 rounded animate-pulse" />
+          </div>
+          <div className="mx-auto max-w-[1350px] px-2.5 sm:px-6 lg:px-10 pt-4 sm:pt-8 pb-16">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              <div className="hidden lg:block lg:col-span-3 bg-white rounded-3xl border border-stone-200 p-5 space-y-4 animate-pulse">
+                <div className="flex items-center gap-3 pb-4 border-b border-stone-100">
+                  <div className="w-12 h-12 rounded-full bg-stone-200" />
+                  <div className="space-y-2 flex-1">
+                    <div className="h-4 w-24 bg-stone-200 rounded" />
+                    <div className="h-3 w-16 bg-stone-100 rounded" />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <div className="h-10 w-full bg-stone-100 rounded-xl" />
+                  <div className="h-10 w-full bg-stone-100 rounded-xl" />
+                  <div className="h-10 w-full bg-stone-100 rounded-xl" />
+                  <div className="h-10 w-full bg-stone-100 rounded-xl" />
+                </div>
+              </div>
+              <div className="lg:col-span-9 bg-white rounded-3xl border border-stone-200 p-6 space-y-6 animate-pulse">
+                <div className="h-6 w-40 bg-stone-200 rounded" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="h-28 bg-stone-100 rounded-2xl" />
+                  <div className="h-28 bg-stone-100 rounded-2xl" />
+                </div>
+                <div className="h-44 bg-stone-100 rounded-2xl" />
+              </div>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </>
     );
   }
 
@@ -1259,8 +1292,14 @@ function AccountPageContent() {
                       </div>
 
                       {loadingWishlist ? (
-                        <div className="flex justify-center py-10">
-                          <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-t-2 border-primary"></div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                          {Array.from({ length: 3 }).map((_, i) => (
+                            <div key={`wish-skel-${i}`} className="bg-white rounded-2xl border border-stone-200 p-4 space-y-3 animate-pulse">
+                              <div className="w-full aspect-[4/3] bg-stone-200/80 rounded-xl" />
+                              <div className="h-4 w-3/4 bg-stone-200 rounded" />
+                              <div className="h-3 w-1/2 bg-stone-100 rounded" />
+                            </div>
+                          ))}
                         </div>
                       ) : wishlistItems.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-24 text-center bg-white rounded-2xl shadow-sm border border-gray-100">
@@ -1278,7 +1317,7 @@ function AccountPageContent() {
                       ) : (
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                           {wishlistItems.map((item) => (
-                            <div key={item.wishlistId} className="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition">
+                            <div key={item.wishlistId} className="bg-white border border-gray-200/90 rounded-2xl overflow-hidden shadow-[0_4px_20px_-4px_rgba(0,0,0,0.12),0_2px_6px_-1px_rgba(0,0,0,0.08)] hover:shadow-[0_10px_25px_-5px_rgba(0,0,0,0.16),0_8px_10px_-6px_rgba(0,0,0,0.1)] transition-all duration-300">
                               {/* Top Image Section - Full Bleed */}
                               <Link href={`/${item.serviceType?.toLowerCase() === 'pooja' ? 'puja' : (item.serviceType || 'puja')}/${item.slug || item.serviceId}`} prefetch={true} className="relative h-[200px] w-full flex overflow-hidden group cursor-pointer block">
                                 <Image
@@ -1383,8 +1422,18 @@ function AccountPageContent() {
                       </div>
 
                       {loadingAddresses ? (
-                        <div className="flex justify-center py-16">
-                          <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-t-2 border-primary"></div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {Array.from({ length: 2 }).map((_, i) => (
+                            <div key={`addr-skel-${i}`} className="bg-white rounded-2xl border border-stone-200 p-5 space-y-3 animate-pulse">
+                              <div className="flex justify-between items-center">
+                                <div className="h-4 w-20 bg-stone-200 rounded" />
+                                <div className="h-4 w-12 bg-stone-100 rounded" />
+                              </div>
+                              <div className="h-4 w-40 bg-stone-200 rounded" />
+                              <div className="h-3 w-56 bg-stone-100 rounded" />
+                              <div className="h-3 w-32 bg-stone-100 rounded" />
+                            </div>
+                          ))}
                         </div>
                       ) : addresses.length === 0 ? (
                         <div className="border border-dashed border-[#dca3a3] bg-[#fdfaf8] rounded-2xl p-10 flex flex-col items-center justify-center text-center">
@@ -2224,7 +2273,40 @@ function AccountPageContent() {
 
 export default function AccountPage() {
   return (
-    <Suspense fallback={<div className="flex h-screen items-center justify-center">Loading...</div>}>
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[#fafafc] pb-16 font-sans">
+          <div className="mx-auto max-w-[1350px] px-4 sm:px-6 lg:px-10 py-3.5 border-b border-gray-150 bg-white">
+            <div className="h-4 w-48 bg-stone-200/80 rounded animate-pulse" />
+          </div>
+          <div className="mx-auto max-w-[1350px] px-2.5 sm:px-6 lg:px-10 pt-4 sm:pt-8 pb-16">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              <div className="hidden lg:block lg:col-span-3 bg-white rounded-3xl border border-stone-200 p-5 space-y-4 animate-pulse">
+                <div className="flex items-center gap-3 pb-4 border-b border-stone-100">
+                  <div className="w-12 h-12 rounded-full bg-stone-200" />
+                  <div className="space-y-2 flex-1">
+                    <div className="h-4 w-24 bg-stone-200 rounded" />
+                    <div className="h-3 w-16 bg-stone-100 rounded" />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <div className="h-10 w-full bg-stone-100 rounded-xl" />
+                  <div className="h-10 w-full bg-stone-100 rounded-xl" />
+                  <div className="h-10 w-full bg-stone-100 rounded-xl" />
+                </div>
+              </div>
+              <div className="lg:col-span-9 bg-white rounded-3xl border border-stone-200 p-6 space-y-6 animate-pulse">
+                <div className="h-6 w-40 bg-stone-200 rounded" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="h-28 bg-stone-100 rounded-2xl" />
+                  <div className="h-28 bg-stone-100 rounded-2xl" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+    >
       <AccountPageContent />
     </Suspense>
   );

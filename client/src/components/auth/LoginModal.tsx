@@ -306,7 +306,8 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
                   }
                 }}
                 placeholder="Enter 6-digit OTP"
-                className="w-full text-center text-xl font-bold tracking-[0.4em] py-3.5 border border-emerald-500 rounded-2xl outline-none bg-green-50/50 text-gray-900 font-mono"
+                className={`w-full text-center text-xl font-bold py-3.5 border border-emerald-500 rounded-2xl outline-none bg-green-50/50 text-gray-900 placeholder:text-stone-400 placeholder:font-normal placeholder:text-sm placeholder:tracking-normal transition-all ${otp ? "tracking-[0.4em] font-mono" : "tracking-normal font-sans"
+                  }`}
               />
 
               <div className="text-center">

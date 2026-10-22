@@ -126,7 +126,12 @@ export const updateAdminOrder = async (req, res) => {
     const { orderStatus, scheduledDate, videoLink } = req.body;
 
     const updateData = {};
-    if (orderStatus !== undefined) updateData.orderStatus = orderStatus;
+    if (orderStatus !== undefined) {
+      updateData.orderStatus = orderStatus;
+      if (orderStatus === "refunded" || orderStatus === "refund") {
+        updateData.paymentStatus = "refunded";
+      }
+    }
     if (scheduledDate !== undefined) updateData.scheduledDate = scheduledDate ? new Date(scheduledDate) : null;
     if (videoLink !== undefined) updateData.videoLink = videoLink;
 
@@ -242,10 +247,7 @@ export const bulkScheduleOrders = async (req, res) => {
     }
 
     const selectedDate = new Date(scheduledDate);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    const newStatus = selectedDate < today ? "completed" : "scheduled";
+    const newStatus = "scheduled";
     const query = { $or: [{ itemName: service }, { pooja: service }] };
 
     const result = await Order.updateMany(query, {

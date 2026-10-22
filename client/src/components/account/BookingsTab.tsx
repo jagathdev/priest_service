@@ -89,7 +89,62 @@ export default function BookingsTab() {
   }, [orders, fetchOrders]);
 
   if (loading) {
-    return <div className="p-8 text-center text-stone-500 font-medium">Loading your bookings...</div>;
+    return (
+      <div className="space-y-4 sm:space-y-6">
+        <div className="flex items-center justify-between pb-2 border-b border-stone-100">
+          <div className="h-7 w-36 bg-stone-200/80 rounded-lg animate-pulse" />
+          <div className="flex gap-2">
+            <div className="h-8 w-16 bg-stone-200/80 rounded-full animate-pulse" />
+            <div className="h-8 w-20 bg-stone-200/80 rounded-full animate-pulse" />
+            <div className="h-8 w-24 bg-stone-200/80 rounded-full animate-pulse" />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div
+              key={`booking-skeleton-${i}`}
+              className="bg-white rounded-2xl sm:rounded-3xl border border-[#E2E8F0] p-4 sm:p-6 shadow-xs animate-pulse flex flex-col justify-between"
+            >
+              {/* Header */}
+              <div className="flex justify-between items-center mb-3">
+                <div className="h-4 w-24 bg-stone-200/80 rounded-md" />
+                <div className="h-4 w-28 bg-stone-200/80 rounded-md" />
+              </div>
+
+              <hr className="border-stone-100 my-2" />
+
+              {/* Service Info */}
+              <div className="flex items-start gap-3 sm:gap-4 my-2">
+                <div className="w-20 h-16 sm:w-28 sm:h-20 bg-stone-200/80 rounded-xl shrink-0" />
+                <div className="flex-1 space-y-2 py-1">
+                  <div className="h-4 w-3/4 bg-stone-200/80 rounded-md" />
+                  <div className="h-3 w-1/2 bg-stone-100 rounded-md" />
+                </div>
+              </div>
+
+              {/* Progress Stepper Skeleton */}
+              <div className="mt-4 pt-3 border-t border-stone-100 flex justify-between items-center px-4">
+                <div className="flex flex-col items-center gap-1.5">
+                  <div className="w-10 h-10 rounded-full bg-stone-200/80" />
+                  <div className="w-12 h-2.5 bg-stone-200/80 rounded-md" />
+                </div>
+                <div className="flex-1 h-0.5 bg-stone-200/70 mx-2" />
+                <div className="flex flex-col items-center gap-1.5">
+                  <div className="w-10 h-10 rounded-full bg-stone-100" />
+                  <div className="w-16 h-2.5 bg-stone-100 rounded-md" />
+                </div>
+                <div className="flex-1 h-0.5 bg-stone-200/70 mx-2" />
+                <div className="flex flex-col items-center gap-1.5">
+                  <div className="w-10 h-10 rounded-full bg-stone-100" />
+                  <div className="w-14 h-2.5 bg-stone-100 rounded-md" />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
   }
 
   if (selectedOrder) {
@@ -162,7 +217,11 @@ export default function BookingsTab() {
                   <svg className="w-5 h-5 text-[#f15a29] shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                   <div className="min-w-0">
                     <p className="text-[10px] font-bold text-stone-400 uppercase">Puja Date</p>
-                    <p className="text-xs sm:text-sm font-semibold text-stone-800">{formatCardDate(selectedOrder.scheduledDate || selectedOrder.bookingDate || selectedOrder.createdAt)}</p>
+                    <p className="text-xs sm:text-sm font-semibold text-stone-800">
+                      {selectedOrder.scheduledDate
+                        ? formatCardDate(selectedOrder.scheduledDate, "")
+                        : "Date to be scheduled"}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -221,20 +280,20 @@ export default function BookingsTab() {
         {/* Journey Timeline */}
         <div className="border border-stone-200 rounded-xl p-4 sm:p-6">
           <div className="flex items-center gap-2 mb-5 sm:mb-6">
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${selectedOrder.orderStatus === 'cancelled' ? 'bg-danger' : 'bg-[#5c1b1c]'}`}>
-              {selectedOrder.orderStatus === 'cancelled' ? (
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${selectedOrder.orderStatus === 'cancelled' || selectedOrder.orderStatus === 'refunded' || selectedOrder.paymentStatus === 'refunded' ? 'bg-danger' : 'bg-[#5c1b1c]'}`}>
+              {selectedOrder.orderStatus === 'cancelled' || selectedOrder.orderStatus === 'refunded' || selectedOrder.paymentStatus === 'refunded' ? (
                 <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
               ) : (
                 <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
               )}
             </div>
             <h4 className="font-bold text-stone-800">
-              {selectedOrder.orderStatus === 'cancelled' ? 'Cancellation & Refund Status' : 'Puja Journey'}
+              {selectedOrder.orderStatus === 'cancelled' || selectedOrder.orderStatus === 'refunded' || selectedOrder.paymentStatus === 'refunded' ? 'Cancellation & Refund Status' : 'Puja Journey'}
             </h4>
           </div>
 
-          {selectedOrder.orderStatus === 'cancelled' ? (
-            /* Cancelled Timeline */
+          {selectedOrder.orderStatus === 'cancelled' || selectedOrder.orderStatus === 'refunded' || selectedOrder.paymentStatus === 'refunded' ? (
+            /* Cancelled / Refunded Timeline */
             <div className="space-y-6 sm:space-y-8 relative before:absolute before:inset-0 before:ml-4 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-danger before:via-danger before:to-stone-200">
               {/* Step 1: Booking Confirmed */}
               <div className="relative flex items-center justify-end md:justify-between md:odd:flex-row-reverse group is-active">
@@ -264,7 +323,7 @@ export default function BookingsTab() {
 
               {/* Step 3: Refund Status */}
               {(() => {
-                const isRefunded = selectedOrder.paymentStatus === 'refund';
+                const isRefunded = selectedOrder.paymentStatus === 'refunded' || selectedOrder.orderStatus === 'refunded' || selectedOrder.refundStatus === 'refunded' || selectedOrder.refundStatus === 'completed' || selectedOrder.orderStatus === 'refund';
                 const refundAmount = selectedOrder.refundAmount || selectedOrder.refundedAmount || selectedOrder.totalamount || selectedOrder.amount || selectedOrder.price;
                 return (
                   <div className="relative flex items-center justify-end md:justify-between md:odd:flex-row-reverse group is-active">
@@ -287,7 +346,7 @@ export default function BookingsTab() {
                       </h5>
                       <p className={`text-[11px] sm:text-xs font-medium mt-0.5 sm:mt-1 ${isRefunded ? 'text-emerald-700' : 'text-stone-600'}`}>
                         {isRefunded
-                          ? "Refund has been processed and successfully credited to your original payment method / wallet."
+                          ? "Refund has been processed and successfully credited to your account."
                           : "Refund is initiated and will be credited to your original payment method in 3–5 business days."}
                       </p>
                     </div>
@@ -332,7 +391,11 @@ export default function BookingsTab() {
                 <div className={`w-[calc(100%-2.5rem)] sm:w-[calc(100%-3rem)] md:w-[calc(50%-2.5rem)] p-3 sm:p-4 border border-stone-100 rounded-xl ${selectedOrder.orderStatus === 'scheduled' || selectedOrder.orderStatus === 'performed' || selectedOrder.orderStatus === 'completed' ? 'bg-stone-50' : 'bg-white opacity-60'}`}>
                   <div className="text-[10px] font-extrabold text-stone-400 uppercase tracking-wider mb-0.5 sm:mb-1">Step 3</div>
                   <h5 className="font-bold text-stone-800 text-xs sm:text-sm">Puja Scheduled</h5>
-                  <p className="text-[11px] sm:text-xs text-stone-500 font-medium mt-0.5 sm:mt-1">Muhurat - {formatCardDate(selectedOrder.scheduledDate || selectedOrder.bookingDate || selectedOrder.createdAt)}</p>
+                  <p className="text-[11px] sm:text-xs text-stone-500 font-medium mt-0.5 sm:mt-1">
+                    {selectedOrder.scheduledDate
+                      ? `Muhurat - ${formatCardDate(selectedOrder.scheduledDate, "")}`
+                      : "Date to be scheduled"}
+                  </p>
                 </div>
               </div>
 
@@ -479,8 +542,7 @@ export default function BookingsTab() {
               ) || order.orderStatus === 'completed';
 
               const bookingDate = formatCardDate(order.createdAt || order.bookingDate);
-              const scheduledDateRaw = order.scheduledDate || order.muhuratDate || order.eventDateTime || order.bookingDate || order.createdAt;
-              const scheduledDate = formatCardDate(scheduledDateRaw, "14 Oct 2026");
+              const scheduledDate = order.scheduledDate ? formatCardDate(order.scheduledDate, "") : "";
               const bookingId = formatBookingId(order);
               const serviceImg = order.image || order.serviceImage || order.imageUrl || "/images/Ganesh-Chaturthi-Mahapuja.jpg";
               const serviceTitle = order.itemName || order.pooja || order.serviceTitle || "Rahu Shanti Rudrabhishek";
@@ -537,12 +599,12 @@ export default function BookingsTab() {
 
                   {/* Progress Tracker Stepper */}
                   <div className="relative mt-5 sm:mt-8 pb-1 sm:pb-2">
-                    {order.orderStatus === 'cancelled' ? (
-                      /* Cancelled Order Stepper */
+                    {order.orderStatus === 'cancelled' || order.orderStatus === 'refunded' || order.paymentStatus === 'refunded' ? (
+                      /* Cancelled / Refunded Order Stepper */
                       <div>
                         <div className="absolute top-5 sm:top-6 left-8 sm:left-12 right-1/2 h-[2px] sm:h-[2.5px] -z-0 bg-danger"></div>
                         <div className="absolute top-5 sm:top-6 left-1/2 right-8 sm:right-16 h-[2px] sm:h-[2.5px] -z-0 bg-[#eadfd5] overflow-hidden">
-                          <div className={`h-full ${order.paymentStatus === 'refunded' || (order as any).refundStatus === 'refunded' ? 'w-full bg-primary' : 'w-1/2 bg-amber-500'}`} />
+                          <div className={`h-full ${order.paymentStatus === 'refunded' || (order as any).refundStatus === 'refunded' || order.orderStatus === 'refunded' ? 'w-full bg-primary' : 'w-1/2 bg-amber-500'}`} />
                         </div>
 
                         <div className="flex justify-between items-start text-center gap-1">
@@ -641,7 +703,7 @@ export default function BookingsTab() {
                             <p className={`text-[11px] sm:text-[13px] leading-tight ${isScheduled ? 'font-extrabold text-gray-900' : 'font-bold text-[#8c7b74]'}`}>
                               Puja Scheduled
                             </p>
-                            {isScheduled ? (
+                            {scheduledDate ? (
                               <div className="flex items-center justify-center gap-1 mt-0.5 max-w-full">
                                 <span className="text-[10px] sm:text-[12px] font-bold text-gray-600 truncate">on {scheduledDate}</span>
                                 <div className="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full bg-primary text-white flex items-center justify-center shrink-0">
@@ -651,7 +713,7 @@ export default function BookingsTab() {
                                 </div>
                               </div>
                             ) : (
-                              <p className="text-[10px] sm:text-[11px] font-bold text-[#8c7b74] mt-0.5 truncate">on {scheduledDate}</p>
+                              <p className="text-[10px] sm:text-[11px] font-bold text-[#8c7b74] mt-0.5 truncate">Date to be scheduled</p>
                             )}
                           </div>
 

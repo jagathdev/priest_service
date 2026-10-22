@@ -473,6 +473,15 @@ export default function PujaDetailClient({
     return list;
   }, [puja]);
 
+  // Auto-advance banner every 5 seconds
+  useEffect(() => {
+    if (bannerImages.length <= 1) return;
+    const interval = setInterval(() => {
+      setActiveBannerIndex((prev) => (prev + 1) % bannerImages.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [bannerImages.length]);
+
   const galleryList =
     Array.isArray(puja?.gallery) && puja.gallery.length > 0
       ? puja.gallery.map((img: string) => getPujaImageUrl(img)).filter(Boolean)
@@ -715,32 +724,6 @@ export default function PujaDetailClient({
                   className="w-full h-full object-cover object-center transition-all duration-300 cursor-pointer"
                   onClick={handleAddPujaToCart}
                 />
-
-                {/* Left and Right Navigation Buttons (shown when more than 1 image) */}
-                {bannerImages.length > 1 && (
-                  <>
-                    <button
-                      type="button"
-                      onClick={handlePrevBanner}
-                      aria-label="Previous image"
-                      className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center backdrop-blur-sm transition-all shadow-md active:scale-95 z-10"
-                    >
-                      <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
-                      </svg>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleNextBanner}
-                      aria-label="Next image"
-                      className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center backdrop-blur-sm transition-all shadow-md active:scale-95 z-10"
-                    >
-                      <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </button>
-                  </>
-                )}
               </div>
 
               {/* Carousel Dots (Shown ONLY when > 1 image, rendering exact length of bannerImages) */}

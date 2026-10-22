@@ -131,7 +131,7 @@ const orderSchema = new mongoose.Schema(
         },
         orderStatus: {
             type: String,
-            enum: ["created", "confirmed", "scheduled", "performed", "completed", "cancelled"],
+            enum: ["created", "confirmed", "scheduled", "performed", "completed", "cancelled", "refunded", "refund"],
             default: "created",
         },
         scheduledDate: { type: Date, default: null },
