@@ -278,11 +278,10 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
               Array.from({ length: 3 }).map((_, i) => (
                 <div
                   key={`skeleton-${i}`}
-                  className={`bg-white rounded-3xl h-[450px] animate-pulse border border-stone-200 p-3 shadow-sm flex flex-col ${
-                    i === 2
+                  className={`bg-white rounded-3xl h-[450px] animate-pulse border border-stone-200 p-3 shadow-sm flex flex-col ${i === 2
                       ? "lg:col-span-2 lg:max-w-[480px] lg:w-full lg:mx-auto xl:col-span-1 xl:max-w-none xl:mx-0"
                       : ""
-                  }`}
+                    }`}
                 >
                   <div className="w-full aspect-[4/3] xl:aspect-auto xl:h-[235px] bg-stone-100 rounded-xl min-[375px]:rounded-2xl mb-4 flex items-center justify-center">
                     <svg className="w-8 h-8 text-stone-300 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -320,11 +319,10 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
                 return (
                   <div
                     key={p._id}
-                    className={`flex flex-col ${
-                      isRemainingCenteredOn1024
+                    className={`flex flex-col ${isRemainingCenteredOn1024
                         ? "lg:col-span-2 lg:max-w-[480px] lg:w-full lg:mx-auto xl:col-span-1 xl:max-w-none xl:mx-0"
                         : ""
-                    }`}
+                      }`}
                   >
                     <PujaCard
                       id={p._id}
@@ -398,25 +396,6 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
         </div>
       </section>
 
-      {/* ── 5. Trust Badges Strip (Marquee on 1024px and Tablet screens) ── */}
-      <div className="w-full bg-[#f0f4f8] border-y border-[#d6e2ed] py-6 sm:py-8 overflow-hidden">
-        {/* Continuous Marquee on 1024px and Tablet screens (< xl) */}
-        <div className="xl:hidden overflow-hidden w-full relative">
-          <div className="flex animate-marquee gap-8 sm:gap-12 items-center">
-            {[
-              { icon: "🎥", text: "Puja Video Delivered Within 48 hours" },
-              { icon: "✓", text: "Verified & Experienced Pandits" },
-              { icon: "🏛", text: "Puja Performed in Sacred Temples" },
-              { icon: "📜", text: "100% Authentic Vedic Rituals" },
-              { icon: "🎥", text: "Puja Video Delivered Within 48 hours" },
-              { icon: "✓", text: "Verified & Experienced Pandits" },
-              { icon: "🏛", text: "Puja Performed in Sacred Temples" },
-              { icon: "📜", text: "100% Authentic Vedic Rituals" }
-            ].map((b, idx) => (
-              <div key={idx} className="shrink-0">
-                <Badge icon={b.icon} text={b.text} />
-              </div>
-            ))}
       {/* ── 5. Trust Badges Strip (Marquee below 1440px screen size) ── */}
       <div className="w-full bg-[#f0f8f1] border-y border-green-100 py-6 sm:py-8 overflow-hidden">
         {/* Continuous Marquee on all screens below 1440px */}

@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import PujaCountdownCard from "@/components/common/PujaCountdownCard";
 
@@ -226,30 +225,6 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
         }}
       />
 
-      {/* Global Left/Right Arrow Buttons (Moved from image to section edges) */}
-      {/* <button
-        onClick={prevSlide}
-        className="hidden xl:flex absolute left-2 top-1/2 -translate-y-1/2 z-40 w-12 h-12 bg-white hover:bg-stone-50 text-gray-800 rounded-full shadow-lg border border-stone-100 items-center justify-center transition-transform hover:scale-105"
-        aria-label="Previous slide"
-      >
-        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
-        </svg>
-      </button>
-
-      <button
-        onClick={nextSlide}
-        className="hidden xl:flex absolute right-2 top-1/2 -translate-y-1/2 z-40 w-12 h-12 bg-white hover:bg-stone-50 text-gray-800 rounded-full shadow-lg border border-stone-100 items-center justify-center transition-transform hover:scale-105"
-        aria-label="Next slide"
-      >
-        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
-        </svg>
-      </button> */}
-
-      {/* ── Top Sub-header Badge (Above Hero Image on 1024px & Tablet < xl) ── */}
-      <div className="xl:hidden flex items-center justify-center gap-2.5 mt-0.5 sm:mt-1 mb-2.5 sm:mb-3.5 z-10 relative">
-        <svg className="w-5 h-5 text-[#881337] shrink-0" viewBox="0 0 24 24" fill="currentColor">
       {/* ── Top Sub-header Badge (Above Hero Image on Mobile & Tablet < lg) ── */}
       <div className="lg:hidden flex items-center justify-center gap-2.5 mt-0.5 sm:mt-1 mb-2.5 sm:mb-3.5 z-10 relative">
         <svg className="w-5 h-5 text-accent shrink-0" viewBox="0 0 24 24" fill="currentColor">
@@ -275,10 +250,6 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
         <div className="flex-1 text-center lg:text-left flex flex-col justify-start items-center lg:items-start h-auto min-h-0 lg:min-h-0 xl:min-h-[500px] w-full max-w-[640px] pt-2 pb-1">
 
           {/* Top Block: Always starts at fixed top position */}
-          <div className="flex flex-col items-center xl:items-start text-center xl:text-left w-full">
-            {/* Top Sub-header Badge with Custom Vector Lotus SVG (Desktop XL only) */}
-            <div className="hidden xl:flex items-center justify-start gap-2.5 mb-5">
-              <svg className="w-5 h-5 text-[#881337] shrink-0" viewBox="0 0 24 24" fill="currentColor">
           <div className="flex flex-col items-center lg:items-start text-center lg:text-left w-full">
             {/* Top Sub-header Badge with Custom Vector Lotus SVG (Desktop lg+ only) */}
             <div className="hidden lg:flex items-center justify-start gap-2.5 mb-5">
@@ -446,24 +417,6 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
 
       {/* ── Bottom Features Trust Strip (Marquee below 1440px screen size) ── */}
       <div className="relative z-10 mt-8 md:mt-10 border border-stone-200/90 bg-white/95 backdrop-blur-sm rounded-2xl p-3.5 sm:p-4.5 shadow-sm overflow-hidden">
-        {/* Continuous Marquee on 1024px and Tablet screens (< xl) */}
-        <div className="xl:hidden overflow-hidden w-full relative">
-          <div className="flex animate-marquee gap-8 sm:gap-12 items-center">
-            {[
-              { color: "text-[#14395C]", icon: <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z" />, text: "Puja Video Delivered Within 48 Hours" },
-              { color: "text-[#0084ff]", icon: <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" />, text: "Verified & Experienced Purohits" },
-              { color: "text-accent", icon: <path d="M12 2L9 6H15L12 2ZM8 7L6 11H18L16 7H8ZM5 12L3 17H21L19 12H5ZM2 18V21H22V18H2Z" />, text: "Pujas Performed in Sacred Temples" },
-              { color: "text-[#d97706]", icon: <path d="M12 2c-.55 0-1 .45-1 1v1.17C8.61 4.72 7 6.67 7 9c0 2.21 1.79 4 4 4v1H8c-.55 0-1 .45-1 1v5c0 .55.45 1 1 1h8c.55 0 1-.45 1-1v-5c0-.55-.45-1-1-1h-3v-1c2.21 0 4-1.79 4-4 0-2.33-1.61-4.28-4-4.83V3c0-.55-.45-1-1-1z" />, text: "100% Authentic Vedic Rituals" },
-              { color: "text-[#14395C]", icon: <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z" />, text: "Puja Video Delivered Within 48 Hours" },
-              { color: "text-[#0084ff]", icon: <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" />, text: "Verified & Experienced Purohits" },
-              { color: "text-accent", icon: <path d="M12 2L9 6H15L12 2ZM8 7L6 11H18L16 7H8ZM5 12L3 17H21L19 12H5ZM2 18V21H22V18H2Z" />, text: "Pujas Performed in Sacred Temples" },
-              { color: "text-[#d97706]", icon: <path d="M12 2c-.55 0-1 .45-1 1v1.17C8.61 4.72 7 6.67 7 9c0 2.21 1.79 4 4 4v1H8c-.55 0-1 .45-1 1v5c0 .55.45 1 1 1h8c.55 0 1-.45 1-1v-5c0-.55-.45-1-1-1h-3v-1c2.21 0 4-1.79 4-4 0-2.33-1.61-4.28-4-4.83V3c0-.55-.45-1-1-1z" />, text: "100% Authentic Vedic Rituals" }
-            ].map((item, idx) => (
-              <div key={idx} className="flex items-center gap-3 shrink-0 py-1">
-                <div className={`${item.color} shrink-0`}>
-                  <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
-                    {item.icon}
-                  </svg>
         {/* Continuous Marquee on all screens below 1440px */}
         <div className="badge-marquee-below-1440 min-[1440px]:hidden overflow-hidden w-full relative">
           <div className="flex animate-marquee">
