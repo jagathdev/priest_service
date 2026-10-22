@@ -1,10 +1,29 @@
 import type { Metadata, Viewport } from "next";
+import { Plus_Jakarta_Sans, Playfair_Display, Outfit } from "next/font/google";
 import "./globals.css";
 import type { ReactNode } from "react";
 import GlobalChrome from "@/components/layout/GlobalChrome";
 import { Providers } from "./Providers";
 import { cookies } from "next/headers";
 import Script from "next/script";
+
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-sans",
+  display: "swap",
+});
+
+const playfairDisplay = Playfair_Display({
+  subsets: ["latin"],
+  variable: "--font-serif",
+  display: "swap",
+});
+
+const outfit = Outfit({
+  subsets: ["latin"],
+  variable: "--font-display",
+  display: "swap",
+});
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -53,7 +72,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
 
 
   return (
-    <html lang="en">
+    <html lang="en" className={`${plusJakartaSans.variable} ${playfairDisplay.variable} ${outfit.variable}`}>
       <head>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
         <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABiElEQVR4AWIgDP4zMpALQkP/M2dkADgnB5iKojAAZ9uuKXtmNqYasq7SkG1raq6xIWtqRrZryjae1X/3zsvedvx/3zGnqLxcJPMvAUFwIkDAx3F2yJ9hHBepgGAbBCIoVzIyRIp/FLBzaFicuEJop/0BZhgDdIEETFQe4/i93q8EALcj6AHH+SHQZtBtiuI0/QhDkDMEs5CgRnyY7DZ0Fo8Uxbb5EqavC4JGEXyQlnaoy+3Tw7PJBwNYxSmS9Hz5NjCMHQRBAkhCkmRhvH6dQE6nEYc1oOdJkuxMJObhOMvrA0xfEwwuo1nmh3Ib1BkNZouP+ZYCZpPZVEfukDr0ryHJNFyz/PuDo8QzcwQEwfO7L7CIZ+RbCR8LLAWPUD7kW0RSFD9cskIc58Y/w8nJIh1Y4jGyD5WXl8s8FBjpAzwPScAosJq4zbfQps8IJhpDcbvR0SINyZPNg3QAkl0M4zhIxIxCS2MQdNGyV2/EHeA9Oh5uJwN9mnUF+DhPA2Ni0glMLTgcKAUAst8Rb7CK94wAAAAASUVORK5CYII=" />

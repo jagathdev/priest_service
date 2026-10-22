@@ -630,7 +630,6 @@ export default function BookingsTab() {
                               </svg>
                             </div>
                             <p className="text-[11px] sm:text-[13px] font-extrabold text-danger leading-tight">Cancelled</p>
-                            <span className="text-[10px] sm:text-[12px] font-bold text-red-600 truncate mt-0.5">Booking void</span>
                           </div>
 
                           {/* Step 3: Refund */}

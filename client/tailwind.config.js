@@ -20,9 +20,9 @@ module.exports = {
         danger: '#dc2626',
       },
       fontFamily: {
-        sans: ['"Plus Jakarta Sans"', 'Inter', 'system-ui', 'sans-serif'],
-        serif: ['"Playfair Display"', 'Georgia', 'serif'],
-        display: ['Outfit', '"Plus Jakarta Sans"', 'sans-serif'],
+        sans: ['var(--font-sans)', '"Plus Jakarta Sans"', 'Inter', 'system-ui', 'sans-serif'],
+        serif: ['var(--font-serif)', '"Playfair Display"', 'Georgia', 'serif'],
+        display: ['var(--font-display)', 'Outfit', '"Plus Jakarta Sans"', 'sans-serif'],
       },
     },
   },
