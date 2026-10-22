@@ -144,11 +144,11 @@ export default function HomaDetailClient({
 
   useEffect(() => {
     if (tabsContainerRef.current) {
-      const activeEl = tabsContainerRef.current.querySelector(`[href="#${activeTab}"]`) as HTMLElement;
+      const activeEl = tabsContainerRef.current.querySelector(`[data-tab-id="${activeTab}"]`) as HTMLElement;
       if (activeEl) {
         const container = tabsContainerRef.current;
-        const left = activeEl.offsetLeft - container.offsetWidth / 2 + activeEl.offsetWidth / 2;
-        container.scrollTo({ left, behavior: "smooth" });
+        const left = activeEl.offsetLeft - (container.offsetWidth / 2) + (activeEl.offsetWidth / 2);
+        container.scrollTo({ left: Math.max(0, left), behavior: "smooth" });
       }
     }
   }, [activeTab]);
@@ -238,22 +238,28 @@ export default function HomaDetailClient({
     loadHoma();
   }, [slug, initialHoma]);
 
-  // Handle Tab Scroll Listener
+  // Handle Tab Scroll Listener (Accurate getBoundingClientRect viewport detection for iOS & Desktop)
   useEffect(() => {
     const handleScroll = () => {
       const sections = ["about", "benefits", "process", "temple", "receive", "faqs", "gallery"];
-      const scrollPosition = window.scrollY + 220;
+      const headerOffset = window.innerWidth < 640 ? 120 : 150;
 
-      for (let i = sections.length - 1; i >= 0; i--) {
-        const el = document.getElementById(sections[i]);
-        if (el && el.offsetTop <= scrollPosition) {
-          setActiveTab(sections[i]);
-          break;
+      let currentSection = sections[0];
+      for (const sectionId of sections) {
+        const el = document.getElementById(sectionId);
+        if (el) {
+          const rect = el.getBoundingClientRect();
+          if (rect.top <= headerOffset + 50) {
+            currentSection = sectionId;
+          }
         }
       }
+
+      setActiveTab((prev) => (prev !== currentSection ? currentSection : prev));
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -631,16 +637,6 @@ export default function HomaDetailClient({
     (typeof homa.details?.templeImage === "string" && homa.details.templeImage.trim()) ||
     "";
 
-  const handlePrevBanner = () => {
-    if (bannerImages.length <= 1) return;
-    setActiveBannerIndex((prev) => (prev - 1 + bannerImages.length) % bannerImages.length);
-  };
-
-  const handleNextBanner = () => {
-    if (bannerImages.length <= 1) return;
-    setActiveBannerIndex((prev) => (prev + 1) % bannerImages.length);
-  };
-
   const subHomaTabs = [
     { id: "about", label: "About homa" },
     { id: "benefits", label: "Homa Benefits" },
@@ -921,7 +917,7 @@ export default function HomaDetailClient({
               {/* Secondary WhatsApp & Call Buttons */}
               <div className="flex flex-wrap items-center gap-3">
                 <a
-                  href="https://wa.me/9566777645"
+                  href="https://wa.me/919566777645"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex-1 min-w-[150px] inline-flex items-center justify-center gap-2 bg-white border border-[#CBD5E1] text-[#14395C] hover:bg-slate-50 font-extrabold text-xs sm:text-sm py-2.5 px-4 rounded-full transition-colors shadow-xs"
@@ -1087,12 +1083,14 @@ export default function HomaDetailClient({
       <div className="sticky top-[60px] sm:top-[68px] lg:top-[70px] xl:top-[76px] z-30 bg-white/95 backdrop-blur-md border-b border-stone-200/90 shadow-xs pt-1 sm:pt-2 w-full">
         <div className="max-w-[1350px] mx-auto px-4 sm:px-6 lg:px-10">
           <div
+            ref={tabsContainerRef}
             className="w-full flex items-center justify-between overflow-x-auto no-scrollbar gap-2 sm:gap-4 text-xs sm:text-sm font-bold text-stone-600 scroll-smooth"
           >
             {subHomaTabs.map((tab) => (
               <a
                 key={tab.id}
                 href={`#${tab.id}`}
+                data-tab-id={tab.id}
                 onClick={(e) => {
                   e.preventDefault();
                   setActiveTab(tab.id);
@@ -1323,7 +1321,7 @@ export default function HomaDetailClient({
               </p>
               <div className="mt-3 mb-1">
                 <a
-                  href="https://wa.me/9566777645"
+                  href="https://wa.me/919566777645"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-full bg-[#14395C] hover:bg-[#0f2d4a] text-white font-extrabold text-xs sm:text-sm py-3 px-4 rounded-full transition-colors flex items-center justify-center gap-2 shadow-sm"

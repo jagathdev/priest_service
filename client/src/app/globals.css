@@ -36,12 +36,15 @@ input[type="submit"] {
 
 /* iOS Safari & WebKit image rendering consistency: prevent image collapsing or blurry stretch */
 img,
-picture,
 video {
   max-width: 100%;
-  height: auto;
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
+}
+
+/* Ensure absolute fill images inside containers are never overridden with height: auto */
+img:not([class*="h-full"]):not([class*="absolute"]) {
+  height: auto;
 }
 
 body {

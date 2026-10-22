@@ -238,16 +238,14 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
       </div>
 
       <div
-        className="relative z-10 flex flex-col-reverse lg:flex-row items-center justify-between gap-6 lg:gap-8 xl:gap-14 group"
+        className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-6 lg:gap-8 xl:gap-14 group"
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={handleTouchEnd}
       >
 
-        {/* Arrows moved down to the image section for perfect centering on mobile & desktop */}
-
-        {/* ── Left Content (Text & CTA) ── Fixed starting point at top, space left above CTA button */}
-        <div className="flex-1 text-center lg:text-left flex flex-col justify-start items-center lg:items-start h-auto min-h-0 lg:min-h-0 xl:min-h-[500px] w-full max-w-[640px] pt-2 pb-1">
+        {/* ── Left Content (Text & CTA) ── order-2 on mobile, order-1 on desktop */}
+        <div className="order-2 lg:order-1 flex-1 text-center lg:text-left flex flex-col justify-start items-center lg:items-start h-auto min-h-0 lg:min-h-0 xl:min-h-[500px] w-full max-w-[640px] pt-2 pb-1">
 
           {/* Top Block: Always starts at fixed top position */}
           <div className="flex flex-col items-center lg:items-start text-center lg:text-left w-full">
@@ -341,11 +339,11 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
 
         </div>
 
-        {/* ── Right Content (Hero Banner Card) ── */}
-        <div className="w-full max-w-full lg:w-[480px] xl:w-[670px] 2xl:w-[730px] shrink-0 flex flex-col items-center relative">
+        {/* ── Right Content (Hero Banner Card) ── order-1 on mobile, order-2 on desktop */}
+        <div className="order-1 lg:order-2 w-full max-w-full lg:w-[480px] xl:w-[670px] 2xl:w-[730px] shrink-0 flex flex-col items-center relative">
 
-          {/* Smooth Forward-Only Carousel Viewport */}
-          <div className="w-full relative rounded-2xl min-[375px]:rounded-3xl overflow-hidden shadow-2xl border border-stone-200/80 bg-stone-100 aspect-[4/3] sm:aspect-auto sm:h-[400px] md:h-[460px] lg:h-[320px] xl:h-[500px] shrink-0">
+          {/* Smooth Forward-Only Carousel Viewport with explicit fallback height for iOS 11-14 */}
+          <div className="w-full relative rounded-2xl min-[375px]:rounded-3xl overflow-hidden shadow-2xl border border-stone-200/80 bg-stone-100 aspect-[4/3] min-h-[250px] sm:min-h-[380px] sm:aspect-auto sm:h-[400px] md:h-[460px] lg:h-[320px] xl:h-[500px] shrink-0">
             {/* Sliding Track (Continues sliding forward to the left) */}
             <div
               className={`flex w-full h-full ${isTransitioning ? "transition-transform duration-700 ease-out" : ""}`}

@@ -141,11 +141,11 @@ export default function PujaDetailClient({
 
   useEffect(() => {
     if (tabsContainerRef.current) {
-      const activeEl = tabsContainerRef.current.querySelector(`[href="#${activeTab}"]`) as HTMLElement;
+      const activeEl = tabsContainerRef.current.querySelector(`[data-tab-id="${activeTab}"]`) as HTMLElement;
       if (activeEl) {
         const container = tabsContainerRef.current;
-        const left = activeEl.offsetLeft - container.offsetWidth / 2 + activeEl.offsetWidth / 2;
-        container.scrollTo({ left, behavior: "smooth" });
+        const left = activeEl.offsetLeft - (container.offsetWidth / 2) + (activeEl.offsetWidth / 2);
+        container.scrollTo({ left: Math.max(0, left), behavior: "smooth" });
       }
     }
   }, [activeTab]);
@@ -233,22 +233,29 @@ export default function PujaDetailClient({
     loadPuja();
   }, [slug, initialPuja]);
 
-  // Handle Tab Scroll Listener
+  // Handle Tab Scroll Listener (Accurate getBoundingClientRect viewport detection for iOS & Desktop)
   useEffect(() => {
     const handleScroll = () => {
       const sections = ["about", "benefits", "process", "temple", "receive", "faqs", "gallery"];
-      const scrollPosition = window.scrollY + 220;
+      const headerOffset = window.innerWidth < 640 ? 120 : 150;
 
-      for (let i = sections.length - 1; i >= 0; i--) {
-        const el = document.getElementById(sections[i]);
-        if (el && el.offsetTop <= scrollPosition) {
-          setActiveTab(sections[i]);
-          break;
+      let currentSection = sections[0];
+      for (const sectionId of sections) {
+        const el = document.getElementById(sectionId);
+        if (el) {
+          const rect = el.getBoundingClientRect();
+          // If the top of the section is at or past the sticky header threshold
+          if (rect.top <= headerOffset + 50) {
+            currentSection = sectionId;
+          }
         }
       }
+
+      setActiveTab((prev) => (prev !== currentSection ? currentSection : prev));
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -637,17 +644,6 @@ export default function PujaDetailClient({
     (typeof (puja as any).details?.templeImageUrl === "string" && (puja as any).details.templeImageUrl.trim()) ||
     (typeof puja.details?.templeImage === "string" && puja.details.templeImage.trim()) ||
     "";
-
-  const handlePrevBanner = () => {
-    if (bannerImages.length <= 1) return;
-    setActiveBannerIndex((prev) => (prev - 1 + bannerImages.length) % bannerImages.length);
-  };
-
-  const handleNextBanner = () => {
-    if (bannerImages.length <= 1) return;
-    setActiveBannerIndex((prev) => (prev + 1) % bannerImages.length);
-  };
-
   const renderAboutContent = (text: string) => {
     if (!text) return null;
 
@@ -909,7 +905,7 @@ export default function PujaDetailClient({
               {/* Secondary WhatsApp & Call Buttons */}
               <div className="flex flex-col sm:flex-row items-center gap-3">
                 <a
-                  href="https://wa.me/9566777645"
+                  href="https://wa.me/919566777645"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-full sm:flex-1 inline-flex items-center justify-center gap-2 bg-white border border-[#CBD5E1] text-[#14395C] hover:bg-slate-50 font-extrabold text-xs sm:text-sm py-2.5 px-4 rounded-full transition-colors shadow-xs"
@@ -1081,6 +1077,7 @@ export default function PujaDetailClient({
               <a
                 key={tab.id}
                 href={`#${tab.id}`}
+                data-tab-id={tab.id}
                 onClick={(e) => {
                   e.preventDefault();
                   setActiveTab(tab.id);
@@ -1379,7 +1376,7 @@ export default function PujaDetailClient({
               </p>
               <div className="mt-3 mb-1">
                 <a
-                  href="https://wa.me/9566777645"
+                  href="https://wa.me/919566777645"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-full bg-[#14395C] hover:bg-[#0f2d4a] text-white font-extrabold text-xs sm:text-sm py-3 px-4 rounded-full transition-colors flex items-center justify-center gap-2 shadow-sm"
