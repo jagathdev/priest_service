@@ -7,7 +7,6 @@ import { usePathname } from "next/navigation";
 import LoginModal from "@/components/auth/LoginModal";
 import { useUser } from "@/contexts/UserContext";
 
-// ── Sri Mandir–style account panel component ─────────────────────────────
 const AccountPanel = ({ accountOpen, setAccountOpen, user, setLoginModalOpen, handleLogout }: any) => {
   if (!accountOpen) return null;
 
