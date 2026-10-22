@@ -10,6 +10,8 @@ import {
     applyPromoCode,
 } from "../controllers/promoCode.controller.js";
 import { requireAuth, requireAdmin, optionalAuth } from "../middlewares/auth.js";
+import { validateRequest } from "../middlewares/validate.js";
+import { validateApplyPromo } from "../validators/public.schemas.js";
 
 const router = express.Router();
 
@@ -22,6 +24,6 @@ router.delete("/:id", requireAuth, requireAdmin, deletePromoCode);
 router.patch("/:id/status", requireAuth, requireAdmin, updatePromoStatus);
 
 // Customer (allows all users / guests to validate & apply promo codes)
-router.post("/apply", optionalAuth, applyPromoCode);
+router.post("/apply", optionalAuth, validateRequest(validateApplyPromo), applyPromoCode);
 
 export default router;

@@ -9,7 +9,7 @@ const HIDDEN_ON_PATHS = ["/sankalp", "/payment", "/auth", "/admin"];
 
 function HomeIcon({ active }: { active: boolean }) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" className={`h-[22px] w-[22px] mb-0.5 ${active ? "text-[#15803d]" : "text-gray-500"}`}>
+    <svg viewBox="0 0 24 24" fill="none" className={`h-[22px] w-[22px] mb-0.5 ${active ? "text-[#14395C]" : "text-gray-500"}`}>
       <path
         d="M3 9.5L12 3l9 6.5V20a1.5 1.5 0 01-1.5 1.5h-15A1.5 1.5 0 013 20V9.5z"
         stroke="currentColor"
@@ -30,11 +30,11 @@ function HomeIcon({ active }: { active: boolean }) {
 
 function PujaIcon({ active }: { active: boolean }) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" className={`h-[22px] w-[22px] mb-0.5 ${active ? "text-[#15803d]" : "text-gray-500"}`}>
+    <svg viewBox="0 0 24 24" fill="none" className={`h-[22px] w-[22px] mb-0.5 ${active ? "text-[#14395C]" : "text-gray-500"}`}>
       {/* Diya / Flame */}
       <path
         d="M12 3c0 0-2.5 2.5-2.5 4.5a2.5 2.5 0 005 0C14.5 5.5 12 3 12 3z"
-        fill={active ? "#15803d" : "#6b7280"}
+        fill={active ? "#14395C" : "#6b7280"}
       />
       <path
         d="M6 14c0 3.314 2.686 6 6 6s6-2.686 6-6H6z"
@@ -57,7 +57,7 @@ function PujaIcon({ active }: { active: boolean }) {
 
 function AccountIcon({ active }: { active: boolean }) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" className={`h-[22px] w-[22px] mb-0.5 ${active ? "text-[#15803d]" : "text-gray-500"}`}>
+    <svg viewBox="0 0 24 24" fill="none" className={`h-[22px] w-[22px] mb-0.5 ${active ? "text-[#14395C]" : "text-gray-500"}`}>
       <circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="2" />
       <path d="M5 20c0-3.5 3.1-6 7-6s7 2.5 7 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
     </svg>
@@ -101,7 +101,7 @@ export default function MobileBottomNav() {
         >
           <HomeIcon active={isHomeActive} />
           <span
-            className={`text-[11px] font-bold tracking-wider uppercase ${isHomeActive ? "text-[#15803d]" : "text-gray-500"
+            className={`text-[11px] font-bold tracking-wider uppercase ${isHomeActive ? "text-[#14395C]" : "text-gray-500"
               }`}
           >
             HOME
@@ -115,7 +115,7 @@ export default function MobileBottomNav() {
         >
           <PujaIcon active={isPujaActive} />
           <span
-            className={`text-[11px] font-bold tracking-wider uppercase ${isPujaActive ? "text-[#15803d]" : "text-gray-500"
+            className={`text-[11px] font-bold tracking-wider uppercase ${isPujaActive ? "text-[#14395C]" : "text-gray-500"
               }`}
           >
             PUJA
@@ -129,7 +129,7 @@ export default function MobileBottomNav() {
         >
           <AccountIcon active={isAccountActive} />
           <span
-            className={`text-[11px] font-bold tracking-wider uppercase ${isAccountActive ? "text-[#15803d]" : "text-gray-500"
+            className={`text-[11px] font-bold tracking-wider uppercase ${isAccountActive ? "text-[#14395C]" : "text-gray-500"
               }`}
           >
             ACCOUNT

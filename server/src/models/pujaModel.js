@@ -1,5 +1,13 @@
 import mongoose from "mongoose";
 
+// TODO: Collections Audit
+// Live Flow Collections in use:
+// - 'pujas' (Puja model in pujaModel.js) -> used by live browsing, detail pages, and checkout/pricing
+// - 'homas' (Homa model in homaModel.js) -> used by live homa flow
+// Legacy Collections (kept for backward compatibility with fallback references):
+// - 'poojas' (Pooja model in Pooja.js)
+// - 'services' (Service model in Service.js)
+
 const benefitSchema = new mongoose.Schema({
   title: { type: String, default: "" },
   description: { type: String, default: "" },

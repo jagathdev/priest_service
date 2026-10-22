@@ -184,8 +184,8 @@ export default function PujaCountdownCard({
           {/* Right Column: Live Countdown Boxes */}
           <div className="flex items-center justify-center gap-1.5 sm:gap-1.5 shrink-0">
             {/* Days */}
-            <div className="bg-[#fff6f4] border border-[#f7d6cd] rounded-xl sm:rounded-lg px-3 sm:px-2.5 py-1.5 sm:py-1.5 text-center min-w-[56px] sm:min-w-[52px] shadow-2xs">
-              <span className="font-extrabold text-[#800000] text-lg sm:text-base lg:text-lg leading-none block">
+            <div className="bg-[#F1F5F9] border border-slate-200 rounded-xl sm:rounded-lg px-3 sm:px-2.5 py-1.5 sm:py-1.5 text-center min-w-[56px] sm:min-w-[52px] shadow-2xs">
+              <span className="font-extrabold text-[#14395C] text-lg sm:text-base lg:text-lg leading-none block">
                 {padZero(timeLeft.days)}
               </span>
               <span className="text-[9px] sm:text-[8.5px] font-bold text-stone-500 tracking-wider uppercase block mt-1 sm:mt-0.5">
@@ -196,8 +196,8 @@ export default function PujaCountdownCard({
             <span className="text-stone-800 font-black text-base sm:text-base self-center pb-0.5">:</span>
 
             {/* Hours */}
-            <div className="bg-[#fff6f4] border border-[#f7d6cd] rounded-xl sm:rounded-lg px-3 sm:px-2.5 py-1.5 sm:py-1.5 text-center min-w-[56px] sm:min-w-[52px] shadow-2xs">
-              <span className="font-extrabold text-[#800000] text-lg sm:text-base lg:text-lg leading-none block">
+            <div className="bg-[#F1F5F9] border border-slate-200 rounded-xl sm:rounded-lg px-3 sm:px-2.5 py-1.5 sm:py-1.5 text-center min-w-[56px] sm:min-w-[52px] shadow-2xs">
+              <span className="font-extrabold text-[#14395C] text-lg sm:text-base lg:text-lg leading-none block">
                 {padZero(timeLeft.hours)}
               </span>
               <span className="text-[9px] sm:text-[8.5px] font-bold text-stone-500 tracking-wider uppercase block mt-1 sm:mt-0.5">
@@ -208,8 +208,8 @@ export default function PujaCountdownCard({
             <span className="text-stone-800 font-black text-base sm:text-base self-center pb-0.5">:</span>
 
             {/* Minutes */}
-            <div className="bg-[#fff6f4] border border-[#f7d6cd] rounded-xl sm:rounded-lg px-3 sm:px-2.5 py-1.5 sm:py-1.5 text-center min-w-[56px] sm:min-w-[52px] shadow-2xs">
-              <span className="font-extrabold text-[#800000] text-lg sm:text-base lg:text-lg leading-none block">
+            <div className="bg-[#F1F5F9] border border-slate-200 rounded-xl sm:rounded-lg px-3 sm:px-2.5 py-1.5 sm:py-1.5 text-center min-w-[56px] sm:min-w-[52px] shadow-2xs">
+              <span className="font-extrabold text-[#14395C] text-lg sm:text-base lg:text-lg leading-none block">
                 {padZero(timeLeft.minutes)}
               </span>
               <span className="text-[9px] sm:text-[8.5px] font-bold text-stone-500 tracking-wider uppercase block mt-1 sm:mt-0.5">
@@ -220,8 +220,8 @@ export default function PujaCountdownCard({
             <span className="text-stone-800 font-black text-base sm:text-base self-center pb-0.5">:</span>
 
             {/* Seconds */}
-            <div className="bg-[#fff6f4] border border-[#f7d6cd] rounded-xl sm:rounded-lg px-3 sm:px-2.5 py-1.5 sm:py-1.5 text-center min-w-[56px] sm:min-w-[52px] shadow-2xs">
-              <span className="font-extrabold text-[#800000] text-lg sm:text-base lg:text-lg leading-none block">
+            <div className="bg-[#F1F5F9] border border-slate-200 rounded-xl sm:rounded-lg px-3 sm:px-2.5 py-1.5 sm:py-1.5 text-center min-w-[56px] sm:min-w-[52px] shadow-2xs">
+              <span className="font-extrabold text-[#14395C] text-lg sm:text-base lg:text-lg leading-none block">
                 {padZero(timeLeft.seconds)}
               </span>
               <span className="text-[9px] sm:text-[8.5px] font-bold text-stone-500 tracking-wider uppercase block mt-1 sm:mt-0.5">

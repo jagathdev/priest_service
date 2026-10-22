@@ -40,15 +40,17 @@ export const viewport: Viewport = {
 export default async function RootLayout({ children }: { children: ReactNode }) {
   const cookieStore = await cookies();
   const mockUserCookie = cookieStore.get("mockUser");
+  const tokenCookie = cookieStore.get("token") || cookieStore.get("adminToken");
 
   let serverUser = null;
-  if (mockUserCookie && mockUserCookie.value) {
+  if (tokenCookie?.value && mockUserCookie?.value) {
     try {
       serverUser = JSON.parse(decodeURIComponent(mockUserCookie.value));
     } catch (e) {
       console.error("Failed to parse mockUser cookie on server", e);
     }
   }
+
 
   return (
     <html lang="en">

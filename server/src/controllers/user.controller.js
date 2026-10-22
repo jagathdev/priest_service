@@ -2,7 +2,9 @@ import User from "../models/user.js";
 
 export const getProfile = async (req, res) => {
     try {
-        const userId = req.params?.userId || req.user?.id || req.query?.userId;
+        const userId = (req.user?.role === "admin" && (req.params?.userId || req.query?.userId))
+            ? (req.params?.userId || req.query?.userId)
+            : req.user?.id;
 
         if (!userId) {
             return res.status(400).json({
@@ -36,7 +38,7 @@ export const getProfile = async (req, res) => {
             },
         });
     } catch (error) {
-        console.error("Get Profile Error:", error);
+        console.error("Get Profile Error:", error.message);
         return res.status(500).json({
             success: false,
             message: "Failed to fetch profile",
@@ -46,7 +48,9 @@ export const getProfile = async (req, res) => {
 
 export const updateProfile = async (req, res) => {
     try {
-        const userId = req.user?.id || req.body?.userId;
+        const userId = (req.user?.role === "admin" && req.body?.userId)
+            ? req.body?.userId
+            : req.user?.id;
         const { name, email, gender, dob, placeOfBirth, occupation, addresses, whatsappNumber } = req.body;
 
         if (!userId) {
@@ -56,24 +60,30 @@ export const updateProfile = async (req, res) => {
             });
         }
 
-        if (!name || !name.trim()) {
-            return res.status(400).json({
-                success: false,
-                message: "Name is required",
-            });
+        const updateData = {};
+
+        if (name !== undefined) {
+            const cleanName = String(name).trim();
+            if (cleanName) {
+                updateData.name = cleanName.charAt(0).toUpperCase() + cleanName.slice(1);
+            }
         }
 
-        if (!email || !email.trim()) {
-            return res.status(400).json({
-                success: false,
-                message: "Email is required",
-            });
+        if (email !== undefined) {
+            const cleanEmail = String(email).trim().toLowerCase();
+            if (cleanEmail) {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(cleanEmail)) {
+                    return res.status(400).json({
+                        success: false,
+                        message: "Invalid email address format",
+                    });
+                }
+                updateData.email = cleanEmail;
+            } else {
+                updateData.email = "";
+            }
         }
-
-        const updateData = {
-            name: name.trim().charAt(0).toUpperCase() + name.trim().slice(1),
-            email: email.trim().toLowerCase(),
-        };
 
         if (whatsappNumber !== undefined) {
             updateData.whatsappNumber = String(whatsappNumber).trim();

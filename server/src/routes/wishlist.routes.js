@@ -4,11 +4,12 @@ import {
     updateWishList,
     getWishlist,
 } from "../controllers/wishlist.controller.js";
+import { requireAuth, requireUserOrAdmin } from "../middlewares/auth.js";
 
 const router = express.Router();
 
-router.post("/updateWishlist", updateWishList);
+router.post("/updateWishlist", requireAuth, requireUserOrAdmin, updateWishList);
 
-router.get("/:userId", getWishlist);
+router.get("/:userId", requireAuth, requireUserOrAdmin, getWishlist);
 
 export default router;

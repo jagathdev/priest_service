@@ -1,6 +1,6 @@
 import { NextResponse, NextRequest } from 'next/server';
 
-const USER_PROTECTED_PATHS = ['/payment', '/account', '/bookings', '/sankalp'];
+const USER_PROTECTED_PATHS = ['/payment', '/account', '/bookings'];
 
 function isUserProtectedPath(pathname: string) {
   return USER_PROTECTED_PATHS.some(
@@ -30,15 +30,16 @@ export async function proxy(request: NextRequest) {
 
   if (isUserProtectedPath(pathname)) {
     const isUserLoggedIn = request.cookies.get('userLogin')?.value === 'true';
+    const token = request.cookies.get('token')?.value;
 
-    if (!isUserLoggedIn) {
-      const loginUrl = new URL('/auth/login', request.url);
-      loginUrl.searchParams.set(
-        'callbackUrl',
-        `${request.nextUrl.pathname}${request.nextUrl.search}`
-      );
-      return NextResponse.redirect(loginUrl);
-    }
+    // if (!isUserLoggedIn || !token) {
+    //   const loginUrl = new URL('/auth/login', request.url);
+    //   loginUrl.searchParams.set(
+    //     'callbackUrl',
+    //     `${request.nextUrl.pathname}${request.nextUrl.search}`
+    //   );
+    //   return NextResponse.redirect(loginUrl);
+    // }
 
     return NextResponse.next();
   }
@@ -47,5 +48,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/api/admin/:path*', '/booking/:path*', '/bookings/:path*', '/payment/:path*'],
+  matcher: ['/admin/:path*', '/api/admin/:path*', '/booking/:path*', '/bookings/:path*', '/payment/:path*', '/account/:path*', '/sankalp/:path*'],
 };

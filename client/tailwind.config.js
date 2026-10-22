@@ -11,12 +11,13 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        primary: '#6869F9',
-        accent: '#F47820',
-        ink: '#1f1f1f',
-        surface: '#fff8f0',
-        success: '#00b050',
-        danger: '#701a28',
+        primary: '#14395C',
+        secondary: '#7B61FF',
+        accent: '#881337',
+        ink: '#1E293B',
+        surface: '#FAFAFF',
+        success: '#16a34a',
+        danger: '#dc2626',
       },
       fontFamily: {
         sans: ['"Plus Jakarta Sans"', 'Inter', 'system-ui', 'sans-serif'],

@@ -6,7 +6,10 @@ import Homa from "../models/homaModel.js";
 
 export const updateWishList = async (req, res) => {
     try {
-        const { userId, serviceId } = req.body;
+        const userId = req.user?.role === "admin" && req.body?.userId
+            ? req.body?.userId
+            : req.user?.id;
+        const { serviceId } = req.body;
 
         // Validate user ID
         if (!userId) {
@@ -112,9 +115,11 @@ export const updateWishList = async (req, res) => {
 
 export const getWishlist = async (req, res) => {
     try {
-        const { userId } = req.params;
+        const userId = req.user?.role === "admin" && req.params?.userId
+            ? req.params?.userId
+            : req.user?.id;
 
-        if (!mongoose.Types.ObjectId.isValid(userId)) {
+        if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
             return res.status(400).json({
                 success: false,
                 message: "Invalid user ID",
@@ -125,26 +130,38 @@ export const getWishlist = async (req, res) => {
             userId,
         }).sort({
             createdAt: -1,
-        });
+        }).lean();
+
+        if (!wishlist || wishlist.length === 0) {
+            return res.status(200).json({
+                success: true,
+                count: 0,
+                data: [],
+            });
+        }
+
+        // Batch query all referenced Pujas and Homas with $in to eliminate N+1
+        const pujaIds = wishlist
+            .filter((item) => item.serviceType === "pooja")
+            .map((item) => item.serviceId);
+        const homaIds = wishlist
+            .filter((item) => item.serviceType === "homa")
+            .map((item) => item.serviceId);
+
+        const [pujas, homas] = await Promise.all([
+            pujaIds.length > 0 ? Puja.find({ _id: { $in: pujaIds }, status: "active" }).lean() : [],
+            homaIds.length > 0 ? Homa.find({ _id: { $in: homaIds }, status: "active" }).lean() : [],
+        ]);
+
+        const pujaMap = new Map(pujas.map((p) => [String(p._id), p]));
+        const homaMap = new Map(homas.map((h) => [String(h._id), h]));
 
         const result = [];
 
         for (const item of wishlist) {
-            let service = null;
-
-            if (item.serviceType === "pooja") {
-                service = await Puja.findOne({
-                    _id: item.serviceId,
-                    status: "active",
-                });
-            }
-
-            if (item.serviceType === "homa") {
-                service = await Homa.findOne({
-                    _id: item.serviceId,
-                    status: "active",
-                });
-            }
+            const service = item.serviceType === "pooja"
+                ? pujaMap.get(String(item.serviceId))
+                : homaMap.get(String(item.serviceId));
 
             // Service may have been deleted/deactivated
             if (!service) {
