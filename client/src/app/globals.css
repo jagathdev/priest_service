@@ -17,11 +17,38 @@ body {
   margin: 0;
   padding: 0;
   font-family: var(--font-sans), 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Ensure all buttons, links, and interactive elements respond immediately on iOS Safari & mobile */
+button,
+a,
+[role="button"],
+input[type="button"],
+input[type="submit"] {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  cursor: pointer;
+}
+
+/* iOS Safari & WebKit image rendering consistency: prevent image collapsing or blurry stretch */
+img,
+picture,
+video {
+  max-width: 100%;
+  height: auto;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 
 body {
   background: #ffffff;
   color: var(--brand-ink);
+  overflow-x: hidden;
+  width: 100%;
 }
 
 @keyframes marquee {
@@ -240,8 +267,17 @@ input[type="password"]:-webkit-autofill:active {
 [data-reveal].is-revealed,
 [data-reveal][data-revealed="true"],
 [data-revealed="true"] {
-  opacity: 1;
-  transform: translateY(0);
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+}
+
+/* Fallback: If on mobile, ensure above-the-fold hero elements are always visible */
+@media (max-width: 1024px) {
+  section[data-reveal]:first-of-type,
+  main > section[data-reveal]:first-child {
+    opacity: 1 !important;
+    transform: none !important;
+  }
 }
 
 [data-reveal][data-delay="100"] {
