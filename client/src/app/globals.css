@@ -40,6 +40,16 @@ body {
   animation-play-state: paused;
 }
 
+.animate-marquee-slow {
+  display: flex;
+  width: max-content;
+  animation: marquee 80s linear infinite;
+}
+
+.animate-marquee-slow:hover {
+  animation-play-state: paused;
+}
+
 /* Trust Badge responsive layout: Continuous Marquee below 1440px screen size, static spaced layout on >= 1440px */
 @media (max-width: 1439px) {
   .badge-marquee-below-1440 {

@@ -26,6 +26,20 @@ interface BannerSlide {
 
 const DEFAULT_IMAGE = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='400'%3E%3Crect width='800' height='400' fill='%23cccccc'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='24' fill='%23333333'%3ENo Image Available%3C/text%3E%3C/svg%3E`;
 
+export const get1024BannerImage = (img: string): string => {
+  const lower = (img || "").toLowerCase();
+  if (lower.includes("rameshwaram") || lower.includes("tarpanam")) {
+    return "/Service images/rameshwaram_puja.png";
+  }
+  if (lower.includes("shani")) {
+    return "/Service images/shani_puja.png";
+  }
+  if (lower.includes("nava") || lower.includes("navagraha")) {
+    return "/Service images/nava_puja.png";
+  }
+  return img;
+};
+
 const mapBanners = (list: any[]): BannerSlide[] => {
   return list.map((item: any) => {
     let safeImage = item.imageUrl || "";
@@ -178,7 +192,7 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
 
         {/* Skeleton Right Content (Image Card) */}
         <div className="w-full max-w-full lg:w-[480px] xl:w-[650px] 2xl:w-[720px] shrink-0 flex flex-col items-center">
-          <div className="w-full bg-stone-100 rounded-3xl border border-stone-200 h-[300px] sm:h-[400px] md:h-[460px] lg:h-[500px] flex items-center justify-center">
+          <div className="w-full bg-stone-100 rounded-2xl min-[375px]:rounded-3xl border border-stone-200 aspect-[4/3] sm:aspect-auto sm:h-[400px] md:h-[460px] lg:h-[320px] xl:h-[500px] flex items-center justify-center">
             <svg className="w-12 h-12 text-stone-200 animate-spin" fill="none" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -201,7 +215,7 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
   const current = bannerSlides[currentSafeSlideIndex];
 
   return (
-    <section className="relative w-full max-w-[1350px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 pt-2 sm:pt-3 lg:pt-4 pb-8 md:pb-12 xl:py-12 bg-white my-0 sm:my-1 xl:my-2 overflow-hidden">
+    <section className="relative w-full max-w-[1350px] mx-auto px-3 min-[360px]:px-4 sm:px-6 md:px-8 lg:px-10 pt-2 sm:pt-3 lg:pt-4 pb-8 md:pb-12 xl:py-12 bg-white my-0 sm:my-1 xl:my-2 overflow-hidden">
 
 
       {/* Background Circular Mandala Watermark inside Hero */}
@@ -255,7 +269,7 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
         {/* Arrows moved down to the image section for perfect centering on mobile & desktop */}
 
         {/* ── Left Content (Text & CTA) ── Fixed starting point at top, space left above CTA button */}
-        <div className="flex-1 text-center lg:text-left flex flex-col justify-start items-center lg:items-start h-auto min-h-0 lg:min-h-[500px] w-full max-w-[640px] pt-2 pb-1">
+        <div className="flex-1 text-center lg:text-left flex flex-col justify-start items-center lg:items-start h-auto min-h-0 lg:min-h-0 xl:min-h-[500px] w-full max-w-[640px] pt-2 pb-1">
 
           {/* Top Block: Always starts at fixed top position */}
           <div className="flex flex-col items-center lg:items-start text-center lg:text-left w-full">
@@ -353,40 +367,50 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
         <div className="w-full max-w-full lg:w-[480px] xl:w-[670px] 2xl:w-[730px] shrink-0 flex flex-col items-center relative">
 
           {/* Smooth Forward-Only Carousel Viewport */}
-          <div className="w-full relative rounded-3xl overflow-hidden shadow-2xl border border-stone-200/80 bg-stone-100 h-[300px] sm:h-[400px] md:h-[460px] lg:h-[500px] xl:h-[500px] shrink-0">
+          <div className="w-full relative rounded-2xl min-[375px]:rounded-3xl overflow-hidden shadow-2xl border border-stone-200/80 bg-stone-100 aspect-[4/3] sm:aspect-auto sm:h-[400px] md:h-[460px] lg:h-[320px] xl:h-[500px] shrink-0">
             {/* Sliding Track (Continues sliding forward to the left) */}
             <div
               className={`flex w-full h-full ${isTransitioning ? "transition-transform duration-700 ease-out" : ""}`}
               style={{ transform: `translateX(-${activeSlide * 100}%)` }}
               onTransitionEnd={handleTransitionEnd}
             >
-              {displaySlides.map((slide, idx) => (
-                <div key={`${slide.id || "slide"}-${idx}`} className="w-full h-full shrink-0 relative">
-                  <Link
-                    href={slide.ctaLink}
-                    className="w-full h-full block relative cursor-pointer group"
-                  >
-                    {/* Ambient Blurred Background (warm natural tone) */}
-                    <Image
-                      src={slide.image}
-                      alt=""
-                      fill
-                      sizes="(max-width: 768px) 100vw, (max-width: 1280px) 100vw, 730px"
-                      className="object-cover blur-2xl opacity-35 scale-110 pointer-events-none"
-                    />
+              {displaySlides.map((slide, idx) => {
+                const img1024 = get1024BannerImage(slide.image);
+                return (
+                  <div key={`${slide.id || "slide"}-${idx}`} className="w-full h-full shrink-0 relative">
+                    <Link
+                      href={slide.ctaLink}
+                      className="w-full h-full block relative cursor-pointer group"
+                    >
+                      {/* Ambient Blurred Background (warm natural tone) */}
+                      <picture className="absolute inset-0 w-full h-full block pointer-events-none">
+                        <source
+                          media="(min-width: 1024px) and (max-width: 1279px)"
+                          srcSet={img1024}
+                        />
+                        <img
+                          src={slide.image}
+                          alt=""
+                          className="w-full h-full object-cover blur-2xl opacity-35 scale-110"
+                        />
+                      </picture>
 
-                    {/* Full-bleed Banner Image */}
-                    <Image
-                      src={slide.image}
-                      alt={slide.title}
-                      fill
-                      sizes="(max-width: 768px) 100vw, (max-width: 1280px) 100vw, 730px"
-                      className="object-cover object-center relative z-10 drop-shadow-md group-hover:scale-[1.02] transition-transform duration-500"
-                      priority={idx === 0}
-                    />
-                  </Link>
-                </div>
-              ))}
+                      {/* Full-bleed Banner Image with 1024 Specific Media Query */}
+                      <picture className="absolute inset-0 w-full h-full block">
+                        <source
+                          media="(min-width: 1024px) and (max-width: 1279px)"
+                          srcSet={img1024}
+                        />
+                        <img
+                          src={slide.image}
+                          alt={slide.title}
+                          className="w-full h-full object-cover object-center relative z-10 drop-shadow-md group-hover:scale-[1.02] transition-transform duration-500"
+                        />
+                      </picture>
+                    </Link>
+                  </div>
+                );
+              })}
             </div>
 
           </div>

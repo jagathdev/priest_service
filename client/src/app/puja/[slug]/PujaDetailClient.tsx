@@ -11,6 +11,7 @@ import { XMarkIcon } from "@heroicons/react/24/solid";
 import WishlistButton from "@/components/common/WishlistButton";
 import PujaCountdownCard from "@/components/common/PujaCountdownCard";
 import ShareModal from "@/components/common/ShareModal";
+import GalleryLightboxModal from "@/components/common/GalleryLightboxModal";
 import Image from "next/image";
 
 interface PujaPackage {
@@ -133,6 +134,8 @@ export default function PujaDetailClient({
   const [showStickyBar, setShowStickyBar] = useState(false);
   const [activeBannerIndex, setActiveBannerIndex] = useState(0);
   const [galleryCarouselIdx, setGalleryCarouselIdx] = useState(0);
+  const [galleryLightboxOpen, setGalleryLightboxOpen] = useState(false);
+  const [lightboxImageIdx, setLightboxImageIdx] = useState(0);
   const heroCtaRef = useRef<HTMLButtonElement | null>(null);
   const tabsContainerRef = useRef<HTMLDivElement | null>(null);
 
@@ -702,7 +705,7 @@ export default function PujaDetailClient({
 
             {/* Left 6 Cols: Main Banner Image (Slightly Increased Width) */}
             <div className="lg:col-span-6 flex flex-col">
-              <div className="relative w-full h-[280px] sm:h-[350px] md:h-[390px] lg:h-[410px] rounded-xl overflow-hidden border border-stone-200/90 shadow-md group">
+              <div className="relative w-full aspect-[4/3] sm:aspect-auto sm:h-[350px] md:h-[390px] lg:h-[410px] rounded-xl overflow-hidden border border-stone-200/90 shadow-md group">
                 <Image
                   src={bannerImages[activeBannerIndex] || (puja ? getPujaImageUrl(puja.imageUrl) : "/images/Ganesh-Chaturthi-Mahapuja.jpg")}
                   alt={`${puja?.title || "Puja"} - Sacred Ritual Banner ${activeBannerIndex + 1}`}
@@ -1263,7 +1266,13 @@ export default function PujaDetailClient({
 
               {/* Mobile: Carousel */}
               <div className="sm:hidden relative">
-                <div className="relative h-64 rounded-2xl overflow-hidden border border-stone-200 shadow-xs">
+                <div
+                  onClick={() => {
+                    setLightboxImageIdx(galleryCarouselIdx);
+                    setGalleryLightboxOpen(true);
+                  }}
+                  className="relative h-64 rounded-2xl overflow-hidden border border-stone-200 shadow-xs cursor-pointer group"
+                >
                   <Image
                     src={galleryList[galleryCarouselIdx] as string}
                     alt={`${puja?.title || "Puja"} - Sacred Ritual Photo ${galleryCarouselIdx + 1}`}
@@ -1272,11 +1281,21 @@ export default function PujaDetailClient({
                     unoptimized
                     className="w-full h-full object-cover transition-all duration-300"
                   />
+                  <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-full bg-black/40 text-white flex items-center justify-center backdrop-blur-xs">
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7" />
+                      </svg>
+                    </div>
+                  </div>
                   {galleryList.length > 1 && (
                     <>
                       <button
                         type="button"
-                        onClick={() => setGalleryCarouselIdx((prev) => (prev - 1 + galleryList.length) % galleryList.length)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setGalleryCarouselIdx((prev) => (prev - 1 + galleryList.length) % galleryList.length);
+                        }}
                         aria-label="Previous gallery image"
                         className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center backdrop-blur-sm transition-all shadow-md z-10"
                       >
@@ -1284,7 +1303,10 @@ export default function PujaDetailClient({
                       </button>
                       <button
                         type="button"
-                        onClick={() => setGalleryCarouselIdx((prev) => (prev + 1) % galleryList.length)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setGalleryCarouselIdx((prev) => (prev + 1) % galleryList.length);
+                        }}
                         aria-label="Next gallery image"
                         className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center backdrop-blur-sm transition-all shadow-md z-10"
                       >
@@ -1311,7 +1333,14 @@ export default function PujaDetailClient({
               {/* sm+ : Grid */}
               <div className="hidden sm:grid grid-cols-2 sm:grid-cols-3 gap-4">
                 {galleryList.map((img: string, idx: number) => (
-                  <div key={idx} className="h-48 rounded-2xl overflow-hidden border border-stone-200 shadow-xs relative">
+                  <div
+                    key={idx}
+                    onClick={() => {
+                      setLightboxImageIdx(idx);
+                      setGalleryLightboxOpen(true);
+                    }}
+                    className="h-48 rounded-2xl overflow-hidden border border-stone-200 shadow-xs relative cursor-pointer group"
+                  >
                     <Image
                       src={img}
                       alt={`${puja?.title || "Puja"} - Sacred Ritual Photo ${idx + 1}`}
@@ -1320,6 +1349,13 @@ export default function PujaDetailClient({
                       unoptimized
                       className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                     />
+                    <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
+                      <div className="w-10 h-10 rounded-full bg-white/90 text-stone-800 flex items-center justify-center shadow-lg transform scale-90 group-hover:scale-100 transition-transform">
+                        <svg className="w-5 h-5 text-stone-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7" />
+                        </svg>
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -1493,6 +1529,14 @@ export default function PujaDetailClient({
           location: puja.location || puja.templeLocation,
           url: typeof window !== "undefined" ? window.location.href : undefined,
         }}
+      />
+
+      {/* ── 10. Sacred Puja Gallery Lightbox ── */}
+      <GalleryLightboxModal
+        isOpen={galleryLightboxOpen}
+        onClose={() => setGalleryLightboxOpen(false)}
+        images={galleryList}
+        initialIndex={lightboxImageIdx}
       />
 
       <Footer />

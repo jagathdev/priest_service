@@ -560,7 +560,7 @@ export default function PujaClient({ initialPujas }: { initialPujas?: Puja[] }) 
                     }`}
                   >
                     <div className="flex flex-col flex-1 block">
-                      <div className="relative h-[260px] sm:h-[275px] w-full shrink-0 overflow-hidden">
+                      <div className="relative w-full aspect-[4/3] sm:aspect-auto sm:h-[275px] shrink-0 overflow-hidden">
                         <Image
                           src={getPujaImageUrl(puja.imageUrl)}
                           alt={puja.title}

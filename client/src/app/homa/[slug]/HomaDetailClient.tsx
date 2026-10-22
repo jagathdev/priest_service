@@ -11,6 +11,7 @@ import { checkAuthStatus } from "@/lib/authCheck";
 import { XMarkIcon } from "@heroicons/react/24/solid";
 import WishlistButton from "@/components/common/WishlistButton";
 import PujaCountdownCard from "@/components/common/PujaCountdownCard";
+import GalleryLightboxModal from "@/components/common/GalleryLightboxModal";
 
 interface HomaPackage {
   id: string;
@@ -136,6 +137,8 @@ export default function HomaDetailClient({
   const [showStickyBar, setShowStickyBar] = useState(false);
   const [activeBannerIndex, setActiveBannerIndex] = useState(0);
   const [shareSuccess, setShareSuccess] = useState(false);
+  const [galleryLightboxOpen, setGalleryLightboxOpen] = useState(false);
+  const [lightboxImageIdx, setLightboxImageIdx] = useState(0);
   const heroCtaRef = useRef<HTMLButtonElement | null>(null);
   const tabsContainerRef = useRef<HTMLDivElement | null>(null);
 
@@ -704,7 +707,7 @@ export default function HomaDetailClient({
 
             {/* Left 6 Cols: Main Banner Image (Slightly Increased Width) */}
             <div className="lg:col-span-6 flex flex-col">
-              <div className="relative w-full h-[280px] sm:h-[350px] md:h-[390px] lg:h-[410px] rounded-3xl overflow-hidden border border-stone-200/90 shadow-md group">
+              <div className="relative w-full aspect-[4/3] sm:aspect-auto sm:h-[350px] md:h-[390px] lg:h-[410px] rounded-3xl overflow-hidden border border-stone-200/90 shadow-md group">
                 <Image
                   src={bannerImages[activeBannerIndex] || (homa ? getHomaImageUrl(homa.imageUrl) : "/images/Ganesh-Chaturthi-Mahapuja.jpg")}
                   alt={`${homa?.title || "Homa"} - Sacred Ritual Banner ${activeBannerIndex + 1}`}
@@ -1274,7 +1277,14 @@ export default function HomaDetailClient({
               <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1f1a17] mb-6">Homa Gallery</h2>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {galleryList.map((img: string, idx: number) => (
-                  <div key={idx} className="h-48 rounded-2xl overflow-hidden border border-stone-200 shadow-xs relative">
+                  <div
+                    key={idx}
+                    onClick={() => {
+                      setLightboxImageIdx(idx);
+                      setGalleryLightboxOpen(true);
+                    }}
+                    className="h-48 rounded-2xl overflow-hidden border border-stone-200 shadow-xs relative cursor-pointer group"
+                  >
                     <Image
                       src={img}
                       alt={`${homa?.title || "Homa"} - Sacred Ritual Photo ${idx + 1}`}
@@ -1283,6 +1293,13 @@ export default function HomaDetailClient({
                       unoptimized
                       className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                     />
+                    <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
+                      <div className="w-10 h-10 rounded-full bg-white/90 text-stone-800 flex items-center justify-center shadow-lg transform scale-90 group-hover:scale-100 transition-transform">
+                        <svg className="w-5 h-5 text-stone-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7" />
+                        </svg>
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -1445,6 +1462,14 @@ export default function HomaDetailClient({
             window.location.href = pendingSankalpUrl;
           }
         }}
+      />
+
+      {/* ── 9. Sacred Homa Gallery Lightbox ── */}
+      <GalleryLightboxModal
+        isOpen={galleryLightboxOpen}
+        onClose={() => setGalleryLightboxOpen(false)}
+        images={galleryList}
+        initialIndex={lightboxImageIdx}
       />
 
       <Footer />
