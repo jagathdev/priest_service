@@ -116,7 +116,7 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
             <div className="flex flex-col items-center group text-center flex-1 w-full max-w-[210px]">
               <div className="w-24 h-24 sm:w-28 sm:h-28 relative mb-3 group-hover:scale-105 transition-all">
                 <Image
-                  src="/images/steo_1.png"
+                  src="/images/step_1.png"
                   alt="Choose Your Puja"
                   fill
                   sizes="(max-width: 640px) 96px, 112px"

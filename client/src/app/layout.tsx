@@ -175,61 +175,72 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
             __html: `
               (function() {
                 function removeChatAndPushWidgets() {
-                  // Hide chat and webpushr elements by selectors
-                  var nodes = document.querySelectorAll(
-                    '#prime, #chatWidget, .chat-widget-container, .chat-popup-box, .chat-toggle-button, [class*="chat_fem"], [class*="chat-fem"], [class*="chatfem"], .ico-chat, .ico_chat, .ico_whatsapp, [id^="webpushr"], [class*="webpushr"], #webpushr-prompt-wrapper, .webpushr-prompt, .webpushr-bell'
-                  );
-                  nodes.forEach(function(el) {
-                    el.style.setProperty('display', 'none', 'important');
-                    el.style.setProperty('visibility', 'hidden', 'important');
-                    el.style.setProperty('opacity', '0', 'important');
-                    el.style.setProperty('pointer-events', 'none', 'important');
-                  });
-
-                  // Scan floating/fixed prompt boxes containing the subscription text or greeting text
-                  var allElements = document.querySelectorAll('div, p, span, a, section');
-                  for (var i = 0; i < allElements.length; i++) {
-                    var el = allElements[i];
-                    var text = el.innerText || el.textContent || '';
-                    if (
-                      (text.indexOf('How can I help you') !== -1 && text.length < 120) ||
-                      (text.indexOf('Subscribe now') !== -1 && text.length < 200) ||
-                      (text.indexOf('timely updates on our events') !== -1 && text.length < 250)
-                    ) {
-                      var parent = el;
-                      for (var j = 0; j < 5; j++) {
-                        if (parent && parent.parentElement && parent !== document.body) {
-                          var style = window.getComputedStyle(parent);
-                          if (
-                            style.position === 'fixed' ||
-                            style.position === 'absolute' ||
-                            parent.id === 'prime' ||
-                            (parent.className && typeof parent.className === 'string' && (parent.className.indexOf('chat') !== -1 || parent.className.indexOf('webpushr') !== -1 || parent.className.indexOf('prompt') !== -1))
-                          ) {
-                            parent.style.setProperty('display', 'none', 'important');
-                            parent.style.setProperty('visibility', 'hidden', 'important');
-                            break;
-                          }
-                          parent = parent.parentElement;
-                        }
+                  try {
+                    // Hide chat and webpushr elements by selectors
+                    var nodes = document.querySelectorAll(
+                      '#prime, #chatWidget, .chat-widget-container, .chat-popup-box, .chat-toggle-button, [class*="chat_fem"], [class*="chat-fem"], [class*="chatfem"], .ico-chat, .ico_chat, .ico_whatsapp, [id^="webpushr"], [class*="webpushr"], #webpushr-prompt-wrapper, .webpushr-prompt, .webpushr-bell'
+                    );
+                    for (var k = 0; k < nodes.length; k++) {
+                      var n = nodes[k];
+                      if (n && n.style) {
+                        n.style.setProperty('display', 'none', 'important');
+                        n.style.setProperty('visibility', 'hidden', 'important');
+                        n.style.setProperty('opacity', '0', 'important');
+                        n.style.setProperty('pointer-events', 'none', 'important');
                       }
-                      el.style.setProperty('display', 'none', 'important');
                     }
-                  }
+
+                    // Scan floating/fixed prompt boxes containing the subscription text or greeting text
+                    var allElements = document.querySelectorAll('div, p, span, a, section');
+                    for (var i = 0; i < allElements.length; i++) {
+                      var el = allElements[i];
+                      if (!el) continue;
+                      var text = el.innerText || el.textContent || '';
+                      if (
+                        (text.indexOf('How can I help you') !== -1 && text.length < 120) ||
+                        (text.indexOf('Subscribe now') !== -1 && text.length < 200) ||
+                        (text.indexOf('timely updates on our events') !== -1 && text.length < 250)
+                      ) {
+                        var parent = el;
+                        for (var j = 0; j < 5; j++) {
+                          if (parent && parent.parentElement && parent !== document.body) {
+                            var style = window.getComputedStyle ? window.getComputedStyle(parent) : null;
+                            if (
+                              style &&
+                              (style.position === 'fixed' ||
+                              style.position === 'absolute' ||
+                              parent.id === 'prime' ||
+                              (parent.className && typeof parent.className === 'string' && (parent.className.indexOf('chat') !== -1 || parent.className.indexOf('webpushr') !== -1 || parent.className.indexOf('prompt') !== -1)))
+                            ) {
+                              if (parent.style) {
+                                parent.style.setProperty('display', 'none', 'important');
+                                parent.style.setProperty('visibility', 'hidden', 'important');
+                              }
+                              break;
+                            }
+                            parent = parent.parentElement;
+                          }
+                        }
+                        if (el.style) el.style.setProperty('display', 'none', 'important');
+                      }
+                    }
+                  } catch (e) {}
                 }
 
                 if (typeof window !== 'undefined') {
-                  window.addEventListener('DOMContentLoaded', removeChatAndPushWidgets);
-                  setInterval(removeChatAndPushWidgets, 500);
-                  var observer = new MutationObserver(function() {
-                    removeChatAndPushWidgets();
-                  });
-                  if (document.body) {
-                    observer.observe(document.body, { childList: true, subtree: true });
+                  if (document.readyState === 'loading') {
+                    window.addEventListener('DOMContentLoaded', removeChatAndPushWidgets);
                   } else {
-                    document.addEventListener('DOMContentLoaded', function() {
-                      observer.observe(document.body, { childList: true, subtree: true });
+                    removeChatAndPushWidgets();
+                  }
+                  setInterval(removeChatAndPushWidgets, 1000);
+                  if (typeof MutationObserver !== 'undefined') {
+                    var observer = new MutationObserver(function() {
+                      removeChatAndPushWidgets();
                     });
+                    if (document.body) {
+                      observer.observe(document.body, { childList: true, subtree: true });
+                    }
                   }
                 }
               })();
