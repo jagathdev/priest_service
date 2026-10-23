@@ -10,6 +10,10 @@ import {
   Bars3Icon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  ChevronDownIcon,
+  CheckIcon,
+  XMarkIcon,
+  MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
 
 /** Puja card date stored as DD-MM-YYYY; native date input uses YYYY-MM-DD */
@@ -170,44 +174,122 @@ export default function ContentManager({
   const [viewingReview, setViewingReview] = useState<any | null>(null);
   const [currencyRates] = useState<{ usd: number; myr: number } | null>(null);
 
+  const [customOptionsState, setCustomOptionsState] = useState<Record<string, string[]>>({});
+  const [excludedOptionsState, setExcludedOptionsState] = useState<Record<string, string[]>>({});
+  const [addingCustomField, setAddingCustomField] = useState<string | null>(null);
+  const [customInputText, setCustomInputText] = useState("");
+  const [openSelectDropdown, setOpenSelectDropdown] = useState<string | null>(null);
+  const [dropdownSearchQuery, setDropdownSearchQuery] = useState<Record<string, string>>({});
+
+  // Close custom select dropdown when clicking outside
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (!target?.closest("[data-custom-select]")) {
+        setOpenSelectDropdown(null);
+      }
+    };
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, []);
+
   const effectiveFilterGroups = useMemo(() => {
-    if (type !== "puja" || !dynamicPujaLocationFromItems) {
+    // If not puja or homa, return default filterGroups
+    if (type !== "puja" && type !== "homa") {
       return filterGroups;
     }
 
-    const locStrings = new Set<string>();
-    items.forEach((item) => {
-      const parts = [
-        item.location,
-        item.templeLocation,
-        item.templeVenue,
-        item.details && typeof item.details === "object" && item.details !== null
-          ? (item.details as { templeLocation?: string }).templeLocation
-          : undefined,
-      ].filter(Boolean) as string[];
-
-      parts.forEach((s) => {
-        const trimmed = s.trim();
-        if (trimmed) locStrings.add(trimmed);
-        trimmed.split(/[,|;]/).forEach((chunk) => {
-          const t = chunk.trim();
-          if (t) locStrings.add(t);
-        });
-      });
-    });
-
-    const sorted = Array.from(locStrings).sort((a, b) => a.localeCompare(b));
-    const locationGroup = {
-      label: "Location",
-      options: [
-        { value: "All" },
-        ...sorted.map((value) => ({ value, keywords: [value.toLowerCase()] })),
-      ],
+    const fieldMapping: Record<string, string> = {
+      Deity: "deity",
+      Tithis: "tithis",
+      Dosha: "dosha",
+      Benefits: "benefit",
+      Benefit: "benefit",
+      Location: "filterLocation",
     };
 
-    const withoutStaticLocation = filterGroups.filter((g) => g.label !== "Location");
-    return [...withoutStaticLocation, locationGroup];
-  }, [type, dynamicPujaLocationFromItems, items, filterGroups]);
+    return filterGroups.map((group) => {
+      const fieldName = fieldMapping[group.label];
+      // Collect values from items
+      const map = new Map<string, { value: string; keywords?: string[] }>();
+
+      // First add static default options (except 'All')
+      group.options.forEach((opt) => {
+        if (opt.value && opt.value !== "All") {
+          map.set(opt.value.trim().toLowerCase(), opt);
+        }
+      });
+
+      // Next add custom entered options in memory
+      if (fieldName && customOptionsState[fieldName]) {
+        customOptionsState[fieldName].forEach((customVal) => {
+          const trimmed = customVal.trim();
+          if (trimmed) {
+            const lower = trimmed.toLowerCase();
+            if (!map.has(lower)) {
+              map.set(lower, { value: trimmed, keywords: [lower] });
+            }
+          }
+        });
+      }
+
+      // Next aggregate values from saved items
+      if (group.label === "Location") {
+        items.forEach((item) => {
+          const parts = [
+            item.filterLocation,
+            item.location,
+            item.templeLocation,
+            item.templeVenue,
+            item.details && typeof item.details === "object" && item.details !== null
+              ? (item.details as { templeLocation?: string }).templeLocation
+              : undefined,
+          ].filter(Boolean) as string[];
+
+          parts.forEach((s) => {
+            const trimmed = s.trim();
+            if (trimmed) {
+              const lower = trimmed.toLowerCase();
+              if (!map.has(lower)) {
+                map.set(lower, { value: trimmed, keywords: [lower] });
+              }
+            }
+            trimmed.split(/[,|;]/).forEach((chunk) => {
+              const t = chunk.trim();
+              if (t) {
+                const lower = t.toLowerCase();
+                if (!map.has(lower)) {
+                  map.set(lower, { value: t, keywords: [lower] });
+                }
+              }
+            });
+          });
+        });
+      } else if (fieldName) {
+        items.forEach((item) => {
+          const val = item[fieldName];
+          if (typeof val === "string" && val.trim()) {
+            const trimmed = val.trim();
+            const lower = trimmed.toLowerCase();
+            if (!map.has(lower)) {
+              map.set(lower, { value: trimmed, keywords: [lower] });
+            }
+          }
+        });
+      }
+
+      const excludedList = fieldName ? (excludedOptionsState[fieldName] || []) : [];
+      const excludedLower = new Set(excludedList.map((x) => x.toLowerCase()));
+
+      const sortedOptions = Array.from(map.values())
+        .filter((opt) => !excludedLower.has(opt.value.trim().toLowerCase()))
+        .sort((a, b) => a.value.localeCompare(b.value));
+      return {
+        ...group,
+        options: [{ value: "All" }, ...sortedOptions],
+      };
+    });
+  }, [type, items, filterGroups, customOptionsState, excludedOptionsState]);
 
   useEffect(() => {
     setActiveFilters((prev) => {
@@ -743,8 +825,8 @@ export default function ContentManager({
                   <label
                     key={item._id}
                     className={`flex items-center gap-2.5 p-3.5 rounded-xl border text-sm cursor-pointer transition-all ${isChecked
-                        ? "border-primary bg-gradient-to-r from-primary/10 via-indigo-50/60 to-white text-primary font-bold shadow-xs"
-                        : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-300"
+                      ? "border-primary bg-gradient-to-r from-primary/10 via-indigo-50/60 to-white text-primary font-bold shadow-xs"
+                      : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-300"
                       }`}
                   >
                     <input
@@ -854,16 +936,16 @@ export default function ContentManager({
                 <div
                   key={idx}
                   className={`relative rounded-2xl border ${isPackageOrOffering
-                      ? "border-amber-300/80 bg-gradient-to-br from-amber-50/50 via-white to-orange-50/30 hover:border-amber-400"
-                      : "border-slate-200/90 bg-gradient-to-br from-slate-50/50 via-white to-indigo-50/20 hover:border-primary/40"
+                    ? "border-amber-300/80 bg-gradient-to-br from-amber-50/50 via-white to-orange-50/30 hover:border-amber-400"
+                    : "border-slate-200/90 bg-gradient-to-br from-slate-50/50 via-white to-indigo-50/20 hover:border-primary/40"
                     } p-5 shadow-xs hover:shadow-md transition-all duration-200`}
                 >
                   <div className="flex items-center justify-between pb-3.5 mb-4 border-b border-gray-100">
                     <div className="flex items-center gap-2.5">
                       <span
                         className={`flex h-6 w-6 items-center justify-center rounded-lg ${isPackageOrOffering
-                            ? "bg-gradient-to-br from-amber-500 to-orange-600 text-white"
-                            : "bg-gradient-to-br from-primary to-indigo-600 text-white"
+                          ? "bg-gradient-to-br from-amber-500 to-orange-600 text-white"
+                          : "bg-gradient-to-br from-primary to-indigo-600 text-white"
                           } text-[11px] font-bold shadow-xs`}
                       >
                         #{idx + 1}
@@ -982,21 +1064,323 @@ export default function ContentManager({
             className="block w-full rounded-xl border border-slate-200 bg-slate-50/70 px-3.5 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:bg-white focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/10 shadow-2xs transition-all"
           />
         ) : field.type === "select" ? (
-          <select
-            id={field.name}
-            name={field.name}
-            required={field.required}
-            value={formData[field.name] || ""}
-            onChange={handleInputChange}
-            className="block w-full rounded-xl border border-slate-200 bg-slate-50/70 px-3.5 py-2.5 text-sm text-gray-900 focus:bg-white focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/10 shadow-2xs transition-all"
-          >
-            <option value="">-- Select {field.label} --</option>
-            {field.options?.map((opt) => (
-              <option key={opt} value={opt}>
-                {opt}
-              </option>
-            ))}
-          </select>
+          (() => {
+            // Aggregate static options + customOptionsState + options found in existing items
+            const optMap = new Map<string, string>();
+            (field.options || []).forEach((opt) => {
+              if (opt && opt.trim()) {
+                optMap.set(opt.trim().toLowerCase(), opt.trim());
+              }
+            });
+            if (customOptionsState[field.name]) {
+              customOptionsState[field.name].forEach((opt) => {
+                if (opt && opt.trim()) {
+                  optMap.set(opt.trim().toLowerCase(), opt.trim());
+                }
+              });
+            }
+            items.forEach((item) => {
+              const val = item[field.name];
+              if (typeof val === "string" && val.trim()) {
+                optMap.set(val.trim().toLowerCase(), val.trim());
+              }
+            });
+            // If current form has a value not in list yet, include it
+            const curVal = String(formData[field.name] || "").trim();
+            if (curVal && !optMap.has(curVal.toLowerCase())) {
+              optMap.set(curVal.toLowerCase(), curVal);
+            }
+
+            // Filter out any explicitly deleted/excluded options
+            const excludedList = excludedOptionsState[field.name] || [];
+            const excludedSet = new Set(excludedList.map((x) => x.toLowerCase()));
+
+            const dynamicOptions = Array.from(optMap.values())
+              .filter((opt) => !excludedSet.has(opt.toLowerCase()))
+              .sort((a, b) => a.localeCompare(b));
+            const isAddingCustomThisField = addingCustomField === field.name;
+
+            const handleAddCustom = () => {
+              const trimmed = customInputText.trim();
+              if (!trimmed) {
+                setAddingCustomField(null);
+                setCustomInputText("");
+                return;
+              }
+              // Prevent duplicates (case-insensitive check)
+              const lower = trimmed.toLowerCase();
+              const existingMatch = dynamicOptions.find((o) => o.toLowerCase() === lower);
+              const canonicalValue = existingMatch || trimmed;
+
+              // Un-exclude if it was previously deleted
+              setExcludedOptionsState((prev) => ({
+                ...prev,
+                [field.name]: (prev[field.name] || []).filter((x) => x.toLowerCase() !== lower),
+              }));
+
+              setCustomOptionsState((prev) => {
+                const currentList = prev[field.name] || [];
+                if (currentList.some((o) => o.toLowerCase() === lower)) {
+                  return prev;
+                }
+                return { ...prev, [field.name]: [...currentList, canonicalValue] };
+              });
+
+              setFormData((prev: any) => ({
+                ...prev,
+                [field.name]: canonicalValue,
+              }));
+
+              setAddingCustomField(null);
+              setCustomInputText("");
+            };
+
+            const handleDeleteOption = (optToDelete: string) => {
+              if (!optToDelete) return;
+              if (!confirm(`Are you sure you want to delete "${optToDelete}" from ${field.label}?`)) return;
+
+              const lower = optToDelete.toLowerCase();
+
+              // Add to excluded options so it won't show in the dropdown
+              setExcludedOptionsState((prev) => {
+                const current = prev[field.name] || [];
+                if (current.some((x) => x.toLowerCase() === lower)) return prev;
+                return { ...prev, [field.name]: [...current, optToDelete] };
+              });
+
+              // Remove from customOptionsState if present
+              setCustomOptionsState((prev) => {
+                const current = prev[field.name] || [];
+                return {
+                  ...prev,
+                  [field.name]: current.filter((x) => x.toLowerCase() !== lower),
+                };
+              });
+
+              // If currently selected in the form, reset/clear it
+              if (curVal.toLowerCase() === lower) {
+                setFormData((prev: any) => ({
+                  ...prev,
+                  [field.name]: "",
+                }));
+              }
+            };
+
+            const isOpen = openSelectDropdown === field.name;
+            const searchVal = (dropdownSearchQuery[field.name] || "").toLowerCase().trim();
+            const filteredDynamicOptions = searchVal
+              ? dynamicOptions.filter((opt) => opt.toLowerCase().includes(searchVal))
+              : dynamicOptions;
+
+            return (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  {/* Custom Dropdown with Delete Icons inside each option */}
+                  <div className={`relative flex-1 ${isOpen ? "z-50" : "z-10"}`} data-custom-select>
+                    <button
+                      type="button"
+                      id={field.name}
+                      onClick={() => {
+                        setOpenSelectDropdown((prev) => {
+                          const next = prev === field.name ? null : field.name;
+                          if (!next) {
+                            setDropdownSearchQuery((q) => ({ ...q, [field.name]: "" }));
+                          }
+                          return next;
+                        });
+                      }}
+                      className="flex w-full items-center justify-between rounded-xl border border-slate-200 bg-slate-50/70 px-3.5 py-2.5 text-sm text-black focus:bg-white focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/10 shadow-2xs transition-all cursor-pointer text-left"
+                    >
+                      <span className={curVal ? "font-semibold text-black" : "text-gray-400"}>
+                        {curVal || `-- Select ${field.label} --`}
+                      </span>
+                      <ChevronDownIcon
+                        className={`h-4 w-4 text-gray-500 transition-transform duration-200 ${isOpen ? "rotate-180 text-primary" : ""}`}
+                      />
+                    </button>
+
+                    {/* Dropdown Options Popup */}
+                    {isOpen && (
+                      <div className="absolute left-0 top-full z-[100] mt-1.5 w-full min-w-[220px] rounded-2xl border border-slate-200 bg-white p-2 shadow-2xl shadow-slate-900/20 max-h-72 flex flex-col animate-[fadeIn_0.15s_ease-out]">
+                        {/* Search input inside dropdown */}
+                        <div className="relative mb-1.5 shrink-0 px-1 pt-1">
+                          <input
+                            type="text"
+                            autoFocus
+                            value={dropdownSearchQuery[field.name] || ""}
+                            onChange={(e) =>
+                              setDropdownSearchQuery((prev) => ({
+                                ...prev,
+                                [field.name]: e.target.value,
+                              }))
+                            }
+                            placeholder={`Search ${field.label.toLowerCase()}...`}
+                            className="w-full rounded-xl border border-slate-200 bg-slate-50/90 pl-8 pr-7 py-1.5 text-xs font-medium text-black placeholder:text-gray-400 focus:bg-white focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                          />
+                          <MagnifyingGlassIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400 pointer-events-none" />
+                          {Boolean(dropdownSearchQuery[field.name]) && (
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setDropdownSearchQuery((prev) => ({ ...prev, [field.name]: "" }))
+                              }
+                              className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 text-gray-400 hover:text-black rounded"
+                            >
+                              <XMarkIcon className="h-3.5 w-3.5" />
+                            </button>
+                          )}
+                        </div>
+
+                        {/* Options List */}
+                        <div className="overflow-y-auto custom-scrollbar space-y-0.5 flex-1 pr-0.5">
+                          {/* Clear/Placeholder Option */}
+                          <div
+                            onClick={() => {
+                              setFormData((prev: any) => ({ ...prev, [field.name]: "" }));
+                              setOpenSelectDropdown(null);
+                            }}
+                            className="flex items-center justify-between rounded-xl px-3 py-2 text-xs text-gray-500 hover:bg-slate-100/70 cursor-pointer transition-colors"
+                          >
+                            <span>-- Select {field.label} --</span>
+                            {!curVal && <CheckIcon className="h-4 w-4 text-primary" />}
+                          </div>
+
+                          {filteredDynamicOptions.length === 0 ? (
+                            <div className="px-3 py-3 text-center text-xs text-slate-400">
+                              {searchVal ? `No matching "${searchVal}"` : `No options available.`}
+                            </div>
+                          ) : (
+                            filteredDynamicOptions.map((opt) => {
+                              const isSelected = curVal.toLowerCase() === opt.toLowerCase();
+                              return (
+                                <div
+                                  key={opt}
+                                  className={`group/item flex items-center justify-between rounded-xl px-3 py-2 text-sm transition-colors cursor-pointer ${isSelected
+                                      ? "bg-blue-100/80 text-blue-950 font-bold"
+                                      : "text-black hover:bg-blue-50/90 hover:text-blue-900 font-medium"
+                                    }`}
+                                  onClick={() => {
+                                    setFormData((prev: any) => ({ ...prev, [field.name]: opt }));
+                                    setOpenSelectDropdown(null);
+                                    setDropdownSearchQuery((q) => ({ ...q, [field.name]: "" }));
+                                  }}
+                                >
+                                  <div className="flex items-center gap-2 truncate pr-2">
+                                    {isSelected && <CheckIcon className="h-4 w-4 shrink-0 text-blue-700" />}
+                                    <span className="truncate">{opt}</span>
+                                  </div>
+
+                                  {/* Delete Icon directly inside dropdown row: prominent red icon */}
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDeleteOption(opt);
+                                    }}
+                                    title={`Delete "${opt}"`}
+                                    className="shrink-0 p-1.5 rounded-lg text-red-500 hover:text-red-700 hover:bg-red-50 transition-all cursor-pointer"
+                                  >
+                                    <TrashIcon className="h-4 w-4 stroke-[2] text-red-500 hover:text-red-700" />
+                                  </button>
+                                </div>
+                              );
+                            })
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Button to toggle custom input */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (isAddingCustomThisField) {
+                        setAddingCustomField(null);
+                        setCustomInputText("");
+                      } else {
+                        setAddingCustomField(field.name);
+                        setCustomInputText("");
+                        setOpenSelectDropdown(null);
+                      }
+                    }}
+                    title={`Add new ${field.label}`}
+                    className="shrink-0 inline-flex items-center gap-1 px-3 py-2.5 rounded-xl border border-primary/20 bg-primary/5 hover:bg-primary/10 text-primary text-xs font-bold transition-all cursor-pointer shadow-2xs active:scale-95"
+                  >
+                    {isAddingCustomThisField ? (
+                      <>
+                        <XMarkIcon className="h-4 w-4" />
+                        <span>Cancel</span>
+                      </>
+                    ) : (
+                      <>
+                        <PlusIcon className="h-4 w-4 stroke-[2.5]" />
+                        <span>+ Add New</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {/* Inline Add Custom Option Input Form */}
+                {isAddingCustomThisField && (
+                  <div className="flex items-center gap-2 p-2.5 rounded-xl border border-primary/30 bg-primary/[0.03] animate-[fadeIn_0.15s_ease-out]">
+                    <input
+                      type="text"
+                      autoFocus
+                      value={customInputText}
+                      onChange={(e) => setCustomInputText(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          handleAddCustom();
+                        } else if (e.key === "Escape") {
+                          setAddingCustomField(null);
+                          setCustomInputText("");
+                        }
+                      }}
+                      placeholder={`Enter new ${field.label.toLowerCase()} name...`}
+                      className="flex-1 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs text-gray-900 placeholder:text-gray-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-inner"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleAddCustom}
+                      disabled={!customInputText.trim()}
+                      className="px-3.5 py-1.5 rounded-lg bg-primary text-white text-xs font-bold hover:brightness-110 active:scale-95 disabled:opacity-50 transition-all cursor-pointer shadow-xs"
+                    >
+                      Add
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAddingCustomField(null);
+                        setCustomInputText("");
+                      }}
+                      className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-200/50 transition-colors"
+                      title="Cancel"
+                    >
+                      <XMarkIcon className="h-4 w-4" />
+                    </button>
+                  </div>
+                )}
+
+                {/* Selected Pill with clear option */}
+                {curVal && (
+                  <div className="flex items-center gap-2 text-xs text-slate-600 bg-slate-100/80 border border-slate-200/70 rounded-lg px-2.5 py-1.5 w-fit">
+                    <span className="font-medium text-slate-500">Selected:</span>
+                    <span className="font-bold text-primary">{curVal}</span>
+                    <button
+                      type="button"
+                      onClick={() => setFormData((prev: any) => ({ ...prev, [field.name]: "" }))}
+                      title="Clear selection"
+                      className="text-slate-400 hover:text-slate-700 transition-colors ml-1 cursor-pointer"
+                    >
+                      <XMarkIcon className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                )}
+              </div>
+            );
+          })()
         ) : field.type === "checkbox" ? (
           <label className="flex items-center gap-3 p-3.5 rounded-2xl border border-slate-200 bg-slate-50/60 hover:bg-white hover:border-primary/40 cursor-pointer shadow-2xs transition-all">
             <input
@@ -1252,10 +1636,10 @@ export default function ContentManager({
                   <div
                     key={group.name}
                     id={`section-${groupIdx}`}
-                    className={`group relative overflow-hidden rounded-2xl border ${theme.borderColor} ${theme.cardBg} shadow-xs hover:shadow-md ${theme.hoverBorder} transition-all duration-300 scroll-mt-44`}
+                    className={`group relative overflow-visible rounded-2xl border ${theme.borderColor} ${theme.cardBg} shadow-xs hover:shadow-md ${theme.hoverBorder} transition-all duration-300 scroll-mt-44`}
                   >
                     {/* Top Colorful Gradient Header Accent Line */}
-                    <div className={`h-1.5 w-full bg-gradient-to-r ${theme.gradient}`} />
+                    <div className={`h-1.5 w-full bg-gradient-to-r ${theme.gradient} rounded-t-2xl`} />
 
                     <div className="p-7 md:p-8 pt-8">
                       {/* Section Header */}

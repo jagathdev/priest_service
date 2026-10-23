@@ -84,27 +84,40 @@ export function matchesPujaFilters(
 
 export function extractDynamicFilterGroups(pujas: any[]): FilterGroup[] {
   const extractValues = (key: string, altKey?: string, nestedArrayKey?: string) => {
-    const set = new Set<string>();
+    // Map lowercase key to canonical display string to prevent duplicates (e.g. "Ganesh" vs "ganesh")
+    const map = new Map<string, string>();
     pujas.forEach((p) => {
       const val1 = p[key];
       if (typeof val1 === "string" && val1.trim()) {
-        set.add(val1.trim());
+        const trimmed = val1.trim();
+        const lower = trimmed.toLowerCase();
+        if (!map.has(lower)) {
+          map.set(lower, trimmed);
+        }
       }
       if (altKey) {
         const val2 = p[altKey];
         if (typeof val2 === "string" && val2.trim()) {
-          set.add(val2.trim());
+          const trimmed = val2.trim();
+          const lower = trimmed.toLowerCase();
+          if (!map.has(lower)) {
+            map.set(lower, trimmed);
+          }
         }
       }
       if (nestedArrayKey && Array.isArray(p[nestedArrayKey])) {
         p[nestedArrayKey].forEach((item: any) => {
           if (item?.title && typeof item.title === "string" && item.title.trim()) {
-            set.add(item.title.trim());
+            const trimmed = item.title.trim();
+            const lower = trimmed.toLowerCase();
+            if (!map.has(lower)) {
+              map.set(lower, trimmed);
+            }
           }
         });
       }
     });
-    return Array.from(set).sort();
+    return Array.from(map.values()).sort((a, b) => a.localeCompare(b));
   };
 
   const deities = extractValues("deity");
@@ -135,7 +148,7 @@ export function extractDynamicFilterGroups(pujas: any[]): FilterGroup[] {
   }
   if (benefits.length > 0) {
     groups.push({
-      label: "Benefits",
+      label: "Benefit",
       options: benefits.map((v) => ({ value: v })),
     });
   }
