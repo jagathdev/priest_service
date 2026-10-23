@@ -14,6 +14,8 @@ import {
   CheckIcon,
   XMarkIcon,
   MagnifyingGlassIcon,
+  ArrowUpTrayIcon,
+  LinkIcon,
 } from "@heroicons/react/24/outline";
 
 /** Puja card date stored as DD-MM-YYYY; native date input uses YYYY-MM-DD */
@@ -180,6 +182,90 @@ export default function ContentManager({
   const [customInputText, setCustomInputText] = useState("");
   const [openSelectDropdown, setOpenSelectDropdown] = useState<string | null>(null);
   const [dropdownSearchQuery, setDropdownSearchQuery] = useState<Record<string, string>>({});
+  const [urlInputMode, setUrlInputMode] = useState<Record<string, "link" | "upload">>({});
+  const [uploadingFields, setUploadingFields] = useState<Record<string, boolean>>({});
+  const [uploadErrors, setUploadErrors] = useState<Record<string, string | null>>({});
+
+  const uploadImageFile = async (file: File, key: string, label: string): Promise<string | null> => {
+    if (!file) return null;
+    const titleSlug = (formData.title || "item")
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "");
+    const fieldSlug = label
+      .replace(/([A-Z])/g, "-$1")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-");
+
+    const words = (formData.title || "item").trim().toLowerCase().split(/\s+/).filter(Boolean);
+    const initials = words.length > 1 ? words.map((w: string) => w[0]).join("") : titleSlug.slice(0, 4);
+    const cleanBaseName = `${initials}-${fieldSlug}`;
+
+    const uploadFormData = new FormData();
+    uploadFormData.append("image", file);
+    uploadFormData.append("customName", cleanBaseName);
+
+    setUploadingFields((prev) => ({ ...prev, [key]: true }));
+    setUploadErrors((prev) => ({ ...prev, [key]: null }));
+
+    try {
+      let expressBase = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
+      if (!expressBase.endsWith("/api")) {
+        expressBase += "/api";
+      }
+
+      const res = await fetch(`${expressBase}/upload`, {
+        method: "POST",
+        headers: {
+          ...getAdminAuthHeaders(),
+        },
+        body: uploadFormData,
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.url) {
+        return data.url;
+      } else {
+        setUploadErrors((prev) => ({
+          ...prev,
+          [key]: data.message || `Upload failed with status ${res.status}`,
+        }));
+        return null;
+      }
+    } catch (err: any) {
+      console.error("Upload error:", err);
+      setUploadErrors((prev) => ({
+        ...prev,
+        [key]: err.message || "Failed to upload image to server.",
+      }));
+      return null;
+    } finally {
+      setUploadingFields((prev) => ({ ...prev, [key]: false }));
+    }
+  };
+
+  const deleteImageFile = async (url: string) => {
+    if (!url) return;
+    const filename = url.split("/").pop();
+    if (filename && !url.startsWith("data:")) {
+      try {
+        let expressBase = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
+        if (!expressBase.endsWith("/api")) {
+          expressBase += "/api";
+        }
+
+        await fetch(`${expressBase}/upload/${encodeURIComponent(filename)}`, {
+          method: "DELETE",
+          headers: {
+            ...getAdminAuthHeaders(),
+          },
+        }).catch(() => { });
+      } catch (e) {
+        console.error("Failed to delete physical file:", e);
+      }
+    }
+  };
 
   // Close custom select dropdown when clicking outside
   useEffect(() => {
@@ -883,37 +969,88 @@ export default function ContentManager({
           </div>
         ) : field.type === "array-string" ? (
           <div className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50/60 p-4">
-            {(Array.isArray(formData[field.name]) && formData[field.name].length > 0 ? formData[field.name] : []).map((val: string, idx: number) => (
-              <div key={idx} className="flex items-center gap-2">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-600 shadow-2xs">
-                  {idx + 1}
-                </span>
-                <input
-                  type="text"
-                  value={val}
-                  onChange={(e) => handleArrayChange(field.name, idx, e.target.value)}
-                  placeholder={field.placeholder || "Enter value"}
-                  className="block w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-sm text-gray-900 focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/10 shadow-2xs"
-                />
-                {field.name.toLowerCase().includes("image") && Boolean(val) && (
-                  /* eslint-disable-next-line @next/next/no-img-element */
-                  <img
-                    src={val}
-                    alt="Preview"
-                    className="h-9 w-9 rounded-xl object-cover border border-slate-200 bg-white shrink-0 shadow-2xs"
-                    onError={(e) => { (e.target as HTMLElement).style.display = "none"; }}
-                  />
-                )}
-                <button
-                  type="button"
-                  onClick={() => removeArrayItem(field.name, idx, field.label)}
-                  className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-red-200 bg-red-50 text-red-600 hover:bg-red-500 hover:text-white transition-all shadow-2xs"
-                  title="Remove item"
-                >
-                  <TrashIcon className="h-4 w-4" />
-                </button>
-              </div>
-            ))}
+            {(Array.isArray(formData[field.name]) && formData[field.name].length > 0 ? formData[field.name] : []).map((val: string, idx: number) => {
+              const isImageField = field.name.toLowerCase().includes("image") || field.name.toLowerCase().includes("gallery");
+              const itemKey = `${field.name}-${idx}`;
+              const isUploading = Boolean(uploadingFields[itemKey]);
+              const uploadError = uploadErrors[itemKey] || null;
+
+              return (
+                <div key={idx} className="space-y-2 rounded-xl border border-slate-200/80 bg-white p-3 shadow-2xs">
+                  <div className="flex items-center gap-2">
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-slate-100 border border-slate-200 text-xs font-bold text-slate-600 shadow-2xs">
+                      {idx + 1}
+                    </span>
+                    <input
+                      type="text"
+                      value={val}
+                      onChange={(e) => handleArrayChange(field.name, idx, e.target.value)}
+                      placeholder={field.placeholder || "Enter image URL or link"}
+                      className="block w-full rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-sm text-gray-900 focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/10 shadow-2xs"
+                    />
+                    {isImageField && (
+                      <label
+                        className={`shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-primary/20 bg-primary/5 hover:bg-primary/10 text-primary text-xs font-bold cursor-pointer transition-all shadow-2xs ${isUploading ? "opacity-60 cursor-wait" : ""
+                          }`}
+                        title="Upload image from computer"
+                      >
+                        <input
+                          type="file"
+                          disabled={isUploading}
+                          accept="image/png, image/jpeg, image/webp, image/jpg"
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              const uploadedUrl = await uploadImageFile(file, itemKey, `${field.name}-${idx + 1}`);
+                              if (uploadedUrl) {
+                                handleArrayChange(field.name, idx, uploadedUrl);
+                              }
+                            }
+                          }}
+                          className="hidden"
+                        />
+                        {isUploading ? (
+                          <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                        ) : (
+                          <ArrowUpTrayIcon className="h-3.5 w-3.5 stroke-[2.5]" />
+                        )}
+                        <span>{isUploading ? "Uploading..." : "Upload"}</span>
+                      </label>
+                    )}
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        if (isImageField && val && !val.startsWith("data:")) {
+                          deleteImageFile(val);
+                        }
+                        removeArrayItem(field.name, idx, field.label);
+                      }}
+                      className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-red-200 bg-red-50 text-red-600 hover:bg-red-500 hover:text-white transition-all shadow-2xs"
+                      title="Remove item"
+                    >
+                      <TrashIcon className="h-4 w-4" />
+                    </button>
+                  </div>
+
+                  {uploadError && (
+                    <p className="text-[11px] font-semibold text-red-600 pl-9">{uploadError}</p>
+                  )}
+
+                  {isImageField && Boolean(val) && (
+                    <div className="flex items-center gap-2 pl-9">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={val}
+                        alt="Preview"
+                        className="h-10 w-10 rounded-lg object-cover border border-slate-200 bg-white shrink-0 shadow-2xs"
+                        onError={(e) => { (e.target as HTMLElement).style.display = "none"; }}
+                      />
+                      <span className="text-[11px] font-mono text-slate-500 truncate max-w-sm sm:max-w-md">{val}</span>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
             <button
               type="button"
               onClick={() => addArrayItem(field.name, "array-string")}
@@ -1010,6 +1147,82 @@ export default function ContentManager({
                                 className="block w-full rounded-xl border border-slate-200 bg-white pl-11 pr-3.5 py-2 text-sm text-gray-900 focus:border-amber-500 focus:outline-none focus:ring-4 focus:ring-amber-500/15 shadow-2xs"
                               />
                             </div>
+                          ) : sub.type === "url" ? (
+                            (() => {
+                              const subKey = `${field.name}-${idx}-${sub.name}`;
+                              const curSubUrl = String(val[sub.name] || "").trim();
+                              const isSubUploading = Boolean(uploadingFields[subKey]);
+                              const subError = uploadErrors[subKey] || null;
+
+                              return (
+                                <div className="space-y-2">
+                                  <div className="flex items-center gap-2">
+                                    <input
+                                      type="text"
+                                      value={curSubUrl}
+                                      onChange={(e) => handleArrayChange(field.name, idx, e.target.value, sub.name)}
+                                      placeholder={sub.placeholder || "Image URL or upload"}
+                                      className="block w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/10 shadow-2xs"
+                                    />
+                                    <label
+                                      className={`shrink-0 inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-primary/20 bg-primary/5 hover:bg-primary/10 text-primary text-xs font-bold cursor-pointer transition-all shadow-2xs ${isSubUploading ? "opacity-60 cursor-wait" : ""
+                                        }`}
+                                      title="Upload image from computer"
+                                    >
+                                      <input
+                                        type="file"
+                                        disabled={isSubUploading}
+                                        accept="image/png, image/jpeg, image/webp, image/jpg"
+                                        onChange={async (e) => {
+                                          const file = e.target.files?.[0];
+                                          if (file) {
+                                            const uploadedUrl = await uploadImageFile(file, subKey, `${val.name || "offering"}-${sub.name}`);
+                                            if (uploadedUrl) {
+                                              handleArrayChange(field.name, idx, uploadedUrl, sub.name);
+                                            }
+                                          }
+                                        }}
+                                        className="hidden"
+                                      />
+                                      {isSubUploading ? (
+                                        <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                                      ) : (
+                                        <ArrowUpTrayIcon className="h-3.5 w-3.5 stroke-[2.5]" />
+                                      )}
+                                      <span>{isSubUploading ? "..." : "Upload"}</span>
+                                    </label>
+                                    {curSubUrl && (
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          deleteImageFile(curSubUrl);
+                                          handleArrayChange(field.name, idx, "", sub.name);
+                                        }}
+                                        className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-red-200 bg-red-50 text-red-600 hover:bg-red-500 hover:text-white transition-all shadow-2xs"
+                                        title="Clear and delete image"
+                                      >
+                                        <TrashIcon className="h-4 w-4" />
+                                      </button>
+                                    )}
+                                  </div>
+                                  {subError && (
+                                    <p className="text-[11px] font-semibold text-red-600">{subError}</p>
+                                  )}
+                                  {Boolean(curSubUrl) && (
+                                    <div className="flex items-center gap-2">
+                                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                                      <img
+                                        src={curSubUrl}
+                                        alt="Preview"
+                                        className="h-8 w-8 rounded-lg object-cover border border-slate-200 shadow-2xs"
+                                        onError={(e) => { (e.target as HTMLElement).style.display = "none"; }}
+                                      />
+                                      <span className="text-[11px] text-slate-400 truncate max-w-xs">{curSubUrl}</span>
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })()
                           ) : (
                             <div>
                               <input
@@ -1019,18 +1232,6 @@ export default function ContentManager({
                                 placeholder={sub.placeholder}
                                 className="block w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/10 shadow-2xs"
                               />
-                              {sub.type === "url" && Boolean(val[sub.name]) && (
-                                <div className="mt-1.5 flex items-center gap-2">
-                                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                                  <img
-                                    src={val[sub.name]}
-                                    alt="Preview"
-                                    className="h-8 w-8 rounded-lg object-cover border border-slate-200 shadow-2xs"
-                                    onError={(e) => { (e.target as HTMLElement).style.display = "none"; }}
-                                  />
-                                  <span className="text-[11px] text-slate-400 truncate max-w-xs">{val[sub.name]}</span>
-                                </div>
-                              )}
                             </div>
                           )}
                         </div>
@@ -1256,8 +1457,8 @@ export default function ContentManager({
                                 <div
                                   key={opt}
                                   className={`group/item flex items-center justify-between rounded-xl px-3 py-2 text-sm transition-colors cursor-pointer ${isSelected
-                                      ? "bg-blue-100/80 text-blue-950 font-bold"
-                                      : "text-black hover:bg-blue-50/90 hover:text-blue-900 font-medium"
+                                    ? "bg-blue-100/80 text-blue-950 font-bold"
+                                    : "text-black hover:bg-blue-50/90 hover:text-blue-900 font-medium"
                                     }`}
                                   onClick={() => {
                                     setFormData((prev: any) => ({ ...prev, [field.name]: opt }));
@@ -1412,10 +1613,165 @@ export default function ContentManager({
               className="block w-full rounded-xl border border-slate-200 bg-slate-50/70 pl-11 pr-3.5 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:bg-white focus:border-amber-500 focus:outline-none focus:ring-4 focus:ring-amber-500/15 shadow-2xs transition-all"
             />
           </div>
+        ) : field.type === "url" ? (
+          (() => {
+            const curUrl = String(formData[field.name] || "").trim();
+            // Automatically determine mode: if image link exists, default to 'link' mode; otherwise default to 'upload'
+            const activeMode = (urlInputMode[field.name] || (curUrl ? "link" : "upload"));
+
+            const isUploading = Boolean(uploadingFields[field.name]);
+            const uploadError = uploadErrors[field.name] || null;
+
+            const handleFileSelected = async (file: File) => {
+              const url = await uploadImageFile(file, field.name, field.name);
+              if (url) {
+                setFormData((prev: any) => ({
+                  ...prev,
+                  [field.name]: url,
+                }));
+              }
+            };
+
+            const handleDeleteImage = async () => {
+              if (!confirm(`Are you sure you want to delete this image from ${field.label} and server storage?`)) return;
+              await deleteImageFile(curUrl);
+              setFormData((prev: any) => ({ ...prev, [field.name]: "" }));
+            };
+
+            return (
+              <div className="space-y-3">
+                {/* 2 Tabs: "Add Image Link" or "Upload Image" */}
+                <div className="flex items-center gap-1.5 p-1 rounded-xl bg-slate-100/90 w-fit border border-slate-200/80">
+                  <button
+                    type="button"
+                    onClick={() => setUrlInputMode((prev) => ({ ...prev, [field.name]: "link" }))}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${activeMode === "link"
+                        ? "bg-white text-primary shadow-xs"
+                        : "text-slate-600 hover:text-slate-900"
+                      }`}
+                  >
+                    <LinkIcon className="h-3.5 w-3.5" />
+                    <span>Add Image Link</span>
+                    {curUrl && <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setUrlInputMode((prev) => ({ ...prev, [field.name]: "upload" }))}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${activeMode === "upload"
+                        ? "bg-white text-primary shadow-xs"
+                        : "text-slate-600 hover:text-slate-900"
+                      }`}
+                  >
+                    <ArrowUpTrayIcon className="h-3.5 w-3.5" />
+                    <span>Upload Image</span>
+                  </button>
+                </div>
+
+                {uploadError && (
+                  <div className="rounded-xl border border-red-200 bg-red-50 p-2.5 text-xs font-semibold text-red-600">
+                    {uploadError}
+                  </div>
+                )}
+
+                {/* Option 1: Direct Image Link Input */}
+                {activeMode === "link" ? (
+                  <div className="relative">
+                    <input
+                      type="text"
+                      id={field.name}
+                      name={field.name}
+                      required={field.required}
+                      placeholder={field.placeholder || "https://priestservices.astroved.com/images/example.jpg"}
+                      value={formData[field.name] || ""}
+                      onChange={handleInputChange}
+                      className="block w-full rounded-xl border border-slate-200 bg-slate-50/70 px-3.5 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:bg-white focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/10 shadow-2xs transition-all"
+                    />
+                    {curUrl && (
+                      <button
+                        type="button"
+                        onClick={() => setFormData((prev: any) => ({ ...prev, [field.name]: "" }))}
+                        title="Clear link"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-red-500 rounded-lg transition-colors cursor-pointer"
+                      >
+                        <XMarkIcon className="h-4 w-4" />
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  /* Option 2: Drag & Drop / Upload Image */
+                  <div className="relative">
+                    <label className={`flex flex-col items-center justify-center border-2 border-dashed ${isUploading ? "border-primary bg-primary/5 opacity-70 cursor-wait" : "border-slate-300 hover:border-primary/60 bg-slate-50/60 hover:bg-white cursor-pointer"} rounded-2xl p-5 transition-all duration-200 group text-center`}>
+                      <input
+                        type="file"
+                        disabled={isUploading}
+                        accept="image/png, image/jpeg, image/webp, image/jpg"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleFileSelected(file);
+                        }}
+                        className="hidden"
+                      />
+                      <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary group-hover:scale-105 transition-transform mb-2">
+                        {isUploading ? (
+                          <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                        ) : (
+                          <ArrowUpTrayIcon className="h-5 w-5 stroke-[2.5]" />
+                        )}
+                      </div>
+                      <p className="text-xs font-bold text-slate-700">
+                        {isUploading ? "Uploading image to server..." : (
+                          <>Drag and drop or <span className="text-primary underline">browse file</span></>
+                        )}
+                      </p>
+                      <p className="text-[11px] text-slate-400 mt-1">PNG, JPG, or WEBP images (auto short-named)</p>
+                    </label>
+                  </div>
+                )}
+
+                {/* Live Preview & Delete / Clear Action */}
+                {curUrl && (
+                  <div className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-xs">
+                    <div className="flex items-center gap-3 min-w-0">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={curUrl}
+                        alt={field.label}
+                        className="h-12 w-12 rounded-xl object-cover border border-slate-200 bg-slate-50 shrink-0 shadow-2xs"
+                        onError={(e) => {
+                          (e.target as HTMLElement).style.display = "none";
+                        }}
+                      />
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-slate-800">Attached Image</span>
+                          <span className="rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.2 text-[10px] font-bold">Uploaded</span>
+                        </div>
+                        <p className="text-[11px] text-slate-500 truncate font-mono mt-0.5 max-w-sm sm:max-w-md">
+                          {curUrl}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Delete button: clears form and deletes physical file from server storage */}
+                    <button
+                      type="button"
+                      onClick={handleDeleteImage}
+                      title="Delete image from server"
+                      className="shrink-0 inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200/70 transition-all cursor-pointer shadow-2xs"
+                    >
+                      <TrashIcon className="h-3.5 w-3.5" />
+                      <span>Delete</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            );
+          })()
         ) : (
           <div>
             <input
-              type={field.type === "url" ? "text" : field.type}
+              type={field.type}
               id={field.name}
               name={field.name}
               required={field.required}
@@ -1431,21 +1787,6 @@ export default function ContentManager({
                   <option key={opt} value={opt} />
                 ))}
               </datalist>
-            )}
-            {field.type === "url" && Boolean(formData[field.name]) && (
-              <div className="mt-2.5 flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50/80 p-2.5 shadow-2xs">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={String(formData[field.name])}
-                  alt={field.label}
-                  className="h-12 w-12 rounded-lg object-cover border border-slate-200 bg-white shrink-0 shadow-2xs"
-                  onError={(e) => { (e.target as HTMLElement).style.display = "none"; }}
-                />
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs font-bold text-slate-800">Live Preview</p>
-                  <p className="text-[11px] text-slate-400 truncate font-mono">{String(formData[field.name])}</p>
-                </div>
-              </div>
             )}
           </div>
         )}
