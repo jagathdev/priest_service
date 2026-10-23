@@ -25,18 +25,29 @@ interface BannerSlide {
 
 const DEFAULT_IMAGE = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='400'%3E%3Crect width='800' height='400' fill='%23cccccc'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='24' fill='%23333333'%3ENo Image Available%3C/text%3E%3C/svg%3E`;
 
+const safeEncodeUrl = (url: string): string => {
+  if (!url || typeof url !== "string") return "";
+  const trimmed = url.trim();
+  if (!trimmed) return "";
+  try {
+    return encodeURI(decodeURI(trimmed));
+  } catch {
+    return encodeURI(trimmed);
+  }
+};
+
 export const get1024BannerImage = (img: string): string => {
   const lower = (img || "").toLowerCase();
   if (lower.includes("rameshwaram") || lower.includes("tarpanam")) {
-    return "/Service images/rameshwaram_puja.png";
+    return "/Service%20images/rameshwaram_puja.png";
   }
   if (lower.includes("shani")) {
-    return "/Service images/shani_puja.png";
+    return "/Service%20images/shani_puja.png";
   }
   if (lower.includes("nava") || lower.includes("navagraha")) {
-    return "/Service images/nava_puja.png";
+    return "/Service%20images/nava_puja.png";
   }
-  return img;
+  return safeEncodeUrl(img);
 };
 
 const mapBanners = (list: any[]): BannerSlide[] => {
@@ -50,6 +61,8 @@ const mapBanners = (list: any[]): BannerSlide[] => {
       !safeImage.startsWith("data:")
     ) {
       safeImage = DEFAULT_IMAGE;
+    } else if (safeImage) {
+      safeImage = safeEncodeUrl(safeImage);
     }
 
     return {

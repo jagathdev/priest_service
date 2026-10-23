@@ -89,7 +89,10 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           dangerouslySetInnerHTML={{
             __html: `
               if (window.location.search && window.location.search.length > 1) {
-                document.getElementById("meta-robots").setAttribute("content", "noindex, follow");
+                var metaEl = document.getElementById("meta-robots");
+                if (metaEl) {
+                  metaEl.setAttribute("content", "noindex, follow");
+                }
               }
             `,
           }}
@@ -174,9 +177,10 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
+                var isSuppressed = false;
                 function removeChatAndPushWidgets() {
                   try {
-                    // Hide chat and webpushr elements by selectors
+                    // Hide chat and webpushr elements by specific selectors
                     var nodes = document.querySelectorAll(
                       '#prime, #chatWidget, .chat-widget-container, .chat-popup-box, .chat-toggle-button, [class*="chat_fem"], [class*="chat-fem"], [class*="chatfem"], .ico-chat, .ico_chat, .ico_whatsapp, [id^="webpushr"], [class*="webpushr"], #webpushr-prompt-wrapper, .webpushr-prompt, .webpushr-bell'
                     );
@@ -190,38 +194,24 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
                       }
                     }
 
-                    // Scan floating/fixed prompt boxes containing the subscription text or greeting text
-                    var allElements = document.querySelectorAll('div, p, span, a, section');
-                    for (var i = 0; i < allElements.length; i++) {
-                      var el = allElements[i];
-                      if (!el) continue;
-                      var text = el.innerText || el.textContent || '';
-                      if (
-                        (text.indexOf('How can I help you') !== -1 && text.length < 120) ||
-                        (text.indexOf('Subscribe now') !== -1 && text.length < 200) ||
-                        (text.indexOf('timely updates on our events') !== -1 && text.length < 250)
-                      ) {
-                        var parent = el;
-                        for (var j = 0; j < 5; j++) {
-                          if (parent && parent.parentElement && parent !== document.body) {
-                            var style = window.getComputedStyle ? window.getComputedStyle(parent) : null;
-                            if (
-                              style &&
-                              (style.position === 'fixed' ||
-                              style.position === 'absolute' ||
-                              parent.id === 'prime' ||
-                              (parent.className && typeof parent.className === 'string' && (parent.className.indexOf('chat') !== -1 || parent.className.indexOf('webpushr') !== -1 || parent.className.indexOf('prompt') !== -1)))
-                            ) {
-                              if (parent.style) {
-                                parent.style.setProperty('display', 'none', 'important');
-                                parent.style.setProperty('visibility', 'hidden', 'important');
-                              }
-                              break;
-                            }
-                            parent = parent.parentElement;
-                          }
+                    // Only scan direct top-level children of body where 3rd party scripts inject floating overlays
+                    if (document.body && document.body.children) {
+                      var bodyChildren = document.body.children;
+                      for (var i = 0; i < bodyChildren.length; i++) {
+                        var child = bodyChildren[i];
+                        if (!child || child.id === '__next' || child.tagName === 'SCRIPT' || child.tagName === 'LINK' || child.tagName === 'MAIN') continue;
+                        var childId = (child.id || '').toLowerCase();
+                        var childClass = (typeof child.className === 'string' ? child.className : '').toLowerCase();
+                        if (
+                          childId.indexOf('prime') !== -1 ||
+                          childId.indexOf('chat') !== -1 ||
+                          childId.indexOf('webpushr') !== -1 ||
+                          childClass.indexOf('chat') !== -1 ||
+                          childClass.indexOf('webpushr') !== -1
+                        ) {
+                          child.style.setProperty('display', 'none', 'important');
+                          child.style.setProperty('visibility', 'hidden', 'important');
                         }
-                        if (el.style) el.style.setProperty('display', 'none', 'important');
                       }
                     }
                   } catch (e) {}
@@ -233,14 +223,21 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
                   } else {
                     removeChatAndPushWidgets();
                   }
-                  setInterval(removeChatAndPushWidgets, 1000);
-                  if (typeof MutationObserver !== 'undefined') {
-                    var observer = new MutationObserver(function() {
+
+                  // Throttled observer that runs at most once every 1500ms
+                  var scheduled = false;
+                  function scheduleRemoval() {
+                    if (scheduled) return;
+                    scheduled = true;
+                    setTimeout(function() {
+                      scheduled = false;
                       removeChatAndPushWidgets();
-                    });
-                    if (document.body) {
-                      observer.observe(document.body, { childList: true, subtree: true });
-                    }
+                    }, 1500);
+                  }
+
+                  if (typeof MutationObserver !== 'undefined' && document.body) {
+                    var observer = new MutationObserver(scheduleRemoval);
+                    observer.observe(document.body, { childList: true });
                   }
                 }
               })();

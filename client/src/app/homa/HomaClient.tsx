@@ -39,10 +39,20 @@ const getHomaImageUrl = (imageUrl?: string): string => {
   if (!imageUrl || typeof imageUrl !== "string") return "";
   const trimmed = imageUrl.trim();
   if (!trimmed) return "";
-  if (trimmed.startsWith("http://") || trimmed.startsWith("https://") || trimmed.startsWith("data:") || trimmed.startsWith("/")) {
-    return trimmed;
+  const safeEncode = (url: string) => {
+    try {
+      return encodeURI(decodeURI(url));
+    } catch {
+      return encodeURI(url);
+    }
+  };
+  if (trimmed.startsWith("http://") || trimmed.startsWith("https://") || trimmed.startsWith("data:")) {
+    return safeEncode(trimmed);
   }
-  return `/${trimmed}`;
+  if (trimmed.startsWith("/")) {
+    return safeEncode(trimmed);
+  }
+  return `/${safeEncode(trimmed)}`;
 };
 
 export default function HomaClient({ initialHomas }: { initialHomas?: Homa[] }) {

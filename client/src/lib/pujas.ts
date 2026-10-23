@@ -481,6 +481,26 @@ const parseStringArray = (val: unknown): string[] => {
   return [];
 };
 
+export const safeEncodeImageUrl = (url?: string): string => {
+  if (!url || typeof url !== "string") return "";
+  const trimmed = url.trim();
+  if (!trimmed) return "";
+  const safeEncode = (val: string) => {
+    try {
+      return encodeURI(decodeURI(val));
+    } catch {
+      return encodeURI(val);
+    }
+  };
+  if (trimmed.startsWith("http://") || trimmed.startsWith("https://") || trimmed.startsWith("data:")) {
+    return safeEncode(trimmed);
+  }
+  if (trimmed.startsWith("/")) {
+    return safeEncode(trimmed);
+  }
+  return `/${safeEncode(trimmed)}`;
+};
+
 export const normalizePuja = (puja: any, offeringsMap: Record<string, any> = {}) => {
   const record = puja as PujaRecord;
   const parsedAdditional = parseStringArray(record.additionalImages || (record as any).additionalImageUrls);
@@ -493,11 +513,11 @@ export const normalizePuja = (puja: any, offeringsMap: Record<string, any> = {})
     title: record.title || 'Untitled Puja',
     _id: record._id ? String(record._id) : slugify(record.title || 'Untitled Puja'),
     buttonText: record.buttonText || 'Participate',
-    imageUrl: typeof record.imageUrl === 'string' ? record.imageUrl.trim() : '',
-    additionalImages: parsedAdditional.length > 0 ? parsedAdditional : undefined,
-    gallery: parsedGallery.length > 0 ? parsedGallery : undefined,
+    imageUrl: safeEncodeImageUrl(typeof record.imageUrl === 'string' ? record.imageUrl.trim() : ''),
+    additionalImages: parsedAdditional.length > 0 ? parsedAdditional.map(safeEncodeImageUrl) : undefined,
+    gallery: parsedGallery.length > 0 ? parsedGallery.map(safeEncodeImageUrl) : undefined,
     trustBadges: parsedTrustBadges.length > 0 ? parsedTrustBadges : undefined,
-    templeImage: getStringField(record, 'templeImage') || (record as any).templeImageUrl || (record.details as any)?.templeImage,
+    templeImage: safeEncodeImageUrl(getStringField(record, 'templeImage') || (record as any).templeImageUrl || (record.details as any)?.templeImage),
     slug: record.slug || slugify(record.title || 'Untitled Puja'),
     eventDateTime: getStringField(record, 'eventDateTime') || undefined,
     showTimer: record.showTimer !== undefined ? Boolean(record.showTimer) : true,

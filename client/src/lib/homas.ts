@@ -462,6 +462,26 @@ const parseStringArray = (val: unknown): string[] => {
   return [];
 };
 
+export const safeEncodeImageUrl = (url?: string): string => {
+  if (!url || typeof url !== "string") return "";
+  const trimmed = url.trim();
+  if (!trimmed) return "";
+  const safeEncode = (val: string) => {
+    try {
+      return encodeURI(decodeURI(val));
+    } catch {
+      return encodeURI(val);
+    }
+  };
+  if (trimmed.startsWith("http://") || trimmed.startsWith("https://") || trimmed.startsWith("data:")) {
+    return safeEncode(trimmed);
+  }
+  if (trimmed.startsWith("/")) {
+    return safeEncode(trimmed);
+  }
+  return `/${safeEncode(trimmed)}`;
+};
+
 export const normalizePuja = (homa: any, offeringsMap: Record<string, any> = {}) => {
   const record = homa as PujaRecord;
   const parsedAdditional = parseStringArray(record.additionalImages || (record as any).additionalImageUrls);
@@ -474,9 +494,9 @@ export const normalizePuja = (homa: any, offeringsMap: Record<string, any> = {})
     title: record.title || 'Untitled homa',
     _id: record._id ? String(record._id) : slugify(record.title || 'Untitled homa'),
     buttonText: record.buttonText || 'Participate',
-    imageUrl: typeof record.imageUrl === 'string' ? record.imageUrl.trim() : '',
-    additionalImages: parsedAdditional.length > 0 ? parsedAdditional : undefined,
-    gallery: parsedGallery.length > 0 ? parsedGallery : undefined,
+    imageUrl: safeEncodeImageUrl(typeof record.imageUrl === 'string' ? record.imageUrl.trim() : ''),
+    additionalImages: parsedAdditional.length > 0 ? parsedAdditional.map(safeEncodeImageUrl) : undefined,
+    gallery: parsedGallery.length > 0 ? parsedGallery.map(safeEncodeImageUrl) : undefined,
     trustBadges: parsedTrustBadges.length > 0 ? parsedTrustBadges : undefined,
     slug: record.slug || slugify(record.title || 'Untitled homa'),
     eventDateTime: getStringField(record, 'eventDateTime') || undefined,
