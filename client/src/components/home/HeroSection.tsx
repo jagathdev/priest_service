@@ -355,19 +355,22 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
         {/* ── Right Content (Hero Banner Card) ── order-1 on mobile, order-2 on desktop */}
         <div className="order-1 lg:order-2 w-full max-w-full lg:w-[480px] xl:w-[670px] 2xl:w-[730px] shrink-0 flex flex-col items-center relative">
 
-          {/* Smooth Forward-Only Carousel Viewport with explicit fallback height for iOS 11-14 */}
-          <div className="w-full relative rounded-2xl min-[375px]:rounded-3xl overflow-hidden shadow-2xl border border-stone-200/80 bg-stone-100 aspect-[4/3] min-h-[250px] sm:min-h-[380px] sm:aspect-auto sm:h-[400px] md:h-[460px] lg:h-[320px] xl:h-[500px] shrink-0">
+          {/* Smooth Forward-Only Carousel Viewport with explicit fallback height and iOS Safari overflow fix */}
+          <div className="w-full relative rounded-2xl min-[375px]:rounded-3xl overflow-hidden shadow-2xl border border-stone-200/80 bg-stone-100 aspect-[4/3] min-h-[250px] sm:min-h-[380px] sm:aspect-auto sm:h-[400px] md:h-[460px] lg:h-[320px] xl:h-[500px] shrink-0 ios-fix-overflow">
             {/* Sliding Track (Continues sliding forward to the left) */}
             <div
               className={`flex w-full h-full ${isTransitioning ? "transition-transform duration-700 ease-out" : ""}`}
-              style={{ transform: `translateX(-${activeSlide * 100}%)` }}
+              style={{
+                transform: `translateX(-${activeSlide * 100}%)`,
+                WebkitTransform: `translateX(-${activeSlide * 100}%)`,
+              }}
               onTransitionEnd={handleTransitionEnd}
             >
               {displaySlides.map((slide, idx) => {
                 const img1024 = get1024BannerImage(slide.image);
                 const useSource = !img1024.startsWith("data:");
                 return (
-                  <div key={`${slide.id || "slide"}-${idx}`} className="w-full h-full shrink-0 relative">
+                  <div key={`${slide.id || "slide"}-${idx}`} className="w-full h-full min-w-full shrink-0 relative overflow-hidden">
                     <Link
                       href={slide.ctaLink}
                       className="w-full h-full block relative cursor-pointer group"
@@ -386,13 +389,20 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
                         <img
                           src={slide.image}
                           alt={slide.title}
+                          loading={idx === 0 ? "eager" : "lazy"}
+                          decoding="async"
                           className="w-full h-full object-cover object-center relative z-10 drop-shadow-md group-hover:scale-[1.02] transition-transform duration-500"
+                          style={{
+                            minHeight: "100%",
+                            minWidth: "100%",
+                          }}
                         />
                       </picture>
                     </Link>
                   </div>
                 );
               })}
+            </div>
           </div>
 
         </div>

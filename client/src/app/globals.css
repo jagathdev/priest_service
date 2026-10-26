@@ -34,17 +34,23 @@ input[type="submit"] {
   cursor: pointer;
 }
 
-/* iOS Safari & WebKit image rendering consistency: prevent image collapsing or blurry stretch */
+/* iOS Safari & WebKit image rendering consistency: prevent image collapsing or clipping artifacts */
 img,
 video {
   max-width: 100%;
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
 }
 
 /* Ensure absolute fill images inside containers are never overridden with height: auto */
 img:not([class*="h-full"]):not([class*="absolute"]) {
   height: auto;
+}
+
+/* Fix iOS 11-15 Safari WebKit bug where overflow: hidden with rounded corners inside flex/transforms clips or blanks absolute child elements (including <picture> and <img>) */
+.ios-fix-overflow {
+  -webkit-mask-image: -webkit-radial-gradient(white, black);
+  mask-image: radial-gradient(white, black);
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
 }
 
 body {
