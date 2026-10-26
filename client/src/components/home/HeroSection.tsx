@@ -354,45 +354,39 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
         {/* ── Right Content (Hero Banner Card) ── order-1 on mobile, order-2 on desktop */}
         <div className="order-1 lg:order-2 w-full max-w-full lg:w-[480px] xl:w-[670px] 2xl:w-[730px] shrink-0 flex flex-col items-center relative">
 
-          {/* Smooth Forward-Only Carousel Viewport */}
+          {/* Smooth Fade Carousel Viewport */}
           <div className="relative w-full aspect-[4/3] min-h-[250px] sm:min-h-[380px] sm:aspect-auto sm:h-[400px] md:h-[460px] lg:h-[320px] xl:h-[500px] rounded-2xl min-[375px]:rounded-3xl overflow-hidden shadow-2xl border border-stone-200/80 bg-stone-100 shrink-0">
-            {/* Sliding Track (Continues sliding forward to the left) */}
-            <div
-              className={`flex w-full h-full ${isTransitioning ? "transition-transform duration-700 ease-out" : ""}`}
-              style={{
-                transform: `translateX(-${activeSlide * 100}%)`,
-                WebkitTransform: `translateX(-${activeSlide * 100}%)`,
-              }}
-              onTransitionEnd={handleTransitionEnd}
-            >
-              {displaySlides.map((slide, idx) => {
-                const img1024 = get1024BannerImage(slide.image);
-                const useSource = !img1024.startsWith("data:");
-                return (
-                  <div key={`${slide.id || "slide"}-${idx}`} className="w-full h-full min-w-full shrink-0 relative overflow-hidden">
-                    <Link
-                      href={slide.ctaLink}
-                      className="w-full h-full block relative cursor-pointer group"
-                    >
-                      {/* Full-bleed Banner Image with 1024 Specific Media Query */}
-                      <picture className="absolute inset-0 w-full h-full block">
-                        {useSource && (
-                          <source
-                            media="(min-width: 1024px) and (max-width: 1279px)"
-                            srcSet={img1024}
-                          />
-                        )}
-                        <img
-                          src={slide.image}
-                          alt={slide.title}
-                          className="w-full h-full object-cover object-center"
+            {bannerSlides.map((slide, idx) => {
+              const isActive = idx === currentSafeSlideIndex;
+              const img1024 = get1024BannerImage(slide.image);
+              const useSource = !img1024.startsWith("data:");
+              return (
+                <div
+                  key={`${slide.id || "slide"}-${idx}`}
+                  className={`absolute inset-0 w-full h-full transition-opacity duration-700 ease-in-out ${isActive ? "opacity-100 z-10 pointer-events-auto" : "opacity-0 z-0 pointer-events-none"}`}
+                >
+                  <Link
+                    href={slide.ctaLink}
+                    className="w-full h-full block relative cursor-pointer group"
+                  >
+                    {/* Full-bleed Banner Image with 1024 Specific Media Query */}
+                    <picture className="absolute inset-0 w-full h-full block">
+                      {useSource && (
+                        <source
+                          media="(min-width: 1024px) and (max-width: 1279px)"
+                          srcSet={img1024}
                         />
-                      </picture>
-                    </Link>
-                  </div>
-                );
-              })}
-            </div>
+                      )}
+                      <img
+                        src={slide.image}
+                        alt={slide.title}
+                        className="w-full h-full object-cover object-center"
+                      />
+                    </picture>
+                  </Link>
+                </div>
+              );
+            })}
           </div>
 
           {/* Slider Dots Navigation inside Hero - Centered directly below the image */}
