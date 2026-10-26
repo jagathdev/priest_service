@@ -1001,8 +1001,12 @@ export default function ContentManager({
                           onChange={async (e) => {
                             const file = e.target.files?.[0];
                             if (file) {
+                              const oldUrl = val;
                               const uploadedUrl = await uploadImageFile(file, itemKey, `${field.name}-${idx + 1}`);
                               if (uploadedUrl) {
+                                if (oldUrl && oldUrl !== uploadedUrl) {
+                                  deleteImageFile(oldUrl);
+                                }
                                 handleArrayChange(field.name, idx, uploadedUrl);
                               }
                             }
@@ -1623,8 +1627,13 @@ export default function ContentManager({
             const uploadError = uploadErrors[field.name] || null;
 
             const handleFileSelected = async (file: File) => {
+              const oldUrl = curUrl;
               const url = await uploadImageFile(file, field.name, field.name);
               if (url) {
+                // If replacing an existing uploaded image, clean up the old file from server storage
+                if (oldUrl && oldUrl !== url) {
+                  deleteImageFile(oldUrl);
+                }
                 setFormData((prev: any) => ({
                   ...prev,
                   [field.name]: url,

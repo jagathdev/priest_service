@@ -22,7 +22,7 @@ export const uploadImage = async (req, res) => {
       return res.status(400).json({ success: false, message: "No image file provided." });
     }
     const filename = req.file.filename;
-    const url = `/images/${filename}`;
+    const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/images/${filename}`;
 
     // Store in MongoDB Media collection
     const mediaDoc = await Media.create({

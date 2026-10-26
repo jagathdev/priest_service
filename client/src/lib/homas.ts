@@ -476,10 +476,11 @@ export const safeEncodeImageUrl = (url?: string): string => {
   if (trimmed.startsWith("http://") || trimmed.startsWith("https://") || trimmed.startsWith("data:")) {
     return safeEncode(trimmed);
   }
-  if (trimmed.startsWith("/")) {
-    return safeEncode(trimmed);
-  }
-  return `/${safeEncode(trimmed)}`;
+
+  // Prepend backend URL dynamically
+  const backendBase = (process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com").replace(/\/+$/, "");
+  const cleanPath = trimmed.startsWith("/") ? trimmed : `/${trimmed}`;
+  return `${backendBase}${safeEncode(cleanPath)}`;
 };
 
 export const normalizePuja = (homa: any, offeringsMap: Record<string, any> = {}) => {
