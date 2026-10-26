@@ -98,7 +98,7 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
   const minSwipeDistance = 50;
 
-  const [isTransitioning, setIsTransitioning] = useState(true);
+  const [_isTransitioning, setIsTransitioning] = useState(true);
 
   const totalSlides = bannerSlides.length;
 
@@ -131,15 +131,6 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
       nextSlide();
     } else if (distance < -minSwipeDistance) {
       prevSlide();
-    }
-  };
-
-  // When activeSlide reaches the cloned slide (index === totalSlides),
-  // instantly jump back to 0 without animation so it can continue forward infinitely
-  const handleTransitionEnd = () => {
-    if (activeSlide >= totalSlides) {
-      setIsTransitioning(false);
-      setActiveSlide(0);
     }
   };
 
@@ -221,14 +212,11 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
   }
 
   if (bannerSlides.length === 0) return null;
-
-  const displaySlides = bannerSlides.length > 1 ? [...bannerSlides, bannerSlides[0]] : bannerSlides;
   const currentSafeSlideIndex = bannerSlides.length > 0 ? activeSlide % bannerSlides.length : 0;
   const current = bannerSlides[currentSafeSlideIndex];
 
   return (
     <section className="relative w-full max-w-[1350px] mx-auto px-3 min-[360px]:px-4 sm:px-6 md:px-8 lg:px-10 pt-2 sm:pt-3 lg:pt-4 pb-8 md:pb-12 xl:py-12 bg-white my-0 sm:my-1 xl:my-2 overflow-hidden">
-
 
       {/* Background Circular Mandala Watermark inside Hero */}
       <div
@@ -355,161 +343,153 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
         {/* ── Right Content (Hero Banner Card) ── order-1 on mobile, order-2 on desktop */}
         <div className="order-1 lg:order-2 w-full max-w-full lg:w-[480px] xl:w-[670px] 2xl:w-[730px] shrink-0 flex flex-col items-center relative">
 
-          {/* Smooth Forward-Only Carousel Viewport with explicit fallback height for iOS 11-14 */}
-          <div className="w-full relative rounded-2xl min-[375px]:rounded-3xl overflow-hidden shadow-2xl border border-stone-200/80 bg-stone-100 aspect-[4/3] min-h-[250px] sm:min-h-[380px] sm:aspect-auto sm:h-[400px] md:h-[460px] lg:h-[320px] xl:h-[500px] shrink-0">
-            {/* Sliding Track (Continues sliding forward to the left) */}
-            <div
-              className={`flex w-full h-full ${isTransitioning ? "transition-transform duration-700 ease-out" : ""}`}
-              style={{ transform: `translateX(-${activeSlide * 100}%)` }}
-              onTransitionEnd={handleTransitionEnd}
-            >
-              {displaySlides.map((slide, idx) => {
-                const img1024 = get1024BannerImage(slide.image);
-                const useSource = !img1024.startsWith("data:");
-                return (
-                  <div key={`${slide.id || "slide"}-${idx}`} className="w-full h-full shrink-0 relative">
-                    <Link
-                      href={slide.ctaLink}
-                      className="w-full h-full block relative cursor-pointer group"
-                    >
-                      {/* Background (warm natural tone fallback) */}
-                      <div className="absolute inset-0 w-full h-full bg-gradient-to-b from-stone-100 to-stone-200" />
-
-                      {/* Full-bleed Banner Image with 1024 Specific Media Query */}
-                      <picture className="absolute inset-0 w-full h-full block">
-                        {useSource && (
-                          <source
-                            media="(min-width: 1024px) and (max-width: 1279px)"
-                            srcSet={img1024}
-                          />
-                        )}
-                        <img
-                          src={slide.image}
-                          alt={slide.title}
-                          className="w-full h-full object-cover object-center relative z-10 drop-shadow-md group-hover:scale-[1.02] transition-transform duration-500"
+          {/* Smooth Fade Carousel Viewport */}
+          <div className="relative w-full aspect-[4/3] min-h-[250px] sm:min-h-[380px] sm:aspect-auto sm:h-[400px] md:h-[460px] lg:h-[320px] xl:h-[500px] rounded-2xl min-[375px]:rounded-3xl overflow-hidden shadow-2xl border border-stone-200/80 bg-stone-100 shrink-0">
+            {bannerSlides.map((slide, idx) => {
+              const isActive = idx === currentSafeSlideIndex;
+              const img1024 = get1024BannerImage(slide.image);
+              const useSource = !img1024.startsWith("data:");
+              return (
+                <div
+                  key={`${slide.id || "slide"}-${idx}`}
+                  className={`absolute inset-0 w-full h-full transition-opacity duration-700 ease-in-out ${isActive ? "opacity-100 z-10 pointer-events-auto" : "opacity-0 z-0 pointer-events-none"}`}
+                >
+                  <Link
+                    href={slide.ctaLink}
+                    className="w-full h-full block relative cursor-pointer group"
+                  >
+                    {/* Full-bleed Banner Image with 1024 Specific Media Query */}
+                    <picture className="absolute inset-0 w-full h-full block">
+                      {useSource && (
+                        <source
+                          media="(min-width: 1024px) and (max-width: 1279px)"
+                          srcSet={img1024}
                         />
-                      </picture>
-                    </Link>
-                  </div>
-                );
-              })}
+                      )}
+                      <img
+                        src={slide.image}
+                        alt={slide.title}
+                        className="w-full h-full object-cover object-center"
+                      />
+                    </picture>
+                  </Link>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Slider Dots Navigation inside Hero - Centered directly below the image */}
+          <div className="flex items-center justify-center gap-2.5 mt-4 sm:mt-5">
+            {bannerSlides.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => {
+                  setIsTransitioning(true);
+                  setActiveSlide(index);
+                }}
+                aria-label={`Go to slide ${index + 1}`}
+                className={`transition-all duration-300 rounded-full cursor-pointer ${index === currentSafeSlideIndex
+                  ? "w-7 h-2 bg-[#14395C]"
+                  : "w-2 h-2 bg-stone-300 hover:bg-stone-400"
+                  }`}
+              />
+            ))}
           </div>
 
         </div>
 
-        {/* Slider Dots Navigation inside Hero */}
-        <div className="flex items-center justify-center gap-2.5 mt-4 sm:mt-5">
-          {bannerSlides.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => {
-                setIsTransitioning(true);
-                setActiveSlide(index);
-              }}
-              aria-label={`Go to slide ${index + 1}`}
-              className={`transition-all duration-300 rounded-full cursor-pointer ${index === currentSafeSlideIndex
-                ? "w-7 h-2 bg-[#14395C]"
-                : "w-2 h-2 bg-stone-300 hover:bg-stone-400"
-                }`}
-            />
-          ))}
-        </div>
-
       </div>
 
-    </div>
-
-      {/* ── Bottom Features Trust Strip (Marquee below 1440px screen size) ── */ }
-  <div className="relative z-10 mt-8 md:mt-10 border border-stone-200/90 bg-white/95 backdrop-blur-sm rounded-2xl p-3.5 sm:p-4.5 shadow-sm overflow-hidden">
-    {/* Continuous Marquee on all screens below 1440px */}
-    <div className="badge-marquee-below-1440 min-[1440px]:hidden overflow-hidden w-full relative">
-      <div className="flex animate-marquee">
-        <div className="flex shrink-0 items-center gap-8 sm:gap-12 pr-8 sm:pr-12">
-          {[
-            { color: "text-success", icon: <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z" />, text: "Puja Video Delivered Within 48 Hours" },
-            { color: "text-[#0084ff]", icon: <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" />, text: "Verified & Experienced Purohits" },
-            { color: "text-accent", icon: <path d="M12 2L9 6H15L12 2ZM8 7L6 11H18L16 7H8ZM5 12L3 17H21L19 12H5ZM2 18V21H22V18H2Z" />, text: "Pujas Performed in Sacred Temples" },
-            { color: "text-[#d97706]", icon: <path d="M12 2c-.55 0-1 .45-1 1v1.17C8.61 4.72 7 6.67 7 9c0 2.21 1.79 4 4 4v1H8c-.55 0-1 .45-1 1v5c0 .55.45 1 1 1h8c.55 0 1-.45 1-1v-5c0-.55-.45-1-1-1h-3v-1c2.21 0 4-1.79 4-4 0-2.33-1.61-4.28-4-4.83V3c0-.55-.45-1-1-1z" />, text: "100% Authentic Vedic Rituals" }
-          ].map((item, idx) => (
-            <div key={`h1-${idx}`} className="flex items-center gap-3 shrink-0 py-1">
-              <div className={`${item.color} shrink-0`}>
-                <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
-                  {item.icon}
-                </svg>
-              </div>
-              <span className="text-xs sm:text-sm font-bold text-stone-800 whitespace-nowrap">
-                {item.text}
-              </span>
+      {/* ── Bottom Features Trust Strip (Marquee below 1440px screen size) ── */}
+      <div className="relative z-10 mt-8 md:mt-10 border border-stone-200/90 bg-white/95 backdrop-blur-sm rounded-2xl p-3.5 sm:p-4.5 shadow-sm overflow-hidden">
+        {/* Continuous Marquee on all screens below 1440px */}
+        <div className="badge-marquee-below-1440 min-[1440px]:hidden overflow-hidden w-full relative">
+          <div className="flex animate-marquee">
+            <div className="flex shrink-0 items-center gap-8 sm:gap-12 pr-8 sm:pr-12">
+              {[
+                { color: "text-success", icon: <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z" />, text: "Puja Video Delivered Within 48 Hours" },
+                { color: "text-[#0084ff]", icon: <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" />, text: "Verified & Experienced Purohits" },
+                { color: "text-accent", icon: <path d="M12 2L9 6H15L12 2ZM8 7L6 11H18L16 7H8ZM5 12L3 17H21L19 12H5ZM2 18V21H22V18H2Z" />, text: "Pujas Performed in Sacred Temples" },
+                { color: "text-[#d97706]", icon: <path d="M12 2c-.55 0-1 .45-1 1v1.17C8.61 4.72 7 6.67 7 9c0 2.21 1.79 4 4 4v1H8c-.55 0-1 .45-1 1v5c0 .55.45 1 1 1h8c.55 0 1-.45 1-1v-5c0-.55-.45-1-1-1h-3v-1c2.21 0 4-1.79 4-4 0-2.33-1.61-4.28-4-4.83V3c0-.55-.45-1-1-1z" />, text: "100% Authentic Vedic Rituals" }
+              ].map((item, idx) => (
+                <div key={`h1-${idx}`} className="flex items-center gap-3 shrink-0 py-1">
+                  <div className={`${item.color} shrink-0`}>
+                    <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                      {item.icon}
+                    </svg>
+                  </div>
+                  <span className="text-xs sm:text-sm font-bold text-stone-800 whitespace-nowrap">
+                    {item.text}
+                  </span>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-        <div className="flex shrink-0 items-center gap-8 sm:gap-12 pr-8 sm:pr-12" aria-hidden="true">
-          {[
-            { color: "text-success", icon: <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z" />, text: "Puja Video Delivered Within 48 Hours" },
-            { color: "text-[#0084ff]", icon: <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" />, text: "Verified & Experienced Purohits" },
-            { color: "text-accent", icon: <path d="M12 2L9 6H15L12 2ZM8 7L6 11H18L16 7H8ZM5 12L3 17H21L19 12H5ZM2 18V21H22V18H2Z" />, text: "Pujas Performed in Sacred Temples" },
-            { color: "text-[#d97706]", icon: <path d="M12 2c-.55 0-1 .45-1 1v1.17C8.61 4.72 7 6.67 7 9c0 2.21 1.79 4 4 4v1H8c-.55 0-1 .45-1 1v5c0 .55.45 1 1 1h8c.55 0 1-.45 1-1v-5c0-.55-.45-1-1-1h-3v-1c2.21 0 4-1.79 4-4 0-2.33-1.61-4.28-4-4.83V3c0-.55-.45-1-1-1z" />, text: "100% Authentic Vedic Rituals" }
-          ].map((item, idx) => (
-            <div key={`h2-${idx}`} className="flex items-center gap-3 shrink-0 py-1">
-              <div className={`${item.color} shrink-0`}>
-                <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
-                  {item.icon}
-                </svg>
-              </div>
-              <span className="text-xs sm:text-sm font-bold text-stone-800 whitespace-nowrap">
-                {item.text}
-              </span>
+            <div className="flex shrink-0 items-center gap-8 sm:gap-12 pr-8 sm:pr-12" aria-hidden="true">
+              {[
+                { color: "text-success", icon: <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z" />, text: "Puja Video Delivered Within 48 Hours" },
+                { color: "text-[#0084ff]", icon: <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" />, text: "Verified & Experienced Purohits" },
+                { color: "text-accent", icon: <path d="M12 2L9 6H15L12 2ZM8 7L6 11H18L16 7H8ZM5 12L3 17H21L19 12H5ZM2 18V21H22V18H2Z" />, text: "Pujas Performed in Sacred Temples" },
+                { color: "text-[#d97706]", icon: <path d="M12 2c-.55 0-1 .45-1 1v1.17C8.61 4.72 7 6.67 7 9c0 2.21 1.79 4 4 4v1H8c-.55 0-1 .45-1 1v5c0 .55.45 1 1 1h8c.55 0 1-.45 1-1v-5c0-.55-.45-1-1-1h-3v-1c2.21 0 4-1.79 4-4 0-2.33-1.61-4.28-4-4.83V3c0-.55-.45-1-1-1z" />, text: "100% Authentic Vedic Rituals" }
+              ].map((item, idx) => (
+                <div key={`h2-${idx}`} className="flex items-center gap-3 shrink-0 py-1">
+                  <div className={`${item.color} shrink-0`}>
+                    <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                      {item.icon}
+                    </svg>
+                  </div>
+                  <span className="text-xs sm:text-sm font-bold text-stone-800 whitespace-nowrap">
+                    {item.text}
+                  </span>
+                </div>
+              ))}
             </div>
-          ))}
+          </div>
         </div>
-      </div>
-    </div>
 
-    {/* Original Grid on Desktop screens (>= 1440px) */}
-    <div className="badge-static-1440-grid hidden min-[1440px]:grid min-[1440px]:grid-cols-4 items-center justify-between gap-2 divide-x divide-stone-200">
-      <div className="flex items-center justify-start gap-3 px-4 py-0">
-        <div className="text-[#14395C] shrink-0">
-          <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
-            <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z" />
-          </svg>
+        {/* Original Grid on Desktop screens (>= 1440px) */}
+        <div className="badge-static-1440-grid hidden min-[1440px]:grid min-[1440px]:grid-cols-4 items-center justify-between gap-2 divide-x divide-stone-200">
+          <div className="flex items-center justify-start gap-3 px-4 py-0">
+            <div className="text-[#14395C] shrink-0">
+              <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z" />
+              </svg>
+            </div>
+            <span className="text-sm font-bold text-stone-800 leading-tight">
+              Puja Video Delivered Within 48 Hours
+            </span>
+          </div>
+          <div className="flex items-center justify-start gap-3 px-4 py-0">
+            <div className="text-[#0084ff] shrink-0">
+              <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" />
+              </svg>
+            </div>
+            <span className="text-sm font-bold text-stone-800 leading-tight">
+              Verified & Experienced Purohits
+            </span>
+          </div>
+          <div className="flex items-center justify-start gap-3 px-4 py-0">
+            <div className="text-accent shrink-0">
+              <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                <path d="M12 2L9 6H15L12 2ZM8 7L6 11H18L16 7H8ZM5 12L3 17H21L19 12H5ZM2 18V21H22V18H2Z" />
+              </svg>
+            </div>
+            <span className="text-sm font-bold text-stone-800 leading-tight">
+              Pujas Performed in Sacred Temples
+            </span>
+          </div>
+          <div className="flex items-center justify-start gap-3 px-4 py-0">
+            <div className="text-[#d97706] shrink-0">
+              <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                <path d="M12 2c-.55 0-1 .45-1 1v1.17C8.61 4.72 7 6.67 7 9c0 2.21 1.79 4 4 4v1H8c-.55 0-1 .45-1 1v5c0 .55.45 1 1 1h8c.55 0 1-.45 1-1v-5c0-.55-.45-1-1-1h-3v-1c2.21 0 4-1.79 4-4 0-2.33-1.61-4.28-4-4.83V3c0-.55-.45-1-1-1z" />
+              </svg>
+            </div>
+            <span className="text-sm font-bold text-stone-800 leading-tight">
+              100% Authentic Vedic Rituals
+            </span>
+          </div>
         </div>
-        <span className="text-sm font-bold text-stone-800 leading-tight">
-          Puja Video Delivered Within 48 Hours
-        </span>
       </div>
-      <div className="flex items-center justify-start gap-3 px-4 py-0">
-        <div className="text-[#0084ff] shrink-0">
-          <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
-            <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" />
-          </svg>
-        </div>
-        <span className="text-sm font-bold text-stone-800 leading-tight">
-          Verified & Experienced Purohits
-        </span>
-      </div>
-      <div className="flex items-center justify-start gap-3 px-4 py-0">
-        <div className="text-accent shrink-0">
-          <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
-            <path d="M12 2L9 6H15L12 2ZM8 7L6 11H18L16 7H8ZM5 12L3 17H21L19 12H5ZM2 18V21H22V18H2Z" />
-          </svg>
-        </div>
-        <span className="text-sm font-bold text-stone-800 leading-tight">
-          Pujas Performed in Sacred Temples
-        </span>
-      </div>
-      <div className="flex items-center justify-start gap-3 px-4 py-0">
-        <div className="text-[#d97706] shrink-0">
-          <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
-            <path d="M12 2c-.55 0-1 .45-1 1v1.17C8.61 4.72 7 6.67 7 9c0 2.21 1.79 4 4 4v1H8c-.55 0-1 .45-1 1v5c0 .55.45 1 1 1h8c.55 0 1-.45 1-1v-5c0-.55-.45-1-1-1h-3v-1c2.21 0 4-1.79 4-4 0-2.33-1.61-4.28-4-4.83V3c0-.55-.45-1-1-1z" />
-          </svg>
-        </div>
-        <span className="text-sm font-bold text-stone-800 leading-tight">
-          100% Authentic Vedic Rituals
-        </span>
-      </div>
-    </div>
-  </div>
-
     </section >
   );
 }
