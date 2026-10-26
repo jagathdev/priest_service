@@ -427,99 +427,96 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
 
       </div>
 
-    </div>
-
-      {/* ── Bottom Features Trust Strip (Marquee below 1440px screen size) ── */ }
-  <div className="relative z-10 mt-8 md:mt-10 border border-stone-200/90 bg-white/95 backdrop-blur-sm rounded-2xl p-3.5 sm:p-4.5 shadow-sm overflow-hidden">
-    {/* Continuous Marquee on all screens below 1440px */}
-    <div className="badge-marquee-below-1440 min-[1440px]:hidden overflow-hidden w-full relative">
-      <div className="flex animate-marquee">
-        <div className="flex shrink-0 items-center gap-8 sm:gap-12 pr-8 sm:pr-12">
-          {[
-            { color: "text-success", icon: <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z" />, text: "Puja Video Delivered Within 48 Hours" },
-            { color: "text-[#0084ff]", icon: <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" />, text: "Verified & Experienced Purohits" },
-            { color: "text-accent", icon: <path d="M12 2L9 6H15L12 2ZM8 7L6 11H18L16 7H8ZM5 12L3 17H21L19 12H5ZM2 18V21H22V18H2Z" />, text: "Pujas Performed in Sacred Temples" },
-            { color: "text-[#d97706]", icon: <path d="M12 2c-.55 0-1 .45-1 1v1.17C8.61 4.72 7 6.67 7 9c0 2.21 1.79 4 4 4v1H8c-.55 0-1 .45-1 1v5c0 .55.45 1 1 1h8c.55 0 1-.45 1-1v-5c0-.55-.45-1-1-1h-3v-1c2.21 0 4-1.79 4-4 0-2.33-1.61-4.28-4-4.83V3c0-.55-.45-1-1-1z" />, text: "100% Authentic Vedic Rituals" }
-          ].map((item, idx) => (
-            <div key={`h1-${idx}`} className="flex items-center gap-3 shrink-0 py-1">
-              <div className={`${item.color} shrink-0`}>
-                <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
-                  {item.icon}
-                </svg>
-              </div>
-              <span className="text-xs sm:text-sm font-bold text-stone-800 whitespace-nowrap">
-                {item.text}
-              </span>
+      {/* ── Bottom Features Trust Strip (Marquee below 1440px screen size) ── */}
+      <div className="relative z-10 mt-8 md:mt-10 border border-stone-200/90 bg-white/95 backdrop-blur-sm rounded-2xl p-3.5 sm:p-4.5 shadow-sm overflow-hidden">
+        {/* Continuous Marquee on all screens below 1440px */}
+        <div className="badge-marquee-below-1440 min-[1440px]:hidden overflow-hidden w-full relative">
+          <div className="flex animate-marquee">
+            <div className="flex shrink-0 items-center gap-8 sm:gap-12 pr-8 sm:pr-12">
+              {[
+                { color: "text-success", icon: <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z" />, text: "Puja Video Delivered Within 48 Hours" },
+                { color: "text-[#0084ff]", icon: <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" />, text: "Verified & Experienced Purohits" },
+                { color: "text-accent", icon: <path d="M12 2L9 6H15L12 2ZM8 7L6 11H18L16 7H8ZM5 12L3 17H21L19 12H5ZM2 18V21H22V18H2Z" />, text: "Pujas Performed in Sacred Temples" },
+                { color: "text-[#d97706]", icon: <path d="M12 2c-.55 0-1 .45-1 1v1.17C8.61 4.72 7 6.67 7 9c0 2.21 1.79 4 4 4v1H8c-.55 0-1 .45-1 1v5c0 .55.45 1 1 1h8c.55 0 1-.45 1-1v-5c0-.55-.45-1-1-1h-3v-1c2.21 0 4-1.79 4-4 0-2.33-1.61-4.28-4-4.83V3c0-.55-.45-1-1-1z" />, text: "100% Authentic Vedic Rituals" }
+              ].map((item, idx) => (
+                <div key={`h1-${idx}`} className="flex items-center gap-3 shrink-0 py-1">
+                  <div className={`${item.color} shrink-0`}>
+                    <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                      {item.icon}
+                    </svg>
+                  </div>
+                  <span className="text-xs sm:text-sm font-bold text-stone-800 whitespace-nowrap">
+                    {item.text}
+                  </span>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-        <div className="flex shrink-0 items-center gap-8 sm:gap-12 pr-8 sm:pr-12" aria-hidden="true">
-          {[
-            { color: "text-success", icon: <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z" />, text: "Puja Video Delivered Within 48 Hours" },
-            { color: "text-[#0084ff]", icon: <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" />, text: "Verified & Experienced Purohits" },
-            { color: "text-accent", icon: <path d="M12 2L9 6H15L12 2ZM8 7L6 11H18L16 7H8ZM5 12L3 17H21L19 12H5ZM2 18V21H22V18H2Z" />, text: "Pujas Performed in Sacred Temples" },
-            { color: "text-[#d97706]", icon: <path d="M12 2c-.55 0-1 .45-1 1v1.17C8.61 4.72 7 6.67 7 9c0 2.21 1.79 4 4 4v1H8c-.55 0-1 .45-1 1v5c0 .55.45 1 1 1h8c.55 0 1-.45 1-1v-5c0-.55-.45-1-1-1h-3v-1c2.21 0 4-1.79 4-4 0-2.33-1.61-4.28-4-4.83V3c0-.55-.45-1-1-1z" />, text: "100% Authentic Vedic Rituals" }
-          ].map((item, idx) => (
-            <div key={`h2-${idx}`} className="flex items-center gap-3 shrink-0 py-1">
-              <div className={`${item.color} shrink-0`}>
-                <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
-                  {item.icon}
-                </svg>
-              </div>
-              <span className="text-xs sm:text-sm font-bold text-stone-800 whitespace-nowrap">
-                {item.text}
-              </span>
+            <div className="flex shrink-0 items-center gap-8 sm:gap-12 pr-8 sm:pr-12" aria-hidden="true">
+              {[
+                { color: "text-success", icon: <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z" />, text: "Puja Video Delivered Within 48 Hours" },
+                { color: "text-[#0084ff]", icon: <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" />, text: "Verified & Experienced Purohits" },
+                { color: "text-accent", icon: <path d="M12 2L9 6H15L12 2ZM8 7L6 11H18L16 7H8ZM5 12L3 17H21L19 12H5ZM2 18V21H22V18H2Z" />, text: "Pujas Performed in Sacred Temples" },
+                { color: "text-[#d97706]", icon: <path d="M12 2c-.55 0-1 .45-1 1v1.17C8.61 4.72 7 6.67 7 9c0 2.21 1.79 4 4 4v1H8c-.55 0-1 .45-1 1v5c0 .55.45 1 1 1h8c.55 0 1-.45 1-1v-5c0-.55-.45-1-1-1h-3v-1c2.21 0 4-1.79 4-4 0-2.33-1.61-4.28-4-4.83V3c0-.55-.45-1-1-1z" />, text: "100% Authentic Vedic Rituals" }
+              ].map((item, idx) => (
+                <div key={`h2-${idx}`} className="flex items-center gap-3 shrink-0 py-1">
+                  <div className={`${item.color} shrink-0`}>
+                    <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                      {item.icon}
+                    </svg>
+                  </div>
+                  <span className="text-xs sm:text-sm font-bold text-stone-800 whitespace-nowrap">
+                    {item.text}
+                  </span>
+                </div>
+              ))}
             </div>
-          ))}
+          </div>
         </div>
-      </div>
-    </div>
 
-    {/* Original Grid on Desktop screens (>= 1440px) */}
-    <div className="badge-static-1440-grid hidden min-[1440px]:grid min-[1440px]:grid-cols-4 items-center justify-between gap-2 divide-x divide-stone-200">
-      <div className="flex items-center justify-start gap-3 px-4 py-0">
-        <div className="text-[#14395C] shrink-0">
-          <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
-            <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z" />
-          </svg>
+        {/* Original Grid on Desktop screens (>= 1440px) */}
+        <div className="badge-static-1440-grid hidden min-[1440px]:grid min-[1440px]:grid-cols-4 items-center justify-between gap-2 divide-x divide-stone-200">
+          <div className="flex items-center justify-start gap-3 px-4 py-0">
+            <div className="text-[#14395C] shrink-0">
+              <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z" />
+              </svg>
+            </div>
+            <span className="text-sm font-bold text-stone-800 leading-tight">
+              Puja Video Delivered Within 48 Hours
+            </span>
+          </div>
+          <div className="flex items-center justify-start gap-3 px-4 py-0">
+            <div className="text-[#0084ff] shrink-0">
+              <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" />
+              </svg>
+            </div>
+            <span className="text-sm font-bold text-stone-800 leading-tight">
+              Verified & Experienced Purohits
+            </span>
+          </div>
+          <div className="flex items-center justify-start gap-3 px-4 py-0">
+            <div className="text-accent shrink-0">
+              <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                <path d="M12 2L9 6H15L12 2ZM8 7L6 11H18L16 7H8ZM5 12L3 17H21L19 12H5ZM2 18V21H22V18H2Z" />
+              </svg>
+            </div>
+            <span className="text-sm font-bold text-stone-800 leading-tight">
+              Pujas Performed in Sacred Temples
+            </span>
+          </div>
+          <div className="flex items-center justify-start gap-3 px-4 py-0">
+            <div className="text-[#d97706] shrink-0">
+              <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                <path d="M12 2c-.55 0-1 .45-1 1v1.17C8.61 4.72 7 6.67 7 9c0 2.21 1.79 4 4 4v1H8c-.55 0-1 .45-1 1v5c0 .55.45 1 1 1h8c.55 0 1-.45 1-1v-5c0-.55-.45-1-1-1h-3v-1c2.21 0 4-1.79 4-4 0-2.33-1.61-4.28-4-4.83V3c0-.55-.45-1-1-1z" />
+              </svg>
+            </div>
+            <span className="text-sm font-bold text-stone-800 leading-tight">
+              100% Authentic Vedic Rituals
+            </span>
+          </div>
         </div>
-        <span className="text-sm font-bold text-stone-800 leading-tight">
-          Puja Video Delivered Within 48 Hours
-        </span>
       </div>
-      <div className="flex items-center justify-start gap-3 px-4 py-0">
-        <div className="text-[#0084ff] shrink-0">
-          <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
-            <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" />
-          </svg>
-        </div>
-        <span className="text-sm font-bold text-stone-800 leading-tight">
-          Verified & Experienced Purohits
-        </span>
-      </div>
-      <div className="flex items-center justify-start gap-3 px-4 py-0">
-        <div className="text-accent shrink-0">
-          <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
-            <path d="M12 2L9 6H15L12 2ZM8 7L6 11H18L16 7H8ZM5 12L3 17H21L19 12H5ZM2 18V21H22V18H2Z" />
-          </svg>
-        </div>
-        <span className="text-sm font-bold text-stone-800 leading-tight">
-          Pujas Performed in Sacred Temples
-        </span>
-      </div>
-      <div className="flex items-center justify-start gap-3 px-4 py-0">
-        <div className="text-[#d97706] shrink-0">
-          <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
-            <path d="M12 2c-.55 0-1 .45-1 1v1.17C8.61 4.72 7 6.67 7 9c0 2.21 1.79 4 4 4v1H8c-.55 0-1 .45-1 1v5c0 .55.45 1 1 1h8c.55 0 1-.45 1-1v-5c0-.55-.45-1-1-1h-3v-1c2.21 0 4-1.79 4-4 0-2.33-1.61-4.28-4-4.83V3c0-.55-.45-1-1-1z" />
-          </svg>
-        </div>
-        <span className="text-sm font-bold text-stone-800 leading-tight">
-          100% Authentic Vedic Rituals
-        </span>
-      </div>
-    </div>
-  </div>
-
     </section >
   );
 }
