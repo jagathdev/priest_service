@@ -229,7 +229,6 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
   return (
     <section className="relative w-full max-w-[1350px] mx-auto px-3 min-[360px]:px-4 sm:px-6 md:px-8 lg:px-10 pt-2 sm:pt-3 lg:pt-4 pb-8 md:pb-12 xl:py-12 bg-white my-0 sm:my-1 xl:my-2 overflow-hidden">
 
-
       {/* Background Circular Mandala Watermark inside Hero */}
       <div
         className="absolute inset-0 pointer-events-none opacity-[0.035] bg-center bg-no-repeat bg-contain z-0"
@@ -355,8 +354,8 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
         {/* ── Right Content (Hero Banner Card) ── order-1 on mobile, order-2 on desktop */}
         <div className="order-1 lg:order-2 w-full max-w-full lg:w-[480px] xl:w-[670px] 2xl:w-[730px] shrink-0 flex flex-col items-center relative">
 
-          {/* Smooth Forward-Only Carousel Viewport with explicit fallback height and iOS Safari overflow fix */}
-          <div className="w-full relative rounded-2xl min-[375px]:rounded-3xl overflow-hidden shadow-2xl border border-stone-200/80 bg-stone-100 aspect-[4/3] min-h-[250px] sm:min-h-[380px] sm:aspect-auto sm:h-[400px] md:h-[460px] lg:h-[320px] xl:h-[500px] shrink-0 ios-fix-overflow">
+          {/* Smooth Forward-Only Carousel Viewport */}
+          <div className="relative w-full aspect-[4/3] min-h-[250px] sm:min-h-[380px] sm:aspect-auto sm:h-[400px] md:h-[460px] lg:h-[320px] xl:h-[500px] rounded-2xl min-[375px]:rounded-3xl overflow-hidden shadow-2xl border border-stone-200/80 bg-stone-100 shrink-0">
             {/* Sliding Track (Continues sliding forward to the left) */}
             <div
               className={`flex w-full h-full ${isTransitioning ? "transition-transform duration-700 ease-out" : ""}`}
@@ -375,9 +374,6 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
                       href={slide.ctaLink}
                       className="w-full h-full block relative cursor-pointer group"
                     >
-                      {/* Background (warm natural tone fallback) */}
-                      <div className="absolute inset-0 w-full h-full bg-gradient-to-b from-stone-100 to-stone-200" />
-
                       {/* Full-bleed Banner Image with 1024 Specific Media Query */}
                       <picture className="absolute inset-0 w-full h-full block">
                         {useSource && (
@@ -389,13 +385,7 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
                         <img
                           src={slide.image}
                           alt={slide.title}
-                          loading={idx === 0 ? "eager" : "lazy"}
-                          decoding="async"
-                          className="w-full h-full object-cover object-center relative z-10 drop-shadow-md group-hover:scale-[1.02] transition-transform duration-500"
-                          style={{
-                            minHeight: "100%",
-                            minWidth: "100%",
-                          }}
+                          className="w-full h-full object-cover object-center"
                         />
                       </picture>
                     </Link>
@@ -405,24 +395,24 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
             </div>
           </div>
 
-        </div>
+          {/* Slider Dots Navigation inside Hero - Centered directly below the image */}
+          <div className="flex items-center justify-center gap-2.5 mt-4 sm:mt-5">
+            {bannerSlides.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => {
+                  setIsTransitioning(true);
+                  setActiveSlide(index);
+                }}
+                aria-label={`Go to slide ${index + 1}`}
+                className={`transition-all duration-300 rounded-full cursor-pointer ${index === currentSafeSlideIndex
+                  ? "w-7 h-2 bg-[#14395C]"
+                  : "w-2 h-2 bg-stone-300 hover:bg-stone-400"
+                  }`}
+              />
+            ))}
+          </div>
 
-        {/* Slider Dots Navigation inside Hero */}
-        <div className="flex items-center justify-center gap-2.5 mt-4 sm:mt-5">
-          {bannerSlides.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => {
-                setIsTransitioning(true);
-                setActiveSlide(index);
-              }}
-              aria-label={`Go to slide ${index + 1}`}
-              className={`transition-all duration-300 rounded-full cursor-pointer ${index === currentSafeSlideIndex
-                ? "w-7 h-2 bg-[#14395C]"
-                : "w-2 h-2 bg-stone-300 hover:bg-stone-400"
-                }`}
-            />
-          ))}
         </div>
 
       </div>
