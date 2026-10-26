@@ -907,11 +907,13 @@ export default function HomaDetailClient({
               <button
                 ref={heroCtaRef}
                 onClick={handleAddHomaToCart}
-                className="w-full bg-[#14395C] hover:bg-[#0f2d4a] active:scale-95 text-white font-extrabold text-xl sm:text-2xl py-4 sm:py-4.5 px-8 rounded-full shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-3 mb-4 tracking-wide"
+                className="w-full bg-[#14395C] hover:bg-[#0f2d4a] active:scale-[0.98] text-white font-extrabold text-lg sm:text-2xl py-3.5 sm:py-4.5 px-6 sm:px-8 rounded-full shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-3 sm:gap-4 mb-4 tracking-wide group"
               >
-                <span>₹{priceVal.toLocaleString("en-IN")}</span>
-                <span className="opacity-60 font-light">|</span>
-                <span>{homa.buttonText || "Book Now"}</span>
+                <span className="tabular-nums font-black">₹{priceVal.toLocaleString("en-IN")}</span>
+                <span className="opacity-40 font-light select-none">|</span>
+                <span className="flex items-center gap-2">
+                  {homa.buttonText || "Book Now"}
+                </span>
               </button>
 
               {/* Secondary WhatsApp & Call Buttons */}
@@ -1084,7 +1086,7 @@ export default function HomaDetailClient({
         <div className="max-w-[1350px] mx-auto px-4 sm:px-6 lg:px-10">
           <div
             ref={tabsContainerRef}
-            className="w-full flex items-center justify-between overflow-x-auto no-scrollbar gap-2 sm:gap-4 text-xs sm:text-sm font-bold text-stone-600 scroll-smooth"
+            className="w-full flex items-center justify-start lg:justify-between overflow-x-auto no-scrollbar gap-7 sm:gap-6 lg:gap-8 text-xs sm:text-sm font-bold text-stone-600 scroll-smooth px-3 sm:px-1"
           >
             {subHomaTabs.map((tab) => (
               <a
@@ -1101,7 +1103,7 @@ export default function HomaDetailClient({
                     window.scrollTo({ top: y, behavior: "smooth" });
                   }
                 }}
-                className={`py-2.5 sm:py-3.5 border-b-2 transition-colors whitespace-nowrap shrink-0 sm:shrink ${activeTab === tab.id
+                className={`py-3 sm:py-3.5 px-1 border-b-2 transition-colors whitespace-nowrap shrink-0 ${activeTab === tab.id
                   ? "border-[#14395C] text-[#14395C]"
                   : "border-transparent hover:text-stone-900"
                   }`}
@@ -1341,24 +1343,27 @@ export default function HomaDetailClient({
 
       {/* ── 5. Sticky Floating Action Bar at Bottom ── */}
       <div
-        className={`fixed bottom-[74px] sm:bottom-[78px] lg:bottom-6 left-1/2 -translate-x-1/2 z-40 w-[95%] max-w-[1250px] transition-all duration-300 transform ${showStickyBar
+        style={{
+          bottom: "calc(74px + env(safe-area-inset-bottom, 0px))",
+        }}
+        className={`fixed lg:!bottom-6 left-1/2 -translate-x-1/2 z-40 w-[94%] max-w-[1250px] transition-all duration-300 transform ${showStickyBar
           ? "translate-y-0 opacity-100 pointer-events-auto"
           : "translate-y-12 opacity-0 pointer-events-none"
           }`}
       >
-        <div className="bg-[#14395C] text-white rounded-2xl sm:rounded-3xl p-3 sm:py-3.5 sm:px-6 flex items-center justify-between shadow-2xl shadow-slate-950/30 border border-slate-700/30 backdrop-blur-md">
+        <div className="bg-[#14395C] text-white rounded-2xl sm:rounded-3xl p-2.5 sm:py-3.5 sm:px-6 flex items-center justify-between gap-2 sm:gap-4 shadow-2xl shadow-slate-950/30 border border-slate-700/30 backdrop-blur-md">
           {/* Left Column: Lotus Icon + Uppercase Title + Price */}
-          <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0 pr-3">
-            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white text-[#14395C] flex items-center justify-center shrink-0 shadow-sm">
-              <svg className="w-6 h-6 fill-[#14395C]" viewBox="0 0 24 24">
+          <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
+            <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-white text-[#14395C] flex items-center justify-center shrink-0 shadow-sm">
+              <svg className="w-5 h-5 sm:w-6 sm:h-6 fill-[#14395C]" viewBox="0 0 24 24">
                 <path d="M12 3c-1.5 2.5-3 5-3 7.5 0 2.5 1.5 4.5 3 4.5s3-2 3-4.5C15 8 13.5 5.5 12 3zm0 14c-4.5 0-7.5-2.5-9-5 1.5 4.5 5.5 7.5 9 7.5s7.5-3 9-7.5c-1.5 2.5-4.5 5-9 5z" />
               </svg>
             </div>
-            <div className="flex-1 min-w-0">
-              <span className="text-[10px] sm:text-xs font-extrabold text-slate-200 tracking-wider uppercase block truncate">
+            <div className="min-w-0 flex-1">
+              <span className="text-[10px] sm:text-xs font-extrabold text-slate-200 tracking-wider uppercase block truncate max-w-[120px] sm:max-w-none">
                 {homa.title}
               </span>
-              <span className="text-xl sm:text-2xl font-extrabold text-white block leading-tight mt-0.5">
+              <span className="text-base sm:text-2xl font-black text-white block leading-tight mt-0.5 whitespace-nowrap">
                 ₹{priceVal.toLocaleString("en-IN")}
               </span>
             </div>
@@ -1367,11 +1372,11 @@ export default function HomaDetailClient({
           {/* Right Column: White Pill Button with Navy Circle Arrow */}
           <button
             onClick={handleAddHomaToCart}
-            className="bg-white hover:bg-slate-100 active:scale-95 text-[#14395C] font-extrabold text-xs sm:text-sm px-4 sm:px-6 py-2 sm:py-2.5 rounded-full shadow-md transition-all flex items-center gap-2 shrink-0 whitespace-nowrap cursor-pointer"
+            className="bg-white hover:bg-slate-100 active:scale-95 text-[#14395C] font-extrabold text-xs sm:text-sm px-3 sm:px-6 py-2 sm:py-2.5 rounded-full shadow-md transition-all flex items-center gap-1.5 sm:gap-2 shrink-0 whitespace-nowrap cursor-pointer"
           >
-            <span>{homa.buttonText || "Book Now"}</span>
-            <div className="w-6 h-6 rounded-full bg-[#14395C] text-white flex items-center justify-center shrink-0">
-              <svg className="w-3.5 h-3.5 stroke-current" fill="none" viewBox="0 0 24 24" strokeWidth="3">
+            <span className="max-w-[125px] sm:max-w-none truncate">{homa.buttonText || "Book Now"}</span>
+            <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-[#14395C] text-white flex items-center justify-center shrink-0">
+              <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5 stroke-current" fill="none" viewBox="0 0 24 24" strokeWidth="3">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
               </svg>
             </div>
