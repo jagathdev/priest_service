@@ -98,7 +98,7 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
   const minSwipeDistance = 50;
 
-  const [isTransitioning, setIsTransitioning] = useState(true);
+  const [_isTransitioning, setIsTransitioning] = useState(true);
 
   const totalSlides = bannerSlides.length;
 
@@ -136,13 +136,6 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
 
   // When activeSlide reaches the cloned slide (index === totalSlides),
   // instantly jump back to 0 without animation so it can continue forward infinitely
-  const handleTransitionEnd = () => {
-    if (activeSlide >= totalSlides) {
-      setIsTransitioning(false);
-      setActiveSlide(0);
-    }
-  };
-
   useEffect(() => {
     async function fetchHeroBanners() {
       try {
@@ -221,8 +214,6 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
   }
 
   if (bannerSlides.length === 0) return null;
-
-  const displaySlides = bannerSlides.length > 1 ? [...bannerSlides, bannerSlides[0]] : bannerSlides;
   const currentSafeSlideIndex = bannerSlides.length > 0 ? activeSlide % bannerSlides.length : 0;
   const current = bannerSlides[currentSafeSlideIndex];
 
