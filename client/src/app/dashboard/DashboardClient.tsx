@@ -609,27 +609,27 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
 
 const galleryImages = [
   {
-    src: "/Service images/mam_puja.jpg",
+    src: "/Service%20images/mam_puja.jpg",
     alt: "Ganesh Chaturthi Mahapuja",
     aspect: "w-[160px] sm:w-[190px] h-[270px] sm:h-[310px]", // Tall
   },
   {
-    src: "/Service images/maha_homam.jpeg",
+    src: "/Service%20images/maha_homam.jpeg",
     alt: "lakshmi_puja",
     aspect: "w-[200px] sm:w-[240px] h-[170px] sm:h-[190px]", // Medium-small
   },
   {
-    src: "/Service images/shreem.jpg",
+    src: "/Service%20images/shreem.jpg",
     alt: "anchineyar",
     aspect: "w-[160px] sm:w-[190px] h-[270px] sm:h-[310px]", // Tall
   },
   {
-    src: "/Service images/g3.jpg",
+    src: "/Service%20images/g3.jpg",
     alt: "varahi_amman",
     aspect: "w-[210px] sm:w-[250px] h-[150px] sm:h-[165px]", // Small
   },
   {
-    src: "/Service images/lord_perumal.jpeg",
+    src: "/Service%20images/lord_perumal.jpeg",
     alt: "perumal",
     aspect: "w-[160px] sm:w-[190px] h-[310px] sm:h-[350px]", // Very Tall
   },
@@ -639,17 +639,17 @@ const galleryImages = [
     aspect: "w-[210px] sm:w-[250px] h-[160px] sm:h-[180px]", // Medium-small
   },
   {
-    src: "/Service images/golu.jpeg",
+    src: "/Service%20images/golu.jpeg",
     alt: "anchineyar",
     aspect: "w-[160px] sm:w-[190px] h-[270px] sm:h-[310px]", // Tall
   },
   {
-    src: "/Service images/group_shreem.jpeg",
+    src: "/Service%20images/group_shreem.jpeg",
     alt: "lakshmi_puja",
     aspect: "w-[200px] sm:w-[240px] h-[170px] sm:h-[190px]", // Medium-small
   },
   {
-    src: "/Service images/g2.jpg",
+    src: "/Service%20images/g2.jpg",
     alt: "Sacred Vedic Homa Ritual",
     aspect: "w-[200px] sm:w-[240px] h-[170px] sm:h-[190px]", // Medium-small
   },
@@ -678,14 +678,21 @@ interface PujaCardProps {
 
 function PujaCard({ id, imageSrc, topTag, title, subtitle, location, date, price, slug, onShare }: PujaCardProps) {
   const cardUrl = slug ? `/puja/${slug}` : "/puja";
-  const rawImg = (typeof imageSrc === "string" ? imageSrc : (imageSrc as any)?.src) || "/images/Ganesh-Chaturthi-Mahapuja.jpg";
+  const srcStr = (typeof imageSrc === "string" ? imageSrc : (imageSrc as any)?.src) || "/images/Ganesh-Chaturthi-Mahapuja.jpg";
+  const rawImg = (() => {
+    try {
+      return encodeURI(decodeURI(srcStr));
+    } catch {
+      return encodeURI(srcStr);
+    }
+  })();
   const img1024 = get1024BannerImage(rawImg);
 
   return (
     <div className="bg-white rounded-2xl min-[375px]:rounded-3xl border border-stone-200/90 p-2 min-[375px]:p-2.5 sm:p-3 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.12),0_2px_6px_-1px_rgba(0,0,0,0.08)] hover:shadow-[0_12px_28px_-6px_rgba(0,0,0,0.18),0_8px_10px_-6px_rgba(0,0,0,0.1)] transition-all duration-300 flex flex-col group text-left relative h-full">
       <Link href={cardUrl} className="flex flex-col flex-1 cursor-pointer">
         {/* Top Banner Image Container with Subtle Space */}
-        <div className="relative w-full aspect-[4/3] xl:aspect-auto xl:h-[235px] rounded-xl min-[375px]:rounded-2xl overflow-hidden mb-2 sm:mb-2.5 bg-stone-100 shrink-0">
+        <div className="relative w-full aspect-[4/3] min-h-[190px] xl:min-h-0 xl:aspect-auto xl:h-[235px] rounded-xl min-[375px]:rounded-2xl overflow-hidden mb-2 sm:mb-2.5 bg-stone-100 shrink-0">
           <picture className="absolute inset-0 w-full h-full block">
             <source
               media="(min-width: 1024px) and (max-width: 1279px)"

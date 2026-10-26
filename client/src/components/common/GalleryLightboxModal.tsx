@@ -120,8 +120,15 @@ export default function GalleryLightboxModal({
 
   if (!mounted || !isOpen || total === 0) return null;
 
-  const getItemSrc = (item: LightboxImage) =>
-    typeof item === "string" ? item : item?.src || "";
+  const getItemSrc = (item: LightboxImage) => {
+    const raw = typeof item === "string" ? item : item?.src || "";
+    if (!raw) return "";
+    try {
+      return encodeURI(decodeURI(raw));
+    } catch {
+      return encodeURI(raw);
+    }
+  };
 
   const getItemAlt = (item: LightboxImage, idx: number) =>
     typeof item === "string"

@@ -39,10 +39,20 @@ const getHomaImageUrl = (imageUrl?: string): string => {
   if (!imageUrl || typeof imageUrl !== "string") return "";
   const trimmed = imageUrl.trim();
   if (!trimmed) return "";
-  if (trimmed.startsWith("http://") || trimmed.startsWith("https://") || trimmed.startsWith("data:") || trimmed.startsWith("/")) {
-    return trimmed;
+  const safeEncode = (url: string) => {
+    try {
+      return encodeURI(decodeURI(url));
+    } catch {
+      return encodeURI(url);
+    }
+  };
+  if (trimmed.startsWith("http://") || trimmed.startsWith("https://") || trimmed.startsWith("data:")) {
+    return safeEncode(trimmed);
   }
-  return `/${trimmed}`;
+  if (trimmed.startsWith("/")) {
+    return safeEncode(trimmed);
+  }
+  return `/${safeEncode(trimmed)}`;
 };
 
 export default function HomaClient({ initialHomas }: { initialHomas?: Homa[] }) {
@@ -129,19 +139,31 @@ export default function HomaClient({ initialHomas }: { initialHomas?: Homa[] }) 
   }, [allHomas, dynamicHomaTypes]);
 
   const deityOptions = useMemo(() => {
-    const set = new Set<string>();
+    const map = new Map<string, string>();
     allHomas.forEach((h) => {
-      if (h.deity && h.deity.trim()) set.add(h.deity.trim());
+      if (h.deity && h.deity.trim()) {
+        const trimmed = h.deity.trim();
+        const lower = trimmed.toLowerCase();
+        if (!map.has(lower)) {
+          map.set(lower, trimmed);
+        }
+      }
     });
-    return Array.from(set).sort();
+    return Array.from(map.values()).sort((a, b) => a.localeCompare(b));
   }, [allHomas]);
 
   const doshaOptions = useMemo(() => {
-    const set = new Set<string>();
+    const map = new Map<string, string>();
     allHomas.forEach((h) => {
-      if (h.dosha && h.dosha.trim()) set.add(h.dosha.trim());
+      if (h.dosha && h.dosha.trim()) {
+        const trimmed = h.dosha.trim();
+        const lower = trimmed.toLowerCase();
+        if (!map.has(lower)) {
+          map.set(lower, trimmed);
+        }
+      }
     });
-    return Array.from(set).sort();
+    return Array.from(map.values()).sort((a, b) => a.localeCompare(b));
   }, [allHomas]);
 
   return (

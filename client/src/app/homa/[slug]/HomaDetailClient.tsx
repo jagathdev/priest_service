@@ -101,10 +101,20 @@ export const getHomaImageUrl = (imageUrl?: string): string => {
   if (!imageUrl || typeof imageUrl !== "string") return "";
   const trimmed = imageUrl.trim();
   if (!trimmed) return "";
-  if (trimmed.startsWith("http://") || trimmed.startsWith("https://") || trimmed.startsWith("data:") || trimmed.startsWith("/")) {
-    return trimmed;
+  const safeEncode = (url: string) => {
+    try {
+      return encodeURI(decodeURI(url));
+    } catch {
+      return encodeURI(url);
+    }
+  };
+  if (trimmed.startsWith("http://") || trimmed.startsWith("https://") || trimmed.startsWith("data:")) {
+    return safeEncode(trimmed);
   }
-  return `/${trimmed}`;
+  if (trimmed.startsWith("/")) {
+    return safeEncode(trimmed);
+  }
+  return `/${safeEncode(trimmed)}`;
 };
 
 const DEFAULT_PACKAGE_AVATARS = [
@@ -204,7 +214,10 @@ export default function HomaDetailClient({
           return;
         }
 
-        const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
+        const rawBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
+        const isClient = typeof window !== "undefined";
+        const isLanMobile = isClient && window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1" && rawBaseUrl.includes("localhost");
+        const backendUrl = isLanMobile ? "" : rawBaseUrl;
         const res = await fetch(`${backendUrl}/api/homas`);
         if (!res.ok) {
           setHoma(null);
@@ -712,7 +725,7 @@ export default function HomaDetailClient({
 
             {/* Left 6 Cols: Main Banner Image (Slightly Increased Width) */}
             <div className="lg:col-span-6 flex flex-col">
-              <div className="relative w-full aspect-[4/3] sm:aspect-auto sm:h-[350px] md:h-[390px] lg:h-[410px] rounded-3xl overflow-hidden border border-stone-200/90 shadow-md group">
+              <div className="relative w-full aspect-[4/3] min-h-[260px] sm:min-h-0 sm:aspect-auto sm:h-[350px] md:h-[390px] lg:h-[410px] rounded-3xl overflow-hidden border border-stone-200/90 shadow-md group">
                 <Image
                   src={bannerImages[activeBannerIndex] || (homa ? getHomaImageUrl(homa.imageUrl) : "/images/Ganesh-Chaturthi-Mahapuja.jpg")}
                   alt={`${homa?.title || "Homa"} - Sacred Ritual Banner ${activeBannerIndex + 1}`}

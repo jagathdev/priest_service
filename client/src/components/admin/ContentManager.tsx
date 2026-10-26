@@ -10,6 +10,12 @@ import {
   Bars3Icon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  ChevronDownIcon,
+  CheckIcon,
+  XMarkIcon,
+  MagnifyingGlassIcon,
+  ArrowUpTrayIcon,
+  LinkIcon,
 } from "@heroicons/react/24/outline";
 
 /** Puja card date stored as DD-MM-YYYY; native date input uses YYYY-MM-DD */
@@ -170,44 +176,206 @@ export default function ContentManager({
   const [viewingReview, setViewingReview] = useState<any | null>(null);
   const [currencyRates] = useState<{ usd: number; myr: number } | null>(null);
 
+  const [customOptionsState, setCustomOptionsState] = useState<Record<string, string[]>>({});
+  const [excludedOptionsState, setExcludedOptionsState] = useState<Record<string, string[]>>({});
+  const [addingCustomField, setAddingCustomField] = useState<string | null>(null);
+  const [customInputText, setCustomInputText] = useState("");
+  const [openSelectDropdown, setOpenSelectDropdown] = useState<string | null>(null);
+  const [dropdownSearchQuery, setDropdownSearchQuery] = useState<Record<string, string>>({});
+  const [urlInputMode, setUrlInputMode] = useState<Record<string, "link" | "upload">>({});
+  const [uploadingFields, setUploadingFields] = useState<Record<string, boolean>>({});
+  const [uploadErrors, setUploadErrors] = useState<Record<string, string | null>>({});
+
+  const uploadImageFile = async (file: File, key: string, label: string): Promise<string | null> => {
+    if (!file) return null;
+    const titleSlug = (formData.title || "item")
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "");
+    const fieldSlug = label
+      .replace(/([A-Z])/g, "-$1")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-");
+
+    const words = (formData.title || "item").trim().toLowerCase().split(/\s+/).filter(Boolean);
+    const initials = words.length > 1 ? words.map((w: string) => w[0]).join("") : titleSlug.slice(0, 4);
+    const cleanBaseName = `${initials}-${fieldSlug}`;
+
+    const uploadFormData = new FormData();
+    uploadFormData.append("image", file);
+    uploadFormData.append("customName", cleanBaseName);
+
+    setUploadingFields((prev) => ({ ...prev, [key]: true }));
+    setUploadErrors((prev) => ({ ...prev, [key]: null }));
+
+    try {
+      let expressBase = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
+      if (!expressBase.endsWith("/api")) {
+        expressBase += "/api";
+      }
+
+      const res = await fetch(`${expressBase}/upload`, {
+        method: "POST",
+        headers: {
+          ...getAdminAuthHeaders(),
+        },
+        body: uploadFormData,
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.url) {
+        return data.url;
+      } else {
+        setUploadErrors((prev) => ({
+          ...prev,
+          [key]: data.message || `Upload failed with status ${res.status}`,
+        }));
+        return null;
+      }
+    } catch (err: any) {
+      console.error("Upload error:", err);
+      setUploadErrors((prev) => ({
+        ...prev,
+        [key]: err.message || "Failed to upload image to server.",
+      }));
+      return null;
+    } finally {
+      setUploadingFields((prev) => ({ ...prev, [key]: false }));
+    }
+  };
+
+  const deleteImageFile = async (url: string) => {
+    if (!url) return;
+    const filename = url.split("/").pop();
+    if (filename && !url.startsWith("data:")) {
+      try {
+        let expressBase = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
+        if (!expressBase.endsWith("/api")) {
+          expressBase += "/api";
+        }
+
+        await fetch(`${expressBase}/upload/${encodeURIComponent(filename)}`, {
+          method: "DELETE",
+          headers: {
+            ...getAdminAuthHeaders(),
+          },
+        }).catch(() => { });
+      } catch (e) {
+        console.error("Failed to delete physical file:", e);
+      }
+    }
+  };
+
+  // Close custom select dropdown when clicking outside
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (!target?.closest("[data-custom-select]")) {
+        setOpenSelectDropdown(null);
+      }
+    };
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, []);
+
   const effectiveFilterGroups = useMemo(() => {
-    if (type !== "puja" || !dynamicPujaLocationFromItems) {
+    // If not puja or homa, return default filterGroups
+    if (type !== "puja" && type !== "homa") {
       return filterGroups;
     }
 
-    const locStrings = new Set<string>();
-    items.forEach((item) => {
-      const parts = [
-        item.location,
-        item.templeLocation,
-        item.templeVenue,
-        item.details && typeof item.details === "object" && item.details !== null
-          ? (item.details as { templeLocation?: string }).templeLocation
-          : undefined,
-      ].filter(Boolean) as string[];
-
-      parts.forEach((s) => {
-        const trimmed = s.trim();
-        if (trimmed) locStrings.add(trimmed);
-        trimmed.split(/[,|;]/).forEach((chunk) => {
-          const t = chunk.trim();
-          if (t) locStrings.add(t);
-        });
-      });
-    });
-
-    const sorted = Array.from(locStrings).sort((a, b) => a.localeCompare(b));
-    const locationGroup = {
-      label: "Location",
-      options: [
-        { value: "All" },
-        ...sorted.map((value) => ({ value, keywords: [value.toLowerCase()] })),
-      ],
+    const fieldMapping: Record<string, string> = {
+      Deity: "deity",
+      Tithis: "tithis",
+      Dosha: "dosha",
+      Benefits: "benefit",
+      Benefit: "benefit",
+      Location: "filterLocation",
     };
 
-    const withoutStaticLocation = filterGroups.filter((g) => g.label !== "Location");
-    return [...withoutStaticLocation, locationGroup];
-  }, [type, dynamicPujaLocationFromItems, items, filterGroups]);
+    return filterGroups.map((group) => {
+      const fieldName = fieldMapping[group.label];
+      // Collect values from items
+      const map = new Map<string, { value: string; keywords?: string[] }>();
+
+      // First add static default options (except 'All')
+      group.options.forEach((opt) => {
+        if (opt.value && opt.value !== "All") {
+          map.set(opt.value.trim().toLowerCase(), opt);
+        }
+      });
+
+      // Next add custom entered options in memory
+      if (fieldName && customOptionsState[fieldName]) {
+        customOptionsState[fieldName].forEach((customVal) => {
+          const trimmed = customVal.trim();
+          if (trimmed) {
+            const lower = trimmed.toLowerCase();
+            if (!map.has(lower)) {
+              map.set(lower, { value: trimmed, keywords: [lower] });
+            }
+          }
+        });
+      }
+
+      // Next aggregate values from saved items
+      if (group.label === "Location") {
+        items.forEach((item) => {
+          const parts = [
+            item.filterLocation,
+            item.location,
+            item.templeLocation,
+            item.templeVenue,
+            item.details && typeof item.details === "object" && item.details !== null
+              ? (item.details as { templeLocation?: string }).templeLocation
+              : undefined,
+          ].filter(Boolean) as string[];
+
+          parts.forEach((s) => {
+            const trimmed = s.trim();
+            if (trimmed) {
+              const lower = trimmed.toLowerCase();
+              if (!map.has(lower)) {
+                map.set(lower, { value: trimmed, keywords: [lower] });
+              }
+            }
+            trimmed.split(/[,|;]/).forEach((chunk) => {
+              const t = chunk.trim();
+              if (t) {
+                const lower = t.toLowerCase();
+                if (!map.has(lower)) {
+                  map.set(lower, { value: t, keywords: [lower] });
+                }
+              }
+            });
+          });
+        });
+      } else if (fieldName) {
+        items.forEach((item) => {
+          const val = item[fieldName];
+          if (typeof val === "string" && val.trim()) {
+            const trimmed = val.trim();
+            const lower = trimmed.toLowerCase();
+            if (!map.has(lower)) {
+              map.set(lower, { value: trimmed, keywords: [lower] });
+            }
+          }
+        });
+      }
+
+      const excludedList = fieldName ? (excludedOptionsState[fieldName] || []) : [];
+      const excludedLower = new Set(excludedList.map((x) => x.toLowerCase()));
+
+      const sortedOptions = Array.from(map.values())
+        .filter((opt) => !excludedLower.has(opt.value.trim().toLowerCase()))
+        .sort((a, b) => a.value.localeCompare(b.value));
+      return {
+        ...group,
+        options: [{ value: "All" }, ...sortedOptions],
+      };
+    });
+  }, [type, items, filterGroups, customOptionsState, excludedOptionsState]);
 
   useEffect(() => {
     setActiveFilters((prev) => {
@@ -743,8 +911,8 @@ export default function ContentManager({
                   <label
                     key={item._id}
                     className={`flex items-center gap-2.5 p-3.5 rounded-xl border text-sm cursor-pointer transition-all ${isChecked
-                        ? "border-primary bg-gradient-to-r from-primary/10 via-indigo-50/60 to-white text-primary font-bold shadow-xs"
-                        : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-300"
+                      ? "border-primary bg-gradient-to-r from-primary/10 via-indigo-50/60 to-white text-primary font-bold shadow-xs"
+                      : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-300"
                       }`}
                   >
                     <input
@@ -801,37 +969,88 @@ export default function ContentManager({
           </div>
         ) : field.type === "array-string" ? (
           <div className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50/60 p-4">
-            {(Array.isArray(formData[field.name]) && formData[field.name].length > 0 ? formData[field.name] : []).map((val: string, idx: number) => (
-              <div key={idx} className="flex items-center gap-2">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-600 shadow-2xs">
-                  {idx + 1}
-                </span>
-                <input
-                  type="text"
-                  value={val}
-                  onChange={(e) => handleArrayChange(field.name, idx, e.target.value)}
-                  placeholder={field.placeholder || "Enter value"}
-                  className="block w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-sm text-gray-900 focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/10 shadow-2xs"
-                />
-                {field.name.toLowerCase().includes("image") && Boolean(val) && (
-                  /* eslint-disable-next-line @next/next/no-img-element */
-                  <img
-                    src={val}
-                    alt="Preview"
-                    className="h-9 w-9 rounded-xl object-cover border border-slate-200 bg-white shrink-0 shadow-2xs"
-                    onError={(e) => { (e.target as HTMLElement).style.display = "none"; }}
-                  />
-                )}
-                <button
-                  type="button"
-                  onClick={() => removeArrayItem(field.name, idx, field.label)}
-                  className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-red-200 bg-red-50 text-red-600 hover:bg-red-500 hover:text-white transition-all shadow-2xs"
-                  title="Remove item"
-                >
-                  <TrashIcon className="h-4 w-4" />
-                </button>
-              </div>
-            ))}
+            {(Array.isArray(formData[field.name]) && formData[field.name].length > 0 ? formData[field.name] : []).map((val: string, idx: number) => {
+              const isImageField = field.name.toLowerCase().includes("image") || field.name.toLowerCase().includes("gallery");
+              const itemKey = `${field.name}-${idx}`;
+              const isUploading = Boolean(uploadingFields[itemKey]);
+              const uploadError = uploadErrors[itemKey] || null;
+
+              return (
+                <div key={idx} className="space-y-2 rounded-xl border border-slate-200/80 bg-white p-3 shadow-2xs">
+                  <div className="flex items-center gap-2">
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-slate-100 border border-slate-200 text-xs font-bold text-slate-600 shadow-2xs">
+                      {idx + 1}
+                    </span>
+                    <input
+                      type="text"
+                      value={val}
+                      onChange={(e) => handleArrayChange(field.name, idx, e.target.value)}
+                      placeholder={field.placeholder || "Enter image URL or link"}
+                      className="block w-full rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-sm text-gray-900 focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/10 shadow-2xs"
+                    />
+                    {isImageField && (
+                      <label
+                        className={`shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-primary/20 bg-primary/5 hover:bg-primary/10 text-primary text-xs font-bold cursor-pointer transition-all shadow-2xs ${isUploading ? "opacity-60 cursor-wait" : ""
+                          }`}
+                        title="Upload image from computer"
+                      >
+                        <input
+                          type="file"
+                          disabled={isUploading}
+                          accept="image/png, image/jpeg, image/webp, image/jpg"
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              const uploadedUrl = await uploadImageFile(file, itemKey, `${field.name}-${idx + 1}`);
+                              if (uploadedUrl) {
+                                handleArrayChange(field.name, idx, uploadedUrl);
+                              }
+                            }
+                          }}
+                          className="hidden"
+                        />
+                        {isUploading ? (
+                          <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                        ) : (
+                          <ArrowUpTrayIcon className="h-3.5 w-3.5 stroke-[2.5]" />
+                        )}
+                        <span>{isUploading ? "Uploading..." : "Upload"}</span>
+                      </label>
+                    )}
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        if (isImageField && val && !val.startsWith("data:")) {
+                          deleteImageFile(val);
+                        }
+                        removeArrayItem(field.name, idx, field.label);
+                      }}
+                      className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-red-200 bg-red-50 text-red-600 hover:bg-red-500 hover:text-white transition-all shadow-2xs"
+                      title="Remove item"
+                    >
+                      <TrashIcon className="h-4 w-4" />
+                    </button>
+                  </div>
+
+                  {uploadError && (
+                    <p className="text-[11px] font-semibold text-red-600 pl-9">{uploadError}</p>
+                  )}
+
+                  {isImageField && Boolean(val) && (
+                    <div className="flex items-center gap-2 pl-9">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={val}
+                        alt="Preview"
+                        className="h-10 w-10 rounded-lg object-cover border border-slate-200 bg-white shrink-0 shadow-2xs"
+                        onError={(e) => { (e.target as HTMLElement).style.display = "none"; }}
+                      />
+                      <span className="text-[11px] font-mono text-slate-500 truncate max-w-sm sm:max-w-md">{val}</span>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
             <button
               type="button"
               onClick={() => addArrayItem(field.name, "array-string")}
@@ -854,16 +1073,16 @@ export default function ContentManager({
                 <div
                   key={idx}
                   className={`relative rounded-2xl border ${isPackageOrOffering
-                      ? "border-amber-300/80 bg-gradient-to-br from-amber-50/50 via-white to-orange-50/30 hover:border-amber-400"
-                      : "border-slate-200/90 bg-gradient-to-br from-slate-50/50 via-white to-indigo-50/20 hover:border-primary/40"
+                    ? "border-amber-300/80 bg-gradient-to-br from-amber-50/50 via-white to-orange-50/30 hover:border-amber-400"
+                    : "border-slate-200/90 bg-gradient-to-br from-slate-50/50 via-white to-indigo-50/20 hover:border-primary/40"
                     } p-5 shadow-xs hover:shadow-md transition-all duration-200`}
                 >
                   <div className="flex items-center justify-between pb-3.5 mb-4 border-b border-gray-100">
                     <div className="flex items-center gap-2.5">
                       <span
                         className={`flex h-6 w-6 items-center justify-center rounded-lg ${isPackageOrOffering
-                            ? "bg-gradient-to-br from-amber-500 to-orange-600 text-white"
-                            : "bg-gradient-to-br from-primary to-indigo-600 text-white"
+                          ? "bg-gradient-to-br from-amber-500 to-orange-600 text-white"
+                          : "bg-gradient-to-br from-primary to-indigo-600 text-white"
                           } text-[11px] font-bold shadow-xs`}
                       >
                         #{idx + 1}
@@ -928,6 +1147,82 @@ export default function ContentManager({
                                 className="block w-full rounded-xl border border-slate-200 bg-white pl-11 pr-3.5 py-2 text-sm text-gray-900 focus:border-amber-500 focus:outline-none focus:ring-4 focus:ring-amber-500/15 shadow-2xs"
                               />
                             </div>
+                          ) : sub.type === "url" ? (
+                            (() => {
+                              const subKey = `${field.name}-${idx}-${sub.name}`;
+                              const curSubUrl = String(val[sub.name] || "").trim();
+                              const isSubUploading = Boolean(uploadingFields[subKey]);
+                              const subError = uploadErrors[subKey] || null;
+
+                              return (
+                                <div className="space-y-2">
+                                  <div className="flex items-center gap-2">
+                                    <input
+                                      type="text"
+                                      value={curSubUrl}
+                                      onChange={(e) => handleArrayChange(field.name, idx, e.target.value, sub.name)}
+                                      placeholder={sub.placeholder || "Image URL or upload"}
+                                      className="block w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/10 shadow-2xs"
+                                    />
+                                    <label
+                                      className={`shrink-0 inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-primary/20 bg-primary/5 hover:bg-primary/10 text-primary text-xs font-bold cursor-pointer transition-all shadow-2xs ${isSubUploading ? "opacity-60 cursor-wait" : ""
+                                        }`}
+                                      title="Upload image from computer"
+                                    >
+                                      <input
+                                        type="file"
+                                        disabled={isSubUploading}
+                                        accept="image/png, image/jpeg, image/webp, image/jpg"
+                                        onChange={async (e) => {
+                                          const file = e.target.files?.[0];
+                                          if (file) {
+                                            const uploadedUrl = await uploadImageFile(file, subKey, `${val.name || "offering"}-${sub.name}`);
+                                            if (uploadedUrl) {
+                                              handleArrayChange(field.name, idx, uploadedUrl, sub.name);
+                                            }
+                                          }
+                                        }}
+                                        className="hidden"
+                                      />
+                                      {isSubUploading ? (
+                                        <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                                      ) : (
+                                        <ArrowUpTrayIcon className="h-3.5 w-3.5 stroke-[2.5]" />
+                                      )}
+                                      <span>{isSubUploading ? "..." : "Upload"}</span>
+                                    </label>
+                                    {curSubUrl && (
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          deleteImageFile(curSubUrl);
+                                          handleArrayChange(field.name, idx, "", sub.name);
+                                        }}
+                                        className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-red-200 bg-red-50 text-red-600 hover:bg-red-500 hover:text-white transition-all shadow-2xs"
+                                        title="Clear and delete image"
+                                      >
+                                        <TrashIcon className="h-4 w-4" />
+                                      </button>
+                                    )}
+                                  </div>
+                                  {subError && (
+                                    <p className="text-[11px] font-semibold text-red-600">{subError}</p>
+                                  )}
+                                  {Boolean(curSubUrl) && (
+                                    <div className="flex items-center gap-2">
+                                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                                      <img
+                                        src={curSubUrl}
+                                        alt="Preview"
+                                        className="h-8 w-8 rounded-lg object-cover border border-slate-200 shadow-2xs"
+                                        onError={(e) => { (e.target as HTMLElement).style.display = "none"; }}
+                                      />
+                                      <span className="text-[11px] text-slate-400 truncate max-w-xs">{curSubUrl}</span>
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })()
                           ) : (
                             <div>
                               <input
@@ -937,18 +1232,6 @@ export default function ContentManager({
                                 placeholder={sub.placeholder}
                                 className="block w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/10 shadow-2xs"
                               />
-                              {sub.type === "url" && Boolean(val[sub.name]) && (
-                                <div className="mt-1.5 flex items-center gap-2">
-                                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                                  <img
-                                    src={val[sub.name]}
-                                    alt="Preview"
-                                    className="h-8 w-8 rounded-lg object-cover border border-slate-200 shadow-2xs"
-                                    onError={(e) => { (e.target as HTMLElement).style.display = "none"; }}
-                                  />
-                                  <span className="text-[11px] text-slate-400 truncate max-w-xs">{val[sub.name]}</span>
-                                </div>
-                              )}
                             </div>
                           )}
                         </div>
@@ -982,21 +1265,323 @@ export default function ContentManager({
             className="block w-full rounded-xl border border-slate-200 bg-slate-50/70 px-3.5 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:bg-white focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/10 shadow-2xs transition-all"
           />
         ) : field.type === "select" ? (
-          <select
-            id={field.name}
-            name={field.name}
-            required={field.required}
-            value={formData[field.name] || ""}
-            onChange={handleInputChange}
-            className="block w-full rounded-xl border border-slate-200 bg-slate-50/70 px-3.5 py-2.5 text-sm text-gray-900 focus:bg-white focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/10 shadow-2xs transition-all"
-          >
-            <option value="">-- Select {field.label} --</option>
-            {field.options?.map((opt) => (
-              <option key={opt} value={opt}>
-                {opt}
-              </option>
-            ))}
-          </select>
+          (() => {
+            // Aggregate static options + customOptionsState + options found in existing items
+            const optMap = new Map<string, string>();
+            (field.options || []).forEach((opt) => {
+              if (opt && opt.trim()) {
+                optMap.set(opt.trim().toLowerCase(), opt.trim());
+              }
+            });
+            if (customOptionsState[field.name]) {
+              customOptionsState[field.name].forEach((opt) => {
+                if (opt && opt.trim()) {
+                  optMap.set(opt.trim().toLowerCase(), opt.trim());
+                }
+              });
+            }
+            items.forEach((item) => {
+              const val = item[field.name];
+              if (typeof val === "string" && val.trim()) {
+                optMap.set(val.trim().toLowerCase(), val.trim());
+              }
+            });
+            // If current form has a value not in list yet, include it
+            const curVal = String(formData[field.name] || "").trim();
+            if (curVal && !optMap.has(curVal.toLowerCase())) {
+              optMap.set(curVal.toLowerCase(), curVal);
+            }
+
+            // Filter out any explicitly deleted/excluded options
+            const excludedList = excludedOptionsState[field.name] || [];
+            const excludedSet = new Set(excludedList.map((x) => x.toLowerCase()));
+
+            const dynamicOptions = Array.from(optMap.values())
+              .filter((opt) => !excludedSet.has(opt.toLowerCase()))
+              .sort((a, b) => a.localeCompare(b));
+            const isAddingCustomThisField = addingCustomField === field.name;
+
+            const handleAddCustom = () => {
+              const trimmed = customInputText.trim();
+              if (!trimmed) {
+                setAddingCustomField(null);
+                setCustomInputText("");
+                return;
+              }
+              // Prevent duplicates (case-insensitive check)
+              const lower = trimmed.toLowerCase();
+              const existingMatch = dynamicOptions.find((o) => o.toLowerCase() === lower);
+              const canonicalValue = existingMatch || trimmed;
+
+              // Un-exclude if it was previously deleted
+              setExcludedOptionsState((prev) => ({
+                ...prev,
+                [field.name]: (prev[field.name] || []).filter((x) => x.toLowerCase() !== lower),
+              }));
+
+              setCustomOptionsState((prev) => {
+                const currentList = prev[field.name] || [];
+                if (currentList.some((o) => o.toLowerCase() === lower)) {
+                  return prev;
+                }
+                return { ...prev, [field.name]: [...currentList, canonicalValue] };
+              });
+
+              setFormData((prev: any) => ({
+                ...prev,
+                [field.name]: canonicalValue,
+              }));
+
+              setAddingCustomField(null);
+              setCustomInputText("");
+            };
+
+            const handleDeleteOption = (optToDelete: string) => {
+              if (!optToDelete) return;
+              if (!confirm(`Are you sure you want to delete "${optToDelete}" from ${field.label}?`)) return;
+
+              const lower = optToDelete.toLowerCase();
+
+              // Add to excluded options so it won't show in the dropdown
+              setExcludedOptionsState((prev) => {
+                const current = prev[field.name] || [];
+                if (current.some((x) => x.toLowerCase() === lower)) return prev;
+                return { ...prev, [field.name]: [...current, optToDelete] };
+              });
+
+              // Remove from customOptionsState if present
+              setCustomOptionsState((prev) => {
+                const current = prev[field.name] || [];
+                return {
+                  ...prev,
+                  [field.name]: current.filter((x) => x.toLowerCase() !== lower),
+                };
+              });
+
+              // If currently selected in the form, reset/clear it
+              if (curVal.toLowerCase() === lower) {
+                setFormData((prev: any) => ({
+                  ...prev,
+                  [field.name]: "",
+                }));
+              }
+            };
+
+            const isOpen = openSelectDropdown === field.name;
+            const searchVal = (dropdownSearchQuery[field.name] || "").toLowerCase().trim();
+            const filteredDynamicOptions = searchVal
+              ? dynamicOptions.filter((opt) => opt.toLowerCase().includes(searchVal))
+              : dynamicOptions;
+
+            return (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  {/* Custom Dropdown with Delete Icons inside each option */}
+                  <div className={`relative flex-1 ${isOpen ? "z-50" : "z-10"}`} data-custom-select>
+                    <button
+                      type="button"
+                      id={field.name}
+                      onClick={() => {
+                        setOpenSelectDropdown((prev) => {
+                          const next = prev === field.name ? null : field.name;
+                          if (!next) {
+                            setDropdownSearchQuery((q) => ({ ...q, [field.name]: "" }));
+                          }
+                          return next;
+                        });
+                      }}
+                      className="flex w-full items-center justify-between rounded-xl border border-slate-200 bg-slate-50/70 px-3.5 py-2.5 text-sm text-black focus:bg-white focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/10 shadow-2xs transition-all cursor-pointer text-left"
+                    >
+                      <span className={curVal ? "font-semibold text-black" : "text-gray-400"}>
+                        {curVal || `-- Select ${field.label} --`}
+                      </span>
+                      <ChevronDownIcon
+                        className={`h-4 w-4 text-gray-500 transition-transform duration-200 ${isOpen ? "rotate-180 text-primary" : ""}`}
+                      />
+                    </button>
+
+                    {/* Dropdown Options Popup */}
+                    {isOpen && (
+                      <div className="absolute left-0 top-full z-[100] mt-1.5 w-full min-w-[220px] rounded-2xl border border-slate-200 bg-white p-2 shadow-2xl shadow-slate-900/20 max-h-72 flex flex-col animate-[fadeIn_0.15s_ease-out]">
+                        {/* Search input inside dropdown */}
+                        <div className="relative mb-1.5 shrink-0 px-1 pt-1">
+                          <input
+                            type="text"
+                            autoFocus
+                            value={dropdownSearchQuery[field.name] || ""}
+                            onChange={(e) =>
+                              setDropdownSearchQuery((prev) => ({
+                                ...prev,
+                                [field.name]: e.target.value,
+                              }))
+                            }
+                            placeholder={`Search ${field.label.toLowerCase()}...`}
+                            className="w-full rounded-xl border border-slate-200 bg-slate-50/90 pl-8 pr-7 py-1.5 text-xs font-medium text-black placeholder:text-gray-400 focus:bg-white focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                          />
+                          <MagnifyingGlassIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400 pointer-events-none" />
+                          {Boolean(dropdownSearchQuery[field.name]) && (
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setDropdownSearchQuery((prev) => ({ ...prev, [field.name]: "" }))
+                              }
+                              className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 text-gray-400 hover:text-black rounded"
+                            >
+                              <XMarkIcon className="h-3.5 w-3.5" />
+                            </button>
+                          )}
+                        </div>
+
+                        {/* Options List */}
+                        <div className="overflow-y-auto custom-scrollbar space-y-0.5 flex-1 pr-0.5">
+                          {/* Clear/Placeholder Option */}
+                          <div
+                            onClick={() => {
+                              setFormData((prev: any) => ({ ...prev, [field.name]: "" }));
+                              setOpenSelectDropdown(null);
+                            }}
+                            className="flex items-center justify-between rounded-xl px-3 py-2 text-xs text-gray-500 hover:bg-slate-100/70 cursor-pointer transition-colors"
+                          >
+                            <span>-- Select {field.label} --</span>
+                            {!curVal && <CheckIcon className="h-4 w-4 text-primary" />}
+                          </div>
+
+                          {filteredDynamicOptions.length === 0 ? (
+                            <div className="px-3 py-3 text-center text-xs text-slate-400">
+                              {searchVal ? `No matching "${searchVal}"` : `No options available.`}
+                            </div>
+                          ) : (
+                            filteredDynamicOptions.map((opt) => {
+                              const isSelected = curVal.toLowerCase() === opt.toLowerCase();
+                              return (
+                                <div
+                                  key={opt}
+                                  className={`group/item flex items-center justify-between rounded-xl px-3 py-2 text-sm transition-colors cursor-pointer ${isSelected
+                                    ? "bg-blue-100/80 text-blue-950 font-bold"
+                                    : "text-black hover:bg-blue-50/90 hover:text-blue-900 font-medium"
+                                    }`}
+                                  onClick={() => {
+                                    setFormData((prev: any) => ({ ...prev, [field.name]: opt }));
+                                    setOpenSelectDropdown(null);
+                                    setDropdownSearchQuery((q) => ({ ...q, [field.name]: "" }));
+                                  }}
+                                >
+                                  <div className="flex items-center gap-2 truncate pr-2">
+                                    {isSelected && <CheckIcon className="h-4 w-4 shrink-0 text-blue-700" />}
+                                    <span className="truncate">{opt}</span>
+                                  </div>
+
+                                  {/* Delete Icon directly inside dropdown row: prominent red icon */}
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDeleteOption(opt);
+                                    }}
+                                    title={`Delete "${opt}"`}
+                                    className="shrink-0 p-1.5 rounded-lg text-red-500 hover:text-red-700 hover:bg-red-50 transition-all cursor-pointer"
+                                  >
+                                    <TrashIcon className="h-4 w-4 stroke-[2] text-red-500 hover:text-red-700" />
+                                  </button>
+                                </div>
+                              );
+                            })
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Button to toggle custom input */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (isAddingCustomThisField) {
+                        setAddingCustomField(null);
+                        setCustomInputText("");
+                      } else {
+                        setAddingCustomField(field.name);
+                        setCustomInputText("");
+                        setOpenSelectDropdown(null);
+                      }
+                    }}
+                    title={`Add new ${field.label}`}
+                    className="shrink-0 inline-flex items-center gap-1 px-3 py-2.5 rounded-xl border border-primary/20 bg-primary/5 hover:bg-primary/10 text-primary text-xs font-bold transition-all cursor-pointer shadow-2xs active:scale-95"
+                  >
+                    {isAddingCustomThisField ? (
+                      <>
+                        <XMarkIcon className="h-4 w-4" />
+                        <span>Cancel</span>
+                      </>
+                    ) : (
+                      <>
+                        <PlusIcon className="h-4 w-4 stroke-[2.5]" />
+                        <span>+ Add New</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {/* Inline Add Custom Option Input Form */}
+                {isAddingCustomThisField && (
+                  <div className="flex items-center gap-2 p-2.5 rounded-xl border border-primary/30 bg-primary/[0.03] animate-[fadeIn_0.15s_ease-out]">
+                    <input
+                      type="text"
+                      autoFocus
+                      value={customInputText}
+                      onChange={(e) => setCustomInputText(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          handleAddCustom();
+                        } else if (e.key === "Escape") {
+                          setAddingCustomField(null);
+                          setCustomInputText("");
+                        }
+                      }}
+                      placeholder={`Enter new ${field.label.toLowerCase()} name...`}
+                      className="flex-1 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs text-gray-900 placeholder:text-gray-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-inner"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleAddCustom}
+                      disabled={!customInputText.trim()}
+                      className="px-3.5 py-1.5 rounded-lg bg-primary text-white text-xs font-bold hover:brightness-110 active:scale-95 disabled:opacity-50 transition-all cursor-pointer shadow-xs"
+                    >
+                      Add
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAddingCustomField(null);
+                        setCustomInputText("");
+                      }}
+                      className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-200/50 transition-colors"
+                      title="Cancel"
+                    >
+                      <XMarkIcon className="h-4 w-4" />
+                    </button>
+                  </div>
+                )}
+
+                {/* Selected Pill with clear option */}
+                {curVal && (
+                  <div className="flex items-center gap-2 text-xs text-slate-600 bg-slate-100/80 border border-slate-200/70 rounded-lg px-2.5 py-1.5 w-fit">
+                    <span className="font-medium text-slate-500">Selected:</span>
+                    <span className="font-bold text-primary">{curVal}</span>
+                    <button
+                      type="button"
+                      onClick={() => setFormData((prev: any) => ({ ...prev, [field.name]: "" }))}
+                      title="Clear selection"
+                      className="text-slate-400 hover:text-slate-700 transition-colors ml-1 cursor-pointer"
+                    >
+                      <XMarkIcon className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                )}
+              </div>
+            );
+          })()
         ) : field.type === "checkbox" ? (
           <label className="flex items-center gap-3 p-3.5 rounded-2xl border border-slate-200 bg-slate-50/60 hover:bg-white hover:border-primary/40 cursor-pointer shadow-2xs transition-all">
             <input
@@ -1028,10 +1613,165 @@ export default function ContentManager({
               className="block w-full rounded-xl border border-slate-200 bg-slate-50/70 pl-11 pr-3.5 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:bg-white focus:border-amber-500 focus:outline-none focus:ring-4 focus:ring-amber-500/15 shadow-2xs transition-all"
             />
           </div>
+        ) : field.type === "url" ? (
+          (() => {
+            const curUrl = String(formData[field.name] || "").trim();
+            // Automatically determine mode: if image link exists, default to 'link' mode; otherwise default to 'upload'
+            const activeMode = (urlInputMode[field.name] || (curUrl ? "link" : "upload"));
+
+            const isUploading = Boolean(uploadingFields[field.name]);
+            const uploadError = uploadErrors[field.name] || null;
+
+            const handleFileSelected = async (file: File) => {
+              const url = await uploadImageFile(file, field.name, field.name);
+              if (url) {
+                setFormData((prev: any) => ({
+                  ...prev,
+                  [field.name]: url,
+                }));
+              }
+            };
+
+            const handleDeleteImage = async () => {
+              if (!confirm(`Are you sure you want to delete this image from ${field.label} and server storage?`)) return;
+              await deleteImageFile(curUrl);
+              setFormData((prev: any) => ({ ...prev, [field.name]: "" }));
+            };
+
+            return (
+              <div className="space-y-3">
+                {/* 2 Tabs: "Add Image Link" or "Upload Image" */}
+                <div className="flex items-center gap-1.5 p-1 rounded-xl bg-slate-100/90 w-fit border border-slate-200/80">
+                  <button
+                    type="button"
+                    onClick={() => setUrlInputMode((prev) => ({ ...prev, [field.name]: "link" }))}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${activeMode === "link"
+                        ? "bg-white text-primary shadow-xs"
+                        : "text-slate-600 hover:text-slate-900"
+                      }`}
+                  >
+                    <LinkIcon className="h-3.5 w-3.5" />
+                    <span>Add Image Link</span>
+                    {curUrl && <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setUrlInputMode((prev) => ({ ...prev, [field.name]: "upload" }))}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${activeMode === "upload"
+                        ? "bg-white text-primary shadow-xs"
+                        : "text-slate-600 hover:text-slate-900"
+                      }`}
+                  >
+                    <ArrowUpTrayIcon className="h-3.5 w-3.5" />
+                    <span>Upload Image</span>
+                  </button>
+                </div>
+
+                {uploadError && (
+                  <div className="rounded-xl border border-red-200 bg-red-50 p-2.5 text-xs font-semibold text-red-600">
+                    {uploadError}
+                  </div>
+                )}
+
+                {/* Option 1: Direct Image Link Input */}
+                {activeMode === "link" ? (
+                  <div className="relative">
+                    <input
+                      type="text"
+                      id={field.name}
+                      name={field.name}
+                      required={field.required}
+                      placeholder={field.placeholder || "https://priestservices.astroved.com/images/example.jpg"}
+                      value={formData[field.name] || ""}
+                      onChange={handleInputChange}
+                      className="block w-full rounded-xl border border-slate-200 bg-slate-50/70 px-3.5 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:bg-white focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/10 shadow-2xs transition-all"
+                    />
+                    {curUrl && (
+                      <button
+                        type="button"
+                        onClick={() => setFormData((prev: any) => ({ ...prev, [field.name]: "" }))}
+                        title="Clear link"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-red-500 rounded-lg transition-colors cursor-pointer"
+                      >
+                        <XMarkIcon className="h-4 w-4" />
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  /* Option 2: Drag & Drop / Upload Image */
+                  <div className="relative">
+                    <label className={`flex flex-col items-center justify-center border-2 border-dashed ${isUploading ? "border-primary bg-primary/5 opacity-70 cursor-wait" : "border-slate-300 hover:border-primary/60 bg-slate-50/60 hover:bg-white cursor-pointer"} rounded-2xl p-5 transition-all duration-200 group text-center`}>
+                      <input
+                        type="file"
+                        disabled={isUploading}
+                        accept="image/png, image/jpeg, image/webp, image/jpg"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleFileSelected(file);
+                        }}
+                        className="hidden"
+                      />
+                      <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary group-hover:scale-105 transition-transform mb-2">
+                        {isUploading ? (
+                          <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                        ) : (
+                          <ArrowUpTrayIcon className="h-5 w-5 stroke-[2.5]" />
+                        )}
+                      </div>
+                      <p className="text-xs font-bold text-slate-700">
+                        {isUploading ? "Uploading image to server..." : (
+                          <>Drag and drop or <span className="text-primary underline">browse file</span></>
+                        )}
+                      </p>
+                      <p className="text-[11px] text-slate-400 mt-1">PNG, JPG, or WEBP images (auto short-named)</p>
+                    </label>
+                  </div>
+                )}
+
+                {/* Live Preview & Delete / Clear Action */}
+                {curUrl && (
+                  <div className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-xs">
+                    <div className="flex items-center gap-3 min-w-0">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={curUrl}
+                        alt={field.label}
+                        className="h-12 w-12 rounded-xl object-cover border border-slate-200 bg-slate-50 shrink-0 shadow-2xs"
+                        onError={(e) => {
+                          (e.target as HTMLElement).style.display = "none";
+                        }}
+                      />
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-slate-800">Attached Image</span>
+                          <span className="rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.2 text-[10px] font-bold">Uploaded</span>
+                        </div>
+                        <p className="text-[11px] text-slate-500 truncate font-mono mt-0.5 max-w-sm sm:max-w-md">
+                          {curUrl}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Delete button: clears form and deletes physical file from server storage */}
+                    <button
+                      type="button"
+                      onClick={handleDeleteImage}
+                      title="Delete image from server"
+                      className="shrink-0 inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200/70 transition-all cursor-pointer shadow-2xs"
+                    >
+                      <TrashIcon className="h-3.5 w-3.5" />
+                      <span>Delete</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            );
+          })()
         ) : (
           <div>
             <input
-              type={field.type === "url" ? "text" : field.type}
+              type={field.type}
               id={field.name}
               name={field.name}
               required={field.required}
@@ -1047,21 +1787,6 @@ export default function ContentManager({
                   <option key={opt} value={opt} />
                 ))}
               </datalist>
-            )}
-            {field.type === "url" && Boolean(formData[field.name]) && (
-              <div className="mt-2.5 flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50/80 p-2.5 shadow-2xs">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={String(formData[field.name])}
-                  alt={field.label}
-                  className="h-12 w-12 rounded-lg object-cover border border-slate-200 bg-white shrink-0 shadow-2xs"
-                  onError={(e) => { (e.target as HTMLElement).style.display = "none"; }}
-                />
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs font-bold text-slate-800">Live Preview</p>
-                  <p className="text-[11px] text-slate-400 truncate font-mono">{String(formData[field.name])}</p>
-                </div>
-              </div>
             )}
           </div>
         )}
@@ -1252,10 +1977,10 @@ export default function ContentManager({
                   <div
                     key={group.name}
                     id={`section-${groupIdx}`}
-                    className={`group relative overflow-hidden rounded-2xl border ${theme.borderColor} ${theme.cardBg} shadow-xs hover:shadow-md ${theme.hoverBorder} transition-all duration-300 scroll-mt-44`}
+                    className={`group relative overflow-visible rounded-2xl border ${theme.borderColor} ${theme.cardBg} shadow-xs hover:shadow-md ${theme.hoverBorder} transition-all duration-300 scroll-mt-44`}
                   >
                     {/* Top Colorful Gradient Header Accent Line */}
-                    <div className={`h-1.5 w-full bg-gradient-to-r ${theme.gradient}`} />
+                    <div className={`h-1.5 w-full bg-gradient-to-r ${theme.gradient} rounded-t-2xl`} />
 
                     <div className="p-7 md:p-8 pt-8">
                       {/* Section Header */}

@@ -14,8 +14,14 @@ import heroBannerRoutes from './routes/heroBannerRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import promoCodeRoutes from "./routes/promoCode.routes.js";
 import whatsappRoutes from "./routes/whatsapp.routes.js";
+import uploadRoutes from "./routes/upload.routes.js";
 import { globalLimiter } from "./middlewares/rateLimiters.js";
 import { notFoundHandler, errorHandler } from "./middlewares/error.middleware.js";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export const RAZORPAY_WEBHOOK_PATH = "/api/payments/getRazorpayWebhook";
 
@@ -82,8 +88,12 @@ app.get('/health', (req, res) => {
     res.status(200).json({ status: 'ok', timestamp: new Date() });
 });
 
+// Serve uploaded images statically
+app.use('/images', express.static(path.resolve(__dirname, '../public/images')));
+
 // Routes
 app.use("/api/admin", adminRoutes);
+app.use("/api/upload", uploadRoutes);
 app.use("/api/hero-banners", heroBannerRoutes);
 app.use('/api/pujas', pujaRoutes);
 app.use('/api/homas', homaRoutes);
