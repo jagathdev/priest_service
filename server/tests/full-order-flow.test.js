@@ -19,6 +19,10 @@ dotenv.config();
 
 test("Comprehensive Razorpay Webhook & Order Flow Integration Suite", async (t) => {
     const baseUri = process.env.TEST_MONGO_URI || process.env.MONGO_URI || process.env.MONGODB_URI;
+    if (!baseUri) {
+        t.skip("No MONGO_URI provided in environment; skipping MongoDB integration tests");
+        return;
+    }
     // Always use an isolated test database so production data is never touched
     const mongoUri = baseUri.replace(/\/([a-zA-Z0-9_-]+)(\?|$)/, '/$1_test$2');
     const testSecret = "test_webhook_secret_flow_123";
@@ -79,13 +83,13 @@ test("Comprehensive Razorpay Webhook & Order Flow Integration Suite", async (t) 
     t.after(async () => {
         // Cleanup test artifacts
         if (testPuja) {
-            await Puja.deleteOne({ _id: testPuja._id }).catch(() => {});
+            await Puja.deleteOne({ _id: testPuja._id }).catch(() => { });
         }
-        await Order.deleteMany({ itemName: new RegExp(testTag) }).catch(() => {});
-        await Payment.deleteMany({ razorpayPaymentId: new RegExp(testTag) }).catch(() => {});
-        await WebhookEvent.deleteMany({ eventId: new RegExp(testTag) }).catch(() => {});
+        await Order.deleteMany({ itemName: new RegExp(testTag) }).catch(() => { });
+        await Payment.deleteMany({ razorpayPaymentId: new RegExp(testTag) }).catch(() => { });
+        await WebhookEvent.deleteMany({ eventId: new RegExp(testTag) }).catch(() => { });
         resetRazorpayInstance();
-        await mongoose.disconnect().catch(() => {});
+        await mongoose.disconnect().catch(() => { });
     });
 
     const createSignedWebhook = (payloadObj, customSecret = testSecret) => {
