@@ -149,7 +149,7 @@ export default function HomaClient({ initialHomas }: { initialHomas?: Homa[] }) 
       <Navbar />
       <main className="min-h-screen bg-[#fafafc] pb-16 font-sans">
         {/* ── Top Header Hero Banner ── */}
-        <section className="bg-gradient-to-b from-[#fff7f8] via-[#ffffff] to-[#fafafc] pt-10 sm:pt-12 pb-8 sm:pb-10 text-center border-b border-gray-150 relative overflow-hidden">
+        <section className="bg-gradient-to-b from-[#fff7f8] via-[#ffffff] to-[#fafafc] pt-12 pb-10 text-center border-b border-gray-150 relative overflow-hidden">
           {/* Left Inverted Mandala Decoration */}
           <div className="absolute left-0 top-0 bottom-0 h-full pointer-events-none opacity-40 z-0 hidden min-[769px]:flex items-center">
             <Image
@@ -173,17 +173,17 @@ export default function HomaClient({ initialHomas }: { initialHomas?: Homa[] }) 
             />
           </div>
 
-          <div className="mx-auto max-w-4xl px-4 sm:px-6 relative z-10">
-            <h1 className="text-2xl sm:text-4xl md:text-5xl font-extrabold text-[#5b1422] tracking-tight leading-tight font-serif">
+          <div className="mx-auto max-w-4xl px-4 relative z-10">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-[#5b1422] tracking-tight leading-tight font-serif">
               Discover Sacred Pujas &amp; Divine Blessings
             </h1>
-            <p className="mt-2.5 sm:mt-3 text-xs sm:text-sm text-gray-500 max-w-2xl mx-auto leading-relaxed font-medium">
+            <p className="mt-3 text-xs sm:text-sm text-gray-500 max-w-2xl mx-auto leading-relaxed font-medium">
               Receive continued divine blessings through temple offerings performed with your Name, Gotram and Nakshatram.
             </p>
 
             {/* Large Search & Filter Input Bar */}
-            <div className="mt-6 sm:mt-8 max-w-2xl mx-auto relative">
-              <div className="flex items-center bg-white rounded-full border border-gray-250 shadow-sm px-4 sm:px-5 py-2.5 sm:py-3 hover:border-gray-400 transition-all">
+            <div className="mt-8 max-w-2xl mx-auto relative">
+              <div className="flex items-center bg-white rounded-full border border-gray-250 shadow-sm px-5 py-3 hover:border-gray-400 transition-all">
                 <svg className="w-5 h-5 text-gray-400 shrink-0 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
@@ -209,7 +209,7 @@ export default function HomaClient({ initialHomas }: { initialHomas?: Homa[] }) 
         </section>
 
         {/* ── Main Layout: Left Sidebar + Right Card Grid ── */}
-        <div className="mx-auto max-w-[1360px] px-4 sm:px-6 lg:px-8 pt-6 sm:pt-10">
+        <div className="mx-auto max-w-[1360px] px-4 sm:px-6 lg:px-8 pt-10">
           <div className="flex flex-col lg:flex-row gap-8 items-start">
             {/* ── Left Sidebar Filter Card ── */}
             {(homaTypeOptions.length > 1 || deityOptions.length > 0 || doshaOptions.length > 0) && (
