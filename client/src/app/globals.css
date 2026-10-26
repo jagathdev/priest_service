@@ -274,7 +274,14 @@ input[type="password"]:-webkit-autofill:active {
   transform: translateY(0) !important;
 }
 
-/* Fallback: If on mobile, ensure above-the-fold hero elements are always visible */
+/* Fallback: Ensure elements are always visible on mobile devices (e.g. iPhone 11/12) */
+@media (max-width: 768px) {
+  [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
 @media (max-width: 1024px) {
   section[data-reveal]:first-of-type,
   main > section[data-reveal]:first-child {

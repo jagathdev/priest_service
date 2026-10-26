@@ -39,10 +39,21 @@ const getHomaImageUrl = (imageUrl?: string): string => {
   if (!imageUrl || typeof imageUrl !== "string") return "";
   const trimmed = imageUrl.trim();
   if (!trimmed) return "";
-  if (trimmed.startsWith("http://") || trimmed.startsWith("https://") || trimmed.startsWith("data:") || trimmed.startsWith("/")) {
-    return trimmed;
+  const safeEncode = (url: string) => {
+    try {
+      return encodeURI(decodeURI(url));
+    } catch {
+      return encodeURI(url);
+    }
+  };
+  if (trimmed.startsWith("http://") || trimmed.startsWith("https://") || trimmed.startsWith("data:")) {
+    return safeEncode(trimmed);
   }
-  return `/${trimmed}`;
+
+  // Prepend backend URL dynamically
+  const backendBase = (process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com").replace(/\/+$/, "");
+  const cleanPath = trimmed.startsWith("/") ? trimmed : `/${trimmed}`;
+  return `${backendBase}${safeEncode(cleanPath)}`;
 };
 
 export default function HomaClient({ initialHomas }: { initialHomas?: Homa[] }) {
@@ -129,19 +140,31 @@ export default function HomaClient({ initialHomas }: { initialHomas?: Homa[] }) 
   }, [allHomas, dynamicHomaTypes]);
 
   const deityOptions = useMemo(() => {
-    const set = new Set<string>();
+    const map = new Map<string, string>();
     allHomas.forEach((h) => {
-      if (h.deity && h.deity.trim()) set.add(h.deity.trim());
+      if (h.deity && h.deity.trim()) {
+        const trimmed = h.deity.trim();
+        const lower = trimmed.toLowerCase();
+        if (!map.has(lower)) {
+          map.set(lower, trimmed);
+        }
+      }
     });
-    return Array.from(set).sort();
+    return Array.from(map.values()).sort((a, b) => a.localeCompare(b));
   }, [allHomas]);
 
   const doshaOptions = useMemo(() => {
-    const set = new Set<string>();
+    const map = new Map<string, string>();
     allHomas.forEach((h) => {
-      if (h.dosha && h.dosha.trim()) set.add(h.dosha.trim());
+      if (h.dosha && h.dosha.trim()) {
+        const trimmed = h.dosha.trim();
+        const lower = trimmed.toLowerCase();
+        if (!map.has(lower)) {
+          map.set(lower, trimmed);
+        }
+      }
     });
-    return Array.from(set).sort();
+    return Array.from(map.values()).sort((a, b) => a.localeCompare(b));
   }, [allHomas]);
 
   return (

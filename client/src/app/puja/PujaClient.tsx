@@ -43,10 +43,21 @@ const getPujaImageUrl = (imageUrl?: string): string => {
   if (!imageUrl || typeof imageUrl !== "string") return "";
   const trimmed = imageUrl.trim();
   if (!trimmed) return "";
-  if (trimmed.startsWith("http://") || trimmed.startsWith("https://") || trimmed.startsWith("data:") || trimmed.startsWith("/")) {
-    return trimmed;
+  const safeEncode = (url: string) => {
+    try {
+      return encodeURI(decodeURI(url));
+    } catch {
+      return encodeURI(url);
+    }
+  };
+  if (trimmed.startsWith("http://") || trimmed.startsWith("https://") || trimmed.startsWith("data:")) {
+    return safeEncode(trimmed);
   }
-  return `/${trimmed}`;
+
+  // Prepend backend URL dynamically
+  const backendBase = (process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com").replace(/\/+$/, "");
+  const cleanPath = trimmed.startsWith("/") ? trimmed : `/${trimmed}`;
+  return `${backendBase}${safeEncode(cleanPath)}`;
 };
 
 interface FilterGroup {
@@ -314,20 +325,28 @@ export default function PujaClient({ initialPujas }: { initialPujas?: Puja[] }) 
   // Compute dynamic filter groups ONLY from values actually present in saved pujas
   const dynamicFilterGroups = useMemo(() => {
     const extractValues = (key: keyof Puja, altKey?: keyof Puja) => {
-      const set = new Set<string>();
+      const map = new Map<string, string>();
       allPujas.forEach((p) => {
         const val1 = p[key];
         if (typeof val1 === "string" && val1.trim()) {
-          set.add(val1.trim());
+          const trimmed = val1.trim();
+          const lower = trimmed.toLowerCase();
+          if (!map.has(lower)) {
+            map.set(lower, trimmed);
+          }
         }
         if (altKey) {
           const val2 = p[altKey];
           if (typeof val2 === "string" && val2.trim()) {
-            set.add(val2.trim());
+            const trimmed = val2.trim();
+            const lower = trimmed.toLowerCase();
+            if (!map.has(lower)) {
+              map.set(lower, trimmed);
+            }
           }
         }
       });
-      return Array.from(set).sort();
+      return Array.from(map.values()).sort((a, b) => a.localeCompare(b));
     };
 
     const deities = extractValues("deity");
@@ -542,7 +561,7 @@ export default function PujaClient({ initialPujas }: { initialPujas?: Puja[] }) 
                     className="bg-white rounded-2xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.12),0_2px_6px_-1px_rgba(0,0,0,0.08)] border border-gray-200/90 flex flex-col overflow-hidden group hover:shadow-[0_14px_30px_-6px_rgba(0,0,0,0.18),0_10px_12px_-6px_rgba(0,0,0,0.1)] hover:-translate-y-1 transition-all duration-300 relative cursor-pointer"
                   >
                     <div className="flex flex-col flex-1">
-                      <div className="relative w-full aspect-[4/3] sm:aspect-auto sm:h-[275px] shrink-0 overflow-hidden">
+                      <div className="relative w-full aspect-[4/3] min-h-[220px] sm:min-h-0 sm:aspect-auto sm:h-[275px] shrink-0 overflow-hidden">
                         <Image
                           src={getPujaImageUrl(puja.imageUrl)}
                           alt={puja.title}

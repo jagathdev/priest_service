@@ -25,18 +25,29 @@ interface BannerSlide {
 
 const DEFAULT_IMAGE = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='400'%3E%3Crect width='800' height='400' fill='%23cccccc'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='24' fill='%23333333'%3ENo Image Available%3C/text%3E%3C/svg%3E`;
 
+const safeEncodeUrl = (url: string): string => {
+  if (!url || typeof url !== "string") return "";
+  const trimmed = url.trim();
+  if (!trimmed) return "";
+  try {
+    return encodeURI(decodeURI(trimmed));
+  } catch {
+    return encodeURI(trimmed);
+  }
+};
+
 export const get1024BannerImage = (img: string): string => {
   const lower = (img || "").toLowerCase();
   if (lower.includes("rameshwaram") || lower.includes("tarpanam")) {
-    return "/Service images/rameshwaram_puja.png";
+    return "/Service%20images/rameshwaram_puja.png";
   }
   if (lower.includes("shani")) {
-    return "/Service images/shani_puja.png";
+    return "/Service%20images/shani_puja.png";
   }
   if (lower.includes("nava") || lower.includes("navagraha")) {
-    return "/Service images/nava_puja.png";
+    return "/Service%20images/nava_puja.png";
   }
-  return img;
+  return safeEncodeUrl(img);
 };
 
 const mapBanners = (list: any[]): BannerSlide[] => {
@@ -50,6 +61,8 @@ const mapBanners = (list: any[]): BannerSlide[] => {
       !safeImage.startsWith("data:")
     ) {
       safeImage = DEFAULT_IMAGE;
+    } else if (safeImage) {
+      safeImage = safeEncodeUrl(safeImage);
     }
 
     return {
@@ -85,7 +98,7 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
   const minSwipeDistance = 50;
 
-  const [isTransitioning, setIsTransitioning] = useState(true);
+  const [_isTransitioning, setIsTransitioning] = useState(true);
 
   const totalSlides = bannerSlides.length;
 
@@ -123,13 +136,6 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
 
   // When activeSlide reaches the cloned slide (index === totalSlides),
   // instantly jump back to 0 without animation so it can continue forward infinitely
-  const handleTransitionEnd = () => {
-    if (activeSlide >= totalSlides) {
-      setIsTransitioning(false);
-      setActiveSlide(0);
-    }
-  };
-
   useEffect(() => {
     async function fetchHeroBanners() {
       try {
@@ -208,14 +214,11 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
   }
 
   if (bannerSlides.length === 0) return null;
-
-  const displaySlides = bannerSlides.length > 1 ? [...bannerSlides, bannerSlides[0]] : bannerSlides;
   const currentSafeSlideIndex = bannerSlides.length > 0 ? activeSlide % bannerSlides.length : 0;
   const current = bannerSlides[currentSafeSlideIndex];
 
   return (
     <section className="relative w-full max-w-[1350px] mx-auto px-3 min-[360px]:px-4 sm:px-6 md:px-8 lg:px-10 pt-2 sm:pt-3 lg:pt-4 pb-8 md:pb-12 xl:py-12 bg-white my-0 sm:my-1 xl:my-2 overflow-hidden">
-
 
       {/* Background Circular Mandala Watermark inside Hero */}
       <div
@@ -342,56 +345,42 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
         {/* ── Right Content (Hero Banner Card) ── order-1 on mobile, order-2 on desktop */}
         <div className="order-1 lg:order-2 w-full max-w-full lg:w-[480px] xl:w-[670px] 2xl:w-[730px] shrink-0 flex flex-col items-center relative">
 
-          {/* Smooth Forward-Only Carousel Viewport with explicit fallback height for iOS 11-14 */}
-          <div className="w-full relative rounded-2xl min-[375px]:rounded-3xl overflow-hidden shadow-2xl border border-stone-200/80 bg-stone-100 aspect-[4/3] min-h-[250px] sm:min-h-[380px] sm:aspect-auto sm:h-[400px] md:h-[460px] lg:h-[320px] xl:h-[500px] shrink-0">
-            {/* Sliding Track (Continues sliding forward to the left) */}
-            <div
-              className={`flex w-full h-full ${isTransitioning ? "transition-transform duration-700 ease-out" : ""}`}
-              style={{ transform: `translateX(-${activeSlide * 100}%)` }}
-              onTransitionEnd={handleTransitionEnd}
-            >
-              {displaySlides.map((slide, idx) => {
-                const img1024 = get1024BannerImage(slide.image);
-                return (
-                  <div key={`${slide.id || "slide"}-${idx}`} className="w-full h-full shrink-0 relative">
-                    <Link
-                      href={slide.ctaLink}
-                      className="w-full h-full block relative cursor-pointer group"
-                    >
-                      {/* Ambient Blurred Background (warm natural tone) */}
-                      <picture className="absolute inset-0 w-full h-full block pointer-events-none">
+          {/* Smooth Fade Carousel Viewport */}
+          <div className="relative w-full aspect-[4/3] min-h-[250px] sm:min-h-[380px] sm:aspect-auto sm:h-[400px] md:h-[460px] lg:h-[320px] xl:h-[500px] rounded-2xl min-[375px]:rounded-3xl overflow-hidden shadow-2xl border border-stone-200/80 bg-stone-100 shrink-0">
+            {bannerSlides.map((slide, idx) => {
+              const isActive = idx === currentSafeSlideIndex;
+              const img1024 = get1024BannerImage(slide.image);
+              const useSource = !img1024.startsWith("data:");
+              return (
+                <div
+                  key={`${slide.id || "slide"}-${idx}`}
+                  className={`absolute inset-0 w-full h-full transition-opacity duration-700 ease-in-out ${isActive ? "opacity-100 z-10 pointer-events-auto" : "opacity-0 z-0 pointer-events-none"}`}
+                >
+                  <Link
+                    href={slide.ctaLink}
+                    className="w-full h-full block relative cursor-pointer group"
+                  >
+                    {/* Full-bleed Banner Image with 1024 Specific Media Query */}
+                    <picture className="absolute inset-0 w-full h-full block">
+                      {useSource && (
                         <source
                           media="(min-width: 1024px) and (max-width: 1279px)"
                           srcSet={img1024}
                         />
-                        <img
-                          src={slide.image}
-                          alt=""
-                          className="w-full h-full object-cover blur-2xl opacity-35 scale-110"
-                        />
-                      </picture>
-
-                      {/* Full-bleed Banner Image with 1024 Specific Media Query */}
-                      <picture className="absolute inset-0 w-full h-full block">
-                        <source
-                          media="(min-width: 1024px) and (max-width: 1279px)"
-                          srcSet={img1024}
-                        />
-                        <img
-                          src={slide.image}
-                          alt={slide.title}
-                          className="w-full h-full object-cover object-center relative z-10 drop-shadow-md group-hover:scale-[1.02] transition-transform duration-500"
-                        />
-                      </picture>
-                    </Link>
-                  </div>
-                );
-              })}
-            </div>
-
+                      )}
+                      <img
+                        src={slide.image}
+                        alt={slide.title}
+                        className="w-full h-full object-cover object-center"
+                      />
+                    </picture>
+                  </Link>
+                </div>
+              );
+            })}
           </div>
 
-          {/* Slider Dots Navigation inside Hero */}
+          {/* Slider Dots Navigation inside Hero - Centered directly below the image */}
           <div className="flex items-center justify-center gap-2.5 mt-4 sm:mt-5">
             {bannerSlides.map((_, index) => (
               <button
@@ -503,7 +492,6 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
           </div>
         </div>
       </div>
-
-    </section>
+    </section >
   );
 }
