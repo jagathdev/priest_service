@@ -156,7 +156,7 @@ export default function ContentManager({
   fields,
   searchFields = [],
   filterGroups = EMPTY_FILTER_GROUPS,
-  dynamicPujaLocationFromItems = false,
+  // dynamicPujaLocationFromItems = false,
   reviewMode = false,
   hideAddButton = false,
 }: ContentManagerProps) {
@@ -1646,8 +1646,8 @@ export default function ContentManager({
                     type="button"
                     onClick={() => setUrlInputMode((prev) => ({ ...prev, [field.name]: "link" }))}
                     className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${activeMode === "link"
-                        ? "bg-white text-primary shadow-xs"
-                        : "text-slate-600 hover:text-slate-900"
+                      ? "bg-white text-primary shadow-xs"
+                      : "text-slate-600 hover:text-slate-900"
                       }`}
                   >
                     <LinkIcon className="h-3.5 w-3.5" />
@@ -1659,8 +1659,8 @@ export default function ContentManager({
                     type="button"
                     onClick={() => setUrlInputMode((prev) => ({ ...prev, [field.name]: "upload" }))}
                     className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${activeMode === "upload"
-                        ? "bg-white text-primary shadow-xs"
-                        : "text-slate-600 hover:text-slate-900"
+                      ? "bg-white text-primary shadow-xs"
+                      : "text-slate-600 hover:text-slate-900"
                       }`}
                   >
                     <ArrowUpTrayIcon className="h-3.5 w-3.5" />

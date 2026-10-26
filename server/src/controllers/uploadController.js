@@ -21,6 +21,7 @@ export const uploadImage = async (req, res) => {
     if (!req.file) {
       return res.status(400).json({ success: false, message: "No image file provided." });
     }
+
     const filename = req.file.filename;
     const url = `/images/${filename}`;
 
