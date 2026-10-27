@@ -458,14 +458,14 @@ export default function DashboardClient({
             )}
           </div>
 
-          <div className="text-center mt-10">
+          {/* <div className="text-center mt-10">
             <Link
               href="/puja"
               className="inline-block text-[#14395C] font-extrabold px-8 py-3 rounded-full border-2 border-[#14395C] hover:bg-[#14395C]/5 active:scale-95 transition-all text-base shadow-sm"
             >
               View All Pujas
             </Link>
-          </div>
+          </div> */}
         </div>
       </section>
 
