@@ -637,9 +637,9 @@ export default function DashboardClient({
               </li>
             </ul>
           </div>
-          <Link href="/puja" className="bg-[#14395C] hover:bg-[#0e2740] active:scale-95 text-white font-extrabold px-8 py-3.5 rounded-full text-sm sm:text-base transition-all inline-flex items-center gap-2.5 shadow-md shadow-[#14395C]/20">
+          {/* <Link href="/puja" className="bg-[#14395C] hover:bg-[#0e2740] active:scale-95 text-white font-extrabold px-8 py-3.5 rounded-full text-sm sm:text-base transition-all inline-flex items-center gap-2.5 shadow-md shadow-[#14395C]/20">
             Find the Right Puja <div className="bg-white text-[#14395C] rounded-full w-5 h-5 flex items-center justify-center shadow-sm"><svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7" /></svg></div>
-          </Link>
+          </Link> */}
         </div>
 
         <div className="max-w-[1350px] mx-auto px-4 sm:px-6 lg:px-10 flex flex-col lg:flex-row justify-between gap-12 lg:gap-8 mb-10">
