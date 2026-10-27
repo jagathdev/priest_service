@@ -638,20 +638,17 @@ export default function PujaDetailClient({
     puja.details?.heroSubtitle ||
     "A special sacred ritual for devotees seeking courage, prosperity, and fulfillment of noble wishes.";
 
-  const templeLocationText =
-    puja.templeLocation ||
-    puja.location ||
-    puja.templeVenue ||
-    puja.details?.templeLocation ||
-    puja.details?.templeName ||
-    "Sacred Temple Venue, India";
-
   const templeVenueText =
     puja.templeVenue ||
     puja.details?.templeName ||
-    puja.location ||
-    puja.templeLocation ||
+    (puja as any).templeName ||
     "Sacred Temple Venue";
+
+  const templeLocationText =
+    puja.templeLocation ||
+    puja.details?.templeLocation ||
+    puja.location ||
+    "Sacred Temple Venue, India";
 
   const templeNoteText =
     puja.templeNote ||
@@ -894,8 +891,8 @@ export default function PujaDetailClient({
 
               {/* Dynamic Countdown & Temple Card fetched from Dashboard */}
               <PujaCountdownCard
-                templeVenue={templeVenueText || "Kamrup Teerth Kshetra"}
-                location={puja.location || puja.templeLocation || "Guwahati, Assam"}
+                templeVenue={templeVenueText || "Sacred Temple Venue"}
+                location={templeLocationText !== templeVenueText ? templeLocationText : puja.location || "India"}
                 dateText={puja.date || "Saturday, 10 October"}
                 occasionText={puja.subtitle || (puja as any).occasion || (puja as any).dateOccasion || puja.badge || (puja as any).tithis || "Mahalaya Amavasya"}
                 eventDateTime={puja.eventDateTime}

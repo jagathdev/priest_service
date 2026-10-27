@@ -360,7 +360,8 @@ export default function PujaClient({ initialPujas }: { initialPujas?: Puja[] }) 
     const tithis = extractValues("tithis");
     const doshas = extractValues("dosha");
     const benefits = extractValues("benefit");
-    const locations = extractValues("filterLocation", "location");
+    // Only extract from filterLocation so only admin entered filter values show
+    const locations = extractValues("filterLocation");
 
     const groups: FilterGroup[] = [];
 

@@ -68,8 +68,8 @@ export function matchesPujaFilters(
       }
 
       if (group.label === "Location") {
-        const loc = puja.location || puja.filterLocation || puja.templeVenue;
-        if (typeof loc === "string" && loc.toLowerCase().includes(selectedValue.toLowerCase())) {
+        const filterLoc = puja.filterLocation || puja.location;
+        if (typeof filterLoc === "string" && (filterLoc.toLowerCase() === selectedValue.toLowerCase() || filterLoc.toLowerCase().includes(selectedValue.toLowerCase()))) {
           return true;
         }
       }
@@ -124,7 +124,8 @@ export function extractDynamicFilterGroups(pujas: any[]): FilterGroup[] {
   const tithis = extractValues("tithis");
   const doshas = extractValues("dosha");
   const benefits = extractValues("benefit");
-  const locations = extractValues("filterLocation", "location");
+  // Only extract from filterLocation so that only what the admin explicitly enters/selects in the Vedic Filters section appears
+  const locations = extractValues("filterLocation");
 
   const groups: FilterGroup[] = [];
 

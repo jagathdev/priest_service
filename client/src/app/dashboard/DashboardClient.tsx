@@ -426,6 +426,10 @@ export default function DashboardClient({
                 const slugVal = p.slug || (p.title ? p.title.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-") : "");
                 const topTagVal = p.badge || p.shortTitle || p.subtitle;
                 const descriptionVal = p.description || p.subtitle;
+                const venueVal = p.templeVenue || p.details?.templeName || p.templeName || "";
+                const locVal = p.location || p.filterLocation || p.templeLocation || p.details?.templeLocation || "";
+                const occasionVal = p.subtitle || p.occasion || p.dateOccasion || p.badge || "";
+
                 return (
                   <div
                     key={p._id}
@@ -437,8 +441,10 @@ export default function DashboardClient({
                       topTag={topTagVal}
                       title={p.title}
                       subtitle={descriptionVal}
-                      location={p.location || p.filterLocation || p.templeVenue}
+                      templeVenue={venueVal}
+                      location={locVal}
                       date={p.date}
+                      dateOccasion={occasionVal}
                       price={priceVal}
                       slug={slugVal}
                       onShare={(sharePayload) => {
@@ -784,20 +790,36 @@ function Badge({ icon, text }: { icon: string; text: string }) {
     </div>
   );
 }
+
 interface PujaCardProps {
-  id?: string;
+  id: string;
   imageSrc: string | { src: string };
   topTag: string;
   title: string;
   subtitle: string;
-  location: string;
+  templeVenue?: string;
+  location?: string;
   date: string;
+  dateOccasion?: string;
   price: string | number;
   slug?: string;
   onShare?: (data: ShareData) => void;
 }
 
-function PujaCard({ id, imageSrc, topTag, title, subtitle, location, date, price, slug, onShare }: PujaCardProps) {
+function PujaCard({
+  id,
+  imageSrc,
+  topTag,
+  title,
+  subtitle,
+  templeVenue,
+  location,
+  date,
+  dateOccasion,
+  price,
+  slug,
+  onShare,
+}: PujaCardProps) {
   const cardUrl = slug ? `/puja/${slug}` : "/puja";
   const srcStr = (typeof imageSrc === "string" ? imageSrc : (imageSrc as any)?.src) || "/images/Ganesh-Chaturthi-Mahapuja.jpg";
   const rawImg = (() => {
@@ -808,6 +830,10 @@ function PujaCard({ id, imageSrc, topTag, title, subtitle, location, date, price
     }
   })();
   const img1024 = get1024BannerImage(rawImg);
+
+  // Determine main venue title and secondary location text matching detail page
+  const mainVenue = templeVenue || location || "Sacred Temple Venue";
+  const subLocation = location && location !== mainVenue ? location : "";
 
   return (
     <div className="bg-white rounded-2xl min-[375px]:rounded-3xl border border-stone-200/90 p-2 min-[375px]:p-2.5 sm:p-3 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.12),0_2px_6px_-1px_rgba(0,0,0,0.08)] hover:shadow-[0_12px_28px_-6px_rgba(0,0,0,0.18),0_8px_10px_-6px_rgba(0,0,0,0.1)] transition-all duration-300 flex flex-col group text-left relative h-full">
@@ -849,26 +875,49 @@ function PujaCard({ id, imageSrc, topTag, title, subtitle, location, date, price
           </p>
 
           {/* Location & Date Details Box with Vector SVG Icons */}
-          <div className="bg-stone-50 border border-stone-200/90 rounded-2xl p-3 sm:p-3.5 mb-4 space-y-2.5 text-xs sm:text-[13px] font-bold text-stone-800 mt-auto">
-            {/* Location */}
-            <div className="flex items-start gap-2.5">
-              <svg className="w-5 h-5 text-accent shrink-0 mt-0.5" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 2L9 6H15L12 2ZM8 7L6 11H18L16 7H8ZM5 12L3 17H21L19 12H5ZM2 18V21H22V18H2Z" />
-              </svg>
-              <span className="leading-snug line-clamp-1">{location}</span>
+          <div className="bg-stone-50 border border-stone-200/90 rounded-2xl p-3 sm:p-3.5 mb-4 space-y-2.5 text-xs sm:text-[13px] text-stone-800 mt-auto">
+            {/* Temple & Location (Row 1) */}
+            <div className="flex items-center gap-2.5">
+              <div className="text-stone-700 shrink-0">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 2L15 6H9L12 2Z M9 6V21 M15 6V21 M6 21H18 M12 6V11 M8 11H16" />
+                </svg>
+              </div>
+              <div className="flex flex-wrap items-baseline gap-x-2 truncate">
+                <span className="font-bold text-stone-900 leading-snug truncate">
+                  {mainVenue}
+                </span>
+                {subLocation && (
+                  <span className="text-stone-400 font-normal text-[11px] sm:text-xs truncate">
+                    {subLocation}
+                  </span>
+                )}
+              </div>
             </div>
 
             <div className="w-full h-[1px] bg-stone-200/70" />
 
-            {/* Date */}
+            {/* Date & Occasion (Row 2) */}
             <div className="flex items-center gap-2.5">
-              <svg className="w-5 h-5 text-accent shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                <line x1="16" y1="2" x2="16" y2="6" />
-                <line x1="8" y1="2" x2="8" y2="6" />
-                <line x1="3" y1="10" x2="21" y2="10" />
-              </svg>
-              <span className="line-clamp-1">{date}</span>
+              <div className="text-stone-700 shrink-0">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
+                  <rect x="3" y="4" width="18" height="18" rx="3" ry="3" />
+                  <line x1="16" y1="2" x2="16" y2="6" />
+                  <line x1="8" y1="2" x2="8" y2="6" />
+                  <line x1="3" y1="10" x2="21" y2="10" />
+                  <circle cx="8" cy="14" r="1" fill="currentColor" />
+                </svg>
+              </div>
+              <div className="flex flex-wrap items-baseline gap-x-2 truncate">
+                <span className="font-bold text-stone-900 leading-snug">
+                  {date}
+                </span>
+                {dateOccasion && (
+                  <span className="text-stone-400 font-normal text-[11px] sm:text-xs truncate">
+                    {dateOccasion}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
 
