@@ -13,6 +13,8 @@ import PujaCountdownCard from "@/components/common/PujaCountdownCard";
 import ShareModal from "@/components/common/ShareModal";
 import GalleryLightboxModal from "@/components/common/GalleryLightboxModal";
 import Image from "next/image";
+import { getStartingPriceINR } from "@/lib/pricing";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface PujaPackage {
   id: string;
@@ -146,6 +148,7 @@ export default function PujaDetailClient({
   const [galleryCarouselIdx, setGalleryCarouselIdx] = useState(0);
   const [galleryLightboxOpen, setGalleryLightboxOpen] = useState(false);
   const [lightboxImageIdx, setLightboxImageIdx] = useState(0);
+  const [failedGalleryImages, setFailedGalleryImages] = useState<Record<string, boolean>>({});
   const heroCtaRef = useRef<HTMLButtonElement | null>(null);
   const tabsContainerRef = useRef<HTMLDivElement | null>(null);
 
@@ -252,6 +255,21 @@ export default function PujaDetailClient({
       const sections = ["about", "benefits", "process", "temple", "receive", "faqs", "gallery"];
       const headerOffset = window.innerWidth < 640 ? 120 : 150;
 
+      // Check if user has reached or scrolled near the bottom of the page
+      const scrollBottom = window.innerHeight + window.pageYOffset;
+      const docHeight = Math.max(
+        document.body.scrollHeight,
+        document.documentElement.scrollHeight,
+        document.body.offsetHeight,
+        document.documentElement.offsetHeight
+      );
+      const isAtBottom = scrollBottom >= docHeight - 120;
+
+      if (isAtBottom && document.getElementById("gallery")) {
+        setActiveTab("gallery");
+        return;
+      }
+
       let currentSection = sections[0];
       for (const sectionId of sections) {
         const el = document.getElementById(sectionId);
@@ -346,7 +364,7 @@ export default function PujaDetailClient({
 
     if (puja?.packages && puja.packages.length > 0) {
       return puja.packages.map((pkg: any, idx: number) => {
-        const basePrice = pkg.priceINR ?? pkg.price ?? puja.price ?? 501;
+        const basePrice = pkg.priceINR ?? pkg.price ?? getStartingPriceINR(puja) ?? 0;
         const defaultDevotees = idx === 0 ? "1 Devotee" : idx === 1 ? "2 Devotees" : idx === 2 ? "4 Devotees" : "Multiple Devotees";
         return {
           id: pkg.id || pkg._id || `pkg-${idx + 1}`,
@@ -361,7 +379,7 @@ export default function PujaDetailClient({
       });
     }
 
-    const basePrice = puja?.price || 501;
+    const basePrice = getStartingPriceINR(puja) ?? 0;
     return [
       {
         id: "pkg-1",
@@ -398,7 +416,7 @@ export default function PujaDetailClient({
   }, [packagesList, selectedPackageId]);
 
   const getDisplayPrice = (item: any) => {
-    return item?.[`price${currency}`] ?? item?.priceINR ?? item?.price ?? 516;
+    return item?.[`price${currency}`] ?? item?.priceINR ?? item?.price ?? getStartingPriceINR(item) ?? 0;
   };
 
   const selectedPackage = useMemo(() => {
@@ -411,7 +429,7 @@ export default function PujaDetailClient({
 
   const priceVal = selectedPackage
     ? getDisplayPrice(selectedPackage)
-    : puja?.price || 516;
+    : getStartingPriceINR(puja) ?? 0;
 
   const handleAddPujaToCart = async () => {
     try {
@@ -502,14 +520,34 @@ export default function PujaDetailClient({
     return () => clearInterval(interval);
   }, [bannerImages.length]);
 
-  const galleryList =
-    Array.isArray(puja?.gallery) && puja.gallery.length > 0
-      ? puja.gallery.map((img: string) => getPujaImageUrl(img)).filter(Boolean)
-      : Array.isArray((puja as any)?.galleryUrl) && (puja as any).galleryUrl.length > 0
-        ? (puja as any).galleryUrl.map((img: string) => getPujaImageUrl(img)).filter(Boolean)
-        : typeof (puja as any)?.galleryUrl === "string" && (puja as any).galleryUrl.trim()
-          ? [getPujaImageUrl((puja as any).galleryUrl)]
-          : [];
+  const galleryList = useMemo(() => {
+    if (!puja) return [];
+    const list: string[] = [];
+    const addImg = (val: any) => {
+      if (!val) return;
+      if (typeof val === "string") {
+        const parts = val.split(/[\n,]+/);
+        for (const p of parts) {
+          const trimmed = p.trim();
+          if (trimmed) {
+            const formatted = getPujaImageUrl(trimmed);
+            if (formatted && !list.includes(formatted)) {
+              list.push(formatted);
+            }
+          }
+        }
+      } else if (Array.isArray(val)) {
+        for (const item of val) {
+          addImg(item);
+        }
+      }
+    };
+
+    addImg(puja.gallery);
+    addImg((puja as any).galleryUrl);
+    if ((puja as any).details?.gallery) addImg((puja as any).details.gallery);
+    return list.filter((img) => !failedGalleryImages[img]);
+  }, [puja, failedGalleryImages]);
 
   const subNavTabs = useMemo(() => [
     { id: "about", label: "About puja" },
@@ -722,7 +760,7 @@ export default function PujaDetailClient({
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 
             {/* Left 6 Cols: Main Banner Image (Slightly Increased Width) */}
-            <div className="lg:col-span-6 flex flex-col">
+            <div className="lg:col-span-6 flex flex-col relative">
               <div className="relative w-full aspect-[4/3] min-h-[260px] sm:min-h-0 sm:aspect-auto sm:h-[350px] md:h-[390px] lg:h-[410px] rounded-xl overflow-hidden border border-stone-200/90 shadow-md group">
                 <Image
                   src={bannerImages[activeBannerIndex] || (puja ? getPujaImageUrl(puja.imageUrl) : "/images/Ganesh-Chaturthi-Mahapuja.jpg")}
@@ -734,6 +772,34 @@ export default function PujaDetailClient({
                   onClick={handleAddPujaToCart}
                 />
               </div>
+
+              {/* Navigation Arrows: Outside image card on Tablet & Laptop/Desktop (hidden on mobile < sm) */}
+              {bannerImages.length > 1 && (
+                <>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setActiveBannerIndex((prev) => (prev - 1 + bannerImages.length) % bannerImages.length);
+                    }}
+                    aria-label="Previous banner image"
+                    className="absolute -left-3.5 sm:-left-4 md:-left-5 xl:-left-6 top-[calc(50%-18px)] -translate-y-1/2 z-30 hidden sm:flex h-9 w-9 xl:h-11 xl:w-11 items-center justify-center rounded-full bg-white/95 hover:bg-white text-stone-800 border border-stone-200/90 shadow-xl transition-all duration-200 active:scale-95 cursor-pointer hover:scale-110 backdrop-blur-sm"
+                  >
+                    <ChevronLeft className="w-5 h-5 xl:w-6 xl:h-6 text-stone-800" strokeWidth={2.5} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setActiveBannerIndex((prev) => (prev + 1) % bannerImages.length);
+                    }}
+                    aria-label="Next banner image"
+                    className="absolute -right-3.5 sm:-right-4 md:-right-5 xl:-right-6 top-[calc(50%-18px)] -translate-y-1/2 z-30 hidden sm:flex h-9 w-9 xl:h-11 xl:w-11 items-center justify-center rounded-full bg-white/95 hover:bg-white text-stone-800 border border-stone-200/90 shadow-xl transition-all duration-200 active:scale-95 cursor-pointer hover:scale-110 backdrop-blur-sm"
+                  >
+                    <ChevronRight className="w-5 h-5 xl:w-6 xl:h-6 text-stone-800" strokeWidth={2.5} />
+                  </button>
+                </>
+              )}
 
               {/* Carousel Dots (Shown ONLY when > 1 image, rendering exact length of bannerImages) */}
               {bannerImages.length > 1 && (
@@ -1256,7 +1322,7 @@ export default function PujaDetailClient({
 
           {/* Section: Puja Gallery */}
           {galleryList.length > 0 && (
-            <section id="gallery" data-reveal className="scroll-mt-36 pb-0 lg:pb-30">
+            <section id="gallery" data-reveal className="scroll-mt-36 pb-32 sm:pb-36 lg:pb-44">
               <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1f1a17] mb-6">Puja Gallery</h2>
 
               {/* Mobile: Carousel */}
@@ -1268,6 +1334,7 @@ export default function PujaDetailClient({
                   }}
                   className="relative h-64 rounded-2xl overflow-hidden border border-stone-200 shadow-xs cursor-pointer group"
                 >
+                  {/* Full Image */}
                   <Image
                     src={galleryList[galleryCarouselIdx] as string}
                     alt={`${puja?.title || "Puja"} - Sacred Ritual Photo ${galleryCarouselIdx + 1}`}
@@ -1275,6 +1342,12 @@ export default function PujaDetailClient({
                     sizes="100vw"
                     unoptimized
                     className="w-full h-full object-cover transition-all duration-300"
+                    onError={() => {
+                      const brokenImg = galleryList[galleryCarouselIdx] as string;
+                      if (brokenImg) {
+                        setFailedGalleryImages((prev) => ({ ...prev, [brokenImg]: true }));
+                      }
+                    }}
                   />
                   <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
                     <div className="w-10 h-10 rounded-full bg-black/40 text-white flex items-center justify-center backdrop-blur-xs">
@@ -1294,7 +1367,7 @@ export default function PujaDetailClient({
                         aria-label="Previous gallery image"
                         className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center backdrop-blur-sm transition-all shadow-md z-10"
                       >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" /></svg>
+                        <ChevronLeft className="w-5 h-5 text-white" strokeWidth={2.5} />
                       </button>
                       <button
                         type="button"
@@ -1305,7 +1378,7 @@ export default function PujaDetailClient({
                         aria-label="Next gallery image"
                         className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center backdrop-blur-sm transition-all shadow-md z-10"
                       >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" /></svg>
+                        <ChevronRight className="w-5 h-5 text-white" strokeWidth={2.5} />
                       </button>
                     </>
                   )}
@@ -1336,6 +1409,7 @@ export default function PujaDetailClient({
                     }}
                     className="h-48 rounded-2xl overflow-hidden border border-stone-200 shadow-xs relative cursor-pointer group"
                   >
+                    {/* Full Image */}
                     <Image
                       src={img}
                       alt={`${puja?.title || "Puja"} - Sacred Ritual Photo ${idx + 1}`}
@@ -1343,6 +1417,9 @@ export default function PujaDetailClient({
                       sizes="(max-width: 640px) 50vw, 33vw"
                       unoptimized
                       className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                      onError={() => {
+                        setFailedGalleryImages((prev) => ({ ...prev, [img]: true }));
+                      }}
                     />
                     <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
                       <div className="w-10 h-10 rounded-full bg-white/90 text-stone-800 flex items-center justify-center shadow-lg transform scale-90 group-hover:scale-100 transition-transform">

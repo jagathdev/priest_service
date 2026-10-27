@@ -96,7 +96,7 @@ export default function MobileBottomNav() {
       <div className="flex h-16 items-center justify-around w-full">
         {/* HOME */}
         <Link
-          href="/dashboard"
+          href="/"
           className="flex flex-col items-center justify-center flex-1 h-full active:bg-gray-50 transition-colors"
         >
           <HomeIcon active={isHomeActive} />

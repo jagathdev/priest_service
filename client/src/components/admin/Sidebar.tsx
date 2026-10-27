@@ -116,7 +116,7 @@ export default function Sidebar() {
           </button>
         </nav>
         <div className="border-t border-gray-100 p-4 text-xs font-bold text-gray-500">
-          <Link href="/dashboard" className="flex items-center hover:text-success transition">
+          <Link href="/" className="flex items-center hover:text-success transition">
             <span className="mr-2">←</span> Back to Main Site
           </Link>
         </div>

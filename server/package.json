@@ -1,7 +1,7 @@
 {
   "name": "priest-service-backend",
   "version": "1.0.0",
-  "description": "Backend for Priest Service App",
+  "description": "Backend for Priest Services App",
   "main": "src/server.js",
   "type": "module",
   "engines": {

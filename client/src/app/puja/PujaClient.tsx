@@ -5,6 +5,7 @@ import Navbar from "@/components/layout/Navbar";
 import { SparklesIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
 import WishlistButton from "@/components/common/WishlistButton";
+import { formatStartingPrice } from "@/lib/pricing";
 
 interface Puja {
   _id: string;
@@ -18,6 +19,13 @@ interface Puja {
   location?: string;
   date?: string;
   slug?: string;
+  packages?: Array<{
+    priceINR?: number | string;
+    price?: number | string;
+    [key: string]: unknown;
+  }>;
+  price?: number | string;
+  priceINR?: number | string;
   details?: {
     benefits?: { title: string; description: string }[];
     templeLocation?: string;
@@ -610,7 +618,7 @@ export default function PujaClient({ initialPujas }: { initialPujas?: Puja[] }) 
                         <div className="flex items-center justify-between mt-auto pt-2 border-t border-gray-100">
                           <div>
                             {/* Price display */}
-                            <div className="text-[20px] sm:text-[22px] font-black text-gray-900">₹{(puja as any).packages?.[0]?.priceINR || (puja as any).packages?.[0]?.price || '516'}</div>
+                            <div className="text-[20px] sm:text-[22px] font-black text-gray-900">{formatStartingPrice(puja)}</div>
                             <div className="text-[11px] text-gray-500 font-bold uppercase tracking-wider">Per Booking</div>
                           </div>
                           <div

@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import PujaCountdownCard from "@/components/common/PujaCountdownCard";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface BannerSlide {
   id: string;
@@ -156,12 +157,12 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
     fetchHeroBanners();
   }, [initialBanners]);
 
-  // Auto-advance forward only every 5 seconds
+  // Auto-advance forward only every 8 seconds
   useEffect(() => {
     if (totalSlides <= 1) return;
     const timer = setInterval(() => {
       nextSlide();
-    }, 5000);
+    }, 8000);
     return () => clearInterval(timer);
   }, [totalSlides, nextSlide]);
 
@@ -186,7 +187,7 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
 
           <div className="mt-8 sm:mt-10 lg:mt-12 flex flex-col items-center lg:items-start w-full">
             {/* CTA Button */}
-            <div className="w-full max-w-[500px] sm:max-w-[540px] xl:max-w-[420px] h-14 sm:h-16 bg-success/20 rounded-full mb-6" />
+            <div className="w-[240px] sm:w-[280px] h-12 sm:h-14 bg-stone-200 rounded-full mb-6" />
 
             {/* Social Proof Banner */}
             <div className="w-full max-w-[380px] sm:max-w-[400px] h-16 bg-stone-100 rounded-xl border border-stone-200" />
@@ -194,7 +195,7 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
         </div>
 
         {/* Skeleton Right Content (Image Card) */}
-        <div className="w-full max-w-full lg:w-[480px] xl:w-[650px] 2xl:w-[720px] shrink-0 flex flex-col items-center">
+        <div className="flex-1 w-full lg:w-1/2 shrink-0 flex flex-col items-center">
           <div className="w-full bg-stone-100 rounded-2xl min-[375px]:rounded-3xl border border-stone-200 aspect-[4/3] sm:aspect-auto sm:h-[400px] md:h-[460px] lg:h-[320px] xl:h-[500px] flex items-center justify-center">
             <svg className="w-12 h-12 text-stone-200 animate-spin" fill="none" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -239,36 +240,36 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
       </div>
 
       <div
-        className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-6 lg:gap-8 xl:gap-14 group"
+        className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8 lg:gap-10 xl:gap-14 group"
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={handleTouchEnd}
       >
 
-        {/* ── Left Content (Text & CTA) ── order-2 on mobile, order-1 on desktop */}
-        <div className="order-2 lg:order-1 flex-1 text-center lg:text-left flex flex-col justify-start items-center lg:items-start h-auto min-h-0 lg:min-h-0 xl:min-h-[500px] w-full max-w-[640px] pt-2 pb-1">
+        {/* ── Left Content (Text & CTA) ── 50% equal balance with right side */}
+        <div className="order-2 lg:order-1 flex-1 w-full lg:w-1/2 text-center lg:text-left flex flex-col justify-start items-center lg:items-start h-auto min-h-0 pt-2 pb-1">
 
           {/* Top Block: Always starts at fixed top position */}
           <div className="flex flex-col items-center lg:items-start text-center lg:text-left w-full">
             {/* Top Sub-header Badge with Custom Vector Lotus SVG (Desktop lg+ only) */}
-            <div className="hidden lg:flex items-center justify-start gap-2.5 mb-5">
+            <div className="hidden lg:flex items-center justify-start gap-2.5 mb-3 xl:mb-5">
               <svg className="w-5 h-5 text-accent shrink-0" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 2C12 2 10.2 5.5 10.2 8C10.2 9.8 11 11.2 12 12C13 11.2 13.8 9.8 13.8 8C13.8 5.5 12 2 12 2Z" />
                 <path d="M12 12C10.2 10.8 7.5 9.8 5.5 10.8C4 11.5 3 12.8 3 14.2C3 16.5 6.5 18 12 18.5C17.5 18 21 16.5 21 14.2C21 12.8 20 11.5 18.5 10.8C16.5 9.8 13.8 10.8 12 12Z" opacity="0.8" />
                 <path d="M12 18.5C7.8 18.5 4.2 17 1.5 15.2C2.8 18.8 6.8 21.5 12 21.5C17.2 21.5 21.2 18.8 22.5 15.2C19.8 17 16.2 18.5 12 18.5Z" />
               </svg>
-              <span className="text-[#881337] font-bold text-sm tracking-[0.15em] uppercase">
+              <span className="text-[#881337] font-bold text-xs xl:text-sm tracking-[0.15em] uppercase">
                 {current.badge}
               </span>
             </div>
 
-            {/* Main Title - Reduced font size and line height on 1024px & Tablet */}
-            <h1 className="text-2xl sm:text-3xl lg:text-[34px] xl:text-[43px] font-serif font-semibold text-[#1f1a17] leading-snug sm:leading-tight lg:leading-[1.22] xl:leading-[1.28] tracking-normal mb-3 sm:mb-4 xl:mb-5 transition-all duration-300 max-w-[620px]">
+            {/* Main Title */}
+            <h1 className="text-3xl sm:text-4xl lg:text-[40px] xl:text-[48px] font-serif font-bold text-[#1f1a17] leading-[1.18] sm:leading-[1.18] tracking-tight mb-3 sm:mb-4 xl:mb-5 transition-all duration-300 max-w-[620px]">
               {current.title}
             </h1>
 
-            {/* Subtitle / Description - Reduced font size and line height on 1024px & Tablet */}
-            <p className="text-stone-600 text-xs sm:text-sm lg:text-base xl:text-[18px] leading-normal lg:leading-relaxed xl:leading-relaxed max-w-[580px] mx-auto lg:mx-0">
+            {/* Subtitle / Description */}
+            <p className="text-stone-600 text-sm sm:text-base lg:text-[15px] xl:text-[17px] leading-relaxed max-w-[560px] mx-auto lg:mx-0 font-normal">
               {current.subtitle}
             </p>
 
@@ -289,33 +290,69 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
           </div>
 
           {/* Bottom Block: CTA Button & Social Proof Banner */}
-          <div className="mt-8 sm:mt-10 lg:mt-12 flex flex-col items-center lg:items-start text-center lg:text-left w-full">
+          <div className="mt-6 sm:mt-8 lg:mt-6 xl:mt-12 flex flex-col items-center lg:items-start text-center lg:text-left w-full">
             {/* CTA Button */}
-            <div className="mb-4 sm:mb-5 lg:mb-6 w-full flex justify-center lg:justify-start">
+            <div className="mb-4 sm:mb-5 lg:mb-4 xl:mb-6 w-full flex justify-center lg:justify-start">
               <Link
                 href={current.ctaLink}
-                className="inline-flex items-center justify-between gap-4 sm:gap-6 bg-[#14395C] hover:bg-[#0e2740] active:scale-95 text-white font-extrabold text-lg sm:text-xl xl:text-2xl px-6 sm:px-9 py-3.5 sm:py-4 rounded-full shadow-lg shadow-[#14395C]/20 transition-all duration-200 group w-full max-w-[500px] sm:max-w-[540px] xl:max-w-[420px]"
+                className="inline-flex items-center justify-between gap-5 sm:gap-6 bg-[#0f3456] hover:bg-[#0a253e] active:scale-95 text-white font-extrabold text-base sm:text-lg px-7 sm:px-8 py-3.5 sm:py-4 rounded-full shadow-lg shadow-[#0f3456]/25 transition-all duration-200 group w-auto min-w-[250px] sm:min-w-[270px]"
               >
-                <span>{current.ctaText}</span>
-                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white text-[#14395C] flex items-center justify-center shadow-md group-hover:translate-x-0.5 transition-transform shrink-0">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="3.5" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                <span className="tracking-normal font-sans font-bold">{current.ctaText}</span>
+                <div className="w-8 h-8 rounded-full bg-white text-[#0f3456] flex items-center justify-center shadow-xs shrink-0 group-hover:translate-x-0.5 transition-transform">
+                  <svg className="w-4 h-4 stroke-[#0f3456]" fill="none" viewBox="0 0 24 24" strokeWidth="3">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
                   </svg>
                 </div>
               </Link>
             </div>
 
-            {/* Social Proof / Trust Banner */}
-            <div className="border border-stone-200/90 bg-white/95 backdrop-blur-sm rounded-xl p-2.5 sm:p-3 shadow-sm flex items-center justify-between gap-2 sm:gap-3.5 w-full max-w-[380px] sm:max-w-[400px] mx-auto lg:mx-0">
+            {/* ── MOBILE ONLY (< sm / < 640px): Tagline + 3-Stat Horizontal Row ── */}
+            <div className="flex sm:hidden flex-col items-center w-full max-w-[500px] mx-auto">
+              {/* Tagline */}
+              <div className="flex items-center justify-center gap-1.5 mb-2.5 text-stone-600">
+                <svg className="w-4 h-4 text-amber-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="4" strokeWidth="1.5" />
+                  <path strokeWidth="1.5" strokeLinecap="round" d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41m11.32-11.32l1.41-1.41" />
+                </svg>
+                <p className="text-xs font-semibold text-stone-700 tracking-tight">
+                  One of India&apos;s most loved devotional platforms
+                </p>
+              </div>
+
+              {/* 3-Stat Trust Card */}
+              <div className="border border-stone-200/90 bg-white/95 backdrop-blur-sm rounded-xl py-2.5 px-3 shadow-sm flex items-center justify-between w-full">
+                <div className="flex-1 text-center px-1">
+                  <p className="text-[#14395C] font-black text-base leading-none">10M+</p>
+                  <p className="text-[9px] text-stone-500 font-medium mt-1 leading-tight">Pujas performed</p>
+                </div>
+
+                <div className="w-[1px] h-7 bg-stone-200 shrink-0" />
+
+                <div className="flex-1 text-center px-1">
+                  <p className="text-[#14395C] font-black text-base leading-none">180+</p>
+                  <p className="text-[9px] text-stone-500 font-medium mt-1 leading-tight">Scholars & priests</p>
+                </div>
+
+                <div className="w-[1px] h-7 bg-stone-200 shrink-0" />
+
+                <div className="flex-1 text-center px-1">
+                  <p className="text-[#14395C] font-black text-base leading-none">25+</p>
+                  <p className="text-[9px] text-stone-500 font-medium mt-1 leading-tight">Years of expertise</p>
+                </div>
+              </div>
+            </div>
+
+            {/* ── TABLET & LAPTOP (sm+ / >= 640px): Previous Inline Style ── */}
+            <div className="hidden sm:flex border border-stone-200/90 bg-white/95 backdrop-blur-sm rounded-xl py-2 px-2.5 md:px-3 lg:px-2.5 xl:px-4 shadow-sm items-center justify-between gap-1.5 sm:gap-2.5 lg:gap-2 xl:gap-3.5 w-full max-w-[560px] mx-auto lg:mx-0">
               {/* Sun Icon Section */}
-              <div className="flex items-center gap-2 flex-1">
+              <div className="flex items-center gap-1.5 lg:gap-1.5 xl:gap-2 shrink-0">
                 <div className="text-stone-400 shrink-0">
                   <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <circle cx="12" cy="12" r="4" strokeWidth="1.5" />
                     <path strokeWidth="1.5" strokeLinecap="round" d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41m11.32-11.32l1.41-1.41" />
                   </svg>
                 </div>
-                <p className="text-[10px] sm:text-[11px] text-stone-900 font-bold leading-tight text-left">
+                <p className="text-[10px] sm:text-[11px] lg:text-[9.5px] xl:text-[11px] text-stone-900 font-bold leading-tight text-left">
                   One of India&apos;s most<br />loved devotional<br />platforms
                 </p>
               </div>
@@ -323,28 +360,36 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
               <div className="w-[1px] h-6 bg-stone-200 shrink-0" />
 
               {/* Devotees Count */}
-              <div className="text-center px-1 shrink-0">
-                <p className="text-[#14395C] font-black text-base sm:text-lg leading-none">10L+</p>
-                <p className="text-[9px] sm:text-[10px] text-stone-500 font-medium mt-0.5">Happy Devotees</p>
+              <div className="text-center px-0.5 sm:px-1 shrink-0">
+                <p className="text-[#14395C] font-black text-base sm:text-lg lg:text-[15px] xl:text-lg leading-none">10M+</p>
+                <p className="text-[9px] sm:text-[10px] lg:text-[8.5px] xl:text-[10px] text-stone-500 font-medium mt-0.5">Pujas performed</p>
               </div>
 
               <div className="w-[1px] h-6 bg-stone-200 shrink-0" />
 
-              {/* Secure Guarantee */}
-              <div className="text-center px-1 shrink-0">
-                <p className="text-[#14395C] font-black text-base sm:text-lg leading-none">100%</p>
-                <p className="text-[9px] sm:text-[10px] text-stone-500 font-medium mt-0.5">Secure</p>
+              {/* Scholars and priests */}
+              <div className="text-center px-0.5 sm:px-1 shrink-0">
+                <p className="text-[#14395C] font-black text-base sm:text-lg lg:text-[15px] xl:text-lg leading-none">180+</p>
+                <p className="text-[9px] sm:text-[10px] lg:text-[8.5px] xl:text-[10px] text-stone-500 font-medium mt-0.5">Scholars & priests</p>
+              </div>
+
+              <div className="w-[1px] h-6 bg-stone-200 shrink-0" />
+
+              {/* 25+ years of Vedic expertise */}
+              <div className="text-center px-0.5 sm:px-1 shrink-0">
+                <p className="text-[#14395C] font-black text-base sm:text-lg lg:text-[15px] xl:text-lg leading-none">25+</p>
+                <p className="text-[9px] sm:text-[10px] lg:text-[8.5px] xl:text-[10px] text-stone-500 font-medium mt-0.5">Years of Vedic expertise</p>
               </div>
             </div>
           </div>
 
         </div>
 
-        {/* ── Right Content (Hero Banner Card) ── order-1 on mobile, order-2 on desktop */}
-        <div className="order-1 lg:order-2 w-full max-w-full lg:w-[480px] xl:w-[670px] 2xl:w-[730px] shrink-0 flex flex-col items-center relative">
+        {/* ── Right Content (Hero Banner Card) ── 50% equal balance with left side */}
+        <div className="order-1 lg:order-2 flex-1 w-full lg:w-1/2 shrink-0 flex flex-col items-center relative">
 
           {/* Smooth Fade Carousel Viewport */}
-          <div className="relative w-full aspect-[4/3] min-h-[250px] sm:min-h-[380px] sm:aspect-auto sm:h-[400px] md:h-[460px] lg:h-[320px] xl:h-[500px] rounded-2xl min-[375px]:rounded-3xl overflow-hidden shadow-2xl border border-stone-200/80 bg-stone-100 shrink-0">
+          <div className="relative w-full aspect-[4/3] min-h-[250px] sm:min-h-[360px] sm:aspect-auto sm:h-[390px] md:h-[440px] lg:h-[370px] xl:h-[500px] rounded-2xl min-[375px]:rounded-3xl overflow-hidden shadow-2xl border border-stone-200/80 bg-stone-100 shrink-0 group/carousel">
             {bannerSlides.map((slide, idx) => {
               const isActive = idx === currentSafeSlideIndex;
               const img1024 = get1024BannerImage(slide.image);
@@ -356,7 +401,7 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
                 >
                   <Link
                     href={slide.ctaLink}
-                    className="w-full h-full block relative cursor-pointer group"
+                    className="w-full h-full block relative cursor-pointer"
                   >
                     {/* Full-bleed Banner Image with 1024 Specific Media Query */}
                     <picture className="absolute inset-0 w-full h-full block">
@@ -377,6 +422,38 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
               );
             })}
           </div>
+
+          {/* Left Navigation Arrow (Outside Image Card - Tablet & Laptop/Desktop) */}
+          {totalSlides > 1 && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                prevSlide();
+              }}
+              aria-label="Previous slide"
+              className="absolute -left-3.5 sm:-left-4 md:-left-5 xl:-left-6 top-[calc(50%-18px)] -translate-y-1/2 z-30 hidden sm:flex h-9 w-9 xl:h-11 xl:w-11 items-center justify-center rounded-full bg-white/95 hover:bg-white text-stone-800 border border-stone-200/90 shadow-xl transition-all duration-200 active:scale-95 cursor-pointer hover:scale-110 backdrop-blur-sm"
+            >
+              <ChevronLeft className="w-5 h-5 xl:w-6 xl:h-6 text-stone-800" strokeWidth={2.5} />
+            </button>
+          )}
+
+          {/* Right Navigation Arrow (Outside Image Card - Tablet & Laptop/Desktop) */}
+          {totalSlides > 1 && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                nextSlide();
+              }}
+              aria-label="Next slide"
+              className="absolute -right-3.5 sm:-right-4 md:-right-5 xl:-right-6 top-[calc(50%-18px)] -translate-y-1/2 z-30 hidden sm:flex h-9 w-9 xl:h-11 xl:w-11 items-center justify-center rounded-full bg-white/95 hover:bg-white text-stone-800 border border-stone-200/90 shadow-xl transition-all duration-200 active:scale-95 cursor-pointer hover:scale-110 backdrop-blur-sm"
+            >
+              <ChevronRight className="w-5 h-5 xl:w-6 xl:h-6 text-stone-800" strokeWidth={2.5} />
+            </button>
+          )}
 
           {/* Slider Dots Navigation inside Hero - Centered directly below the image */}
           <div className="flex items-center justify-center gap-2.5 mt-4 sm:mt-5">
@@ -408,7 +485,7 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
             <div className="flex shrink-0 items-center gap-8 sm:gap-12 pr-8 sm:pr-12">
               {[
                 { color: "text-success", icon: <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z" />, text: "Puja Video Delivered Within 48 Hours" },
-                { color: "text-[#0084ff]", icon: <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" />, text: "Verified & Experienced Purohits" },
+                { color: "text-[#0084ff]", icon: <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" />, text: "Verified & Experienced Pandits" },
                 { color: "text-accent", icon: <path d="M12 2L9 6H15L12 2ZM8 7L6 11H18L16 7H8ZM5 12L3 17H21L19 12H5ZM2 18V21H22V18H2Z" />, text: "Pujas Performed in Sacred Temples" },
                 { color: "text-[#d97706]", icon: <path d="M12 2c-.55 0-1 .45-1 1v1.17C8.61 4.72 7 6.67 7 9c0 2.21 1.79 4 4 4v1H8c-.55 0-1 .45-1 1v5c0 .55.45 1 1 1h8c.55 0 1-.45 1-1v-5c0-.55-.45-1-1-1h-3v-1c2.21 0 4-1.79 4-4 0-2.33-1.61-4.28-4-4.83V3c0-.55-.45-1-1-1z" />, text: "100% Authentic Vedic Rituals" }
               ].map((item, idx) => (
@@ -427,7 +504,7 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
             <div className="flex shrink-0 items-center gap-8 sm:gap-12 pr-8 sm:pr-12" aria-hidden="true">
               {[
                 { color: "text-success", icon: <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z" />, text: "Puja Video Delivered Within 48 Hours" },
-                { color: "text-[#0084ff]", icon: <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" />, text: "Verified & Experienced Purohits" },
+                { color: "text-[#0084ff]", icon: <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" />, text: "Verified & Experienced Pandits" },
                 { color: "text-accent", icon: <path d="M12 2L9 6H15L12 2ZM8 7L6 11H18L16 7H8ZM5 12L3 17H21L19 12H5ZM2 18V21H22V18H2Z" />, text: "Pujas Performed in Sacred Temples" },
                 { color: "text-[#d97706]", icon: <path d="M12 2c-.55 0-1 .45-1 1v1.17C8.61 4.72 7 6.67 7 9c0 2.21 1.79 4 4 4v1H8c-.55 0-1 .45-1 1v5c0 .55.45 1 1 1h8c.55 0 1-.45 1-1v-5c0-.55-.45-1-1-1h-3v-1c2.21 0 4-1.79 4-4 0-2.33-1.61-4.28-4-4.83V3c0-.55-.45-1-1-1z" />, text: "100% Authentic Vedic Rituals" }
               ].map((item, idx) => (
@@ -465,7 +542,7 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
               </svg>
             </div>
             <span className="text-sm font-bold text-stone-800 leading-tight">
-              Verified & Experienced Purohits
+              Verified & Experienced Pandits
             </span>
           </div>
           <div className="flex items-center justify-start gap-3 px-4 py-0">

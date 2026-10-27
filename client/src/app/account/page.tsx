@@ -1642,7 +1642,7 @@ function AccountPageContent() {
                         </div>
                         <h2 className="text-2xl font-serif font-bold text-[#333] mb-4">A Sacred Bridge Between Devotees and Temples</h2>
                         <p className="text-[13px] text-gray-600 leading-relaxed max-w-2xl mx-auto">
-                          astroved is a spiritual platform that enables devotees to book authentic Vedic pujas from sacred temples across India. We connect you with verified, experienced purohits who perform rituals in your name and family&apos;s name &mdash; and deliver the complete puja video, prasadam, and divine blessings right to your home.
+                          astroved is a spiritual platform that enables devotees to book authentic Vedic pujas from sacred temples across India. We connect you with verified, experienced Pandits who perform rituals in your name and family&apos;s name &mdash; and deliver the complete puja video, prasadam, and divine blessings right to your home.
                         </p>
                       </div>
 
@@ -1692,7 +1692,7 @@ function AccountPageContent() {
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                             </svg>
                           </div>
-                          <h4 className="text-[14px] font-bold text-gray-900 mb-2">Verified Purohits</h4>
+                          <h4 className="text-[14px] font-bold text-gray-900 mb-2">Verified Pandits</h4>
                           <p className="text-[12px] text-gray-500 leading-relaxed">
                             Every ritual is conducted by experienced, verified Vedic acharyas you can trust.
                           </p>

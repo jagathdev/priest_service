@@ -6,7 +6,7 @@ export default async function PujaPageServer() {
   let initialPujas = null;
 
   try {
-    const pujasRes = await fetch(`${expressBase}/api/pujas`, { next: { revalidate: 60 } });
+    const pujasRes = await fetch(`${expressBase}/api/pujas`, { cache: "no-store" });
 
     if (pujasRes.ok) {
       const pujasData = await pujasRes.json();

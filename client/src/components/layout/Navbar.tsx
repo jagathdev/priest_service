@@ -6,6 +6,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import LoginModal from "@/components/auth/LoginModal";
 import { useUser } from "@/contexts/UserContext";
+import priestServiceLogo from "../../../public/images/priest-services-logo.png";
 
 const AccountPanel = ({ accountOpen, setAccountOpen, user, setLoginModalOpen, handleLogout }: any) => {
   if (!accountOpen) return null;
@@ -85,7 +86,7 @@ const AccountPanel = ({ accountOpen, setAccountOpen, user, setLoginModalOpen, ha
               Explore AstroVed Services
             </p>
             {[
-              { href: "/dashboard", label: "Home", icon: <HomeIcon /> },
+              { href: "/", label: "Home", icon: <HomeIcon /> },
               { href: "/puja", label: "Puja Seva", icon: <FlameIcon />, badge: "New" },
               // { href: "/homa", label: "Homa Seva", icon: <FlameIcon />, badge: "New" },
             ].map((item) => (
@@ -199,7 +200,7 @@ export default function Navbar() {
   }, [pathname, setUser]);
 
   const isActivePath = (path: string) =>
-    pathname === path || (path === "/" && pathname === "/dashboard") || (path === "/dashboard" && pathname === "/") || (path !== "/" && path !== "/dashboard" && pathname?.startsWith(path + "/"));
+    pathname === path || (path !== "/" && pathname?.startsWith(path + "/"));
 
   const handleLogout = async () => {
     document.cookie = "userLogin=false; path=/; max-age=0;";
@@ -222,7 +223,7 @@ export default function Navbar() {
           {/* ── Logo ── */}
           <Link href="/" className="flex items-center gap-2 shrink-0" aria-label="AstroVed Home">
             <Image
-              src="https://cdn.astroved.com/images/priestservice/priest-services.jpg"
+              src={priestServiceLogo}
               alt="AstroVed"
               width={180}
               height={44}

@@ -15,24 +15,57 @@ import PujaFilterModal, {
 } from "@/components/common/PujaFilterModal";
 import ShareModal, { ShareData } from "@/components/common/ShareModal";
 import GalleryLightboxModal from "@/components/common/GalleryLightboxModal";
+import { formatStartingPrice } from "@/lib/pricing";
+import priestservicesLogo from "../../../public/images/priest-services-logo.png";
 
-export default function DashboardClient({ initialHeroBanners, initialPujas }: { initialHeroBanners?: any[], initialPujas?: any[] }) {
+const getSafeImageUrl = (imageUrl?: string): string => {
+  if (!imageUrl || typeof imageUrl !== "string") return "";
+  const trimmed = imageUrl.trim();
+  if (!trimmed) return "";
+  const safeEncode = (url: string) => {
+    try {
+      return encodeURI(decodeURI(url));
+    } catch {
+      return encodeURI(url);
+    }
+  };
+  if (trimmed.startsWith("http://") || trimmed.startsWith("https://") || trimmed.startsWith("data:")) {
+    return safeEncode(trimmed);
+  }
+  if (trimmed.startsWith("/")) {
+    return safeEncode(trimmed);
+  }
+  return `/${safeEncode(trimmed)}`;
+};
+
+export default function DashboardClient({
+  initialHeroBanners,
+  initialPujas,
+  initialHomas,
+}: {
+  initialHeroBanners?: any[];
+  initialPujas?: any[];
+  initialHomas?: any[];
+}) {
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
   const [allPujas, setAllPujas] = useState<any[]>(initialPujas || []);
+  const [allHomas, setAllHomas] = useState<any[]>(initialHomas || []);
   const [filters, setFilters] = useState<FilterState>(defaultFilters);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [filterModalInitialTab, setFilterModalInitialTab] = useState("");
-  const [fetchedPujas, setFetchedPujas] = useState(initialPujas && initialPujas.length > 0);
+  const [fetchedPujas, setFetchedPujas] = useState(Boolean(initialPujas && initialPujas.length > 0));
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [shareData, setShareData] = useState<ShareData>({});
   const [galleryLightboxOpen, setGalleryLightboxOpen] = useState(false);
   const [galleryLightboxIdx, setGalleryLightboxIdx] = useState(0);
+  const [failedImages, setFailedImages] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
-    async function fetchPujas() {
+    async function fetchData() {
+      const expressBase = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
+
       if (!initialPujas || initialPujas.length === 0) {
         try {
-          const expressBase = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
           const res = await fetch(`${expressBase}/api/pujas`);
           if (res.ok) {
             const data = await res.json();
@@ -50,9 +83,27 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
           setFetchedPujas(true);
         }
       }
+
+      if (!initialHomas || initialHomas.length === 0) {
+        try {
+          const res = await fetch(`${expressBase}/api/homas`);
+          if (res.ok) {
+            const data = await res.json();
+            const rawList = data?.data && Array.isArray(data.data)
+              ? data.data
+              : Array.isArray(data)
+                ? data
+                : [];
+            const activeList = rawList.filter((item: any) => !item.status || item.status === "active");
+            setAllHomas(activeList);
+          }
+        } catch (err) {
+          console.error("Failed to fetch homas on client:", err);
+        }
+      }
     }
-    fetchPujas();
-  }, [initialPujas]);
+    fetchData();
+  }, [initialPujas, initialHomas]);
 
   // Compute dynamic filter groups for home page
   const dynamicFilterGroups = React.useMemo(() => {
@@ -82,6 +133,73 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
       .slice(0, 6);
   }, [allPujas, filters, hasActiveFilters, dynamicFilterGroups]);
 
+  // Dynamically extract gallery images uploaded to any Puja or Homa
+  const dynamicGalleryImages = React.useMemo(() => {
+    const list: { src: string; alt: string; aspect: string }[] = [];
+    const seenUrls = new Set<string>();
+
+    const aspectPresets = [
+      "w-[160px] sm:w-[190px] h-[270px] sm:h-[310px]", // Tall
+      "w-[200px] sm:w-[240px] h-[170px] sm:h-[190px]", // Medium-small
+      "w-[160px] sm:w-[190px] h-[310px] sm:h-[350px]", // Very Tall
+      "w-[210px] sm:w-[250px] h-[150px] sm:h-[165px]", // Small
+      "w-[210px] sm:w-[250px] h-[160px] sm:h-[180px]", // Medium
+    ];
+
+    const addImage = (rawUrl: any, title: string) => {
+      if (!rawUrl) return;
+      if (typeof rawUrl === "string") {
+        const parts = rawUrl.split(/[\n,]+/);
+        for (const p of parts) {
+          const trimmed = p.trim();
+          if (trimmed) {
+            const formatted = getSafeImageUrl(trimmed);
+            if (formatted && !seenUrls.has(formatted)) {
+              seenUrls.add(formatted);
+              const aspect = aspectPresets[list.length % aspectPresets.length];
+              list.push({ src: formatted, alt: title || "Sacred Ritual", aspect });
+            }
+          }
+        }
+      } else if (Array.isArray(rawUrl)) {
+        for (const item of rawUrl) {
+          addImage(item, title);
+        }
+      }
+    };
+
+    // 1. Gather all gallery images from Pujas
+    for (const p of allPujas) {
+      addImage(p.gallery, p.title);
+      addImage(p.galleryUrl, p.title);
+      if (p.details?.gallery) addImage(p.details.gallery, p.title);
+    }
+
+    // 2. Gather all gallery images from Homas
+    for (const h of allHomas) {
+      addImage(h.gallery, h.title);
+      addImage(h.galleryUrl, h.title);
+      if (h.details?.gallery) addImage(h.details.gallery, h.title);
+    }
+
+    // 3. Fallback to default galleryImages if no dynamic images uploaded yet
+    if (list.length === 0) {
+      return defaultGalleryImages;
+    }
+
+    // If dynamic images are fewer than 6, supplement with defaults so marquee looks lush
+    if (list.length < 6) {
+      for (const defImg of defaultGalleryImages) {
+        if (!seenUrls.has(defImg.src)) {
+          seenUrls.add(defImg.src);
+          list.push(defImg);
+        }
+      }
+    }
+
+    return list.filter((item) => !failedImages[item.src]);
+  }, [allPujas, allHomas, failedImages]);
+
   return (
     <main className="min-h-screen bg-white text-ink font-sans">
       <Navbar />
@@ -102,11 +220,13 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
         <div className="max-w-[1100px] mx-auto px-4 sm:px-6 relative z-10">
 
           {/* Section Header */}
-          <div className="text-center mb-8 sm:mb-12">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-serif font-bold text-[#221f20] tracking-tight">
-              Your Journey to <span className="text-accent">Divine Blessings</span>
+          <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-12 md:mb-14 px-2">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-serif font-bold text-[#221f20] tracking-tight leading-tight mb-3 sm:mb-3.5">
+              How Your Puja <span className="text-accent">Is Performed</span>
             </h2>
-
+            <p className="text-stone-600 text-xs sm:text-sm md:text-base leading-relaxed sm:leading-relaxed font-medium">
+              Book an authentic Vedic ritual from wherever you are. Our experienced priests perform the puja on your behalf, following traditional practices.
+            </p>
           </div>
 
           {/* Process Container */}
@@ -170,7 +290,8 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
                 />
               </div>
               <h3 className="font-serif font-bold text-[#221f20] text-sm sm:text-base leading-tight">
-                Puja Is <span className="text-accent"> Performed</span>
+                Priest Performs <span className="text-accent">the Puja
+                </span>
               </h3>
             </div>
 
@@ -186,14 +307,14 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
               <div className="w-24 h-24 sm:w-28 sm:h-28 relative mb-3 group-hover:scale-105 transition-all">
                 <Image
                   src="/images/step_4.png"
-                  alt="Receive Divine Blessings"
+                  alt="Receive Your Puja Video"
                   fill
                   sizes="(max-width: 640px) 96px, 112px"
                   className="object-contain"
                 />
               </div>
               <h3 className="font-serif font-bold text-[#221f20] text-sm sm:text-base leading-tight">
-                Receive <span className="text-accent">Divine Blessings</span>
+                Receive <span className="text-accent">Your Puja Video</span>
               </h3>
             </div>
 
@@ -301,13 +422,7 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
               </div>
             ) : (
               filteredPujas.map((p) => {
-                const priceVal = p.price
-                  ? `₹${p.price}`
-                  : p.packages?.[0]?.priceINR
-                    ? `₹${p.packages[0].priceINR}`
-                    : p.packages?.[0]?.price
-                      ? `₹${p.packages[0].price}`
-                      : "₹516";
+                const priceVal = formatStartingPrice(p);
                 const slugVal = p.slug || (p.title ? p.title.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-") : "");
                 const topTagVal = p.badge || p.shortTitle || p.subtitle;
                 const descriptionVal = p.description || p.subtitle;
@@ -359,21 +474,25 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
         <div className="relative z-10 overflow-hidden w-full pt-12 min-[375px]:pt-14 sm:pt-20 md:pt-24 pb-2">
           <div className="flex animate-marquee-slow gap-4 sm:gap-6 items-end">
             {/* Repeat list twice for continuous infinite marquee */}
-            {[...galleryImages, ...galleryImages].map((img, idx) => (
+            {[...dynamicGalleryImages, ...dynamicGalleryImages].map((img, idx) => (
               <div
                 key={idx}
                 onClick={() => {
-                  setGalleryLightboxIdx(idx % galleryImages.length);
+                  setGalleryLightboxIdx(idx % dynamicGalleryImages.length);
                   setGalleryLightboxOpen(true);
                 }}
                 className={`relative shrink-0 rounded-2xl sm:rounded-3xl overflow-hidden shadow-sm border border-stone-200/80 group cursor-pointer transition-transform duration-300 hover:scale-[1.02] ${img.aspect}`}
               >
+                {/* Full Image */}
                 <Image
                   src={img.src}
                   alt={img.alt}
                   fill
                   sizes="(max-width: 640px) 160px, 250px"
-                  className="object-cover object-center"
+                  className="object-cover object-center transition-transform duration-300 group-hover:scale-105"
+                  onError={() => {
+                    setFailedImages((prev) => ({ ...prev, [img.src]: true }));
+                  }}
                 />
                 <div className="absolute inset-0 bg-black/25 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                   <div className="w-10 h-10 rounded-full bg-white/90 text-stone-800 flex items-center justify-center shadow-lg transform scale-90 group-hover:scale-100 transition-transform">
@@ -443,7 +562,7 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
           {/* Left: Doubts */}
           <div className="md:w-1/3">
 
-            <h2 className="text-4xl md:text-5xl font-bold text-[#4a2e21] font-serif mb-4 leading-tight">Doubts?<br />We re Here.</h2>
+            <h2 className="text-4xl md:text-5xl font-bold text-[#4a2e21] font-serif mb-4 leading-tight">Doubts?<br />We&apos;re Here.</h2>
             <p className="text-gray-600 mb-8 text-sm max-w-[250px]">
               Our devotee care team is available 24/7. Reach them on WhatsApp, phone, or email.
             </p>
@@ -522,15 +641,15 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
           <div>
             <div className="flex items-center gap-2 mb-4">
               <Image
-                src="https://cdn.astroved.com/images/priestservice/priest-services.jpg"
-                alt="AstroVed Priest Service"
+                src={priestservicesLogo}
+                alt="AstroVed Priest Services"
                 width={192}
                 height={48}
                 className="h-10 sm:h-12 w-auto object-contain grayscale-0"
               />
             </div>
             <p className="text-xs sm:text-sm text-stone-600 max-w-xs leading-relaxed font-medium">
-              Priest Service is a spiritual platform that enables devotees to book authentic Vedic pujas at sacred temples across India.
+              Priest Services is a spiritual platform that enables devotees to book authentic Vedic pujas at sacred temples across India.
             </p>
           </div>
 
@@ -538,9 +657,9 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
           <div>
             <h4 className="text-[#1f1a17] font-bold text-sm tracking-[0.15em] uppercase mb-6">Explore</h4>
             <ul className="flex flex-col gap-4 text-sm text-stone-600 font-medium">
-              <li><Link href="/" className="hover:text-success transition-colors">Home</Link></li>
-              <li><Link href="/puja" className="hover:text-success transition-colors">Puja</Link></li>
-              <li><Link href="/profile" className="hover:text-success transition-colors">Account</Link></li>
+              <li><Link href="/" className="hover:text-primary transition-colors">Home</Link></li>
+              <li><Link href="/puja" className="hover:text-primary transition-colors">Puja</Link></li>
+              <li><Link href="/account" className="hover:text-primary transition-colors">Account</Link></li>
             </ul>
           </div>
 
@@ -548,9 +667,11 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
           <div>
             <h4 className="text-[#1f1a17] font-bold text-sm tracking-[0.15em] uppercase mb-6">Support</h4>
             <ul className="flex flex-col gap-4 text-sm text-stone-600 font-medium">
-              <li><Link href="mailto:support@astroved.com" className="hover:text-success transition-colors">support@astroved.com</Link></li>
-              <li><Link href="/profile?tab=support" className="hover:text-success transition-colors">Contact Us</Link></li>
-              <li><Link href="https://wa.me/919566777645" target="_blank" rel="noopener noreferrer" className="hover:text-success transition-colors">WhatsApp: +91 9566777645</Link></li>
+              <li><Link href="mailto:support@astroved.com" className="hover:text-primary transition-colors">support@astroved.com</Link></li>
+              <li><Link href="/account?tab=support" className="hover:text-primary transition-colors">Contact Us</Link></li>
+              <li><Link href="https://wa.me/919566777645" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">WhatsApp: +91 9566777645</Link></li>
+              <li><Link href="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link></li>
+              <li><Link href="/terms" className="hover:text-primary transition-colors">Terms & Conditions</Link></li>
             </ul>
           </div>
 
@@ -560,13 +681,13 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
             <ul className="flex flex-col gap-6 text-sm text-stone-600 font-medium">
               <li>
                 <strong className="block text-[#1f1a17] mb-1 font-semibold">Customer Care</strong>
-                +91 9677391108<br />+91 44 43419898
+                <a href="tel:+919677391108" className="hover:text-primary transition-colors block leading-relaxed">+91 9677391108</a>
+                <a href="tel:+914443419898" className="hover:text-primary transition-colors block leading-relaxed">+91 44 43419898</a>
               </li>
               <li>
                 <strong className="block text-[#1f1a17] mb-1 font-semibold">Toll Free</strong>
-                1800 102 9098
+                <a href="tel:18001029098" className="hover:text-primary transition-colors block leading-relaxed">1800 102 9098</a>
               </li>
-
             </ul>
           </div>
 
@@ -577,13 +698,13 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
               4th Floor, A-Block, Prince Info Park,<br />
               Plot No. 81-B, 2nd Main Road,<br />
               Ambattur Industrial Estate, Chennai 600058.<br /><br />
-              Phone: +91-44-43419898
+              Phone: <a href="tel:+914443419898" className="hover:text-primary transition-colors">+91-44-43419898</a>
             </div>
           </div>
         </div>
 
-        <div className="border-t border-stone-200/80 pt-8 text-center text-xs text-stone-500 font-medium">
-          © 2026 Astroved PriestService. All rights reserved.
+        <div className="border-t border-stone-200/80 pt-8 text-center text-xs text-stone-500 font-medium flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
+          <span>© 2026 Astroved PriestService. All rights reserved.</span>
         </div>
       </footer>
 
@@ -598,7 +719,7 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
       <GalleryLightboxModal
         isOpen={galleryLightboxOpen}
         onClose={() => setGalleryLightboxOpen(false)}
-        images={galleryImages}
+        images={dynamicGalleryImages}
         initialIndex={galleryLightboxIdx}
       />
     </main>
@@ -607,9 +728,9 @@ export default function DashboardClient({ initialHeroBanners, initialPujas }: { 
 
 // --- Helper Data & Components ---
 
-const galleryImages = [
+const defaultGalleryImages = [
   {
-    src: "/Service%20images/mam_puja.jpg",
+    src: "/images/Navagraha_01.jpeg",
     alt: "Ganesh Chaturthi Mahapuja",
     aspect: "w-[160px] sm:w-[190px] h-[270px] sm:h-[310px]", // Tall
   },

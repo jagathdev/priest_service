@@ -251,7 +251,7 @@ export default function CheckoutClient({ homa }: { homa: any }) {
               </div>
               <div className="flex gap-3 items-center text-sm font-semibold text-gray-600">
                 <div className="w-5 h-5 rounded-full bg-green-50 border border-green-200 flex items-center justify-center text-green-600">✓</div>
-                Verified & Experienced Purohits
+                Verified & Experienced Pandits
               </div>
               <div className="flex gap-3 items-center text-sm font-semibold text-gray-600">
                 <div className="w-5 h-5 rounded-full bg-green-50 border border-green-200 flex items-center justify-center text-green-600">✓</div>

@@ -12,6 +12,7 @@ import { XMarkIcon } from "@heroicons/react/24/solid";
 import WishlistButton from "@/components/common/WishlistButton";
 import PujaCountdownCard from "@/components/common/PujaCountdownCard";
 import GalleryLightboxModal from "@/components/common/GalleryLightboxModal";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface HomaPackage {
   id: string;
@@ -149,6 +150,7 @@ export default function HomaDetailClient({
   const [shareSuccess, setShareSuccess] = useState(false);
   const [galleryLightboxOpen, setGalleryLightboxOpen] = useState(false);
   const [lightboxImageIdx, setLightboxImageIdx] = useState(0);
+  const [failedGalleryImages, setFailedGalleryImages] = useState<Record<string, boolean>>({});
   const heroCtaRef = useRef<HTMLButtonElement | null>(null);
   const tabsContainerRef = useRef<HTMLDivElement | null>(null);
 
@@ -256,6 +258,21 @@ export default function HomaDetailClient({
     const handleScroll = () => {
       const sections = ["about", "benefits", "process", "temple", "receive", "faqs", "gallery"];
       const headerOffset = window.innerWidth < 640 ? 120 : 150;
+
+      // Check if user has reached or scrolled near the bottom of the page
+      const scrollBottom = window.innerHeight + window.pageYOffset;
+      const docHeight = Math.max(
+        document.body.scrollHeight,
+        document.documentElement.scrollHeight,
+        document.body.offsetHeight,
+        document.documentElement.offsetHeight
+      );
+      const isAtBottom = scrollBottom >= docHeight - 120;
+
+      if (isAtBottom && document.getElementById("gallery")) {
+        setActiveTab("gallery");
+        return;
+      }
 
       let currentSection = sections[0];
       for (const sectionId of sections) {
@@ -634,14 +651,15 @@ export default function HomaDetailClient({
           { title: "Full Homa Video Recording", description: "Delivered directly to your WhatsApp number within 48 hours of ritual completion." },
         ];
 
-  const galleryList =
+  const galleryList = (
     Array.isArray(homa.gallery) && homa.gallery.length > 0
       ? homa.gallery.map((img: string) => getHomaImageUrl(img)).filter(Boolean)
       : Array.isArray(homa.galleryUrl) && homa.galleryUrl.length > 0
         ? homa.galleryUrl.map((img: string) => getHomaImageUrl(img)).filter(Boolean)
         : typeof homa.galleryUrl === "string" && homa.galleryUrl.trim()
           ? [getHomaImageUrl(homa.galleryUrl)]
-          : [];
+          : []
+  ).filter((img: string) => !failedGalleryImages[img]);
 
   const templeImage =
     (typeof homa.templeImageUrl === "string" && homa.templeImageUrl.trim()) ||
@@ -724,7 +742,7 @@ export default function HomaDetailClient({
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 
             {/* Left 6 Cols: Main Banner Image (Slightly Increased Width) */}
-            <div className="lg:col-span-6 flex flex-col">
+            <div className="lg:col-span-6 flex flex-col relative">
               <div className="relative w-full aspect-[4/3] min-h-[260px] sm:min-h-0 sm:aspect-auto sm:h-[350px] md:h-[390px] lg:h-[410px] rounded-3xl overflow-hidden border border-stone-200/90 shadow-md group">
                 <Image
                   src={bannerImages[activeBannerIndex] || (homa ? getHomaImageUrl(homa.imageUrl) : "/images/Ganesh-Chaturthi-Mahapuja.jpg")}
@@ -736,6 +754,34 @@ export default function HomaDetailClient({
                   onClick={handleAddHomaToCart}
                 />
               </div>
+
+              {/* Navigation Arrows: Outside image card on Tablet & Laptop/Desktop (hidden on mobile < sm) */}
+              {bannerImages.length > 1 && (
+                <>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setActiveBannerIndex((prev) => (prev - 1 + bannerImages.length) % bannerImages.length);
+                    }}
+                    aria-label="Previous banner image"
+                    className="absolute -left-3.5 sm:-left-4 md:-left-5 xl:-left-6 top-[calc(50%-18px)] -translate-y-1/2 z-30 hidden sm:flex h-9 w-9 xl:h-11 xl:w-11 items-center justify-center rounded-full bg-white/95 hover:bg-white text-stone-800 border border-stone-200/90 shadow-xl transition-all duration-200 active:scale-95 cursor-pointer hover:scale-110 backdrop-blur-sm"
+                  >
+                    <ChevronLeft className="w-5 h-5 xl:w-6 xl:h-6 text-stone-800" strokeWidth={2.5} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setActiveBannerIndex((prev) => (prev + 1) % bannerImages.length);
+                    }}
+                    aria-label="Next banner image"
+                    className="absolute -right-3.5 sm:-right-4 md:-right-5 xl:-right-6 top-[calc(50%-18px)] -translate-y-1/2 z-30 hidden sm:flex h-9 w-9 xl:h-11 xl:w-11 items-center justify-center rounded-full bg-white/95 hover:bg-white text-stone-800 border border-stone-200/90 shadow-xl transition-all duration-200 active:scale-95 cursor-pointer hover:scale-110 backdrop-blur-sm"
+                  >
+                    <ChevronRight className="w-5 h-5 xl:w-6 xl:h-6 text-stone-800" strokeWidth={2.5} />
+                  </button>
+                </>
+              )}
 
               {/* Carousel Dots (Shown ONLY when > 1 image, rendering exact length of bannerImages) */}
               {bannerImages.length > 1 && (
@@ -1269,7 +1315,7 @@ export default function HomaDetailClient({
 
           {/* Section: Homa Gallery */}
           {galleryList.length > 0 && (
-            <section id="gallery" data-reveal className="scroll-mt-32 pb-0 lg:pb-30">
+            <section id="gallery" data-reveal className="scroll-mt-32 pb-32 sm:pb-36 lg:pb-44">
               <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1f1a17] mb-6">Homa Gallery</h2>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {galleryList.map((img: string, idx: number) => (
@@ -1281,6 +1327,7 @@ export default function HomaDetailClient({
                     }}
                     className="h-48 rounded-2xl overflow-hidden border border-stone-200 shadow-xs relative cursor-pointer group"
                   >
+                    {/* Full Image */}
                     <Image
                       src={img}
                       alt={`${homa?.title || "Homa"} - Sacred Ritual Photo ${idx + 1}`}
@@ -1288,6 +1335,9 @@ export default function HomaDetailClient({
                       sizes="(max-width: 640px) 100vw, 33vw"
                       unoptimized
                       className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                      onError={() => {
+                        setFailedGalleryImages((prev) => ({ ...prev, [img]: true }));
+                      }}
                     />
                     <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
                       <div className="w-10 h-10 rounded-full bg-white/90 text-stone-800 flex items-center justify-center shadow-lg transform scale-90 group-hover:scale-100 transition-transform">

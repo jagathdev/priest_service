@@ -5,11 +5,13 @@ export default async function HomePage() {
 
   let initialHeroBanners = null;
   let initialPujas = null;
+  let initialHomas = null;
 
   try {
-    const [bannersRes, pujasRes] = await Promise.all([
-      fetch(`${expressBase}/api/hero-banners`, { next: { revalidate: 60 } }),
-      fetch(`${expressBase}/api/pujas`, { next: { revalidate: 60 } })
+    const [bannersRes, pujasRes, homasRes] = await Promise.all([
+      fetch(`${expressBase}/api/hero-banners`, { cache: "no-store" }),
+      fetch(`${expressBase}/api/pujas`, { cache: "no-store" }),
+      fetch(`${expressBase}/api/homas`, { cache: "no-store" })
     ]);
 
     if (bannersRes.ok) {
@@ -27,6 +29,17 @@ export default async function HomePage() {
       const activeList = rawList.filter((item: any) => !item.status || item.status === "active");
       initialPujas = activeList;
     }
+
+    if (homasRes.ok) {
+      const homasData = await homasRes.json();
+      const rawHomas = homasData?.data && Array.isArray(homasData.data)
+        ? homasData.data
+        : Array.isArray(homasData)
+          ? homasData
+          : [];
+      const activeHomas = rawHomas.filter((item: any) => !item.status || item.status === "active");
+      initialHomas = activeHomas;
+    }
   } catch (err) {
     console.error("Error prefetching data for home page:", err);
   }
@@ -35,6 +48,7 @@ export default async function HomePage() {
     <DashboardPage
       initialHeroBanners={initialHeroBanners || []}
       initialPujas={initialPujas || []}
+      initialHomas={initialHomas || []}
     />
   );
 }

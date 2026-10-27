@@ -11,6 +11,7 @@ import LoginModal from "@/components/auth/LoginModal";
 import { checkAuthStatus } from "@/lib/authCheck";
 import { useUser } from "@/contexts/UserContext";
 import { apiClient, getAuthToken } from "@/services/api";
+import { getStartingPriceINR } from "@/lib/pricing";
 
 interface RazorpayResponse {
   razorpay_order_id: string;
@@ -93,7 +94,7 @@ function SankalpContent() {
               whatsappPhone = res.data.mobileNumber;
             }
             if (res.data.name) name = res.data.name;
-            setUser((prevUser) => ({ ...(prevUser || {}), ...res.data }));
+            setUser((prevUser: any) => ({ ...(prevUser || {}), ...res.data }));
           }
         } catch (err) {
           console.warn("Unable to fetch user profile:", err);
@@ -260,7 +261,7 @@ function SankalpContent() {
   }, [pujaData]);
 
   const packageName = selectedPackage?.name || "Standard Seva Package";
-  const basePrice = selectedPackage?.priceINR ?? selectedPackage?.price ?? (queryAmount ? Number(queryAmount) : pujaData?.price || 516);
+  const basePrice = selectedPackage?.priceINR ?? selectedPackage?.price ?? (queryAmount ? Number(queryAmount) : getStartingPriceINR(pujaData) ?? 0);
   const extraParticipantCount = Math.max(0, formData.participants.length - defaultParticipantCount);
   const extraParticipantFee = extraParticipantCount * 300;
   const offeringsTotal = selectedOfferings.reduce((sum, item) => sum + (Number(item.priceINR ?? item.price) || 0), 0);
@@ -970,7 +971,7 @@ function SankalpContent() {
                     <div className="w-5 h-5 rounded-full bg-[#14395C]/10 flex items-center justify-center shrink-0">
                       <svg className="w-3 h-3 text-[#14395C]" fill="none" stroke="currentColor" strokeWidth="3.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                     </div>
-                    Verified & Experienced Purohits
+                    Verified & Experienced Pandits
                   </div>
                   <div className="flex items-center gap-3 text-xs text-stone-600 font-medium">
                     <div className="w-5 h-5 rounded-full bg-[#14395C]/10 flex items-center justify-center shrink-0">
