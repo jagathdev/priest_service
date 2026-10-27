@@ -25,14 +25,19 @@ export const uploadImage = async (req, res) => {
     const filename = req.file.filename;
     const url = `/images/${filename}`;
 
-    // Store in MongoDB Media collection
-    const mediaDoc = await Media.create({
-      filename,
-      originalName: req.file.originalname,
-      url,
-      mimeType: req.file.mimetype,
-      size: req.file.size,
-    });
+    // Upsert in MongoDB Media collection to avoid duplicate records on overwrite
+    const mediaDoc = await Media.findOneAndUpdate(
+      { filename },
+      {
+        filename,
+        originalName: req.file.originalname,
+        url,
+        mimeType: req.file.mimetype,
+        size: req.file.size,
+        uploadedBy: "admin",
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
 
     return res.status(200).json({
       success: true,

@@ -16,6 +16,7 @@ import {
   MagnifyingGlassIcon,
   ArrowUpTrayIcon,
   LinkIcon,
+  ArrowPathIcon,
 } from "@heroicons/react/24/outline";
 
 /** Puja card date stored as DD-MM-YYYY; native date input uses YYYY-MM-DD */
@@ -186,25 +187,58 @@ export default function ContentManager({
   const [uploadingFields, setUploadingFields] = useState<Record<string, boolean>>({});
   const [uploadErrors, setUploadErrors] = useState<Record<string, string | null>>({});
 
-  const uploadImageFile = async (file: File, key: string, label: string): Promise<string | null> => {
+  const [replaceConflict, setReplaceConflict] = useState<{
+    file: File;
+    key: string;
+    label: string;
+    filename: string;
+    onSuccess: (url: string) => void;
+  } | null>(null);
+
+  const uploadImageFile = async (
+    file: File,
+    key: string,
+    label: string,
+    options?: { overwrite?: boolean; onSuccess?: (url: string) => void }
+  ): Promise<string | null> => {
     if (!file) return null;
-    const titleSlug = (formData.title || "item")
+    // 1. Get concise item initials (e.g., "Ganapati Homam" -> "gh", "Durga Puja" -> "dp", or first 3-4 chars)
+    const words = (formData.title || formData.name || "item")
       .trim()
       .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-|-$/g, "");
-    const fieldSlug = label
-      .replace(/([A-Z])/g, "-$1")
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-");
+      .split(/\s+/)
+      .filter(Boolean);
+    const initials = words.length > 1
+      ? words.map((w: string) => w[0]).join("").slice(0, 5)
+      : (formData.title || formData.name || "img").trim().toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 4) || "img";
 
-    const words = (formData.title || "item").trim().toLowerCase().split(/\s+/).filter(Boolean);
-    const initials = words.length > 1 ? words.map((w: string) => w[0]).join("") : titleSlug.slice(0, 4);
-    const cleanBaseName = `${initials}-${fieldSlug}`;
+    // 2. Map field/purpose label to short purpose keyword
+    let purpose = label.toLowerCase();
+    if (purpose.includes("banner") || purpose.includes("imageurl")) {
+      purpose = "banner";
+    } else if (purpose.includes("gallery")) {
+      purpose = "gallery";
+    } else if (purpose.includes("thumbnail") || purpose.includes("thumb")) {
+      purpose = "thumb";
+    } else if (purpose.includes("offering")) {
+      purpose = "offering";
+    } else {
+      purpose = label
+        .replace(/([A-Z])/g, "-$1")
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "")
+        .slice(0, 10);
+    }
+
+    const cleanBaseName = `${initials}-${purpose}`;
 
     const uploadFormData = new FormData();
     uploadFormData.append("image", file);
     uploadFormData.append("customName", cleanBaseName);
+    if (options?.overwrite) {
+      uploadFormData.append("overwrite", "true");
+    }
 
     setUploadingFields((prev) => ({ ...prev, [key]: true }));
     setUploadErrors((prev) => ({ ...prev, [key]: null }));
@@ -215,7 +249,11 @@ export default function ContentManager({
         expressBase += "/api";
       }
 
-      const res = await fetch(`${expressBase}/upload`, {
+      const uploadUrl = options?.overwrite
+        ? `${expressBase}/upload?overwrite=true`
+        : `${expressBase}/upload`;
+
+      const res = await fetch(uploadUrl, {
         method: "POST",
         headers: {
           ...getAdminAuthHeaders(),
@@ -224,7 +262,23 @@ export default function ContentManager({
       });
 
       const data = await res.json().catch(() => ({}));
+
+      // If file already exists and overwrite was not set, prompt replacement modal
+      if (res.status === 409 && data.code === "FILE_ALREADY_EXISTS") {
+        setReplaceConflict({
+          file,
+          key,
+          label,
+          filename: data.filename || `${cleanBaseName}.${file.name.split(".").pop()}`,
+          onSuccess: options?.onSuccess || (() => { }),
+        });
+        return null;
+      }
+
       if (res.ok && data.url) {
+        if (options?.onSuccess) {
+          options.onSuccess(data.url);
+        }
         return data.url;
       } else {
         setUploadErrors((prev) => ({
@@ -1001,10 +1055,11 @@ export default function ContentManager({
                           onChange={async (e) => {
                             const file = e.target.files?.[0];
                             if (file) {
-                              const uploadedUrl = await uploadImageFile(file, itemKey, `${field.name}-${idx + 1}`);
-                              if (uploadedUrl) {
-                                handleArrayChange(field.name, idx, uploadedUrl);
-                              }
+                              await uploadImageFile(file, itemKey, `${field.name}-${idx + 1}`, {
+                                onSuccess: (uploadedUrl) => {
+                                  handleArrayChange(field.name, idx, uploadedUrl);
+                                },
+                              });
                             }
                           }}
                           className="hidden"
@@ -1176,10 +1231,11 @@ export default function ContentManager({
                                         onChange={async (e) => {
                                           const file = e.target.files?.[0];
                                           if (file) {
-                                            const uploadedUrl = await uploadImageFile(file, subKey, `${val.name || "offering"}-${sub.name}`);
-                                            if (uploadedUrl) {
-                                              handleArrayChange(field.name, idx, uploadedUrl, sub.name);
-                                            }
+                                            await uploadImageFile(file, subKey, `${val.name || "offering"}-${sub.name}`, {
+                                              onSuccess: (uploadedUrl) => {
+                                                handleArrayChange(field.name, idx, uploadedUrl, sub.name);
+                                              },
+                                            });
                                           }
                                         }}
                                         className="hidden"
@@ -1623,13 +1679,14 @@ export default function ContentManager({
             const uploadError = uploadErrors[field.name] || null;
 
             const handleFileSelected = async (file: File) => {
-              const url = await uploadImageFile(file, field.name, field.name);
-              if (url) {
-                setFormData((prev: any) => ({
-                  ...prev,
-                  [field.name]: url,
-                }));
-              }
+              await uploadImageFile(file, field.name, field.name, {
+                onSuccess: (url) => {
+                  setFormData((prev: any) => ({
+                    ...prev,
+                    [field.name]: url,
+                  }));
+                },
+              });
             };
 
             const handleDeleteImage = async () => {
@@ -2252,6 +2309,65 @@ export default function ContentManager({
                   }`}
               >
                 {viewingReview.approved ? "Unapprove" : "Approve"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Image Replace Confirmation Modal */}
+      {replaceConflict && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
+          <div
+            className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl border border-slate-100 transform transition-all"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-3.5 mb-4">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-600 border border-amber-200/60">
+                <ArrowPathIcon className="h-6 w-6 stroke-2" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-gray-900">Replace Existing Image?</h3>
+                <p className="text-xs text-gray-500 font-medium">Image with this name already exists</p>
+              </div>
+            </div>
+
+            <div className="rounded-xl bg-slate-50 border border-slate-200/70 p-3.5 mb-5 space-y-2 text-xs">
+              <div className="flex justify-between items-center text-gray-600">
+                <span className="font-semibold text-gray-500">Target File:</span>
+                <span className="font-mono font-bold text-slate-800 bg-white px-2 py-0.5 rounded border border-slate-200">
+                  {replaceConflict.filename}
+                </span>
+              </div>
+              <p className="text-slate-600 leading-relaxed pt-1 border-t border-slate-200/60">
+                Replacing this will overwrite the old image file directly on the server and update database records without creating any duplicate images.
+              </p>
+            </div>
+
+            <div className="flex items-center justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setReplaceConflict(null)}
+                className="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  const conflict = replaceConflict;
+                  setReplaceConflict(null);
+                  if (conflict) {
+                    await uploadImageFile(conflict.file, conflict.key, conflict.label, {
+                      overwrite: true,
+                      onSuccess: conflict.onSuccess,
+                    });
+                  }
+                }}
+                className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 active:scale-95 rounded-xl shadow-sm transition-all"
+              >
+                <ArrowPathIcon className="h-4 w-4 stroke-2" />
+                Yes, Replace Image
               </button>
             </div>
           </div>

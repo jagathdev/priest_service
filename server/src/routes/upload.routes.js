@@ -23,15 +23,22 @@ const storage = multer.diskStorage({
 
     if (!baseName) baseName = "image";
 
-    // Deduplicate / increment if file already exists
-    let finalName = `${baseName}${ext}`;
-    let counter = 1;
-    while (fs.existsSync(path.join(uploadDir, finalName))) {
-      finalName = `${baseName}-${counter}${ext}`;
-      counter++;
+    const targetFileName = `${baseName}${ext}`;
+    const fileExists = fs.existsSync(path.join(uploadDir, targetFileName));
+    const allowOverwrite =
+      req.query?.overwrite === "true" ||
+      req.query?.overwrite === true ||
+      req.body?.overwrite === "true" ||
+      req.body?.overwrite === true;
+
+    if (fileExists && !allowOverwrite) {
+      const err = new Error("FILE_ALREADY_EXISTS");
+      err.code = "FILE_ALREADY_EXISTS";
+      err.targetFileName = targetFileName;
+      return cb(err);
     }
 
-    cb(null, finalName);
+    cb(null, targetFileName);
   },
 });
 
@@ -54,11 +61,31 @@ const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
 });
 
+const uploadMiddleware = (req, res, next) => {
+  upload.single("image")(req, res, (err) => {
+    if (err) {
+      if (err.code === "FILE_ALREADY_EXISTS" || err.message === "FILE_ALREADY_EXISTS") {
+        return res.status(409).json({
+          success: false,
+          code: "FILE_ALREADY_EXISTS",
+          filename: err.targetFileName,
+          message: `An image with the name "${err.targetFileName}" already exists.`,
+        });
+      }
+      return res.status(400).json({
+        success: false,
+        message: err.message || "Failed to process image upload.",
+      });
+    }
+    next();
+  });
+};
+
 const router = express.Router();
 
 // Routes mapped to controllers
 router.get("/", getAllMedia);
-router.post("/", upload.single("image"), uploadImage);
+router.post("/", uploadMiddleware, uploadImage);
 router.delete("/:filename", deleteImage);
 
 export default router;

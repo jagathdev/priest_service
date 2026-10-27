@@ -38,7 +38,6 @@ const mediaSchema = new mongoose.Schema(
 );
 
 // Indexes
-mediaSchema.index({ filename: 1 }, { unique: true });
 mediaSchema.index({ createdAt: -1 });
 
 export default mongoose.model("Media", mediaSchema);
