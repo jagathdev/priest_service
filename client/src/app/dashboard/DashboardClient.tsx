@@ -944,15 +944,19 @@ const faqList = [
   },
   {
     question: "Can I book a puja for my family members?",
-    answer: "Yes! You can add names and gotra details of your family members during the booking so they are included in the sankalpa."
+    answer: "You may arrange a puja for a family member. The number of devotees covered and any additional charges depend on the selected booking package. Please review the package details or contact Devotee Care before booking."
   },
   {
-    question: "Can I book a puja for someone living abroad / non-NRIs too?",
-    answer: "Yes, we welcome devotees worldwide! We accept international payments and deliver video updates via WhatsApp globally."
+    question: "Will the puja be live-streamed?",
+    answer: "The current service includes a recorded puja video rather than guaranteed live streaming. Any additional viewing arrangements will be mentioned separately if available for the selected ritual."
   },
   {
     question: "What happens after I complete my booking?",
     answer: "Once booked, you will receive an instant confirmation on WhatsApp. On the puja date, our pandits perform your sankalpa and share video proof within 48 hours."
+  },
+  {
+    question: "How do I know the ritual was performed on my behalf?",
+    answer: "Your personal details are included in the Sankalpa as applicable to the selected ritual. A puja recording is shared after the ceremony so you can view the ritual performed."
   }
 ];
 
