@@ -2,9 +2,10 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Navbar from "@/components/layout/Navbar";
 import WishlistButton from "@/components/common/WishlistButton";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import HeroSection, { get1024BannerImage } from "@/components/home/HeroSection";
 import PujaFilterModal, {
@@ -59,6 +60,87 @@ export default function DashboardClient({
   const [galleryLightboxOpen, setGalleryLightboxOpen] = useState(false);
   const [galleryLightboxIdx, setGalleryLightboxIdx] = useState(0);
   const [failedImages, setFailedImages] = useState<Record<string, boolean>>({});
+
+  // Puja Gallery Draggable / Nav Scroll
+  const galleryScrollRef = useRef<HTMLDivElement | null>(null);
+  const [isGalleryDragging, setIsGalleryDragging] = useState(false);
+  const galleryStartXRef = useRef<number>(0);
+  const galleryScrollLeftRef = useRef<number>(0);
+  const galleryMovedRef = useRef<boolean>(false);
+
+  // Always forward auto-scroll animation loop (NEVER STOPS - runs continuously forward)
+  useEffect(() => {
+    let animId: number;
+    const speed = 0.9; // Smooth forward scroll speed in pixels per frame
+
+    const step = () => {
+      const container = galleryScrollRef.current;
+      if (container) {
+        container.scrollLeft += speed;
+        // Keep baseline drag reference in sync so dragging doesn't jump
+        if (galleryScrollLeftRef.current !== undefined) {
+          galleryScrollLeftRef.current += speed;
+        }
+
+        const maxScroll = container.scrollWidth - container.clientWidth;
+        if (maxScroll > 0 && container.scrollLeft >= maxScroll / 2) {
+          container.scrollLeft -= maxScroll / 2;
+          if (galleryScrollLeftRef.current !== undefined) {
+            galleryScrollLeftRef.current -= maxScroll / 2;
+          }
+        }
+      }
+      animId = requestAnimationFrame(step);
+    };
+
+    animId = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(animId);
+  }, []);
+
+  const handleGalleryMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!galleryScrollRef.current) return;
+    setIsGalleryDragging(true);
+    galleryMovedRef.current = false;
+    galleryStartXRef.current = e.pageX;
+    galleryScrollLeftRef.current = galleryScrollRef.current.scrollLeft;
+  };
+
+  const handleGalleryMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!isGalleryDragging || !galleryScrollRef.current) return;
+    e.preventDefault();
+    const diff = (e.pageX - galleryStartXRef.current) * 1.5;
+    if (Math.abs(diff) > 5) {
+      galleryMovedRef.current = true;
+    }
+    const container = galleryScrollRef.current;
+    container.scrollLeft = galleryScrollLeftRef.current - diff;
+    galleryStartXRef.current = e.pageX;
+    galleryScrollLeftRef.current = container.scrollLeft;
+
+    const maxScroll = container.scrollWidth - container.clientWidth;
+    if (maxScroll > 0) {
+      if (container.scrollLeft <= 0) {
+        container.scrollLeft += maxScroll / 2;
+        galleryScrollLeftRef.current += maxScroll / 2;
+      } else if (container.scrollLeft >= maxScroll) {
+        container.scrollLeft -= maxScroll / 2;
+        galleryScrollLeftRef.current -= maxScroll / 2;
+      }
+    }
+  };
+
+  const handleGalleryMouseUpOrLeave = () => {
+    setIsGalleryDragging(false);
+  };
+
+  const scrollGallery = (direction: "left" | "right") => {
+    if (!galleryScrollRef.current) return;
+    const scrollAmount = 350;
+    galleryScrollRef.current.scrollBy({
+      left: direction === "left" ? -scrollAmount : scrollAmount,
+      behavior: "smooth",
+    });
+  };
 
   useEffect(() => {
     async function fetchData() {
@@ -139,11 +221,11 @@ export default function DashboardClient({
     const seenUrls = new Set<string>();
 
     const aspectPresets = [
-      "w-[160px] sm:w-[190px] h-[270px] sm:h-[310px]", // Tall
-      "w-[200px] sm:w-[240px] h-[170px] sm:h-[190px]", // Medium-small
-      "w-[160px] sm:w-[190px] h-[310px] sm:h-[350px]", // Very Tall
-      "w-[210px] sm:w-[250px] h-[150px] sm:h-[165px]", // Small
-      "w-[210px] sm:w-[250px] h-[160px] sm:h-[180px]", // Medium
+      "w-[190px] sm:w-[220px] md:w-[250px] h-[300px] sm:h-[350px] md:h-[380px]", // Tall portrait
+      "w-[240px] sm:w-[280px] md:w-[320px] h-[210px] sm:h-[240px] md:h-[260px]", // Wide landscape
+      "w-[200px] sm:w-[230px] md:w-[260px] h-[340px] sm:h-[390px] md:h-[420px]", // Very tall portrait
+      "w-[250px] sm:w-[290px] md:w-[330px] h-[190px] sm:h-[220px] md:h-[240px]", // Landscape
+      "w-[230px] sm:w-[270px] md:w-[300px] h-[240px] sm:h-[280px] md:h-[300px]", // Medium balanced
     ];
 
     const addImage = (rawUrl: any, title: string) => {
@@ -470,39 +552,71 @@ export default function DashboardClient({
       </section>
 
       {/* ── 4. Puja Gallery Section ── */}
-      <section className="pt-10 pb-8 sm:pt-14 sm:pb-12 bg-white relative overflow-hidden">
+      <section className="pt-10 pb-8 sm:pt-14 sm:pb-12 bg-white relative overflow-hidden group/gallery">
         {/* Background Typography at Top */}
         <h2 className="text-[44px] min-[375px]:text-[52px] min-[425px]:text-[60px] sm:text-[95px] md:text-[120px] lg:text-[160px] xl:text-[185px] font-bold text-stone-200/90 font-serif tracking-tight text-center select-none pointer-events-none whitespace-nowrap absolute top-1 sm:top-2 left-1/2 -translate-x-1/2 z-0 leading-none">
           Puja Gallery
         </h2>
 
-        {/* Marquee Row Container anchored at Bottom of Font */}
-        <div className="relative z-10 overflow-hidden w-full pt-12 min-[375px]:pt-14 sm:pt-20 md:pt-24 pb-2">
-          <div className="flex animate-marquee-slow gap-4 sm:gap-6 items-end">
-            {/* Repeat list twice for continuous infinite marquee */}
+        {/* Left Navigation Button - Transparent Dark Circle */}
+        <button
+          type="button"
+          onClick={() => scrollGallery("left")}
+          aria-label="Previous gallery images"
+          className="absolute left-3 sm:left-6 md:left-8 top-1/2 -translate-y-1/2 z-30 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center backdrop-blur-xs transition-all shadow-md active:scale-95 cursor-pointer"
+        >
+          <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6 text-white" strokeWidth={2.5} />
+        </button>
+
+        {/* Right Navigation Button - Transparent Dark Circle */}
+        <button
+          type="button"
+          onClick={() => scrollGallery("right")}
+          aria-label="Next gallery images"
+          className="absolute right-3 sm:right-6 md:right-8 top-1/2 -translate-y-1/2 z-30 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center backdrop-blur-xs transition-all shadow-md active:scale-95 cursor-pointer"
+        >
+          <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 text-white" strokeWidth={2.5} />
+        </button>
+
+        {/* Draggable Row Container anchored at Bottom of Font */}
+        <div
+          ref={galleryScrollRef}
+          onMouseDown={handleGalleryMouseDown}
+          onMouseMove={handleGalleryMouseMove}
+          onMouseUp={handleGalleryMouseUpOrLeave}
+          onMouseLeave={handleGalleryMouseUpOrLeave}
+          className={`relative z-10 w-full pt-12 min-[375px]:pt-14 sm:pt-20 md:pt-24 pb-2 px-4 sm:px-8 overflow-x-auto overflow-y-hidden select-none no-scrollbar ${
+            isGalleryDragging ? "cursor-grabbing" : "cursor-grab"
+          }`}
+          style={{ scrollBehavior: isGalleryDragging ? "auto" : "smooth" }}
+        >
+          <div className="flex gap-4 sm:gap-6 items-end w-max pb-2">
             {[...dynamicGalleryImages, ...dynamicGalleryImages].map((img, idx) => (
               <div
                 key={idx}
                 onClick={() => {
+                  if (galleryMovedRef.current) return;
                   setGalleryLightboxIdx(idx % dynamicGalleryImages.length);
                   setGalleryLightboxOpen(true);
                 }}
-                className={`relative shrink-0 rounded-2xl sm:rounded-3xl overflow-hidden shadow-sm border border-stone-200/80 group cursor-pointer transition-transform duration-300 hover:scale-[1.02] ${img.aspect}`}
+                className={`relative shrink-0 rounded-2xl sm:rounded-3xl overflow-hidden shadow-sm border border-stone-200/80 group transition-transform duration-300 hover:scale-[1.02] ${img.aspect}`}
               >
-                {/* Full Image */}
+                {/* Full Image in Crisp HD */}
                 <Image
                   src={img.src}
                   alt={img.alt}
                   fill
-                  sizes="(max-width: 640px) 160px, 250px"
-                  className="object-cover object-center transition-transform duration-300 group-hover:scale-105"
+                  unoptimized
+                  draggable={false}
+                  sizes="(max-width: 640px) 250px, (max-width: 1024px) 350px, 450px"
+                  className="object-cover object-center transition-transform duration-500 group-hover:scale-105 select-none pointer-events-none"
                   onError={() => {
                     setFailedImages((prev) => ({ ...prev, [img.src]: true }));
                   }}
                 />
-                <div className="absolute inset-0 bg-black/25 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                  <div className="w-10 h-10 rounded-full bg-white/90 text-stone-800 flex items-center justify-center shadow-lg transform scale-90 group-hover:scale-100 transition-transform">
-                    <svg className="w-5 h-5 text-stone-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <div className="absolute inset-0 bg-black/25 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center pointer-events-none">
+                  <div className="w-10 h-10 rounded-full bg-black/40 text-white flex items-center justify-center backdrop-blur-xs shadow-lg transform scale-90 group-hover:scale-100 transition-transform">
+                    <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7" />
                     </svg>
                   </div>
@@ -736,49 +850,39 @@ export default function DashboardClient({
 
 const defaultGalleryImages = [
   {
-    src: "/images/Navagraha_01.jpeg",
-    alt: "Ganesh Chaturthi Mahapuja",
-    aspect: "w-[160px] sm:w-[190px] h-[270px] sm:h-[310px]", // Tall
+    src: "/Service%20images/shreem.jpg",
+    alt: "Sacred Vedic Ritual",
+    aspect: "w-[190px] sm:w-[220px] md:w-[250px] h-[300px] sm:h-[350px] md:h-[380px]", // Tall
   },
   {
     src: "/Service%20images/maha_homam.jpeg",
-    alt: "lakshmi_puja",
-    aspect: "w-[200px] sm:w-[240px] h-[170px] sm:h-[190px]", // Medium-small
-  },
-  {
-    src: "/Service%20images/shreem.jpg",
-    alt: "anchineyar",
-    aspect: "w-[160px] sm:w-[190px] h-[270px] sm:h-[310px]", // Tall
-  },
-  {
-    src: "/Service%20images/g3.jpg",
-    alt: "varahi_amman",
-    aspect: "w-[210px] sm:w-[250px] h-[150px] sm:h-[165px]", // Small
+    alt: "Maha Homam Ritual",
+    aspect: "w-[240px] sm:w-[280px] md:w-[320px] h-[210px] sm:h-[240px] md:h-[260px]", // Wide landscape
   },
   {
     src: "/Service%20images/lord_perumal.jpeg",
-    alt: "perumal",
-    aspect: "w-[160px] sm:w-[190px] h-[310px] sm:h-[350px]", // Very Tall
+    alt: "Lord Perumal Puja",
+    aspect: "w-[200px] sm:w-[230px] md:w-[260px] h-[340px] sm:h-[390px] md:h-[420px]", // Very Tall
   },
   {
-    src: "/images/perumal_puja.jpg",
-    alt: "perumal_puja",
-    aspect: "w-[210px] sm:w-[250px] h-[160px] sm:h-[180px]", // Medium-small
-  },
-  {
-    src: "/Service%20images/golu.jpeg",
-    alt: "anchineyar",
-    aspect: "w-[160px] sm:w-[190px] h-[270px] sm:h-[310px]", // Tall
+    src: "/Service%20images/g3.jpg",
+    alt: "Puja Ceremony",
+    aspect: "w-[250px] sm:w-[290px] md:w-[330px] h-[190px] sm:h-[220px] md:h-[240px]", // Landscape
   },
   {
     src: "/Service%20images/group_shreem.jpeg",
-    alt: "lakshmi_puja",
-    aspect: "w-[200px] sm:w-[240px] h-[170px] sm:h-[190px]", // Medium-small
+    alt: "Group Puja Ritual",
+    aspect: "w-[230px] sm:w-[270px] md:w-[300px] h-[240px] sm:h-[280px] md:h-[300px]", // Medium balanced
+  },
+  {
+    src: "/Service%20images/golu.jpeg",
+    alt: "Vedic Chanting and Puja",
+    aspect: "w-[190px] sm:w-[220px] md:w-[250px] h-[300px] sm:h-[350px] md:h-[380px]", // Tall
   },
   {
     src: "/Service%20images/g2.jpg",
     alt: "Sacred Vedic Homa Ritual",
-    aspect: "w-[200px] sm:w-[240px] h-[170px] sm:h-[190px]", // Medium-small
+    aspect: "w-[240px] sm:w-[280px] md:w-[320px] h-[210px] sm:h-[240px] md:h-[260px]", // Landscape
   },
 ];
 
