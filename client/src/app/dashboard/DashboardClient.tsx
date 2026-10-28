@@ -5,7 +5,17 @@ import Link from "next/link";
 import React, { useState, useEffect, useRef } from "react";
 import Navbar from "@/components/layout/Navbar";
 import WishlistButton from "@/components/common/WishlistButton";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ArrowRight,
+  Loader2,
+  ZoomIn,
+  MapPin,
+  Calendar,
+  Share2,
+  MessageCircle,
+} from "lucide-react";
 
 import HeroSection, { get1024BannerImage } from "@/components/home/HeroSection";
 import PujaFilterModal, {
@@ -332,9 +342,7 @@ export default function DashboardClient({
 
             {/* Arrow 1 (Desktop) */}
             <div className="hidden md:flex text-[#c68a36] shrink-0 mb-6">
-              <svg className="w-5 h-5 sm:w-6 sm:h-6 stroke-current" fill="none" viewBox="0 0 24 24" strokeWidth="2.5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-              </svg>
+              <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6" strokeWidth={2.5} />
             </div>
 
             {/* Step 2 */}
@@ -355,9 +363,7 @@ export default function DashboardClient({
 
             {/* Arrow 2 (Desktop) */}
             <div className="hidden md:flex text-[#c68a36] shrink-0 mb-6">
-              <svg className="w-5 h-5 sm:w-6 sm:h-6 stroke-current" fill="none" viewBox="0 0 24 24" strokeWidth="2.5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-              </svg>
+              <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6" strokeWidth={2.5} />
             </div>
 
             {/* Step 3 */}
@@ -379,9 +385,7 @@ export default function DashboardClient({
 
             {/* Arrow 3 (Desktop) */}
             <div className="hidden md:flex text-[#c68a36] shrink-0 mb-6">
-              <svg className="w-5 h-5 sm:w-6 sm:h-6 stroke-current" fill="none" viewBox="0 0 24 24" strokeWidth="2.5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-              </svg>
+              <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6" strokeWidth={2.5} />
             </div>
 
             {/* Step 4 */}
@@ -484,10 +488,7 @@ export default function DashboardClient({
                   className="bg-white rounded-3xl h-[450px] animate-pulse border border-stone-200 p-3 shadow-sm flex flex-col"
                 >
                   <div className="w-full aspect-[4/3] xl:aspect-auto xl:h-[235px] bg-stone-100 rounded-xl min-[375px]:rounded-2xl mb-4 flex items-center justify-center">
-                    <svg className="w-8 h-8 text-stone-300 animate-spin" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
+                    <Loader2 className="w-8 h-8 text-stone-300 animate-spin" />
                   </div>
                   <div className="w-1/3 h-3 bg-stone-200 rounded-full mx-auto mb-4" />
                   <div className="w-3/4 h-5 bg-stone-200 rounded-full mb-3" />
@@ -585,9 +586,8 @@ export default function DashboardClient({
           onMouseMove={handleGalleryMouseMove}
           onMouseUp={handleGalleryMouseUpOrLeave}
           onMouseLeave={handleGalleryMouseUpOrLeave}
-          className={`relative z-10 w-full pt-12 min-[375px]:pt-14 sm:pt-20 md:pt-24 pb-2 px-4 sm:px-8 overflow-x-auto overflow-y-hidden select-none no-scrollbar ${
-            isGalleryDragging ? "cursor-grabbing" : "cursor-grab"
-          }`}
+          className={`relative z-10 w-full pt-12 min-[375px]:pt-14 sm:pt-20 md:pt-24 pb-2 px-4 sm:px-8 overflow-x-auto overflow-y-hidden select-none no-scrollbar ${isGalleryDragging ? "cursor-grabbing" : "cursor-grab"
+            }`}
           style={{ scrollBehavior: isGalleryDragging ? "auto" : "smooth" }}
         >
           <div className="flex gap-4 sm:gap-6 items-end w-max pb-2">
@@ -616,9 +616,7 @@ export default function DashboardClient({
                 />
                 <div className="absolute inset-0 bg-black/25 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center pointer-events-none">
                   <div className="w-10 h-10 rounded-full bg-black/40 text-white flex items-center justify-center backdrop-blur-xs shadow-lg transform scale-90 group-hover:scale-100 transition-transform">
-                    <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7" />
-                    </svg>
+                    <ZoomIn className="w-5 h-5 text-white" strokeWidth={2} />
                   </div>
                 </div>
               </div>
@@ -721,38 +719,38 @@ export default function DashboardClient({
             <ul className="flex items-center justify-center gap-3">
               <li>
                 <a href="https://www.facebook.com/astroved" aria-label="Facebook" rel="nofollow" target="_blank" className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white shadow-sm border border-stone-200 text-[#1877F2] transition-all duration-300 hover:scale-110 hover:-translate-y-1 hover:border-[#1877F2] hover:shadow-lg hover:shadow-[#1877F2]/20">
-                  <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" /></svg>
+                  <Share2 className="w-5 h-5" />
                 </a>
               </li>
               <li>
                 <a href="https://twitter.com/astroved" aria-label="X (formerly Twitter)" rel="nofollow" target="_blank" className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white shadow-sm border border-stone-200 text-black transition-all duration-300 hover:scale-110 hover:-translate-y-1 hover:border-black hover:shadow-lg hover:shadow-black/10">
-                  <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
+                  <Share2 className="w-4 h-4" />
                 </a>
               </li>
               <li>
                 <a href="https://www.youtube.com/channel/UCLzw8opUlMnSA2TQfj34K9w" aria-label="YouTube" rel="nofollow" target="_blank" className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white shadow-sm border border-stone-200 text-[#FF0000] transition-all duration-300 hover:scale-110 hover:-translate-y-1 hover:border-[#FF0000] hover:shadow-lg hover:shadow-[#FF0000]/20">
-                  <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.5 12 3.5 12 3.5s-7.505 0-9.377.55a3.015 3.015 0 0 0-2.122 2.136C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.55 9.376.55 9.376.55s7.505 0 9.377-.55a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" /></svg>
+                  <Share2 className="w-5 h-5" />
                 </a>
               </li>
               <li>
                 <a href="https://www.instagram.com/astroved/" aria-label="Instagram" rel="nofollow" target="_blank" className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white shadow-sm border border-stone-200 text-[#E1306C] transition-all duration-300 hover:scale-110 hover:-translate-y-1 hover:border-[#E1306C] hover:shadow-lg hover:shadow-[#E1306C]/20">
-                  <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" /></svg>
+                  <Share2 className="w-5 h-5" />
                 </a>
               </li>
               <li>
                 <a href="https://www.linkedin.com/company/astroved-com" aria-label="LinkedIn" rel="nofollow" target="_blank" className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white shadow-sm border border-stone-200 text-[#0A66C2] transition-all duration-300 hover:scale-110 hover:-translate-y-1 hover:border-[#0A66C2] hover:shadow-lg hover:shadow-[#0A66C2]/20">
-                  <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" /></svg>
+                  <Share2 className="w-5 h-5" />
                 </a>
               </li>
               <li>
                 <a href="https://whatsapp.com/channel/0029VaAG971AInPbquhYnI3u" aria-label="WhatsApp Channel" rel="nofollow" target="_blank" className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white shadow-sm border border-stone-200 text-[#25D366] transition-all duration-300 hover:scale-110 hover:-translate-y-1 hover:border-[#25D366] hover:shadow-lg hover:shadow-[#25D366]/20">
-                  <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" /></svg>
+                  <MessageCircle className="w-5 h-5" />
                 </a>
               </li>
             </ul>
           </div>
           {/* <Link href="/puja" className="bg-[#14395C] hover:bg-[#0e2740] active:scale-95 text-white font-extrabold px-8 py-3.5 rounded-full text-sm sm:text-base transition-all inline-flex items-center gap-2.5 shadow-md shadow-[#14395C]/20">
-            Find the Right Puja <div className="bg-white text-[#14395C] rounded-full w-5 h-5 flex items-center justify-center shadow-sm"><svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7" /></svg></div>
+            Find the Right Puja <div className="bg-white text-[#14395C] rounded-full w-5 h-5 flex items-center justify-center shadow-sm"><ChevronRight className="w-3 h-3 text-[#14395C]" strokeWidth={3} /></div>
           </Link> */}
         </div>
 
@@ -983,9 +981,7 @@ function PujaCard({
             {/* Temple & Location (Row 1) */}
             <div className="flex items-center gap-2.5">
               <div className="text-stone-700 shrink-0">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 2L15 6H9L12 2Z M9 6V21 M15 6V21 M6 21H18 M12 6V11 M8 11H16" />
-                </svg>
+                <MapPin className="w-4 h-4 text-stone-700" strokeWidth={2} />
               </div>
               <div className="flex flex-wrap items-baseline gap-x-2 truncate">
                 <span className="font-bold text-stone-900 leading-snug truncate">
@@ -1004,13 +1000,7 @@ function PujaCard({
             {/* Date & Occasion (Row 2) */}
             <div className="flex items-center gap-2.5">
               <div className="text-stone-700 shrink-0">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
-                  <rect x="3" y="4" width="18" height="18" rx="3" ry="3" />
-                  <line x1="16" y1="2" x2="16" y2="6" />
-                  <line x1="8" y1="2" x2="8" y2="6" />
-                  <line x1="3" y1="10" x2="21" y2="10" />
-                  <circle cx="8" cy="14" r="1" fill="currentColor" />
-                </svg>
+                <Calendar className="w-4 h-4 text-stone-700" strokeWidth={2} />
               </div>
               <div className="flex flex-wrap items-baseline gap-x-2 truncate">
                 <span className="font-bold text-stone-900 leading-snug">
@@ -1035,11 +1025,9 @@ function PujaCard({
 
             {/* CTA Button */}
             <div className="inline-flex items-center gap-2 bg-[#14395C] hover:bg-[#0e2740] active:scale-95 text-white font-extrabold text-xs sm:text-sm px-5 py-2.5 sm:py-3 rounded-full shadow-md shadow-[#14395C]/20 transition-all duration-200 group/btn">
-              <span>Participate Now</span>
+              <span>Book My Puja</span>
               <div className="w-5 h-5 rounded-full bg-white text-[#14395C] flex items-center justify-center shrink-0">
-                <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                </svg>
+                <ChevronRight className="w-3.5 h-3.5 text-[#14395C]" strokeWidth={3} />
               </div>
             </div>
           </div>
@@ -1067,13 +1055,7 @@ function PujaCard({
           }}
           className="w-8 h-8 rounded-full bg-white/95 text-stone-700 hover:text-success flex items-center justify-center shadow-md backdrop-blur-sm transition-transform active:scale-95 hover:bg-white"
         >
-          <svg className="w-4 h-4 fill-none stroke-current" strokeWidth="2" viewBox="0 0 24 24">
-            <circle cx="18" cy="5" r="3" />
-            <circle cx="6" cy="12" r="3" />
-            <circle cx="18" cy="19" r="3" />
-            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
-            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
-          </svg>
+          <Share2 className="w-4 h-4" strokeWidth={2} />
         </button>
       </div>
     </div>

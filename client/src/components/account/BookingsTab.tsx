@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { useUser } from "@/contexts/UserContext";
 import { request } from "@/lib/api-client";
+import { ArrowLeft, Home, Calendar, Check, User, X, ClipboardList, Loader2, Bookmark, PackageOpen, Landmark, Flame, Play } from "lucide-react";
 
 const formatBookingId = (order: any) => {
   if (order?.orderNumber) {
@@ -151,7 +152,7 @@ export default function BookingsTab() {
     return (
       <div className="bg-white rounded-2xl shadow-sm border border-stone-100 p-3.5 sm:p-6 lg:p-8 space-y-4 sm:space-y-6 md:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
         <button onClick={() => setSelectedOrder(null)} className="flex items-center text-sm font-bold text-stone-500 hover:text-primary transition-colors">
-          <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
+          <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Bookings
         </button>
 
@@ -206,7 +207,7 @@ export default function BookingsTab() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-6">
                 {selectedOrder.temple && (
                   <div className="flex gap-2.5 sm:gap-3 items-start">
-                    <svg className="w-5 h-5 text-[#f15a29] shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
+                    <Home className="w-5 h-5 text-[#f15a29] shrink-0 mt-0.5" />
                     <div className="min-w-0">
                       <p className="text-[10px] font-bold text-stone-400 uppercase">Temple</p>
                       <p className="text-xs sm:text-sm font-semibold text-stone-800 break-words">{selectedOrder.temple}</p>
@@ -214,7 +215,7 @@ export default function BookingsTab() {
                   </div>
                 )}
                 <div className="flex gap-2.5 sm:gap-3 items-start">
-                  <svg className="w-5 h-5 text-[#f15a29] shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                  <Calendar className="w-5 h-5 text-[#f15a29] shrink-0 mt-0.5" />
                   <div className="min-w-0">
                     <p className="text-[10px] font-bold text-stone-400 uppercase">Puja Date</p>
                     <p className="text-xs sm:text-sm font-semibold text-stone-800">
@@ -229,7 +230,7 @@ export default function BookingsTab() {
               <div className="mt-4 sm:mt-6 flex flex-wrap items-center gap-2.5">
                 {isRefunded ? (
                   <span className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-800 bg-emerald-100 border border-emerald-300 rounded-full px-4 py-2 shadow-2xs">
-                    <svg className="w-3.5 h-3.5 text-emerald-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                    <Check className="w-3.5 h-3.5 text-emerald-700" strokeWidth={3} />
                     Refund Successful {refundAmount ? `(₹${refundAmount})` : ''} • Credited to Account
                   </span>
                 ) : isCancelled ? (
@@ -250,7 +251,7 @@ export default function BookingsTab() {
         <div className="border border-stone-200 rounded-xl p-4 sm:p-6">
           <div className="flex items-center gap-2 mb-4">
             <div className="w-8 h-8 rounded-full bg-[#5c1b1c] flex items-center justify-center">
-              <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+              <User className="w-4 h-4 text-white" />
             </div>
             <h4 className="font-bold text-stone-800">Devotee Details</h4>
           </div>
@@ -282,9 +283,9 @@ export default function BookingsTab() {
           <div className="flex items-center gap-2 mb-5 sm:mb-6">
             <div className={`w-8 h-8 rounded-full flex items-center justify-center ${selectedOrder.orderStatus === 'cancelled' || selectedOrder.orderStatus === 'refunded' || selectedOrder.paymentStatus === 'refunded' ? 'bg-danger' : 'bg-[#5c1b1c]'}`}>
               {selectedOrder.orderStatus === 'cancelled' || selectedOrder.orderStatus === 'refunded' || selectedOrder.paymentStatus === 'refunded' ? (
-                <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                <X className="w-4 h-4 text-white" strokeWidth={2.5} />
               ) : (
-                <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+                <ClipboardList className="w-4 h-4 text-white" />
               )}
             </div>
             <h4 className="font-bold text-stone-800">
@@ -298,7 +299,7 @@ export default function BookingsTab() {
               {/* Step 1: Booking Confirmed */}
               <div className="relative flex items-center justify-end md:justify-between md:odd:flex-row-reverse group is-active">
                 <div className="absolute left-0 md:left-1/2 md:-translate-x-1/2 flex items-center justify-center w-8 h-8 rounded-full border-4 border-white bg-primary text-white shadow shrink-0 z-10">
-                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                  <Check className="w-3 h-3" strokeWidth={3} />
                 </div>
                 <div className="w-[calc(100%-2.5rem)] sm:w-[calc(100%-3rem)] md:w-[calc(50%-2.5rem)] p-3 sm:p-4 border border-stone-100 rounded-xl bg-stone-50">
                   <div className="text-[10px] font-extrabold text-stone-400 uppercase tracking-wider mb-0.5 sm:mb-1">Step 1</div>
@@ -310,7 +311,7 @@ export default function BookingsTab() {
               {/* Step 2: Order Cancelled */}
               <div className="relative flex items-center justify-end md:justify-between md:odd:flex-row-reverse group is-active">
                 <div className="absolute left-0 md:left-1/2 md:-translate-x-1/2 flex items-center justify-center w-8 h-8 rounded-full border-4 border-white bg-danger text-white shadow shrink-0 z-10">
-                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                  <X className="w-3.5 h-3.5" strokeWidth={3} />
                 </div>
                 <div className="w-[calc(100%-2.5rem)] sm:w-[calc(100%-3rem)] md:w-[calc(50%-2.5rem)] p-3 sm:p-4 border border-red-100 rounded-xl bg-red-50/50">
                   <div className="text-[10px] font-extrabold text-danger uppercase tracking-wider mb-0.5 sm:mb-1">Step 2</div>
@@ -329,9 +330,9 @@ export default function BookingsTab() {
                   <div className="relative flex items-center justify-end md:justify-between md:odd:flex-row-reverse group is-active">
                     <div className={`absolute left-0 md:left-1/2 md:-translate-x-1/2 flex items-center justify-center w-8 h-8 rounded-full border-4 border-white shadow shrink-0 z-10 ${isRefunded ? 'bg-emerald-600 text-white' : 'bg-amber-500 text-white'}`}>
                       {isRefunded ? (
-                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                        <Check className="w-3.5 h-3.5" strokeWidth={3} />
                       ) : (
-                        <svg className="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" strokeWidth={2.5} />
                       )}
                     </div>
                     <div className={`w-[calc(100%-2.5rem)] sm:w-[calc(100%-3rem)] md:w-[calc(50%-2.5rem)] p-3 sm:p-4 border rounded-xl ${isRefunded ? 'border-emerald-200 bg-emerald-50/60' : 'border-amber-100 bg-amber-50/40'}`}>
@@ -360,7 +361,7 @@ export default function BookingsTab() {
 
               <div className="relative flex items-center justify-end md:justify-between md:odd:flex-row-reverse group is-active">
                 <div className="absolute left-0 md:left-1/2 md:-translate-x-1/2 flex items-center justify-center w-8 h-8 rounded-full border-4 border-white bg-primary text-white shadow shrink-0 z-10">
-                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                  <Check className="w-3 h-3" strokeWidth={3} />
                 </div>
                 <div className="w-[calc(100%-2.5rem)] sm:w-[calc(100%-3rem)] md:w-[calc(50%-2.5rem)] p-3 sm:p-4 border border-stone-100 rounded-xl bg-stone-50">
                   <div className="text-[10px] font-extrabold text-stone-400 uppercase tracking-wider mb-0.5 sm:mb-1">Step 1</div>
@@ -371,7 +372,7 @@ export default function BookingsTab() {
 
               <div className="relative flex items-center justify-end md:justify-between md:odd:flex-row-reverse group is-active">
                 <div className="absolute left-0 md:left-1/2 md:-translate-x-1/2 flex items-center justify-center w-8 h-8 rounded-full border-4 border-white bg-primary text-white shadow shrink-0 z-10">
-                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                  <Check className="w-3 h-3" strokeWidth={3} />
                 </div>
                 <div className="w-[calc(100%-2.5rem)] sm:w-[calc(100%-3rem)] md:w-[calc(50%-2.5rem)] p-3 sm:p-4 border border-stone-100 rounded-xl bg-stone-50">
                   <div className="text-[10px] font-extrabold text-stone-400 uppercase tracking-wider mb-0.5 sm:mb-1">Step 2</div>
@@ -383,7 +384,7 @@ export default function BookingsTab() {
               <div className={`relative flex items-center justify-end md:justify-between md:odd:flex-row-reverse group ${selectedOrder.orderStatus === 'scheduled' || selectedOrder.orderStatus === 'performed' || selectedOrder.orderStatus === 'completed' ? 'is-active' : ''}`}>
                 <div className={`absolute left-0 md:left-1/2 md:-translate-x-1/2 flex items-center justify-center w-8 h-8 rounded-full border-4 border-white shadow shrink-0 z-10 ${selectedOrder.orderStatus === 'scheduled' || selectedOrder.orderStatus === 'performed' || selectedOrder.orderStatus === 'completed' ? 'bg-primary text-white' : 'bg-white'}`}>
                   {selectedOrder.orderStatus === 'scheduled' || selectedOrder.orderStatus === 'performed' || selectedOrder.orderStatus === 'completed' ? (
-                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                    <Check className="w-3 h-3" strokeWidth={3} />
                   ) : (
                     <div className="w-2.5 h-2.5 rounded-full bg-stone-300"></div>
                   )}
@@ -403,7 +404,7 @@ export default function BookingsTab() {
               <div className={`relative flex items-center justify-end md:justify-between md:odd:flex-row-reverse group ${selectedOrder.orderStatus === 'performed' || selectedOrder.orderStatus === 'completed' ? 'is-active' : ''}`}>
                 <div className={`absolute left-0 md:left-1/2 md:-translate-x-1/2 flex items-center justify-center w-8 h-8 rounded-full border-4 border-white shadow shrink-0 z-10 ${selectedOrder.orderStatus === 'performed' || selectedOrder.orderStatus === 'completed' ? 'bg-primary text-white' : 'bg-white'}`}>
                   {selectedOrder.orderStatus === 'performed' || selectedOrder.orderStatus === 'completed' ? (
-                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                    <Check className="w-3 h-3" strokeWidth={3} />
                   ) : (
                     <div className="w-2.5 h-2.5 rounded-full bg-stone-300"></div>
                   )}
@@ -421,7 +422,7 @@ export default function BookingsTab() {
               <div className={`relative flex items-center justify-end md:justify-between md:odd:flex-row-reverse group ${selectedOrder.orderStatus === 'completed' ? 'is-active' : ''}`}>
                 <div className={`absolute left-0 md:left-1/2 md:-translate-x-1/2 flex items-center justify-center w-8 h-8 rounded-full border-4 border-white shadow shrink-0 z-10 ${selectedOrder.orderStatus === 'completed' ? 'bg-primary text-white' : 'bg-white'}`}>
                   {selectedOrder.orderStatus === 'completed' ? (
-                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                    <Check className="w-3 h-3" strokeWidth={3} />
                   ) : (
                     <div className="w-2.5 h-2.5 rounded-full bg-stone-300"></div>
                   )}
@@ -461,9 +462,7 @@ export default function BookingsTab() {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-5 sm:mb-8 gap-3 sm:gap-4">
         <div className="flex items-center gap-2.5 sm:gap-3">
           <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-[10px] bg-danger text-white flex items-center justify-center shrink-0 shadow-sm">
-            <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" />
-            </svg>
+            <Bookmark className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
           <h2 className="text-lg sm:text-2xl font-bold font-serif text-[#333]">
             Bookings <span className="text-gray-500 font-medium text-base sm:text-lg ml-1">({filteredOrders.length})</span>
@@ -518,7 +517,7 @@ export default function BookingsTab() {
       {filteredOrders.length === 0 ? (
         <div className="text-center py-16 flex flex-col items-center justify-center">
           <div className="w-16 h-16 bg-stone-100 rounded-full flex items-center justify-center mb-4">
-            <svg className="w-8 h-8 text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
+            <PackageOpen className="w-8 h-8 text-stone-400" />
           </div>
           <p className="text-stone-500 font-medium">You have no active bookings.</p>
         </div>
@@ -557,9 +556,7 @@ export default function BookingsTab() {
                   {/* Card Header */}
                   <div className="flex justify-between items-center mb-2.5 sm:mb-3 gap-2">
                     <div className="flex items-center gap-1.5 font-bold text-gray-800 text-xs sm:text-[14px] shrink-0 whitespace-nowrap">
-                      <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-700 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
+                      <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-700 shrink-0" />
                       <span>{bookingDate}</span>
                     </div>
                     <div className="font-bold text-gray-800 text-xs sm:text-[14px] truncate text-right">
@@ -586,12 +583,7 @@ export default function BookingsTab() {
                         {serviceTitle}
                       </h3>
                       <div className="flex items-center gap-1 text-gray-800 font-bold text-[11px] sm:text-[14px]">
-                        <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-800 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M12 2v3" />
-                          <path d="M7 6l5-3 5 3v2H7V6z" />
-                          <path d="M5 10h14v11H5V10z" />
-                          <path d="M10 21v-5a2 2 0 0 1 4 0v5" />
-                        </svg>
+                        <Landmark className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-800 shrink-0" />
                         <span className="truncate">{templeLocation}</span>
                       </div>
                     </div>
@@ -611,12 +603,7 @@ export default function BookingsTab() {
                           {/* Step 1: Booked */}
                           <div className="flex-1 min-w-0 flex flex-col items-center">
                             <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-primary bg-white flex items-center justify-center mb-1.5 sm:mb-2 z-10 shadow-xs relative">
-                              <svg className="w-5 h-5 sm:w-6 sm:h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <rect x="3" y="5" width="18" height="15" rx="2.5" stroke="#374151" strokeWidth="1.6" fill="#ffffff" />
-                                <path d="M3 9.5h18" stroke="#ef4444" strokeWidth="1.6" />
-                                <path d="M7 3v3.5M17 3v3.5" stroke="#374151" strokeWidth="1.6" strokeLinecap="round" />
-                                <circle cx="12" cy="14.5" r="2.2" fill="#3b82f6" />
-                              </svg>
+                              <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
                             </div>
                             <p className="text-[11px] sm:text-[13px] font-extrabold text-gray-900 leading-tight">Booked</p>
                             <span className="text-[10px] sm:text-[12px] font-bold text-gray-600 truncate mt-0.5">{bookingDate}</span>
@@ -625,9 +612,7 @@ export default function BookingsTab() {
                           {/* Step 2: Cancelled */}
                           <div className="flex-1 min-w-0 flex flex-col items-center">
                             <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-danger bg-white flex items-center justify-center mb-1.5 sm:mb-2 z-10 shadow-xs relative">
-                              <svg className="w-4 h-4 sm:w-5 sm:h-5 text-danger" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                              </svg>
+                              <X className="w-4 h-4 sm:w-5 sm:h-5 text-danger" strokeWidth={3} />
                             </div>
                             <p className="text-[11px] sm:text-[13px] font-extrabold text-danger leading-tight">Cancelled</p>
                           </div>
@@ -666,20 +651,13 @@ export default function BookingsTab() {
                           {/* Step 1: Booked */}
                           <div className="flex-1 min-w-0 flex flex-col items-center">
                             <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-primary bg-white flex items-center justify-center mb-1.5 sm:mb-2 z-10 shadow-xs relative">
-                              <svg className="w-5 h-5 sm:w-6 sm:h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <rect x="3" y="5" width="18" height="15" rx="2.5" stroke="#374151" strokeWidth="1.6" fill="#ffffff" />
-                                <path d="M3 9.5h18" stroke="#ef4444" strokeWidth="1.6" />
-                                <path d="M7 3v3.5M17 3v3.5" stroke="#374151" strokeWidth="1.6" strokeLinecap="round" />
-                                <circle cx="12" cy="14.5" r="2.2" fill="#3b82f6" />
-                              </svg>
+                              <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
                             </div>
                             <p className="text-[11px] sm:text-[13px] font-extrabold text-gray-900 leading-tight">Booked</p>
                             <div className="flex items-center justify-center gap-1 mt-0.5 max-w-full">
                               <span className="text-[10px] sm:text-[12px] font-bold text-gray-600 truncate">{bookingDate}</span>
                               <div className="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full bg-primary text-white flex items-center justify-center shrink-0">
-                                <svg className="w-2 h-2 sm:w-2.5 sm:h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3.5">
-                                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                                </svg>
+                                <Check className="w-2 h-2 sm:w-2.5 sm:h-2.5" strokeWidth={3.5} />
                               </div>
                             </div>
                           </div>
@@ -688,15 +666,11 @@ export default function BookingsTab() {
                           <div className="flex-1 min-w-0 flex flex-col items-center">
                             {isScheduled ? (
                               <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-primary bg-white flex items-center justify-center mb-1.5 sm:mb-2 z-10 shadow-xs relative">
-                                <svg className="w-5 h-5 sm:w-6 sm:h-6 text-amber-500 fill-current" viewBox="0 0 24 24">
-                                  <path d="M12 2.5c-.8 1.4-1.8 3-1.8 4.5 0 1.2.8 2 1.8 2s1.8-.8 1.8-2c0-1.5-1-3.1-1.8-4.5zM4 14.5c0 3.2 3.6 5.5 8 5.5s8-2.3 8-5.5H4zm-1-1.5h18c.5 0 1-.4 1-.9 0-.5-.5-.9-1-.9H3c-.5 0-1 .4-1 .9 0 .5.5.9 1 .9z" />
-                                </svg>
+                                <Flame className="w-5 h-5 sm:w-6 sm:h-6 text-amber-500 fill-current" />
                               </div>
                             ) : (
                               <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-[#faebe6] flex items-center justify-center mb-1.5 sm:mb-2 z-10 shadow-xs">
-                                <svg className="w-5 h-5 sm:w-6 sm:h-6 text-[#8c7b74]" viewBox="0 0 24 24" fill="currentColor">
-                                  <path d="M12 2.5c-.8 1.4-1.8 3-1.8 4.5 0 1.2.8 2 1.8 2s1.8-.8 1.8-2c0-1.5-1-3.1-1.8-4.5zM4 14.5c0 3.2 3.6 5.5 8 5.5s8-2.3 8-5.5H4zm-1-1.5h18c.5 0 1-.4 1-.9 0-.5-.5-.9-1-.9H3c-.5 0-1 .4-1 .9 0 .5.5.9 1 .9z" />
-                                </svg>
+                                <Flame className="w-5 h-5 sm:w-6 sm:h-6 text-[#8c7b74]" />
                               </div>
                             )}
                             <p className={`text-[11px] sm:text-[13px] leading-tight ${isScheduled ? 'font-extrabold text-gray-900' : 'font-bold text-[#8c7b74]'}`}>
@@ -706,9 +680,7 @@ export default function BookingsTab() {
                               <div className="flex items-center justify-center gap-1 mt-0.5 max-w-full">
                                 <span className="text-[10px] sm:text-[12px] font-bold text-gray-600 truncate">on {scheduledDate}</span>
                                 <div className="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full bg-primary text-white flex items-center justify-center shrink-0">
-                                  <svg className="w-2 h-2 sm:w-2.5 sm:h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3.5">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                                  </svg>
+                                  <Check className="w-2 h-2 sm:w-2.5 sm:h-2.5" strokeWidth={3.5} />
                                 </div>
                               </div>
                             ) : (
@@ -721,12 +693,12 @@ export default function BookingsTab() {
                             <div className="h-10 sm:h-12 flex items-center justify-center mb-1.5 sm:mb-2 z-10">
                               {isCompleted ? (
                                 <div className="px-2 py-1.5 sm:px-4 sm:py-2 rounded-full bg-primary text-white font-bold text-[10px] sm:text-[12px] flex items-center gap-1 sm:gap-1.5 shadow-xs whitespace-nowrap">
-                                  <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                                  <Play className="w-3 h-3 sm:w-3.5 sm:h-3.5 fill-current" />
                                   <span>Video Delivered</span>
                                 </div>
                               ) : (
                                 <div className="px-2 py-1.5 sm:px-4 sm:py-2 rounded-full bg-[#f4ebe6] text-[#8c7b74] font-bold text-[10px] sm:text-[12px] flex items-center gap-1 sm:gap-1.5 shadow-xs whitespace-nowrap">
-                                  <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                                  <Play className="w-3 h-3 sm:w-3.5 sm:h-3.5 fill-current" />
                                   <span>Puja Video</span>
                                 </div>
                               )}

@@ -3,7 +3,17 @@
 import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import PujaCountdownCard from "@/components/common/PujaCountdownCard";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { 
+  ChevronLeft, 
+  ChevronRight, 
+  Loader2, 
+  Sparkles, 
+  Sun, 
+  Video, 
+  ShieldCheck, 
+  Landmark, 
+  Scroll 
+} from "lucide-react";
 
 interface BannerSlide {
   id: string;
@@ -197,10 +207,7 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
         {/* Skeleton Right Content (Image Card) */}
         <div className="flex-1 w-full lg:w-1/2 shrink-0 flex flex-col items-center">
           <div className="w-full bg-stone-100 rounded-2xl min-[375px]:rounded-3xl border border-stone-200 aspect-[4/3] sm:aspect-auto sm:h-[400px] md:h-[460px] lg:h-[320px] xl:h-[500px] flex items-center justify-center">
-            <svg className="w-12 h-12 text-stone-200 animate-spin" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
+            <Loader2 className="w-12 h-12 text-stone-200 animate-spin" />
           </div>
           <div className="flex gap-2.5 mt-5">
             <div className="w-7 h-2 bg-stone-300 rounded-full" />
@@ -229,11 +236,7 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
 
       {/* ── Top Sub-header Badge (Above Hero Image on Mobile & Tablet < lg) ── */}
       <div className="lg:hidden flex items-center justify-center gap-2.5 mt-0.5 sm:mt-1 mb-2.5 sm:mb-3.5 z-10 relative">
-        <svg className="w-5 h-5 text-accent shrink-0" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12 2C12 2 10.2 5.5 10.2 8C10.2 9.8 11 11.2 12 12C13 11.2 13.8 9.8 13.8 8C13.8 5.5 12 2 12 2Z" />
-          <path d="M12 12C10.2 10.8 7.5 9.8 5.5 10.8C4 11.5 3 12.8 3 14.2C3 16.5 6.5 18 12 18.5C17.5 18 21 16.5 21 14.2C21 12.8 20 11.5 18.5 10.8C16.5 9.8 13.8 10.8 12 12Z" opacity="0.8" />
-          <path d="M12 18.5C7.8 18.5 4.2 17 1.5 15.2C2.8 18.8 6.8 21.5 12 21.5C17.2 21.5 21.2 18.8 22.5 15.2C19.8 17 16.2 18.5 12 18.5Z" />
-        </svg>
+        <Sparkles className="w-5 h-5 text-accent shrink-0" />
         <span className="text-[#881337] font-bold text-xs sm:text-sm tracking-[0.15em] uppercase">
           {current.badge}
         </span>
@@ -253,11 +256,7 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
           <div className="flex flex-col items-center lg:items-start text-center lg:text-left w-full">
             {/* Top Sub-header Badge with Custom Vector Lotus SVG (Desktop lg+ only) */}
             <div className="hidden lg:flex items-center justify-start gap-2.5 mb-3 xl:mb-5">
-              <svg className="w-5 h-5 text-accent shrink-0" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 2C12 2 10.2 5.5 10.2 8C10.2 9.8 11 11.2 12 12C13 11.2 13.8 9.8 13.8 8C13.8 5.5 12 2 12 2Z" />
-                <path d="M12 12C10.2 10.8 7.5 9.8 5.5 10.8C4 11.5 3 12.8 3 14.2C3 16.5 6.5 18 12 18.5C17.5 18 21 16.5 21 14.2C21 12.8 20 11.5 18.5 10.8C16.5 9.8 13.8 10.8 12 12Z" opacity="0.8" />
-                <path d="M12 18.5C7.8 18.5 4.2 17 1.5 15.2C2.8 18.8 6.8 21.5 12 21.5C17.2 21.5 21.2 18.8 22.5 15.2C19.8 17 16.2 18.5 12 18.5Z" />
-              </svg>
+              <Sparkles className="w-5 h-5 text-accent shrink-0" />
               <span className="text-[#881337] font-bold text-xs xl:text-sm tracking-[0.15em] uppercase">
                 {current.badge}
               </span>
@@ -299,9 +298,7 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
               >
                 <span className="tracking-normal font-sans font-bold">{current.ctaText}</span>
                 <div className="w-8 h-8 rounded-full bg-white text-[#0f3456] flex items-center justify-center shadow-xs shrink-0 group-hover:translate-x-0.5 transition-transform">
-                  <svg className="w-4 h-4 stroke-[#0f3456]" fill="none" viewBox="0 0 24 24" strokeWidth="3">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                  </svg>
+                  <ChevronRight className="w-4 h-4 text-[#0f3456]" strokeWidth={3} />
                 </div>
               </Link>
             </div>
@@ -310,10 +307,7 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
             <div className="flex sm:hidden flex-col items-center w-full max-w-[500px] mx-auto">
               {/* Tagline */}
               <div className="flex items-center justify-center gap-1.5 mb-2.5 text-stone-600">
-                <svg className="w-4 h-4 text-amber-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <circle cx="12" cy="12" r="4" strokeWidth="1.5" />
-                  <path strokeWidth="1.5" strokeLinecap="round" d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41m11.32-11.32l1.41-1.41" />
-                </svg>
+                <Sun className="w-4 h-4 text-amber-500 shrink-0" />
                 <p className="text-xs font-semibold text-stone-700 tracking-tight">
                   One of India&apos;s most loved devotional platforms
                 </p>
@@ -347,10 +341,7 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
               {/* Sun Icon Section */}
               <div className="flex items-center gap-1.5 lg:gap-1.5 xl:gap-2 shrink-0">
                 <div className="text-stone-400 shrink-0">
-                  <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <circle cx="12" cy="12" r="4" strokeWidth="1.5" />
-                    <path strokeWidth="1.5" strokeLinecap="round" d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41m11.32-11.32l1.41-1.41" />
-                  </svg>
+                  <Sun className="w-5 h-5 sm:w-6 sm:h-6 text-amber-500" />
                 </div>
                 <p className="text-[10px] sm:text-[11px] lg:text-[9.5px] xl:text-[11px] text-stone-900 font-bold leading-tight text-left">
                   One of India&apos;s most<br />loved devotional<br />platforms
@@ -484,16 +475,14 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
           <div className="flex animate-marquee">
             <div className="flex shrink-0 items-center gap-8 sm:gap-12 pr-8 sm:pr-12">
               {[
-                { color: "text-success", icon: <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z" />, text: "Puja Video Delivered Within 48 Hours" },
-                { color: "text-[#0084ff]", icon: <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" />, text: "Verified & Experienced Pandits" },
-                { color: "text-accent", icon: <path d="M12 2L9 6H15L12 2ZM8 7L6 11H18L16 7H8ZM5 12L3 17H21L19 12H5ZM2 18V21H22V18H2Z" />, text: "Pujas Performed in Sacred Temples" },
-                { color: "text-[#d97706]", icon: <path d="M12 2c-.55 0-1 .45-1 1v1.17C8.61 4.72 7 6.67 7 9c0 2.21 1.79 4 4 4v1H8c-.55 0-1 .45-1 1v5c0 .55.45 1 1 1h8c.55 0 1-.45 1-1v-5c0-.55-.45-1-1-1h-3v-1c2.21 0 4-1.79 4-4 0-2.33-1.61-4.28-4-4.83V3c0-.55-.45-1-1-1z" />, text: "100% Authentic Vedic Rituals" }
+                { color: "text-success", icon: <Video className="w-5 h-5" />, text: "Puja Video Delivered Within 48 Hours" },
+                { color: "text-[#0084ff]", icon: <ShieldCheck className="w-5 h-5" />, text: "Verified & Experienced Pandits" },
+                { color: "text-accent", icon: <Landmark className="w-5 h-5" />, text: "Pujas Performed in Sacred Temples" },
+                { color: "text-[#d97706]", icon: <Scroll className="w-5 h-5" />, text: "100% Authentic Vedic Rituals" }
               ].map((item, idx) => (
                 <div key={`h1-${idx}`} className="flex items-center gap-3 shrink-0 py-1">
                   <div className={`${item.color} shrink-0`}>
-                    <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
-                      {item.icon}
-                    </svg>
+                    {item.icon}
                   </div>
                   <span className="text-xs sm:text-sm font-bold text-stone-800 whitespace-nowrap">
                     {item.text}
@@ -503,16 +492,14 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
             </div>
             <div className="flex shrink-0 items-center gap-8 sm:gap-12 pr-8 sm:pr-12" aria-hidden="true">
               {[
-                { color: "text-success", icon: <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z" />, text: "Puja Video Delivered Within 48 Hours" },
-                { color: "text-[#0084ff]", icon: <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" />, text: "Verified & Experienced Pandits" },
-                { color: "text-accent", icon: <path d="M12 2L9 6H15L12 2ZM8 7L6 11H18L16 7H8ZM5 12L3 17H21L19 12H5ZM2 18V21H22V18H2Z" />, text: "Pujas Performed in Sacred Temples" },
-                { color: "text-[#d97706]", icon: <path d="M12 2c-.55 0-1 .45-1 1v1.17C8.61 4.72 7 6.67 7 9c0 2.21 1.79 4 4 4v1H8c-.55 0-1 .45-1 1v5c0 .55.45 1 1 1h8c.55 0 1-.45 1-1v-5c0-.55-.45-1-1-1h-3v-1c2.21 0 4-1.79 4-4 0-2.33-1.61-4.28-4-4.83V3c0-.55-.45-1-1-1z" />, text: "100% Authentic Vedic Rituals" }
+                { color: "text-success", icon: <Video className="w-5 h-5" />, text: "Puja Video Delivered Within 48 Hours" },
+                { color: "text-[#0084ff]", icon: <ShieldCheck className="w-5 h-5" />, text: "Verified & Experienced Pandits" },
+                { color: "text-accent", icon: <Landmark className="w-5 h-5" />, text: "Pujas Performed in Sacred Temples" },
+                { color: "text-[#d97706]", icon: <Scroll className="w-5 h-5" />, text: "100% Authentic Vedic Rituals" }
               ].map((item, idx) => (
                 <div key={`h2-${idx}`} className="flex items-center gap-3 shrink-0 py-1">
                   <div className={`${item.color} shrink-0`}>
-                    <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
-                      {item.icon}
-                    </svg>
+                    {item.icon}
                   </div>
                   <span className="text-xs sm:text-sm font-bold text-stone-800 whitespace-nowrap">
                     {item.text}
@@ -527,9 +514,7 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
         <div className="badge-static-1440-grid hidden min-[1440px]:grid min-[1440px]:grid-cols-4 items-center justify-between gap-2 divide-x divide-stone-200">
           <div className="flex items-center justify-start gap-3 px-4 py-0">
             <div className="text-[#14395C] shrink-0">
-              <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
-                <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z" />
-              </svg>
+              <Video className="w-5 h-5" />
             </div>
             <span className="text-sm font-bold text-stone-800 leading-tight">
               Puja Video Delivered Within 48 Hours
@@ -537,9 +522,7 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
           </div>
           <div className="flex items-center justify-start gap-3 px-4 py-0">
             <div className="text-[#0084ff] shrink-0">
-              <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
-                <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" />
-              </svg>
+              <ShieldCheck className="w-5 h-5" />
             </div>
             <span className="text-sm font-bold text-stone-800 leading-tight">
               Verified & Experienced Pandits
@@ -547,9 +530,7 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
           </div>
           <div className="flex items-center justify-start gap-3 px-4 py-0">
             <div className="text-accent shrink-0">
-              <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
-                <path d="M12 2L9 6H15L12 2ZM8 7L6 11H18L16 7H8ZM5 12L3 17H21L19 12H5ZM2 18V21H22V18H2Z" />
-              </svg>
+              <Landmark className="w-5 h-5" />
             </div>
             <span className="text-sm font-bold text-stone-800 leading-tight">
               Pujas Performed in Sacred Temples
@@ -557,9 +538,7 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
           </div>
           <div className="flex items-center justify-start gap-3 px-4 py-0">
             <div className="text-[#d97706] shrink-0">
-              <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
-                <path d="M12 2c-.55 0-1 .45-1 1v1.17C8.61 4.72 7 6.67 7 9c0 2.21 1.79 4 4 4v1H8c-.55 0-1 .45-1 1v5c0 .55.45 1 1 1h8c.55 0 1-.45 1-1v-5c0-.55-.45-1-1-1h-3v-1c2.21 0 4-1.79 4-4 0-2.33-1.61-4.28-4-4.83V3c0-.55-.45-1-1-1z" />
-              </svg>
+              <Scroll className="w-5 h-5" />
             </div>
             <span className="text-sm font-bold text-stone-800 leading-tight">
               100% Authentic Vedic Rituals

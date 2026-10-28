@@ -3,6 +3,15 @@
 import React, { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { 
+  Check, 
+  Copy, 
+  FileText, 
+  Home, 
+  PlayCircle, 
+  Calendar, 
+  MessageCircle 
+} from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 
 type StatusState = "loading" | "pending" | "paid" | "failed" | "timeout" | "not_found";
@@ -196,9 +205,7 @@ function SuccessContent() {
         <div className="flex flex-col items-center text-center space-y-4">
           <div className="w-24 h-24 rounded-full bg-green-50 flex items-center justify-center border-8 border-green-50/50 mb-2">
             <div className="w-16 h-16 rounded-full bg-[#1e9e4a] flex items-center justify-center shadow-lg">
-              <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-              </svg>
+              <Check className="w-8 h-8 text-white" strokeWidth={3} />
             </div>
           </div>
           <h1 className="text-3xl md:text-4xl font-serif text-stone-900 mb-1">Booking Successful</h1>
@@ -206,7 +213,7 @@ function SuccessContent() {
             Your sacred puja is booked. Our Pandits will begin the preparations — blessings are on their way to you. 🙏
           </p>
           <div className="mt-4 flex items-center gap-2 text-xs font-bold text-stone-500 bg-stone-50 px-4 py-2 rounded-full border border-stone-100">
-            <svg className="w-4 h-4 text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+            <Copy className="w-4 h-4 text-stone-400" />
             Booking ID <span className="text-[#f15a29] font-mono">{displayOrderNumber}</span>
           </div>
         </div>
@@ -248,7 +255,7 @@ function SuccessContent() {
 
           <div className="relative z-10 flex gap-4 mb-8">
             <div className="w-10 h-10 rounded-full bg-white border-2 border-[#f15a29] flex items-center justify-center shrink-0 shadow-sm">
-              <svg className="w-4 h-4 text-[#f15a29]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+              <FileText className="w-4 h-4 text-[#f15a29]" strokeWidth={2.5} />
             </div>
             <div>
               <h4 className="text-sm font-bold text-stone-900">Sankalpam prepared</h4>
@@ -258,7 +265,7 @@ function SuccessContent() {
 
           <div className="relative z-10 flex gap-4 mb-8">
             <div className="w-10 h-10 rounded-full bg-white border-2 border-[#f15a29] flex items-center justify-center shrink-0 shadow-sm">
-              <svg className="w-4 h-4 text-[#f15a29]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
+              <Home className="w-4 h-4 text-[#f15a29]" strokeWidth={2.5} />
             </div>
             <div>
               <h4 className="text-sm font-bold text-stone-900">Puja performed at the temple</h4>
@@ -268,7 +275,7 @@ function SuccessContent() {
 
           <div className="relative z-10 flex gap-4">
             <div className="w-10 h-10 rounded-full bg-white border-2 border-[#f15a29] flex items-center justify-center shrink-0 shadow-sm">
-              <svg className="w-4 h-4 text-[#f15a29]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              <PlayCircle className="w-4 h-4 text-[#f15a29]" strokeWidth={2.5} />
             </div>
             <div>
               <h4 className="text-sm font-bold text-stone-900">Puja video delivered</h4>
@@ -284,20 +291,20 @@ function SuccessContent() {
               href="/account?tab=bookings"
               className="bg-success hover:bg-[#009644] text-white font-extrabold text-sm px-8 py-3.5 rounded-xl transition-all shadow-sm flex items-center gap-2"
             >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+              <Calendar className="w-4 h-4" />
               View My Bookings
             </Link>
             <Link
               href="/"
               className="bg-white border-2 border-stone-200 text-stone-700 hover:border-stone-300 hover:bg-stone-50 font-extrabold text-sm px-8 py-3.5 rounded-xl transition-all flex items-center gap-2"
             >
-              <svg className="w-4 h-4 text-stone-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
+              <Home className="w-4 h-4 text-stone-500" strokeWidth={2.5} />
               Back to Home
             </Link>
           </div>
 
           <p className="text-xs font-bold text-success flex items-center gap-1.5 mt-4">
-            <i className="fa-brands fa-whatsapp text-[16px]"></i>
+            <MessageCircle className="w-4 h-4" />
             A confirmation has been sent to your WhatsApp.
           </p>
         </div>

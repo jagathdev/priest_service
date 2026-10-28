@@ -3,6 +3,17 @@ import React, { useEffect, useState, useCallback, useMemo } from "react";
 import Image from "next/image";
 import Navbar from "@/components/layout/Navbar";
 import { SparklesIcon } from "@heroicons/react/24/outline";
+import { 
+  X, 
+  Search, 
+  SlidersHorizontal, 
+  ArrowRight, 
+  Check, 
+  MapPin, 
+  Calendar, 
+  ChevronRight, 
+  Share2 
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import WishlistButton from "@/components/common/WishlistButton";
 import { formatStartingPrice } from "@/lib/pricing";
@@ -189,7 +200,7 @@ function PujaFilterModal({
         <div className="flex items-center justify-between px-5 sm:px-6 py-3.5 sm:py-4 border-b border-[#ebd5c1] shrink-0 bg-white">
           <h3 className="text-lg sm:text-[22px] font-serif font-bold text-ink">Puja Filters</h3>
           <button onClick={onClose} aria-label="Close filters" className="p-1 text-gray-400 hover:text-gray-700 transition-colors">
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+            <X className="w-5 h-5" />
           </button>
         </div>
 
@@ -234,7 +245,7 @@ function PujaFilterModal({
                 placeholder={`Search ${activeGroup.label}`}
                 className="w-full pl-8 sm:pl-9 pr-3 py-1.5 sm:py-2 border border-gray-200 rounded-full outline-none text-xs sm:text-sm focus:border-[#009644] transition-colors"
               />
-              <svg className="w-3.5 h-3.5 text-gray-400 absolute left-2.5 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-4.35-4.35M17 10a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+              <Search className="w-3.5 h-3.5 text-gray-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
             </div>
 
             {/* Options */}
@@ -252,9 +263,7 @@ function PujaFilterModal({
                           className="peer w-[18px] h-[18px] appearance-none rounded-[4px] border border-gray-300 checked:bg-white checked:border-[#14395C] transition-colors cursor-pointer"
                         />
                         {/* Custom checkmark */}
-                        <svg className="absolute w-3 h-3 text-transparent peer-checked:text-[#14395C] pointer-events-none transition-colors" viewBox="0 0 14 10" fill="none">
-                          <path d="M1 5L4.5 8.5L13 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
+                        <Check className="absolute w-3 h-3 text-transparent peer-checked:text-[#14395C] pointer-events-none transition-colors" strokeWidth={3} />
                       </div>
                       <span className="text-xs sm:text-sm font-semibold text-gray-700 group-hover:text-gray-900 leading-snug pt-[1px]">{option.value}</span>
                     </label>
@@ -287,9 +296,7 @@ function PujaFilterModal({
                 {totalSelectedCount}
               </span>
             )}
-            <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white group-hover:translate-x-0.5 transition-transform shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-            </svg>
+            <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white group-hover:translate-x-0.5 transition-transform shrink-0" strokeWidth={2.5} />
           </button>
         </div>
       </div>
@@ -476,18 +483,14 @@ export default function PujaClient({ initialPujas }: { initialPujas?: Puja[] }) 
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full pl-5 pr-10 py-3 rounded-xl text-sm text-stone-800 outline-none placeholder:text-stone-400 font-medium bg-transparent"
                 />
-                <svg className="w-5 h-5 absolute right-3.5 top-1/2 -translate-y-1/2 text-[#d95a2b]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.2" d="M21 21l-4.35-4.35M17 10a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
+                <Search className="w-5 h-5 absolute right-3.5 top-1/2 -translate-y-1/2 text-[#d95a2b]" />
               </div>
               {dynamicFilterGroups.length > 0 && (
                 <button
                   onClick={() => openFilterModal()}
                   className="bg-[#d95a2b] hover:bg-[#c24a1e] text-white px-6 py-3 rounded-xl flex items-center gap-2 text-xs sm:text-sm font-bold shadow-md transition-all shrink-0 active:scale-95 cursor-pointer"
                 >
-                  <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-                  </svg>
+                  <SlidersHorizontal className="w-4 h-4 text-white" />
                   <span>Filter</span>
                   {hasActiveFilters && (
                     <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span>
@@ -607,11 +610,11 @@ export default function PujaClient({ initialPujas }: { initialPujas?: Puja[] }) 
 
                         <div className="border border-gray-150 rounded-xl p-3.5 space-y-2.5 mb-5 bg-gray-50/70">
                           <div className="flex items-center gap-2.5 text-[13px] font-medium text-gray-700">
-                            <svg className="w-5 h-5 text-[#d95a2b] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                            <MapPin className="w-5 h-5 text-[#d95a2b] shrink-0" />
                             <span className="line-clamp-1">{puja.location}</span>
                           </div>
                           <div className="flex items-center gap-2.5 text-[13px] font-medium text-gray-700">
-                            <svg className="w-5 h-5 text-[#d95a2b] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                            <Calendar className="w-5 h-5 text-[#d95a2b] shrink-0" />
                             <span className="line-clamp-1">{puja.date}</span>
                           </div>
                         </div>
@@ -626,7 +629,7 @@ export default function PujaClient({ initialPujas }: { initialPujas?: Puja[] }) 
                             className="bg-[#14395C] text-white text-[14px] font-bold px-7 py-3 min-w-[130px] justify-center rounded-full hover:bg-[#0f2d4a] transition-all duration-200 flex items-center gap-2 shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-95"
                           >
                             <span>{puja.buttonText || "Book Now"}</span>
-                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7" /></svg>
+                            <ChevronRight className="w-4 h-4" strokeWidth={3} />
                           </div>
                         </div>
                       </div>
@@ -648,7 +651,7 @@ export default function PujaClient({ initialPujas }: { initialPujas?: Puja[] }) 
                         }}
                         className="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-sm text-gray-600 hover:text-[#d95a2b] transition-colors"
                       >
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg>
+                        <Share2 className="w-4 h-4" />
                       </button>
                     </div>
                   </div>

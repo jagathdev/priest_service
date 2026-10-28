@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useMemo, useRef, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { CheckCircle, Mail, MessageCircle, Loader2 } from "lucide-react";
 const DEFAULT_COUNTRY = { name: "India", isoCode: "IN", dialCode: "91" };
 
 
@@ -14,11 +16,7 @@ const RESEND_SECONDS = 30;
 
 function AstroVedMark({ size = 48 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="28" cy="28" r="28" fill="white" fillOpacity="0.15" />
-      <path d="M28 8c-.12-.03-.14.06-.17.14-.19.54-.57.97-.76 1.52-.15.42-.55.74-.77 1.14-.62 1.16-1.38 2.23-2.02 3.37-.65 1.17-1.26 2.37-1.96 3.5-1.91 3.1-3.63 6.31-5.51 9.43-.68 1.12-1.33 2.25-1.98 3.39-.2.35-.52.4-.87.4-1.34 0-2.68.03-4.02-.01-.87-.02-1.73.13-2.59.12-.5-.01-.6-.13-.34-.53.76-1.16 1.37-2.4 2.09-3.58.9-1.49 1.81-2.97 2.59-4.53.55-1.1 1.3-2.09 1.92-3.16.88-1.51 1.76-3.02 2.57-4.57.47-.87.96-1.74 1.54-2.56.64-.89 1.1-1.9 1.65-2.85.91-1.61 1.8-3.24 2.76-4.83.52-.87 1.08-1.72 1.56-2.62.31-.59.7-1.13 1-1.71.87-1.66 2-3.17 2.85-4.85.04-.08.07-.17.12-.24.14-.18.08-.58.31-.56.22.02.38.34.51.57 1.1 2.07 2.45 4 3.5 6.1.73 1.45 1.67 2.78 2.5 4.18a98.7 98.7 0 0 1 2.02 3.56c.62 1.17 1.26 2.34 2.1 3.36.18.22.1.47.23.7 1.06 1.73 2.03 3.51 3.1 5.23.96 1.53 1.78 3.16 2.69 4.72 1.43 2.44 2.88 4.87 4.31 7.31.08.14.17.29.2.44.05.23-.04.41-.31.38-2.09-.21-4.19-.07-6.28-.07-.77 0-1.17-.24-1.56-.92-1.97-3.5-4.02-6.95-6.03-10.42C32.97 21.97 30.97 18.5 28.7 15c-.12-.2-.21-.43-.47-.5h.01Z" fill="white" />
-      <path d="M34 35.6c-.07.43-.4.66-.65.93-.65.67-1.31 1.33-1.96 1.99-.96.99-1.91 1.98-2.87 2.97-.21.22-.37.17-.59-.04a1044 1044 0 0 0-5.35-5.38c-.26-.26-.29-.44-.07-.78a44.2 44.2 0 0 0 1.57-2.67c.77-1.46 1.66-2.85 2.5-4.27.47-.78.99-1.53 1.34-2.4.15-.37.43-.19.57.05a70.8 70.8 0 0 1 1.46 2.47c1.09 1.97 2.15 3.95 3.37 5.84.27.41.46.87.68 1.3Z" fill="#F47820" />
-    </svg>
+    <Image src="/icons/Fav-Icon.png" alt="AstroVed Logo" width={size} height={size} />
   );
 }
 
@@ -171,11 +169,11 @@ export default function OtpClient() {
             </div>
             <div className="mt-8 space-y-1.5">
               <div className="flex items-center gap-2 text-white/70 text-xs">
-                <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
+                <CheckCircle className="w-3.5 h-3.5" />
                 Secure & Encrypted
               </div>
               <div className="flex items-center gap-2 text-white/70 text-xs">
-                <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
+                <CheckCircle className="w-3.5 h-3.5" />
                 One-time Code
               </div>
             </div>
@@ -205,14 +203,9 @@ export default function OtpClient() {
             {summary && (
               <div className="mt-4 mx-auto flex items-center gap-2 rounded-xl border border-[#e1d5fb] bg-[#f8f5ff] px-4 py-2.5">
                 {isEmail ? (
-                  <svg className="w-4 h-4 text-primary" viewBox="0 0 24 24" fill="none">
-                    <path d="M4 7.5A2.5 2.5 0 0 1 6.5 5h11A2.5 2.5 0 0 1 20 7.5v9A2.5 2.5 0 0 1 17.5 19h-11A2.5 2.5 0 0 1 4 16.5v-9Z" stroke="currentColor" strokeWidth="1.7" />
-                    <path d="m5 7 6.2 4.8a1.3 1.3 0 0 0 1.6 0L19 7" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
+                  <Mail className="w-4 h-4 text-primary" />
                 ) : (
-                  <svg className="w-4 h-4 text-primary" viewBox="0 0 24 24" fill="none">
-                    <path d="M12 3.5A8.5 8.5 0 0 0 4.8 16.7L3.5 20.5l3.9-1.2A8.5 8.5 0 1 0 12 3.5Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
-                  </svg>
+                  <MessageCircle className="w-4 h-4 text-primary" />
                 )}
                 <span className="text-sm font-semibold text-[#342151]">{summary}</span>
                 <button
@@ -284,10 +277,7 @@ export default function OtpClient() {
               >
                 {loading ? (
                   <span className="flex items-center justify-center gap-2">
-                    <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                    </svg>
+                    <Loader2 className="animate-spin h-4 w-4" />
                     Verifying...
                   </span>
                 ) : (
