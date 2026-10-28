@@ -89,7 +89,7 @@ app.get('/health', (req, res) => {
 });
 
 // Serve uploaded images statically
-app.use('/images', express.static(path.resolve(__dirname, '../public/images')));
+app.use('/api/images', express.static(path.resolve(__dirname, '../public/images')));
 
 // Routes
 app.use("/api/admin", adminRoutes);
