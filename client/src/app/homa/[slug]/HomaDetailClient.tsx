@@ -1004,6 +1004,7 @@ export default function HomaDetailClient({
                   <Phone className="w-4 h-4 min-w-[16px] min-h-[16px] text-[#14395C]" />
                   <span>Book via Call</span>
                 </a>
+
               </div>
 
             </div>
