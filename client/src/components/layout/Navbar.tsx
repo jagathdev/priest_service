@@ -4,6 +4,18 @@ import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+import {
+  X,
+  User as UserIcon,
+  Calendar,
+  Flame,
+  ChevronRight,
+  Home,
+  Phone,
+  Mail,
+  MessageCircle,
+  LogOut
+} from "lucide-react";
 import LoginModal from "@/components/auth/LoginModal";
 import { useUser } from "@/contexts/UserContext";
 import priestServiceLogo from "../../../public/images/priest-services-logo.png";
@@ -27,7 +39,7 @@ const AccountPanel = ({ accountOpen, setAccountOpen, user, setLoginModalOpen, ha
           onClick={() => setAccountOpen(false)}
           className="absolute top-4 right-4 h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200 transition-colors z-10"
         >
-          <svg viewBox="0 0 20 20" fill="none" className="h-5 w-5"><path d="M5 5l10 10M15 5L5 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
+          <X className="h-5 w-5" />
         </button>
 
         <div className="flex-1 overflow-y-auto pb-10 pt-2 overscroll-contain">
@@ -60,9 +72,9 @@ const AccountPanel = ({ accountOpen, setAccountOpen, user, setLoginModalOpen, ha
           <div className="px-3 py-2 border-b border-gray-100">
             <p className="px-2 py-2 text-[11px] font-bold uppercase tracking-widest text-gray-400">Account Details</p>
             {[
-              { href: user ? "/account" : "#", label: "My profile", icon: <PersonIcon /> },
-              { href: user ? "/bookings/puja" : "#", label: "My Puja Bookings", icon: <BookingIcon /> },
-              { href: user ? "/puja" : "#", label: "Book a Puja", icon: <FlameIcon />, badge: "New" },
+              { href: user ? "/account" : "#", label: "My profile", icon: <UserIcon className="h-5 w-5" /> },
+              { href: user ? "/bookings/puja" : "#", label: "My Puja Bookings", icon: <Calendar className="h-5 w-5" /> },
+              { href: user ? "/puja" : "#", label: "Book a Puja", icon: <Flame className="h-5 w-5" />, badge: "New" },
             ].map((item) => (
               <Link
                 key={item.label}
@@ -75,7 +87,7 @@ const AccountPanel = ({ accountOpen, setAccountOpen, user, setLoginModalOpen, ha
                   <span className="text-[14px] font-semibold text-gray-700">{item.label}</span>
                   {item.badge && <span className="bg-green-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">{item.badge}</span>}
                 </div>
-                <ChevronRight />
+                <ChevronRight className="h-4 w-4 text-gray-300 shrink-0" />
               </Link>
             ))}
           </div>
@@ -86,9 +98,9 @@ const AccountPanel = ({ accountOpen, setAccountOpen, user, setLoginModalOpen, ha
               Explore AstroVed Services
             </p>
             {[
-              { href: "/", label: "Home", icon: <HomeIcon /> },
-              { href: "/puja", label: "Puja Seva", icon: <FlameIcon />, badge: "New" },
-              // { href: "/homa", label: "Homa Seva", icon: <FlameIcon />, badge: "New" },
+              { href: "/", label: "Home", icon: <Home className="h-5 w-5" /> },
+              { href: "/puja", label: "Puja Seva", icon: <Flame className="h-5 w-5" />, badge: "New" },
+              // { href: "/homa", label: "Homa Seva", icon: <Flame className="h-5 w-5" />, badge: "New" },
             ].map((item) => (
               <Link
                 key={item.label}
@@ -101,7 +113,7 @@ const AccountPanel = ({ accountOpen, setAccountOpen, user, setLoginModalOpen, ha
                   <span className="text-[14px] font-semibold text-gray-700">{item.label}</span>
                   {item.badge && <span className="bg-green-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">{item.badge}</span>}
                 </div>
-                <ChevronRight />
+                <ChevronRight className="h-4 w-4 text-gray-300 shrink-0" />
               </Link>
             ))}
           </div>
@@ -111,7 +123,7 @@ const AccountPanel = ({ accountOpen, setAccountOpen, user, setLoginModalOpen, ha
             <p className="px-2 py-2 text-[11px] font-bold uppercase tracking-widest text-gray-400">Help &amp; Support for Puja Booking</p>
             <div className="flex items-center gap-3 px-3 py-3 rounded-xl bg-gray-50 mb-2">
               <div className="h-9 w-9 rounded-full bg-green-100 flex items-center justify-center shrink-0">
-                <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5 text-green-600"><path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" /></svg>
+                <Phone className="h-5 w-5 text-green-600" />
               </div>
               <div>
                 <p className="text-[13px] font-bold text-gray-900">+91 96773 91108</p>
@@ -120,11 +132,11 @@ const AccountPanel = ({ accountOpen, setAccountOpen, user, setLoginModalOpen, ha
             </div>
             <div className="grid grid-cols-2 gap-2">
               <a href="mailto:support@astroved.com" className="flex items-center justify-center gap-2 py-3 rounded-xl border border-gray-100 bg-white hover:bg-gray-50 transition-colors text-[13px] font-bold text-gray-700">
-                <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4 text-red-500"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" /></svg>
+                <Mail className="h-4 w-4 text-red-500" />
                 Email us
               </a>
               <a href="https://wa.me/919566777645" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 py-3 rounded-xl border border-gray-100 bg-white hover:bg-gray-50 transition-colors text-[13px] font-bold text-gray-700">
-                <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4 text-green-500"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" fill="currentColor" opacity=".8" /></svg>
+                <MessageCircle className="h-4 w-4 text-green-500" />
                 Whatsapp us
               </a>
             </div>
@@ -132,9 +144,9 @@ const AccountPanel = ({ accountOpen, setAccountOpen, user, setLoginModalOpen, ha
             {user && (
               <button
                 onClick={handleLogout}
-                className="mt-2 w-full py-3 text-sm font-bold text-red-500 hover:bg-red-50 rounded-xl transition-colors"
+                className="mt-2 w-full py-3 text-sm font-bold text-red-500 hover:bg-red-50 rounded-xl transition-colors flex items-center justify-center gap-2"
               >
-                <svg viewBox="0 0 24 24" fill="none" className="inline h-4 w-4 mr-2"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                <LogOut className="h-4 w-4" />
                 Logout
               </button>
             )}
@@ -268,7 +280,8 @@ export default function Navbar() {
               rel="noopener noreferrer"
               className="hidden sm:flex items-center justify-center gap-2.5 w-[140px] sm:w-[160px] h-10 sm:h-12 rounded-full bg-[#14395C] hover:bg-[#0f2d4a] active:scale-95 text-white transition-all shadow-sm shrink-0"
             >
-              <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.285-.143-1.688-.833-1.949-.929-.261-.095-.451-.143-.641.143-.19.285-.736.929-.903 1.118-.166.19-.332.214-.618.071-.285-.143-1.206-.444-2.298-1.418-.85-.758-1.424-1.694-1.59-1.979-.166-.285-.018-.439.125-.581.128-.128.285-.333.428-.499.143-.166.19-.285.285-.476.095-.19.047-.357-.024-.499-.071-.143-.641-1.546-.879-2.117-.232-.557-.468-.48-.642-.489-.166-.008-.356-.008-.546-.008-.19 0-.499.071-.76.356-.261.285-.998.976-.998 2.38 0 1.403 1.022 2.759 1.164 2.949.143.19 2.013 3.074 4.877 4.31.682.295 1.214.471 1.629.603.684.218 1.307.187 1.8.118.549-.083 1.688-.69 1.925-1.356.237-.666.237-1.236.166-1.356-.071-.119-.261-.19-.546-.333z" /></svg>
+              {/* <MessageCircle className="w-5 h-5 sm:w-6 sm:h-6 text-white" /> */}
+              <i className="fa-brands fa-whatsapp text-2xl text-[#25D366]"></i>
               <div className="flex flex-col text-left leading-none">
                 <span className="text-[10px] sm:text-xs text-slate-200 font-medium">Need Help?</span>
                 <span className="text-xs sm:text-sm font-extrabold text-white mt-0.5">WhatsApp</span>
@@ -283,37 +296,9 @@ export default function Navbar() {
               className="sm:hidden flex items-center justify-center p-1 text-[#25D366] hover:opacity-90 active:scale-95 transition-all shrink-0"
               aria-label="WhatsApp Support"
             >
-              <svg className="w-8 h-8 fill-current" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.285-.143-1.688-.833-1.949-.929-.261-.095-.451-.143-.641.143-.19.285-.736.929-.903 1.118-.166.19-.332.214-.618.071-.285-.143-1.206-.444-2.298-1.418-.85-.758-1.424-1.694-1.59-1.979-.166-.285-.018-.439.125-.581.128-.128.285-.333.428-.499.143-.166.19-.285.285-.476.095-.19.047-.357-.024-.499-.071-.143-.641-1.546-.879-2.117-.232-.557-.468-.48-.642-.489-.166-.008-.356-.008-.546-.008-.19 0-.499.071-.76.356-.261.285-.998.976-.998 2.38 0 1.403 1.022 2.759 1.164 2.949.143.19 2.013 3.074 4.877 4.31.682.295 1.214.471 1.629.603.684.218 1.307.187 1.8.118.549-.083 1.688-.69 1.925-1.356.237-.666.237-1.236.166-1.356-.071-.119-.261-.19-.546-.333z" /></svg>
+              {/* <MessageCircle className="w-8 h-8 text-[#25D366]" /> */}
+              <i className="fa-brands fa-whatsapp text-2xl text-[#25D366]"></i>
             </a>
-
-            {/* Language Pill Dropdown */}
-            {/* <div className="relative shrink-0" ref={langRef}>
-              <button
-                onClick={() => { setLangOpen((p) => !p); setAccountOpen(false); }}
-                className="flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 h-9 sm:h-11 rounded-full border-2 border-accent bg-white text-accent text-xs sm:text-sm font-bold hover:bg-orange-50 active:scale-95 transition-all shadow-sm"
-              >
-                <svg className="w-4 h-4 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 012 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                <span>{languageFullNames[language] || "English"}</span>
-                <svg className={`w-3.5 h-3.5 transition-transform ${langOpen ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-              {langOpen && (
-                <div className="absolute top-full right-0 mt-2 z-90 bg-white rounded-xl border border-gray-100 shadow-[0_10px_40px_rgba(0,0,0,0.12)] overflow-hidden min-w-[140px]">
-                  <div className="py-1">
-                    {languageCodes.map((code) => (
-                      <button
-                        key={code}
-                        onClick={() => { setLanguage(code as SupportedLanguage); setLangOpen(false); }}
-                        className={`w-full text-left px-4 py-2.5 text-xs sm:text-sm transition-colors ${language === code ? "text-accent bg-orange-50 font-bold" : "text-gray-700 hover:bg-gray-50 font-medium"}`}
-                      >
-                        {languageFullNames[code]}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div> */}
 
             <AccountPanel
               accountOpen={accountOpen}
@@ -327,26 +312,5 @@ export default function Navbar() {
       </header>
     </>
   );
-}
-
-// ── Small SVG helpers 
-function ChevronRight() {
-  return (
-    <svg viewBox="0 0 20 20" fill="none" className="h-4 w-4 text-gray-300 shrink-0">
-      <path d="M7.5 4.5l5 5-5 5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-function PersonIcon() {
-  return <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5"><circle cx="12" cy="8" r="3.5" stroke="currentColor" strokeWidth="1.7" /><path d="M5 19a7 7 0 0114 0" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" /></svg>;
-}
-function BookingIcon() {
-  return <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg>;
-}
-function HomeIcon() {
-  return <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /><path d="M9 22V12h6v10" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg>;
-}
-function FlameIcon() {
-  return <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5"><path d="M8.5 14.5A2.5 2.5 0 0011 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 11-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 002.5 2.5z" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg>;
 }
 

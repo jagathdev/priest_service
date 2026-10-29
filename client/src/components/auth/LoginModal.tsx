@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { X, ChevronDown, ArrowRight } from "lucide-react";
 import { authService } from "@/services/auth.service";
 import { useUser } from "@/contexts/UserContext";
 
@@ -197,9 +198,7 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
           aria-label="Close login modal"
           className="absolute top-5 right-5 text-gray-400 hover:text-gray-700 w-8 h-8 rounded-full flex items-center justify-center bg-gray-100/70 hover:bg-gray-100 transition-colors"
         >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-          </svg>
+          <X className="w-5 h-5" strokeWidth={2.5} />
         </button>
 
         {step === "input" ? (
@@ -216,9 +215,7 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
                 <div className="flex items-center gap-1.5 shrink-0 pr-3 border-r border-stone-200 mr-3">
                   <span className="text-lg leading-none select-none">🇮🇳</span>
                   <span className="text-sm font-bold text-gray-800">+91</span>
-                  <svg className="w-3 h-3 text-gray-500 ml-0.5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                  </svg>
+                  <ChevronDown className="w-3 h-3 text-gray-500 ml-0.5" />
                 </div>
 
                 {/* Mobile Number Input */}
@@ -258,9 +255,7 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
               >
                 <span>{loading ? "Sending..." : "Continue"}</span>
                 <div className="absolute right-3.5 w-8 h-8 rounded-full bg-white text-success flex items-center justify-center shadow-xs">
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.8">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-                  </svg>
+                  <ArrowRight className="w-4 h-4" strokeWidth={2.8} />
                 </div>
               </button>
 
@@ -340,9 +335,7 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
               >
                 <span>{loading ? "Verifying..." : "Verify & Continue"}</span>
                 <div className="absolute right-3.5 w-8 h-8 rounded-full bg-white text-success flex items-center justify-center shadow-xs">
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.8">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-                  </svg>
+                  <ArrowRight className="w-4 h-4" strokeWidth={2.8} />
                 </div>
               </button>
             </form>

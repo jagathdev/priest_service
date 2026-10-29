@@ -139,7 +139,7 @@ export const createPaymentOrder = async (req, res) => {
                     mobileNumber: mobileNumber || "",
                     whatsappNumber: String(whatsappNumber).trim(),
                     participants: cleanParticipants,
-                    gotra: gotra || "Kashyapa",
+                    gotra: doesNotKnowGotra ? "" : (gotra || ""),
                     doesNotKnowGotra: Boolean(doesNotKnowGotra),
                     wish: wish || "",
                     bookingDate: parsedBookingDate,

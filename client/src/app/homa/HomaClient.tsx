@@ -5,6 +5,16 @@ import Image from "next/image";
 import Navbar from "@/components/layout/Navbar";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import {
+  ArrowRight,
+  Search,
+  SlidersHorizontal,
+  Check,
+  Calendar,
+  MapPin,
+  ChevronRight,
+  Share2,
+} from "lucide-react";
 import Footer from "@/components/layout/Footer";
 import WishlistButton from "@/components/common/WishlistButton";
 
@@ -206,9 +216,7 @@ export default function HomaClient({ initialHomas }: { initialHomas?: Homa[] }) 
             {/* Large Search & Filter Input Bar */}
             <div className="mt-8 max-w-2xl mx-auto relative">
               <div className="flex items-center bg-white rounded-full border border-gray-250 shadow-sm px-5 py-3 hover:border-gray-400 transition-all">
-                <svg className="w-5 h-5 text-gray-400 shrink-0 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
+                <Search className="w-5 h-5 text-gray-400 shrink-0 mr-1" />
                 <input
                   type="text"
                   value={searchQuery}
@@ -221,9 +229,7 @@ export default function HomaClient({ initialHomas }: { initialHomas?: Homa[] }) 
                   aria-label="Filter options"
                   className="p-1.5 rounded-full hover:bg-gray-100 transition text-gray-600 shrink-0 border-l border-gray-200 pl-3"
                 >
-                  <svg className="w-4 h-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-                  </svg>
+                  <SlidersHorizontal className="w-4 h-4 text-gray-600" />
                 </button>
               </div>
             </div>
@@ -255,9 +261,7 @@ export default function HomaClient({ initialHomas }: { initialHomas?: Homa[] }) 
                           >
                             <span className="flex items-center gap-2">
                               {isSelected && (
-                                <svg className="w-4 h-4 text-primary" fill="currentColor" viewBox="0 0 20 20">
-                                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                </svg>
+                                <Check className="w-4 h-4 text-primary" strokeWidth={3} />
                               )}
                               <span>{item.label}</span>
                             </span>
@@ -429,18 +433,13 @@ export default function HomaClient({ initialHomas }: { initialHomas?: Homa[] }) 
 
                             {/* Info Box 1: Date & Frequency */}
                             <div className="bg-[#f8f9fa] border border-gray-100 rounded-xl px-3.5 py-2.5 mb-2 flex items-center gap-3 text-xs text-gray-700">
-                              <svg className="w-4 h-4 text-amber-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                              </svg>
+                              <Calendar className="w-4 h-4 text-amber-600 shrink-0" />
                               <span className="font-medium truncate">{homa.date}</span>
                             </div>
 
                             {/* Info Box 2: Temple Location */}
                             <div className="bg-[#f8f9fa] border border-gray-100 rounded-xl px-3.5 py-2.5 mb-4 flex items-center gap-3 text-xs text-gray-700">
-                              <svg className="w-4 h-4 text-red-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                              </svg>
+                              <MapPin className="w-4 h-4 text-red-500 shrink-0" />
                               <span className="font-medium truncate">{homa.location}</span>
                             </div>
 
@@ -456,9 +455,7 @@ export default function HomaClient({ initialHomas }: { initialHomas?: Homa[] }) 
                               >
                                 <span>{homa.buttonText || "BOOK NOW"}</span>
                                 <div className="w-4 h-4 rounded-full bg-white/20 flex items-center justify-center">
-                                  <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7" />
-                                  </svg>
+                                  <ChevronRight className="w-2.5 h-2.5 text-white" strokeWidth={3} />
                                 </div>
                               </div>
                             </div>
@@ -480,9 +477,7 @@ export default function HomaClient({ initialHomas }: { initialHomas?: Homa[] }) 
                             aria-label="Share homa"
                             className="w-8 h-8 rounded-full bg-white/95 hover:bg-white text-gray-700 hover:text-blue-500 flex items-center justify-center shadow-sm transition"
                           >
-                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 100-5.367 3 3 0 000 5.367zm0 8.005a3 3 0 100-5.367 3 3 0 000 5.367z" />
-                            </svg>
+                            <Share2 className="w-4 h-4" />
                           </button>
                         </div>
                       </div>
@@ -517,16 +512,16 @@ export default function HomaClient({ initialHomas }: { initialHomas?: Homa[] }) 
             <div className="mt-5 flex items-center justify-center gap-3">
               <span className="text-sm font-semibold text-gray-300 mr-1">Follow us -</span>
               <a href="#" className="w-8 h-8 rounded-full bg-[#1877f2] flex items-center justify-center text-white hover:opacity-90 transition">
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" /></svg>
+                <Share2 className="w-4 h-4" />
               </a>
               <a href="#" className="w-8 h-8 rounded-full bg-gradient-to-tr from-amber-500 via-pink-500 to-purple-600 flex items-center justify-center text-white hover:opacity-90 transition">
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" /></svg>
+                <Share2 className="w-4 h-4" />
               </a>
               <a href="#" className="w-8 h-8 rounded-full bg-black flex items-center justify-center text-white hover:opacity-90 transition">
-                <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
+                <Share2 className="w-3.5 h-3.5" />
               </a>
               <a href="#" className="w-8 h-8 rounded-full bg-[#ff0000] flex items-center justify-center text-white hover:opacity-90 transition">
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" /></svg>
+                <Share2 className="w-4 h-4" />
               </a>
             </div>
 
@@ -542,9 +537,7 @@ export default function HomaClient({ initialHomas }: { initialHomas?: Homa[] }) 
               >
                 <span>Find the Right Homa</span>
                 <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
-                  <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                  </svg>
+                  <ArrowRight className="w-3 h-3 text-white" strokeWidth={3} />
                 </div>
               </Link>
             </div>

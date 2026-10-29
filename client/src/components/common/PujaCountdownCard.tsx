@@ -1,11 +1,13 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { MapPin, Calendar } from "lucide-react";
 
 interface PujaCountdownCardProps {
   templeVenue?: string;
   location?: string;
   dateText?: string;
+  timeText?: string;
   occasionText?: string;
   eventDateTime?: string; // e.g. "2026-10-10T18:30" or ISO string or timestamp
   showTimer?: boolean;
@@ -125,9 +127,7 @@ export default function PujaCountdownCard({
         {/* Row 1: Temple & Location */}
         <div className="flex items-center gap-3">
           <div className="text-stone-700 shrink-0">
-            <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 2L15 6H9L12 2Z M9 6V21 M15 6V21 M6 21H18 M12 6V11 M8 11H16" />
-            </svg>
+            <MapPin className="w-5 h-5 sm:w-6 sm:h-6" strokeWidth={1.8} />
           </div>
           <div className="flex flex-wrap items-baseline gap-x-2 truncate">
             <span className="font-bold text-stone-900 text-sm sm:text-base leading-tight">
@@ -147,13 +147,7 @@ export default function PujaCountdownCard({
         {/* Row 2: Date & Occasion */}
         <div className="flex items-center gap-3">
           <div className="text-stone-700 shrink-0">
-            <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
-              <rect x="3" y="4" width="18" height="18" rx="3" ry="3" />
-              <line x1="16" y1="2" x2="16" y2="6" />
-              <line x1="8" y1="2" x2="8" y2="6" />
-              <line x1="3" y1="10" x2="21" y2="10" />
-              <circle cx="8" cy="14" r="1" fill="currentColor" />
-            </svg>
+            <Calendar className="w-5 h-5 sm:w-6 sm:h-6" strokeWidth={1.8} />
           </div>
           <div className="flex flex-wrap items-baseline gap-x-2 truncate">
             <span className="font-bold text-stone-900 text-sm sm:text-base leading-tight">

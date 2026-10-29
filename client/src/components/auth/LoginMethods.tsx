@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useMemo, useState, useEffect } from "react";
+import { Mail, X, Eye, EyeOff, Loader2 } from "lucide-react";
 import type { CountryOption } from "@/types/auth";
 const DEFAULT_COUNTRY: CountryOption = { name: "India", isoCode: "IN", dialCode: "91" };
 import { authService } from "@/services/auth.service";
@@ -12,34 +13,6 @@ type LoginMethod = "email" | "phone" | "whatsapp";
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const phoneRegex = /^[0-9]{10,15}$/;
-
-function MailIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" className="h-5 w-5">
-      <path
-        d="M4 7.5A2.5 2.5 0 0 1 6.5 5h11A2.5 2.5 0 0 1 20 7.5v9A2.5 2.5 0 0 1 17.5 19h-11A2.5 2.5 0 0 1 4 16.5v-9Z"
-        stroke="currentColor"
-        strokeWidth="1.7"
-      />
-      <path
-        d="m5 7 6.2 4.8a1.3 1.3 0 0 0 1.6 0L19 7"
-        stroke="currentColor"
-        strokeWidth="1.7"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function WhatsappIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="h-5 w-5">
-      <path d="M12 3.5A8.5 8.5 0 0 0 4.8 16.7L3.5 20.5l3.9-1.2A8.5 8.5 0 1 0 12 3.5Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" fill="none" />
-      <path d="M9.3 8.8c.2-.5.5-.5.7-.5.2 0 .4 0 .6.5.2.6.7 1.6.8 1.7.1.1.1.2 0 .4-.1.2-.2.4-.3.5-.1.1-.2.2-.3.4-.1.1-.2.3 0 .5.2.2.7 1.2 1.8 1.9 1.4.9 2 .8 2.3.7.4-.1 1.2-1.1 1.3-1.5.1-.3.2-.3.3-.3.1 0 1 .4 1.2.5.2.1.3.2.3.3 0 .1-.2 1.1-.9 1.8-.8.8-1.9 1.2-2.6 1.1-.7-.1-2.1-.5-3.8-2.1-1.9-1.7-2.4-3.3-2.5-4.1-.1-.8.3-1.6.8-2.1Z" />
-    </svg>
-  );
-}
 
 // AstroVed Logo mark (A shape from their SVG)
 function AstroVedMark({ size = 48 }: { size?: number }) {
@@ -269,7 +242,7 @@ export default function LoginMethods() {
               type="button"
               className="flex-1 flex items-center justify-center gap-2 rounded-lg py-2 text-sm font-semibold transition-all text-primary bg-white shadow-sm"
             >
-              <WhatsappIcon />
+              <i className="fa-brands fa-whatsapp text-lg text-[#25D366]"></i>
               WhatsApp OTP
             </button>
           ) : (
@@ -278,7 +251,7 @@ export default function LoginMethods() {
               type="button"
               className="flex-1 flex items-center justify-center gap-2 rounded-lg py-2 text-sm font-semibold transition-all text-primary bg-white shadow-sm"
             >
-              <MailIcon />
+              <Mail className="h-5 w-5" />
               Email OTP
             </button>
           )}
@@ -315,9 +288,7 @@ export default function LoginMethods() {
                 className="ml-2 text-[#a288cf] hover:text-primary transition-colors"
                 aria-label="Clear input"
               >
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                </svg>
+                <X className="w-4 h-4" />
               </button>
             )}
           </div>
@@ -342,14 +313,9 @@ export default function LoginMethods() {
                 className="absolute right-3 p-1 text-[#a288cf] hover:text-[#5a3b8a] transition-colors"
               >
                 {showPassword ? (
-                  <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5">
-                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24M1 1l22 22" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
+                  <EyeOff className="h-5 w-5" />
                 ) : (
-                  <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5">
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                    <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
+                  <Eye className="h-5 w-5" />
                 )}
               </button>
             </div>
@@ -381,10 +347,7 @@ export default function LoginMethods() {
         >
           {loading ? (
             <span className="flex items-center justify-center gap-2">
-              <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-              </svg>
+              <Loader2 className="animate-spin h-4 w-4" />
               Processing...
             </span>
           ) : isAdmin ? (

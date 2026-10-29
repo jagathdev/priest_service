@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { AlertCircle, Eye, EyeOff } from "lucide-react";
 const DEFAULT_COUNTRY: { name: string; isoCode: string; dialCode: string } = { name: "India", isoCode: "IN", dialCode: "91" };
 import CountryPhoneField from "@/components/auth/CountryPhoneField";
 import type { CountryOption } from "@/types/auth";
@@ -157,9 +158,7 @@ export default function SignupPage() {
                 />
                 {phoneTouched && phoneError && (
                   <p className="mt-1.5 flex items-center gap-1.5 text-xs font-medium text-red-500">
-                    <svg className="h-3.5 w-3.5 shrink-0" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M18 10A8 8 0 1 1 2 10a8 8 0 0 1 16 0Zm-8-5a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-1.5 0v-4.5A.75.75 0 0 1 10 5Zm0 10a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clipRule="evenodd" />
-                    </svg>
+                    <AlertCircle className="h-3.5 w-3.5 shrink-0" />
                     {phoneError}
                   </p>
                 )}
@@ -193,9 +192,9 @@ export default function SignupPage() {
                     aria-label={showPassword ? "Hide password" : "Show password"}
                   >
                     {showPassword ? (
-                      <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24M1 1l22 22" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                      <EyeOff className="h-5 w-5" />
                     ) : (
-                      <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                      <Eye className="h-5 w-5" />
                     )}
                   </button>
                 </div>
@@ -219,9 +218,9 @@ export default function SignupPage() {
                     aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
                   >
                     {showConfirmPassword ? (
-                      <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24M1 1l22 22" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                      <EyeOff className="h-5 w-5" />
                     ) : (
-                      <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                      <Eye className="h-5 w-5" />
                     )}
                   </button>
                 </div>
@@ -249,14 +248,6 @@ export default function SignupPage() {
             </Link>
           </p>
         </div>
-      </div>
-
-      {/* Subtle Pattern */}
-      <div className="absolute bottom-10 right-10 opacity-10 pointer-events-none">
-        <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="60" cy="60" r="58" stroke="#1f1f1f" strokeWidth="2" strokeDasharray="10 10" />
-          <path d="M60 20L65 55L100 60L65 65L60 100L55 65L20 60L55 55L60 20Z" fill="#1f1f1f" />
-        </svg>
       </div>
     </main>
   );

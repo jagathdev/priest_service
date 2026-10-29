@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { X, Search, Check, ArrowRight } from "lucide-react";
 
 export interface FilterGroup {
   label: string;
@@ -224,9 +225,7 @@ export default function PujaFilterModal({
             aria-label="Close filters"
             className="p-1 text-gray-400 hover:text-gray-700 transition-colors cursor-pointer"
           >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            <X className="w-5 h-5" />
           </button>
         </div>
 
@@ -275,19 +274,7 @@ export default function PujaFilterModal({
                 placeholder={`Search ${activeGroup.label}`}
                 className="w-full pl-8 sm:pl-9 pr-3 py-1.5 sm:py-2 border border-gray-200 rounded-full outline-none text-xs sm:text-sm focus:border-[#009644] transition-colors"
               />
-              <svg
-                className="w-3.5 h-3.5 text-gray-400 absolute left-2.5 top-1/2 -translate-y-1/2"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M21 21l-4.35-4.35M17 10a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
-              </svg>
+              <Search className="w-3.5 h-3.5 text-gray-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
             </div>
 
             {/* Options */}
@@ -304,19 +291,7 @@ export default function PujaFilterModal({
                           onChange={() => selectFilter(activeGroup.label, option.value)}
                           className="peer w-[18px] h-[18px] appearance-none rounded-[4px] border border-gray-300 checked:bg-white checked:border-[#009644] transition-colors cursor-pointer"
                         />
-                        <svg
-                          className="absolute w-3 h-3 text-transparent peer-checked:text-[#009644] pointer-events-none transition-colors"
-                          viewBox="0 0 14 10"
-                          fill="none"
-                        >
-                          <path
-                            d="M1 5L4.5 8.5L13 1"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
+                        <Check className="absolute w-3 h-3 text-transparent peer-checked:text-[#009644] pointer-events-none transition-colors" strokeWidth={3} />
                       </div>
                       <span className="text-xs sm:text-sm font-semibold text-gray-700 group-hover:text-gray-900 leading-snug pt-[1px]">
                         {option.value}
@@ -354,15 +329,7 @@ export default function PujaFilterModal({
                 {totalSelectedCount}
               </span>
             )}
-            <svg
-              className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white group-hover:translate-x-0.5 transition-transform shrink-0"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="2.5"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-            </svg>
+            <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white group-hover:translate-x-0.5 transition-transform shrink-0" strokeWidth={2.5} />
           </button>
         </div>
       </div>

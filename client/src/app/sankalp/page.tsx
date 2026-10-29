@@ -12,6 +12,7 @@ import { checkAuthStatus } from "@/lib/authCheck";
 import { useUser } from "@/contexts/UserContext";
 import { apiClient, getAuthToken } from "@/services/api";
 import { getStartingPriceINR } from "@/lib/pricing";
+import { ArrowLeft, CreditCard, QrCode, Calendar, Lock, Check } from "lucide-react";
 
 interface RazorpayResponse {
   razorpay_order_id: string;
@@ -26,6 +27,12 @@ interface RazorpayInstance {
 
 interface CustomWindow extends Window {
   Razorpay: new (options: Record<string, unknown>) => RazorpayInstance;
+}
+
+interface ParticipantItem {
+  name: string;
+  gotra: string;
+  dontKnowGotra: boolean;
 }
 
 function SankalpContent() {
@@ -51,12 +58,15 @@ function SankalpContent() {
     gotra: "",
     dontKnowGotra: false,
     wish: "",
-    participants: ["", ""],
+    participants: [
+      { name: "", gotra: "", dontKnowGotra: false },
+      { name: "", gotra: "", dontKnowGotra: false }
+    ] as ParticipantItem[],
   });
   const [showErrors, setShowErrors] = useState(false);
   const [step, setStep] = useState(1);
   const [selectedOfferings, setSelectedOfferings] = useState<any[]>([]);
-  const [paymentMethod, setPaymentMethod] = useState("upi");
+  // const [paymentMethod, setPaymentMethod] = useState("upi");
   const [isProcessing, setIsProcessing] = useState(false);
   const [loadingMsg, setLoadingMsg] = useState("");
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -104,8 +114,10 @@ function SankalpContent() {
       setFormData((prev) => {
         const nextWhatsapp = (whatsappPhone || prev.whatsapp || "").replace(/\D/g, "").slice(0, 10);
         const nextParticipants = [...prev.participants];
-        if (!nextParticipants[0]?.trim() && name) {
-          nextParticipants[0] = name;
+        if (nextParticipants[0] && !nextParticipants[0].name.trim() && name) {
+          nextParticipants[0] = { ...nextParticipants[0], name };
+        } else if (!nextParticipants[0] && name) {
+          nextParticipants[0] = { name, gotra: "", dontKnowGotra: false };
         }
         return {
           ...prev,
@@ -249,8 +261,15 @@ function SankalpContent() {
   useEffect(() => {
     setFormData(prev => {
       // Only set default if user hasn't typed anything yet
-      if (prev.participants.every(p => !p) && prev.participants.length !== defaultParticipantCount) {
-        return { ...prev, participants: Array(defaultParticipantCount).fill("") };
+      if (prev.participants.every(p => !p.name.trim() && !p.gotra.trim()) && prev.participants.length !== defaultParticipantCount) {
+        return {
+          ...prev,
+          participants: Array.from({ length: defaultParticipantCount }, () => ({
+            name: "",
+            gotra: "",
+            dontKnowGotra: false
+          }))
+        };
       }
       return prev;
     });
@@ -268,7 +287,10 @@ function SankalpContent() {
   const finalPrice = basePrice + extraParticipantFee + offeringsTotal;
 
   const isPhoneValid = /^[6-9]\d{9}$/.test(formData.whatsapp.trim());
-  const areParticipantsValid = formData.participants.length > 0 && formData.participants.every(p => p.trim() && /^[a-zA-Z\s]+$/.test(p.trim()));
+  const areParticipantsValid = formData.participants.length > 0 && formData.participants.every(p => {
+    const isNameOk = p.name.trim().length > 0 && /^[a-zA-Z\s]+$/.test(p.name.trim());
+    return isNameOk;
+  });
 
   const handleProceedToStep2 = async () => {
     setShowErrors(true);
@@ -285,7 +307,7 @@ function SankalpContent() {
     const uId = user?.id || user?._id;
     const token = getAuthToken();
     if (uId && token) {
-      const nameToSave = formData.participants[0]?.trim() || user?.name || "Devotee";
+      const nameToSave = formData.participants[0]?.name.trim() || user?.name || "Devotee";
       apiClient('/api/users/updateProfile', {
         method: "PUT",
         body: JSON.stringify({
@@ -314,7 +336,7 @@ function SankalpContent() {
     try {
       const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
 
-      const userName = formData.participants[0]?.trim() || user?.name || "Devotee";
+      const userName = formData.participants[0]?.name?.trim() || user?.name || "Devotee";
       const userPhone = formData.whatsapp || user?.whatsapp || user?.mobileNumber || user?.phone || "";
       const mongoUserId = user?._id || user?.id || user?.customerId || null;
       const userEmail = user?.email || "";
@@ -355,9 +377,15 @@ function SankalpContent() {
         itemName: itemName,
         mobileNumber: originalUserPhone,
         whatsappNumber: formattedWa,
-        participants: formData.participants.filter((p: string) => p.trim()).map((p: string) => ({ name: p.trim() })),
-        gotra: (formData.dontKnowGotra || !formData.gotra.trim()) ? "Kashyapa" : formData.gotra.trim(),
-        doesNotKnowGotra: formData.dontKnowGotra,
+        participants: formData.participants
+          .filter((p) => p.name.trim())
+          .map((p) => ({
+            name: p.name.trim(),
+            gotra: p.dontKnowGotra ? "" : p.gotra.trim(),
+            doesNotKnowGotra: !!p.dontKnowGotra
+          })),
+        gotra: formData.participants[0]?.dontKnowGotra ? "" : (formData.participants[0]?.gotra.trim() || formData.gotra.trim()),
+        doesNotKnowGotra: formData.participants[0]?.dontKnowGotra || formData.dontKnowGotra,
         wish: formData.wish,
         promoCode: appliedPromo?.promoCode || "",
         promoCodeId: appliedPromo?.promoId || null,
@@ -546,7 +574,7 @@ function SankalpContent() {
             onClick={() => router.back()}
             className="flex items-center gap-1 sm:gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full border border-stone-200 text-stone-600 hover:bg-stone-50 hover:text-stone-900 transition-colors bg-white shadow-sm text-xs sm:text-sm font-bold shrink-0"
           >
-            <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" /></svg>
+            <ArrowLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             Back
           </button>
           <h1 className="text-base sm:text-2xl lg:text-3xl font-serif font-bold text-stone-800 text-center flex-1 px-2 line-clamp-1">
@@ -632,10 +660,10 @@ function SankalpContent() {
                     <div>
                       <label className="flex items-center gap-2 text-stone-900 font-bold text-sm mb-3">
                         Your WhatsApp Number
-                        <svg className="w-4 h-4 text-[#25D366]" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 00-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" /></svg>
+                        <i className="fa-brands fa-whatsapp text-base text-[#25D366]"></i>
                       </label>
-                      <div className={`border rounded-xl flex items-center px-4 py-3 transition shadow-sm ${showErrors && !isPhoneValid ? "border-red-400 focus-within:border-red-400 bg-red-50/20" : "border-stone-200 focus-within:border-[#14395C] bg-white"}`}>
-                        <div className="flex items-center gap-2 pr-3 border-r border-stone-200 mr-3">
+                      <div className={`border rounded-xl flex items-center px-4 py-3 transition shadow-sm ${showErrors && !isPhoneValid ? "border-red-400 focus-within:border-red-400 bg-red-50/20" : "border-stone-600 focus-within:border-[#14395C] bg-white"}`}>
+                        <div className="flex items-center gap-2 pr-3 border-r border-stone-600 mr-3">
                           <span className="text-[13px] font-semibold text-[#1c2c5c]">IN</span>
                           <span className="text-[13px] font-extrabold text-stone-900">+91</span>
                         </div>
@@ -653,8 +681,11 @@ function SankalpContent() {
                           placeholder="9566777645"
                           className="w-full text-sm font-extrabold text-stone-900 outline-none bg-transparent"
                         />
-                        <div className={isPhoneValid ? "text-[#0084ff]" : "text-stone-300"}>
-                          <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" /></svg>
+                        <div className="shrink-0 flex items-center justify-center pl-2">
+                          <div className={`w-5 h-5 rounded-full flex items-center justify-center transition-colors ${isPhoneValid ? "bg-[#0084ff] text-white" : "border-2 border-stone-600 text-transparent"
+                            }`}>
+                            <Check className="w-3.5 h-3.5 stroke-[3]" />
+                          </div>
                         </div>
                       </div>
                       {showErrors && !isPhoneValid && (
@@ -669,91 +700,139 @@ function SankalpContent() {
                       </p>
                     </div>
 
-                    {/* Devotee Names */}
-                    <div>
-                      <label className="block text-stone-900 font-bold text-sm mb-3">
-                        Provide participant names for Puja
-                      </label>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {formData.participants.map((p, idx) => {
-                          const isNameEmpty = !p.trim();
-                          const isNameValidLetters = /^[a-zA-Z\s]+$/.test(p.trim());
-                          const hasNameError = showErrors && (isNameEmpty || !isNameValidLetters);
+                    {/* Devotees List */}
+                    <div className="space-y-4">
+                      {formData.participants.map((p, idx) => {
+                        const isNameEmpty = !p.name.trim();
+                        const isNameValidLetters = /^[a-zA-Z\s]+$/.test(p.name.trim());
+                        const hasNameError = showErrors && (isNameEmpty || !isNameValidLetters);
 
-                          return (
-                            <div key={idx}>
-                              <input
-                                type="text"
-                                value={p}
-                                onChange={(e) => {
-                                  // Allow letters and spaces only
-                                  const sanitized = e.target.value.replace(/[^a-zA-Z\s]/g, "");
-                                  const newP = [...formData.participants];
-                                  newP[idx] = sanitized;
-                                  setFormData({ ...formData, participants: newP });
-                                }}
-                                placeholder={`Participant Name ${idx + 1}`}
-                                className={`w-full border rounded-xl px-4 py-3 text-sm font-medium outline-none transition ${hasNameError
-                                  ? "border-red-400 bg-red-50/20"
-                                  : "border-stone-200 focus:border-[#14395C] bg-white"
-                                  }`}
-                              />
-                              {hasNameError && (
-                                <p className="text-[10px] sm:text-[11px] text-red-500 mt-1.5 font-semibold">
-                                  {isNameEmpty ? "Please provide a name." : "Participant name must contain characters only."}
-                                </p>
+                        return (
+                          <div
+                            key={idx}
+                            className="bg-white rounded-2xl border border-stone-200 p-4 sm:p-5 shadow-xs transition-shadow hover:shadow-sm"
+                          >
+                            {/* Card Header with Participant Badge */}
+                            <div className="flex items-center justify-between mb-4">
+                              <div className="flex items-center gap-2.5">
+                                <span className="w-6 h-6 rounded-full bg-stone-100 border border-stone-400 text-stone-700 text-xs font-bold flex items-center justify-center">
+                                  {idx + 1}
+                                </span>
+                                <span className="text-sm font-bold text-stone-800">
+                                  Participant {idx + 1}
+                                </span>
+                              </div>
+                              {formData.participants.length > defaultParticipantCount && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const nextP = formData.participants.filter((_, pIdx) => pIdx !== idx);
+                                    setFormData({ ...formData, participants: nextP });
+                                  }}
+                                  className="text-xs font-semibold text-red-400 hover:text-red-500 transition-colors"
+                                >
+                                  Remove
+                                </button>
                               )}
                             </div>
-                          );
-                        })}
-                      </div>
-                      <div className="mt-4 flex items-center gap-3">
+
+                            {/* Participant Inputs Grid: Name & Gotra */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              {/* Participant Name */}
+                              <div>
+                                <label className="block text-stone-800 font-semibold text-xs mb-2">
+                                  Participant Name <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                  type="text"
+                                  value={p.name}
+                                  onChange={(e) => {
+                                    const sanitized = e.target.value.replace(/[^a-zA-Z\s]/g, "");
+                                    const newP = [...formData.participants];
+                                    newP[idx] = { ...newP[idx], name: sanitized };
+                                    setFormData({ ...formData, participants: newP });
+                                  }}
+                                  placeholder="Enter devotee name"
+                                  className={`w-full border rounded-xl px-4 py-2.5 text-sm font-medium outline-none transition ${hasNameError
+                                    ? "border-red-400 bg-red-50/20"
+                                    : "border-stone-600 focus:border-[#14395C] bg-white"
+                                    }`}
+                                />
+                                {hasNameError && (
+                                  <p className="text-[10px] sm:text-[11px] text-red-500 mt-1.5 font-semibold">
+                                    {isNameEmpty ? "Please provide a name." : "Participant name must contain characters only."}
+                                  </p>
+                                )}
+                              </div>
+
+                              {/* Participant Gotra */}
+                              <div>
+                                <label className="block text-stone-800 font-semibold text-xs mb-2">
+                                  Gotra
+                                </label>
+                                <input
+                                  type="text"
+                                  disabled={p.dontKnowGotra}
+                                  value={p.dontKnowGotra ? "" : p.gotra}
+                                  onChange={(e) => {
+                                    const newP = [...formData.participants];
+                                    newP[idx] = { ...newP[idx], gotra: e.target.value };
+                                    setFormData({ ...formData, participants: newP });
+                                  }}
+                                  placeholder="Enter gotra (e.g. Kashyapa)"
+                                  className={`w-full border rounded-xl px-4 py-2.5 text-sm font-medium outline-none transition ${p.dontKnowGotra
+                                    ? "bg-[#f4f2ee] text-stone-500 cursor-not-allowed border-stone-400"
+                                    : "border-stone-600 focus:border-[#14395C] bg-white"
+                                    }`}
+                                />
+                                <label className="flex items-center gap-2 mt-2.5 cursor-pointer select-none">
+                                  <input
+                                    type="checkbox"
+                                    checked={p.dontKnowGotra}
+                                    onChange={(e) => {
+                                      const checked = e.target.checked;
+                                      const newP = [...formData.participants];
+                                      newP[idx] = {
+                                        ...newP[idx],
+                                        dontKnowGotra: checked,
+                                        gotra: checked ? "" : newP[idx].gotra
+                                      };
+                                      setFormData({ ...formData, participants: newP });
+                                    }}
+                                    className="w-4 h-4 rounded border-stone-300 text-[#14395C] focus:ring-[#14395C]"
+                                  />
+                                  <span className="text-xs font-medium text-stone-600">
+                                    I do not know my gotra
+                                  </span>
+                                </label>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+
+                      {/* Add Participant Button */}
+                      <div className="pt-1">
                         <button
-                          onClick={() => setFormData({ ...formData, participants: [...formData.participants, ""] })}
-                          className="text-sm font-bold text-[#14395C] bg-white border border-dashed border-[#14395C] rounded-full px-5 py-2 flex items-center gap-1.5 hover:bg-[#14395C]/5 transition-colors"
+                          type="button"
+                          onClick={() =>
+                            setFormData({
+                              ...formData,
+                              participants: [
+                                ...formData.participants,
+                                { name: "", gotra: "", dontKnowGotra: false }
+                              ]
+                            })
+                          }
+                          className="text-sm font-bold text-[#14395C] bg-white border border-dashed border-[#14395C] rounded-full px-5 py-2.5 flex items-center gap-1.5 hover:bg-[#14395C]/5 transition-colors shadow-2xs"
                         >
-                          <span>+ Add 1 more participant</span>
+                          <span>+ Add participant</span>
                           <span className="font-extrabold">+₹300</span>
                         </button>
-                        {formData.participants.length > defaultParticipantCount && (
-                          <button
-                            onClick={() => setFormData({ ...formData, participants: formData.participants.slice(0, -1) })}
-                            className="text-sm font-bold text-stone-600 bg-white border border-stone-300 rounded-full px-5 py-2 flex items-center hover:bg-stone-50 transition-colors"
-                          >
-                            – Remove
-                          </button>
-                        )}
+                        <p className="text-[11px] text-stone-500 mt-2.5 font-medium">
+                          These names will be included in the sacred sankalpam during the puja.
+                        </p>
                       </div>
-                      <p className="text-[11px] text-stone-500 mt-3 font-medium">
-                        This name will be included in the sacred sankalpam during the puja.
-                      </p>
-                    </div>
-
-                    {/* Gotra */}
-                    <div>
-                      <label className="block text-stone-900 font-bold text-sm mb-3">
-                        Add your Gotra <span className="text-stone-400 font-normal text-xs ml-1"></span>
-                      </label>
-                      <input
-                        type="text"
-                        disabled={formData.dontKnowGotra}
-                        value={formData.dontKnowGotra ? "Kashyapa" : formData.gotra}
-                        onChange={(e) => setFormData({ ...formData, gotra: e.target.value })}
-                        placeholder="Gotra of Puja performer (e.g. Kashyapa, Bharadwaja)"
-                        className={`w-full border border-stone-200 rounded-xl px-4 py-3 text-sm font-medium outline-none focus:border-[#14395C] shadow-sm ${formData.dontKnowGotra ? "bg-[#f4f2ee] text-stone-500 cursor-not-allowed" : "bg-white"
-                          }`}
-                      />
-                      <label className="flex items-center gap-2 mt-3 cursor-pointer select-none pl-1">
-                        <input
-                          type="checkbox"
-                          checked={formData.dontKnowGotra}
-                          onChange={(e) => setFormData({ ...formData, dontKnowGotra: e.target.checked })}
-                          className="w-4 h-4 rounded border-stone-300 text-[#14395C] focus:ring-[#14395C]"
-                        />
-                        <span className="text-xs font-medium text-stone-700">
-                          I do not know my gotra
-                        </span>
-                      </label>
                     </div>
 
                     {/* Prayer Wish */}
@@ -765,7 +844,7 @@ function SankalpContent() {
                         rows={4}
                         value={formData.wish}
                         onChange={(e) => setFormData({ ...formData, wish: e.target.value })}
-                        className="w-full border border-stone-200 rounded-xl p-4 text-xs font-medium text-stone-700 outline-none focus:border-[#14395C] resize-none shadow-sm"
+                        className="w-full border border-stone-600 rounded-xl p-4 text-xs font-medium text-stone-700 outline-none focus:border-[#14395C] resize-none shadow-sm"
                         placeholder="e.g. FAMILY WELL BEING"
                       />
                     </div>
@@ -778,18 +857,18 @@ function SankalpContent() {
                       <h3 className="text-base font-extrabold text-stone-900 mb-4">Payment Method</h3>
                       <div className="grid grid-cols-2 gap-4">
                         <div
-                          onClick={() => setPaymentMethod("upi")}
-                          className={`border rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer transition-colors ${paymentMethod === "upi" ? "border-[#14395C] bg-[#14395C]/5 shadow-sm" : "border-stone-200 hover:border-[#14395C]"}`}
+                          // onClick={() => setPaymentMethod("upi")}
+                          className={`border rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer transition-colors  border-stone-200 hover:border-[#14395C]`}
                         >
-                          <svg className={`w-8 h-8 mb-2 ${paymentMethod === "upi" ? "text-[#14395C]" : "text-stone-400"}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
-                          <span className={`text-xs font-bold text-center ${paymentMethod === "upi" ? "text-[#14395C]" : "text-stone-700"}`}>Cards / Netbanking / UPI</span>
+                          <CreditCard className={`w-8 h-8 mb-2 "text-stone-400"`} />
+                          <span className={`text-xs font-bold text-center text-stone-700`}>Cards / Netbanking / UPI</span>
                         </div>
                         <div
-                          onClick={() => setPaymentMethod("qr")}
-                          className={`border rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer transition-colors ${paymentMethod === "qr" ? "border-[#14395C] bg-[#14395C]/5 shadow-sm" : "border-stone-200 hover:border-[#14395C]"}`}
+                          // onClick={() => setPaymentMethod("qr")}
+                          className={`border rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer transition-colors  border-stone-200 hover:border-[#14395C]`}
                         >
-                          <svg className={`w-8 h-8 mb-2 ${paymentMethod === "qr" ? "text-[#14395C]" : "text-stone-400"}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" /></svg>
-                          <span className={`text-xs font-bold text-center ${paymentMethod === "qr" ? "text-[#14395C]" : "text-stone-700"}`}>Scan QR to Pay</span>
+                          <QrCode className={`w-8 h-8 mb-2 "text-stone-400"`} />
+                          <span className={`text-xs font-bold text-center text-stone-700`}>Scan QR to Pay</span>
                         </div>
                       </div>
                     </div>
@@ -883,7 +962,7 @@ function SankalpContent() {
 
                   {/* Date Box */}
                   <div className="bg-[#f0f4f8] border border-[#d6e2ed] rounded-xl px-4 py-2.5 flex items-center gap-3 text-xs font-bold text-[#14395C] mb-6">
-                    <svg className="w-4 h-4 text-[#14395C]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                    <Calendar className="w-4 h-4 text-[#14395C]" />
                     <span>{pujaData?.date || "Saturday, 10 October"}</span>
                   </div>
 
@@ -954,7 +1033,7 @@ function SankalpContent() {
                   )}
 
                   <div className="flex items-center justify-center gap-1.5 text-[11px] font-bold text-[#14395C]">
-                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                    <Lock className="w-3.5 h-3.5" />
                     100% Secure
                   </div>
                 </div>
@@ -963,25 +1042,25 @@ function SankalpContent() {
                 <div className="bg-white rounded-3xl border border-stone-200 p-5 shadow-sm space-y-4">
                   <div className="flex items-center gap-3 text-xs text-stone-600 font-medium">
                     <div className="w-5 h-5 rounded-full bg-[#14395C]/10 flex items-center justify-center shrink-0">
-                      <svg className="w-3 h-3 text-[#14395C]" fill="none" stroke="currentColor" strokeWidth="3.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                      <Check className="w-3 h-3 text-[#14395C]" strokeWidth={3.5} />
                     </div>
                     Puja Video Delivered Within 48 Hours
                   </div>
                   <div className="flex items-center gap-3 text-xs text-stone-600 font-medium">
                     <div className="w-5 h-5 rounded-full bg-[#14395C]/10 flex items-center justify-center shrink-0">
-                      <svg className="w-3 h-3 text-[#14395C]" fill="none" stroke="currentColor" strokeWidth="3.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                      <Check className="w-3 h-3 text-[#14395C]" strokeWidth={3.5} />
                     </div>
                     Verified & Experienced Pandits
                   </div>
                   <div className="flex items-center gap-3 text-xs text-stone-600 font-medium">
                     <div className="w-5 h-5 rounded-full bg-[#14395C]/10 flex items-center justify-center shrink-0">
-                      <svg className="w-3 h-3 text-[#14395C]" fill="none" stroke="currentColor" strokeWidth="3.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                      <Check className="w-3 h-3 text-[#14395C]" strokeWidth={3.5} />
                     </div>
                     Pujas Performed in Sacred Temples
                   </div>
                   <div className="flex items-center gap-3 text-xs text-stone-600 font-medium">
                     <div className="w-5 h-5 rounded-full bg-[#14395C]/10 flex items-center justify-center shrink-0">
-                      <svg className="w-3 h-3 text-[#14395C]" fill="none" stroke="currentColor" strokeWidth="3.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                      <Check className="w-3 h-3 text-[#14395C]" strokeWidth={3.5} />
                     </div>
                     100% Authentic Vedic Rituals
                   </div>

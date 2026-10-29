@@ -12,7 +12,21 @@ import { XMarkIcon } from "@heroicons/react/24/solid";
 import WishlistButton from "@/components/common/WishlistButton";
 import PujaCountdownCard from "@/components/common/PujaCountdownCard";
 import GalleryLightboxModal from "@/components/common/GalleryLightboxModal";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ZoomIn,
+  Share2,
+  Check,
+  Phone,
+  Flame,
+  ArrowRight,
+  Video,
+  ShieldCheck,
+  Landmark,
+  Scroll,
+  Sparkles,
+} from "lucide-react";
 
 interface HomaPackage {
   id: string;
@@ -57,6 +71,7 @@ interface Homa {
   strengthFor?: string;
   ritualSummary?: string;
   date?: string;
+  time?: string;
   eventDateTime?: string;
   showTimer?: boolean;
   buttonText?: string;
@@ -852,9 +867,7 @@ export default function HomaDetailClient({
                     }}
                     className="flex-initial border border-stone-300 hover:border-stone-500 bg-white text-stone-800 font-medium text-xs xl:text-sm px-3 xl:px-4 py-1.5 rounded-full flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-xs"
                   >
-                    <svg className="w-3.5 h-3.5 xl:w-4 xl:h-4 fill-none stroke-current" strokeWidth="2" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-                    </svg>
+                    <Share2 className="w-3.5 h-3.5 xl:w-4 xl:h-4" />
                     <span>{shareSuccess ? "Copied!" : "Share"}</span>
                   </button>
                 </div>
@@ -886,7 +899,7 @@ export default function HomaDetailClient({
               <PujaCountdownCard
                 templeVenue={templeVenueText || "Sacred Temple Yagashala"}
                 location={homa.location || homa.templeLocation || "India"}
-                dateText={homa.date || "Saturday, 10 October"}
+                dateText={`${homa.date || "Saturday, 10 October"}${homa.time ? " at " + homa.time : ""}`}
                 occasionText={homa.subtitle || (homa as any).occasion || (homa as any).dateOccasion || homa.badge || (homa as any).tithis || "Special Vedic Homa"}
                 eventDateTime={homa.eventDateTime}
                 showTimer={homa.showTimer}
@@ -948,9 +961,7 @@ export default function HomaDetailClient({
                               {/* Checkmark Badge on Selected Package */}
                               {isSelected && (
                                 <div className="w-5 h-5 rounded-full bg-[#14395C] text-white flex items-center justify-center shrink-0 shadow-xs ml-1">
-                                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3.5">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                                  </svg>
+                                  <Check className="w-3 h-3" strokeWidth={3.5} />
                                 </div>
                               )}
                             </div>
@@ -983,18 +994,14 @@ export default function HomaDetailClient({
                   rel="noopener noreferrer"
                   className="flex-1 min-w-[150px] inline-flex items-center justify-center gap-2 bg-white border border-[#CBD5E1] text-[#14395C] hover:bg-slate-50 font-extrabold text-xs sm:text-sm py-2.5 px-4 rounded-full transition-colors shadow-xs"
                 >
-                  <svg className="w-5 h-5 shrink-0 fill-[#25D366]" viewBox="0 0 24 24">
-                    <path d="M12.012 2c-5.506 0-9.989 4.478-9.99 9.984 0 1.758.459 3.474 1.33 4.982L2 22l5.144-1.348c1.455.793 3.097 1.21 4.864 1.21 5.505 0 9.989-4.478 9.99-9.985 0-5.506-4.484-9.984-9.986-9.984zm5.794 14.15c-.244.686-1.437 1.344-1.982 1.393-.526.048-1.018.257-3.418-.686-2.905-1.141-4.757-4.088-4.901-4.281-.144-.193-1.177-1.564-1.177-2.984 0-1.42.747-2.119 1.011-2.408.264-.289.576-.361.769-.361.192 0 .385.001.552.009.178.008.417-.067.653.498.243.582.83 2.023.902 2.168.072.144.12.312.024.504-.096.192-.144.312-.288.48-.144.168-.303.376-.432.504-.144.144-.294.302-.126.59.168.289.747 1.233 1.603 1.996 1.101.98 2.03 1.285 2.318 1.429.288.144.456.12.624-.072.168-.192.721-.84.913-1.128.192-.288.384-.24.648-.144.264.096 1.677.791 1.965.935.288.144.48.216.552.336.072.12.072.696-.172 1.382z" />
-                  </svg>
+                  <i className="fa-brands fa-whatsapp text-lg text-[#25D366]"></i>
                   <span>Book via WhatsApp</span>
                 </a>
                 <a
                   href="tel:+919677391108"
                   className="flex-1 min-w-[150px] inline-flex items-center justify-center gap-2 bg-white border border-[#CBD5E1] text-[#1E293B] hover:bg-slate-50 font-extrabold text-xs sm:text-sm py-2.5 px-4 rounded-full transition-colors shadow-xs"
                 >
-                  <svg className="w-4 h-4 min-w-[16px] min-h-[16px] fill-none stroke-[#14395C]" strokeWidth="2" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                  </svg>
+                  <Phone className="w-4 h-4 min-w-[16px] min-h-[16px] text-[#14395C]" />
                   <span>Book via Call</span>
                 </a>
               </div>
@@ -1008,12 +1015,19 @@ export default function HomaDetailClient({
       {/* ── 2. Trust Strip Badges ── */}
       {(() => {
         const defaultBadges = [
-          { icon: "🎥", text: "Homa Video Delivered Within 48 hours" },
-          { icon: "✓", text: "Verified & Experienced Pandits" },
-          { icon: "🏛", text: "Homa Performed in Sacred Temples" },
-          { icon: "📜", text: "100% Authentic Vedic Rituals" },
+          { icon: <Video className="w-3.5 h-3.5" />, text: "Homa Video Delivered Within 48 hours" },
+          { icon: <ShieldCheck className="w-3.5 h-3.5" />, text: "Verified & Experienced Pandits" },
+          { icon: <Landmark className="w-3.5 h-3.5" />, text: "Homa Performed in Sacred Temples" },
+          { icon: <Scroll className="w-3.5 h-3.5" />, text: "100% Authentic Vedic Rituals" },
         ];
-        const icons = ["🎥", "✓", "🏛", "📜", "⭐", "✨"];
+        const icons = [
+          <Video key="v" className="w-3.5 h-3.5" />,
+          <ShieldCheck key="s" className="w-3.5 h-3.5" />,
+          <Landmark key="l" className="w-3.5 h-3.5" />,
+          <Scroll key="sc" className="w-3.5 h-3.5" />,
+          <Sparkles key="sp" className="w-3.5 h-3.5" />,
+          <Check key="c" className="w-3.5 h-3.5" />
+        ];
         const badgeList = (Array.isArray(homa.trustBadges) && homa.trustBadges.length > 0)
           ? homa.trustBadges.map((text, i) => ({ icon: icons[i % icons.length], text }))
           : defaultBadges;
@@ -1029,14 +1043,14 @@ export default function HomaDetailClient({
                 <div className="flex shrink-0 items-center gap-8 sm:gap-12 pr-8 sm:pr-12 text-xs sm:text-sm font-bold text-[#14395C]">
                   {trackBadges.map((b, idx) => (
                     <span key={`t1-${idx}`} className="flex items-center gap-2 shrink-0 whitespace-nowrap">
-                      <span className="bg-white text-[#14395C] shadow-2xs rounded-full p-1">{b.icon}</span> {b.text}
+                      <span className="bg-white text-[#14395C] shadow-2xs rounded-full p-1.5 flex items-center justify-center shrink-0">{b.icon}</span> {b.text}
                     </span>
                   ))}
                 </div>
                 <div className="flex shrink-0 items-center gap-8 sm:gap-12 pr-8 sm:pr-12 text-xs sm:text-sm font-bold text-[#14395C]" aria-hidden="true">
                   {trackBadges.map((b, idx) => (
                     <span key={`t2-${idx}`} className="flex items-center gap-2 shrink-0 whitespace-nowrap">
-                      <span className="bg-white text-[#14395C] shadow-2xs rounded-full p-1">{b.icon}</span> {b.text}
+                      <span className="bg-white text-[#14395C] shadow-2xs rounded-full p-1.5 flex items-center justify-center shrink-0">{b.icon}</span> {b.text}
                     </span>
                   ))}
                 </div>
@@ -1047,7 +1061,7 @@ export default function HomaDetailClient({
             <div className="badge-static-1440 hidden min-[1440px]:flex max-w-[1350px] mx-auto items-center justify-around gap-6 px-4 text-xs sm:text-sm font-bold text-[#14395C] whitespace-nowrap">
               {badgeList.map((b, idx) => (
                 <span key={idx} className="flex items-center gap-2">
-                  <span className="bg-white text-[#14395C] shadow-2xs rounded-full p-1">{b.icon}</span> {b.text}
+                  <span className="bg-white text-[#14395C] shadow-2xs rounded-full p-1.5 flex items-center justify-center shrink-0">{b.icon}</span> {b.text}
                 </span>
               ))}
             </div>
@@ -1119,17 +1133,7 @@ export default function HomaDetailClient({
               }}
               className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-stone-300 hover:border-stone-500 bg-white flex items-center justify-center text-stone-700 shadow-2xs hover:bg-stone-50 transition-all active:scale-95 relative"
             >
-              <svg
-                className="w-4 h-4 sm:w-5 sm:h-5 fill-none stroke-current"
-                strokeWidth="2"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
-                />
-              </svg>
+              <Share2 className="w-4 h-4 sm:w-5 sm:h-5" />
               {shareSuccess && (
                 <span className="absolute -top-7 right-0 bg-stone-900 text-white text-[10px] font-semibold py-0.5 px-2 rounded shadow-sm whitespace-nowrap">
                   Copied!
@@ -1341,9 +1345,7 @@ export default function HomaDetailClient({
                     />
                     <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
                       <div className="w-10 h-10 rounded-full bg-white/90 text-stone-800 flex items-center justify-center shadow-lg transform scale-90 group-hover:scale-100 transition-transform">
-                        <svg className="w-5 h-5 text-stone-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7" />
-                        </svg>
+                        <ZoomIn className="w-5 h-5 text-stone-900" strokeWidth={2} />
                       </div>
                     </div>
                   </div>
@@ -1369,11 +1371,11 @@ export default function HomaDetailClient({
 
             <div className="space-y-2.5 text-xs sm:text-sm text-stone-700 font-medium">
               <div className="flex items-start gap-2.5">
-                <span className="text-[#14395C] font-bold text-base shrink-0">✓</span>
+                <Check className="w-4 h-4 text-[#14395C] shrink-0 mt-0.5" strokeWidth={3} />
                 <span>Personalized Sankalpam performed with your Name, Gotra &amp; Wish</span>
               </div>
               <div className="flex items-start gap-2.5">
-                <span className="text-[#14395C] font-bold text-base shrink-0">✓</span>
+                <Check className="w-4 h-4 text-[#14395C] shrink-0 mt-0.5" strokeWidth={3} />
                 <span>Full Homa Video Recording delivered on WhatsApp within 48 hours</span>
               </div>
             </div>
@@ -1391,9 +1393,7 @@ export default function HomaDetailClient({
                   rel="noopener noreferrer"
                   className="w-full bg-[#14395C] hover:bg-[#0f2d4a] text-white font-extrabold text-xs sm:text-sm py-3 px-4 rounded-full transition-colors flex items-center justify-center gap-2 shadow-sm"
                 >
-                  <svg className="w-5 h-5 shrink-0 fill-white" viewBox="0 0 24 24">
-                    <path d="M12.012 2c-5.506 0-9.989 4.478-9.99 9.984 0 1.758.459 3.474 1.33 4.982L2 22l5.144-1.348c1.455.793 3.097 1.21 4.864 1.21 5.505 0 9.989-4.478 9.99-9.985 0-5.506-4.484-9.984-9.986-9.984zm5.794 14.15c-.244.686-1.437 1.344-1.982 1.393-.526.048-1.018.257-3.418-.686-2.905-1.141-4.757-4.088-4.901-4.281-.144-.193-1.177-1.564-1.177-2.984 0-1.42.747-2.119 1.011-2.408.264-.289.576-.361.769-.361.192 0 .385.001.552.009.178.008.417-.067.653.498.243.582.83 2.023.902 2.168.072.144.12.312.024.504-.096.192-.144.312-.288.48-.144.168-.303.376-.432.504-.144.144-.294.302-.126.59.168.289.747 1.233 1.603 1.996 1.101.98 2.03 1.285 2.318 1.429.288.144.456.12.624-.072.168-.192.721-.84.913-1.128.192-.288.384-.24.648-.144.264.096 1.677.791 1.965.935.288.144.48.216.552.336.072.12.072.696-.172 1.382z" />
-                  </svg>
+                  <i className="fa-brands fa-whatsapp text-lg text-[#25D366]"></i>
                   <span>WhatsApp Agent</span>
                 </a>
               </div>
@@ -1418,9 +1418,7 @@ export default function HomaDetailClient({
           {/* Left Column: Lotus Icon + Uppercase Title + Price */}
           <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
             <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-white text-[#14395C] flex items-center justify-center shrink-0 shadow-sm">
-              <svg className="w-5 h-5 sm:w-6 sm:h-6 fill-[#14395C]" viewBox="0 0 24 24">
-                <path d="M12 3c-1.5 2.5-3 5-3 7.5 0 2.5 1.5 4.5 3 4.5s3-2 3-4.5C15 8 13.5 5.5 12 3zm0 14c-4.5 0-7.5-2.5-9-5 1.5 4.5 5.5 7.5 9 7.5s7.5-3 9-7.5c-1.5 2.5-4.5 5-9 5z" />
-              </svg>
+              <Flame className="w-5 h-5 sm:w-6 sm:h-6 text-[#14395C]" />
             </div>
             <div className="min-w-0 flex-1">
               <span className="text-[10px] sm:text-xs font-extrabold text-slate-200 tracking-wider uppercase block truncate max-w-[120px] sm:max-w-none">
@@ -1439,9 +1437,7 @@ export default function HomaDetailClient({
           >
             <span className="max-w-[125px] sm:max-w-none truncate">{homa.buttonText || "Book Now"}</span>
             <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-[#14395C] text-white flex items-center justify-center shrink-0">
-              <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5 stroke-current" fill="none" viewBox="0 0 24 24" strokeWidth="3">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-              </svg>
+              <ArrowRight className="w-3 h-3 sm:w-3.5 sm:h-3.5 stroke-[3]" />
             </div>
           </button>
         </div>

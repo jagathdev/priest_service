@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 export type Review = {
   _id: string;
@@ -139,7 +140,7 @@ export default function ReviewsSection() {
         onClick={() => handleScroll('left')}
         className="absolute left-0 top-[100px] -translate-y-1/2 w-10 h-10 bg-white rounded-full shadow-[0_4px_12px_rgba(0,0,0,0.1)] flex items-center justify-center text-gray-600 hover:text-black z-10 hover:scale-110 transition-transform"
       >
-        <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6"><path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+        <ChevronLeft className="w-6 h-6" strokeWidth={2} />
       </button>
 
       <div
@@ -155,7 +156,7 @@ export default function ReviewsSection() {
         onClick={() => handleScroll('right')}
         className="absolute right-0 top-[100px] -translate-y-1/2 w-10 h-10 bg-white rounded-full shadow-[0_4px_12px_rgba(0,0,0,0.1)] flex items-center justify-center text-gray-600 hover:text-black z-10 hover:scale-110 transition-transform"
       >
-        <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6"><path d="M9 18l6-6-6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+        <ChevronRight className="w-6 h-6" strokeWidth={2} />
       </button>
 
       <div className="flex justify-center gap-2 mt-4">

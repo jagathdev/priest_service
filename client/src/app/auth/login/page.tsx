@@ -22,21 +22,6 @@ export default function LoginPage() {
       <div className="relative z-10 w-full max-w-2xl px-4 py-12 flex justify-center items-center">
         <LoginMethods />
       </div>
-
-      {/* Subtle Bottom Pattern */}
-      <div className="absolute bottom-10 left-10 opacity-10 pointer-events-none">
-        <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="60" cy="60" r="58" stroke="#6869F9" strokeWidth="2" strokeDasharray="10 10" />
-          <circle cx="60" cy="60" r="40" stroke="#6869F9" strokeWidth="1" />
-          <path d="M60 20V40M60 80V100M20 60H40M80 60H100" stroke="#6869F9" strokeWidth="2" strokeLinecap="round" />
-        </svg>
-      </div>
-      <div className="absolute top-10 right-10 opacity-10 pointer-events-none">
-        <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="40" cy="40" r="38" stroke="#F47820" strokeWidth="1.5" strokeDasharray="6 6" />
-          <circle cx="40" cy="40" r="24" stroke="#F47820" strokeWidth="1" />
-        </svg>
-      </div>
     </main>
   );
 }

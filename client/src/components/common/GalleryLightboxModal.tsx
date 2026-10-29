@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
+import { X, ChevronLeft, ChevronRight } from "lucide-react";
 
 const emptySubscribe = () => () => {};
 function useIsMounted() {
@@ -162,19 +163,7 @@ export default function GalleryLightboxModal({
         aria-label="Close modal"
         className="absolute top-4 right-4 sm:top-6 sm:right-6 md:top-7 md:right-8 z-50 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 text-white/90 hover:text-white flex items-center justify-center transition-all cursor-pointer border border-white/10 shadow-lg"
       >
-        <svg
-          className="w-5 h-5"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={2}
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M6 18L18 6M6 6l12 12"
-          />
-        </svg>
+        <X className="w-5 h-5" strokeWidth={2} />
       </button>
 
       {/* Previous Button (Left) */}
@@ -185,19 +174,7 @@ export default function GalleryLightboxModal({
           aria-label="Previous image"
           className="absolute left-3 sm:left-6 md:left-8 top-1/2 -translate-y-1/2 z-50 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 text-white/90 hover:text-white flex items-center justify-center transition-all cursor-pointer border border-white/10 shadow-xl"
         >
-          <svg
-            className="w-5 h-5 sm:w-6 sm:h-6"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={2}
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M15 19l-7-7 7-7"
-            />
-          </svg>
+          <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" strokeWidth={2} />
         </button>
       )}
 
@@ -209,19 +186,7 @@ export default function GalleryLightboxModal({
           aria-label="Next image"
           className="absolute right-3 sm:right-6 md:right-8 top-1/2 -translate-y-1/2 z-50 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 text-white/90 hover:text-white flex items-center justify-center transition-all cursor-pointer border border-white/10 shadow-xl"
         >
-          <svg
-            className="w-5 h-5 sm:w-6 sm:h-6"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={2}
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M9 5l7 7-7 7"
-            />
-          </svg>
+          <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" strokeWidth={2} />
         </button>
       )}
 

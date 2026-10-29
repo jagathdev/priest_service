@@ -73,6 +73,7 @@ const pujaSchema = new mongoose.Schema(
 
     // Dates & Display
     date: { type: String, default: "" },
+    time: { type: String, default: "" },
     eventDateTime: { type: String, default: "" },
     showTimer: { type: Boolean, default: true },
     buttonText: { type: String, default: "" },

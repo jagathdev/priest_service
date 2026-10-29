@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Check } from "lucide-react";
 import { applyPromoCode } from "@/lib/promoCodes";
 
 interface PromoCodeInputProps {
@@ -100,7 +101,7 @@ export default function PromoCodeInput({
                 <div className="flex items-center justify-between rounded-xl border border-[#14395C]/30 bg-[#14395C]/5 px-5 py-4 shadow-sm">
                     <div>
                         <div className="font-extrabold text-[#14395C] flex items-center gap-2">
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"></path></svg>
+                            <Check className="w-5 h-5 text-[#14395C]" strokeWidth={2.5} />
                             {code} applied
                         </div>
                         <div className="text-xs font-bold text-stone-600 mt-1">
