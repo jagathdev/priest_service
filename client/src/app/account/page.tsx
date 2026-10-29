@@ -1640,40 +1640,51 @@ function AccountPageContent() {
                       {/* Contact Cards */}
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
                         {/* WhatsApp */}
-                        <div className="bg-white border border-gray-150 rounded-2xl p-5 shadow-sm hover:shadow-md transition">
-                          <div className="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center mb-4">
+                        <a
+                          href="https://wa.me/919566777645?text=Hello%2C%20I%20need%20assistance%20with%20Priest%20Services"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="group bg-white border border-gray-150 rounded-2xl p-5 shadow-sm hover:shadow-md transition block"
+                        >
+                          <div className="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center mb-4 transition-transform group-hover:scale-105">
                             <i className="fa-brands fa-whatsapp text-2xl text-[#25D366]"></i>
                           </div>
                           <h4 className="text-[14px] font-bold text-gray-900 mb-1">WhatsApp Support</h4>
                           <p className="text-[11px] text-gray-500 mb-4">Reply within minutes</p>
-                          <button className="text-primary text-[12px] font-bold flex items-center gap-1 hover:text-[#0f2d4a]">
+                          <span className="text-primary text-[12px] font-bold flex items-center gap-1 group-hover:text-[#0f2d4a]">
                             +91 9566777645 <span>&rarr;</span>
-                          </button>
-                        </div>
+                          </span>
+                        </a>
 
                         {/* Call Support */}
-                        <div className="bg-white border border-gray-150 rounded-2xl p-5 shadow-sm hover:shadow-md transition">
-                          <div className="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center mb-4">
+                        <a
+                          href="tel:+919677391108"
+                          className="group bg-white border border-gray-150 rounded-2xl p-5 shadow-sm hover:shadow-md transition block"
+                        >
+                          <div className="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center mb-4 transition-transform group-hover:scale-105">
                             <Phone className="w-5 h-5" />
                           </div>
                           <h4 className="text-[14px] font-bold text-gray-900 mb-1">Call Support</h4>
                           <p className="text-[11px] text-gray-500 mb-4">10 AM - 7 PM, all days</p>
-                          <button className="text-primary text-[12px] font-bold flex items-center gap-1 hover:text-[#0f2d4a]">
+                          <span className="text-primary text-[12px] font-bold flex items-center gap-1 group-hover:text-[#0f2d4a]">
                             +91 9677391108 <span>&rarr;</span>
-                          </button>
-                        </div>
+                          </span>
+                        </a>
 
                         {/* Email Support */}
-                        <div className="bg-white border border-gray-150 rounded-2xl p-5 shadow-sm hover:shadow-md transition">
-                          <div className="w-10 h-10 rounded-xl bg-[#d49a46] text-white flex items-center justify-center mb-4">
+                        <a
+                          href="mailto:support@astroved.com"
+                          className="group bg-white border border-gray-150 rounded-2xl p-5 shadow-sm hover:shadow-md transition block"
+                        >
+                          <div className="w-10 h-10 rounded-xl bg-[#d49a46] text-white flex items-center justify-center mb-4 transition-transform group-hover:scale-105">
                             <Mail className="w-5 h-5" />
                           </div>
                           <h4 className="text-[14px] font-bold text-gray-900 mb-1">Email Support</h4>
                           <p className="text-[11px] text-gray-500 mb-4">Response within 24 hours</p>
-                          <button className="text-primary text-[12px] font-bold flex items-center gap-1 hover:text-[#0f2d4a]">
+                          <span className="text-primary text-[12px] font-bold flex items-center gap-1 group-hover:text-[#0f2d4a]">
                             support@astroved.com <span>&rarr;</span>
-                          </button>
-                        </div>
+                          </span>
+                        </a>
                       </div>
 
                       {/* Frequently Asked */}
