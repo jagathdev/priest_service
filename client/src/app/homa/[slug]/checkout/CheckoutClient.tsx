@@ -24,7 +24,7 @@ export default function CheckoutClient({ homa }: { homa: any }) {
 
   const baseFee = selectedPackage?.priceINR || selectedPackage?.price || 1251;
   const convenienceFee = 25; // Or Free based on logic
-  const panditFee = 150; // Or Free
+  const panditFee = 500; // Or Free
   const photoFee = 500; // Or Free
   // For the design, they are marked as 'Free' with strikethrough prices.
   const total = baseFee;
