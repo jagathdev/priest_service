@@ -8,6 +8,15 @@ const participantSchema = new mongoose.Schema(
             required: true,
             trim: true,
         },
+        gotra: {
+            type: String,
+            default: "",
+            trim: true,
+        },
+        doesNotKnowGotra: {
+            type: Boolean,
+            default: false,
+        },
     },
     {
         _id: false,

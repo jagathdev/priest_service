@@ -12,7 +12,7 @@ import { checkAuthStatus } from "@/lib/authCheck";
 import { useUser } from "@/contexts/UserContext";
 import { apiClient, getAuthToken } from "@/services/api";
 import { getStartingPriceINR } from "@/lib/pricing";
-import { ArrowLeft, CheckCircle, CreditCard, QrCode, Calendar, Lock, Check } from "lucide-react";
+import { ArrowLeft, CreditCard, QrCode, Calendar, Lock, Check } from "lucide-react";
 
 interface RazorpayResponse {
   razorpay_order_id: string;
@@ -27,6 +27,12 @@ interface RazorpayInstance {
 
 interface CustomWindow extends Window {
   Razorpay: new (options: Record<string, unknown>) => RazorpayInstance;
+}
+
+interface ParticipantItem {
+  name: string;
+  gotra: string;
+  dontKnowGotra: boolean;
 }
 
 function SankalpContent() {
@@ -52,7 +58,10 @@ function SankalpContent() {
     gotra: "",
     dontKnowGotra: false,
     wish: "",
-    participants: ["", ""],
+    participants: [
+      { name: "", gotra: "", dontKnowGotra: false },
+      { name: "", gotra: "", dontKnowGotra: false }
+    ] as ParticipantItem[],
   });
   const [showErrors, setShowErrors] = useState(false);
   const [step, setStep] = useState(1);
@@ -105,8 +114,10 @@ function SankalpContent() {
       setFormData((prev) => {
         const nextWhatsapp = (whatsappPhone || prev.whatsapp || "").replace(/\D/g, "").slice(0, 10);
         const nextParticipants = [...prev.participants];
-        if (!nextParticipants[0]?.trim() && name) {
-          nextParticipants[0] = name;
+        if (nextParticipants[0] && !nextParticipants[0].name.trim() && name) {
+          nextParticipants[0] = { ...nextParticipants[0], name };
+        } else if (!nextParticipants[0] && name) {
+          nextParticipants[0] = { name, gotra: "", dontKnowGotra: false };
         }
         return {
           ...prev,
@@ -250,8 +261,15 @@ function SankalpContent() {
   useEffect(() => {
     setFormData(prev => {
       // Only set default if user hasn't typed anything yet
-      if (prev.participants.every(p => !p) && prev.participants.length !== defaultParticipantCount) {
-        return { ...prev, participants: Array(defaultParticipantCount).fill("") };
+      if (prev.participants.every(p => !p.name.trim() && !p.gotra.trim()) && prev.participants.length !== defaultParticipantCount) {
+        return {
+          ...prev,
+          participants: Array.from({ length: defaultParticipantCount }, () => ({
+            name: "",
+            gotra: "",
+            dontKnowGotra: false
+          }))
+        };
       }
       return prev;
     });
@@ -269,7 +287,10 @@ function SankalpContent() {
   const finalPrice = basePrice + extraParticipantFee + offeringsTotal;
 
   const isPhoneValid = /^[6-9]\d{9}$/.test(formData.whatsapp.trim());
-  const areParticipantsValid = formData.participants.length > 0 && formData.participants.every(p => p.trim() && /^[a-zA-Z\s]+$/.test(p.trim()));
+  const areParticipantsValid = formData.participants.length > 0 && formData.participants.every(p => {
+    const isNameOk = p.name.trim().length > 0 && /^[a-zA-Z\s]+$/.test(p.name.trim());
+    return isNameOk;
+  });
 
   const handleProceedToStep2 = async () => {
     setShowErrors(true);
@@ -286,7 +307,7 @@ function SankalpContent() {
     const uId = user?.id || user?._id;
     const token = getAuthToken();
     if (uId && token) {
-      const nameToSave = formData.participants[0]?.trim() || user?.name || "Devotee";
+      const nameToSave = formData.participants[0]?.name.trim() || user?.name || "Devotee";
       apiClient('/api/users/updateProfile', {
         method: "PUT",
         body: JSON.stringify({
@@ -315,7 +336,7 @@ function SankalpContent() {
     try {
       const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
 
-      const userName = formData.participants[0]?.trim() || user?.name || "Devotee";
+      const userName = formData.participants[0]?.name?.trim() || user?.name || "Devotee";
       const userPhone = formData.whatsapp || user?.whatsapp || user?.mobileNumber || user?.phone || "";
       const mongoUserId = user?._id || user?.id || user?.customerId || null;
       const userEmail = user?.email || "";
@@ -356,9 +377,15 @@ function SankalpContent() {
         itemName: itemName,
         mobileNumber: originalUserPhone,
         whatsappNumber: formattedWa,
-        participants: formData.participants.filter((p: string) => p.trim()).map((p: string) => ({ name: p.trim() })),
-        gotra: formData.dontKnowGotra ? "" : formData.gotra.trim(),
-        doesNotKnowGotra: formData.dontKnowGotra,
+        participants: formData.participants
+          .filter((p) => p.name.trim())
+          .map((p) => ({
+            name: p.name.trim(),
+            gotra: p.dontKnowGotra ? "" : p.gotra.trim(),
+            doesNotKnowGotra: !!p.dontKnowGotra
+          })),
+        gotra: formData.participants[0]?.dontKnowGotra ? "" : (formData.participants[0]?.gotra.trim() || formData.gotra.trim()),
+        doesNotKnowGotra: formData.participants[0]?.dontKnowGotra || formData.dontKnowGotra,
         wish: formData.wish,
         promoCode: appliedPromo?.promoCode || "",
         promoCodeId: appliedPromo?.promoId || null,
@@ -635,8 +662,8 @@ function SankalpContent() {
                         Your WhatsApp Number
                         <i className="fa-brands fa-whatsapp text-base text-[#25D366]"></i>
                       </label>
-                      <div className={`border rounded-xl flex items-center px-4 py-3 transition shadow-sm ${showErrors && !isPhoneValid ? "border-red-400 focus-within:border-red-400 bg-red-50/20" : "border-stone-200 focus-within:border-[#14395C] bg-white"}`}>
-                        <div className="flex items-center gap-2 pr-3 border-r border-stone-200 mr-3">
+                      <div className={`border rounded-xl flex items-center px-4 py-3 transition shadow-sm ${showErrors && !isPhoneValid ? "border-red-400 focus-within:border-red-400 bg-red-50/20" : "border-stone-600 focus-within:border-[#14395C] bg-white"}`}>
+                        <div className="flex items-center gap-2 pr-3 border-r border-stone-600 mr-3">
                           <span className="text-[13px] font-semibold text-[#1c2c5c]">IN</span>
                           <span className="text-[13px] font-extrabold text-stone-900">+91</span>
                         </div>
@@ -654,8 +681,11 @@ function SankalpContent() {
                           placeholder="9566777645"
                           className="w-full text-sm font-extrabold text-stone-900 outline-none bg-transparent"
                         />
-                        <div className={isPhoneValid ? "text-[#0084ff]" : "text-stone-300"}>
-                          <CheckCircle className="w-5 h-5 fill-current" />
+                        <div className="shrink-0 flex items-center justify-center pl-2">
+                          <div className={`w-5 h-5 rounded-full flex items-center justify-center transition-colors ${isPhoneValid ? "bg-[#0084ff] text-white" : "border-2 border-stone-600 text-transparent"
+                            }`}>
+                            <Check className="w-3.5 h-3.5 stroke-[3]" />
+                          </div>
                         </div>
                       </div>
                       {showErrors && !isPhoneValid && (
@@ -670,91 +700,139 @@ function SankalpContent() {
                       </p>
                     </div>
 
-                    {/* Devotee Names */}
-                    <div>
-                      <label className="block text-stone-900 font-bold text-sm mb-3">
-                        Provide participant names for Puja
-                      </label>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {formData.participants.map((p, idx) => {
-                          const isNameEmpty = !p.trim();
-                          const isNameValidLetters = /^[a-zA-Z\s]+$/.test(p.trim());
-                          const hasNameError = showErrors && (isNameEmpty || !isNameValidLetters);
+                    {/* Devotees List */}
+                    <div className="space-y-4">
+                      {formData.participants.map((p, idx) => {
+                        const isNameEmpty = !p.name.trim();
+                        const isNameValidLetters = /^[a-zA-Z\s]+$/.test(p.name.trim());
+                        const hasNameError = showErrors && (isNameEmpty || !isNameValidLetters);
 
-                          return (
-                            <div key={idx}>
-                              <input
-                                type="text"
-                                value={p}
-                                onChange={(e) => {
-                                  // Allow letters and spaces only
-                                  const sanitized = e.target.value.replace(/[^a-zA-Z\s]/g, "");
-                                  const newP = [...formData.participants];
-                                  newP[idx] = sanitized;
-                                  setFormData({ ...formData, participants: newP });
-                                }}
-                                placeholder={`Participant Name ${idx + 1}`}
-                                className={`w-full border rounded-xl px-4 py-3 text-sm font-medium outline-none transition ${hasNameError
-                                  ? "border-red-400 bg-red-50/20"
-                                  : "border-stone-200 focus:border-[#14395C] bg-white"
-                                  }`}
-                              />
-                              {hasNameError && (
-                                <p className="text-[10px] sm:text-[11px] text-red-500 mt-1.5 font-semibold">
-                                  {isNameEmpty ? "Please provide a name." : "Participant name must contain characters only."}
-                                </p>
+                        return (
+                          <div
+                            key={idx}
+                            className="bg-white rounded-2xl border border-stone-200 p-4 sm:p-5 shadow-xs transition-shadow hover:shadow-sm"
+                          >
+                            {/* Card Header with Participant Badge */}
+                            <div className="flex items-center justify-between mb-4">
+                              <div className="flex items-center gap-2.5">
+                                <span className="w-6 h-6 rounded-full bg-stone-100 border border-stone-400 text-stone-700 text-xs font-bold flex items-center justify-center">
+                                  {idx + 1}
+                                </span>
+                                <span className="text-sm font-bold text-stone-800">
+                                  Participant {idx + 1}
+                                </span>
+                              </div>
+                              {formData.participants.length > defaultParticipantCount && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const nextP = formData.participants.filter((_, pIdx) => pIdx !== idx);
+                                    setFormData({ ...formData, participants: nextP });
+                                  }}
+                                  className="text-xs font-semibold text-red-400 hover:text-red-500 transition-colors"
+                                >
+                                  Remove
+                                </button>
                               )}
                             </div>
-                          );
-                        })}
-                      </div>
-                      <div className="mt-4 flex items-center gap-3">
+
+                            {/* Participant Inputs Grid: Name & Gotra */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              {/* Participant Name */}
+                              <div>
+                                <label className="block text-stone-800 font-semibold text-xs mb-2">
+                                  Participant Name <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                  type="text"
+                                  value={p.name}
+                                  onChange={(e) => {
+                                    const sanitized = e.target.value.replace(/[^a-zA-Z\s]/g, "");
+                                    const newP = [...formData.participants];
+                                    newP[idx] = { ...newP[idx], name: sanitized };
+                                    setFormData({ ...formData, participants: newP });
+                                  }}
+                                  placeholder="Enter devotee name"
+                                  className={`w-full border rounded-xl px-4 py-2.5 text-sm font-medium outline-none transition ${hasNameError
+                                    ? "border-red-400 bg-red-50/20"
+                                    : "border-stone-600 focus:border-[#14395C] bg-white"
+                                    }`}
+                                />
+                                {hasNameError && (
+                                  <p className="text-[10px] sm:text-[11px] text-red-500 mt-1.5 font-semibold">
+                                    {isNameEmpty ? "Please provide a name." : "Participant name must contain characters only."}
+                                  </p>
+                                )}
+                              </div>
+
+                              {/* Participant Gotra */}
+                              <div>
+                                <label className="block text-stone-800 font-semibold text-xs mb-2">
+                                  Gotra
+                                </label>
+                                <input
+                                  type="text"
+                                  disabled={p.dontKnowGotra}
+                                  value={p.dontKnowGotra ? "" : p.gotra}
+                                  onChange={(e) => {
+                                    const newP = [...formData.participants];
+                                    newP[idx] = { ...newP[idx], gotra: e.target.value };
+                                    setFormData({ ...formData, participants: newP });
+                                  }}
+                                  placeholder="Enter gotra (e.g. Kashyapa)"
+                                  className={`w-full border rounded-xl px-4 py-2.5 text-sm font-medium outline-none transition ${p.dontKnowGotra
+                                    ? "bg-[#f4f2ee] text-stone-500 cursor-not-allowed border-stone-400"
+                                    : "border-stone-600 focus:border-[#14395C] bg-white"
+                                    }`}
+                                />
+                                <label className="flex items-center gap-2 mt-2.5 cursor-pointer select-none">
+                                  <input
+                                    type="checkbox"
+                                    checked={p.dontKnowGotra}
+                                    onChange={(e) => {
+                                      const checked = e.target.checked;
+                                      const newP = [...formData.participants];
+                                      newP[idx] = {
+                                        ...newP[idx],
+                                        dontKnowGotra: checked,
+                                        gotra: checked ? "" : newP[idx].gotra
+                                      };
+                                      setFormData({ ...formData, participants: newP });
+                                    }}
+                                    className="w-4 h-4 rounded border-stone-300 text-[#14395C] focus:ring-[#14395C]"
+                                  />
+                                  <span className="text-xs font-medium text-stone-600">
+                                    I do not know my gotra
+                                  </span>
+                                </label>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+
+                      {/* Add Participant Button */}
+                      <div className="pt-1">
                         <button
-                          onClick={() => setFormData({ ...formData, participants: [...formData.participants, ""] })}
-                          className="text-sm font-bold text-[#14395C] bg-white border border-dashed border-[#14395C] rounded-full px-5 py-2 flex items-center gap-1.5 hover:bg-[#14395C]/5 transition-colors"
+                          type="button"
+                          onClick={() =>
+                            setFormData({
+                              ...formData,
+                              participants: [
+                                ...formData.participants,
+                                { name: "", gotra: "", dontKnowGotra: false }
+                              ]
+                            })
+                          }
+                          className="text-sm font-bold text-[#14395C] bg-white border border-dashed border-[#14395C] rounded-full px-5 py-2.5 flex items-center gap-1.5 hover:bg-[#14395C]/5 transition-colors shadow-2xs"
                         >
-                          <span>+ Add 1 more participant</span>
+                          <span>+ Add participant</span>
                           <span className="font-extrabold">+₹300</span>
                         </button>
-                        {formData.participants.length > defaultParticipantCount && (
-                          <button
-                            onClick={() => setFormData({ ...formData, participants: formData.participants.slice(0, -1) })}
-                            className="text-sm font-bold text-stone-600 bg-white border border-stone-300 rounded-full px-5 py-2 flex items-center hover:bg-stone-50 transition-colors"
-                          >
-                            – Remove
-                          </button>
-                        )}
+                        <p className="text-[11px] text-stone-500 mt-2.5 font-medium">
+                          These names will be included in the sacred sankalpam during the puja.
+                        </p>
                       </div>
-                      <p className="text-[11px] text-stone-500 mt-3 font-medium">
-                        This name will be included in the sacred sankalpam during the puja.
-                      </p>
-                    </div>
-
-                    {/* Gotra */}
-                    <div>
-                      <label className="block text-stone-900 font-bold text-sm mb-3">
-                        Add your Gotra <span className="text-stone-400 font-normal text-xs ml-1"></span>
-                      </label>
-                      <input
-                        type="text"
-                        disabled={formData.dontKnowGotra}
-                        value={formData.dontKnowGotra ? "" : formData.gotra}
-                        onChange={(e) => setFormData({ ...formData, gotra: e.target.value })}
-                        placeholder="Gotra of Puja performer (e.g. Kashyapa, Bharadwaja)"
-                        className={`w-full border border-stone-200 rounded-xl px-4 py-3 text-sm font-medium outline-none focus:border-[#14395C] shadow-sm ${formData.dontKnowGotra ? "bg-[#f4f2ee] text-stone-500 cursor-not-allowed" : "bg-white"
-                          }`}
-                      />
-                      <label className="flex items-center gap-2 mt-3 cursor-pointer select-none pl-1">
-                        <input
-                          type="checkbox"
-                          checked={formData.dontKnowGotra}
-                          onChange={(e) => setFormData({ ...formData, dontKnowGotra: e.target.checked })}
-                          className="w-4 h-4 rounded border-stone-300 text-[#14395C] focus:ring-[#14395C]"
-                        />
-                        <span className="text-xs font-medium text-stone-700">
-                          I do not know my gotra
-                        </span>
-                      </label>
                     </div>
 
                     {/* Prayer Wish */}
@@ -766,7 +844,7 @@ function SankalpContent() {
                         rows={4}
                         value={formData.wish}
                         onChange={(e) => setFormData({ ...formData, wish: e.target.value })}
-                        className="w-full border border-stone-200 rounded-xl p-4 text-xs font-medium text-stone-700 outline-none focus:border-[#14395C] resize-none shadow-sm"
+                        className="w-full border border-stone-600 rounded-xl p-4 text-xs font-medium text-stone-700 outline-none focus:border-[#14395C] resize-none shadow-sm"
                         placeholder="e.g. FAMILY WELL BEING"
                       />
                     </div>
