@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from "react";
+import Link from "next/link";
 import { ChevronDownIcon, CheckIcon } from "@heroicons/react/24/outline";
 
 const STATUS_CONFIG: Record<
@@ -412,16 +413,23 @@ export default function AdminOrdersPage() {
               return (
                 <div key={ord._id} className="p-4 space-y-4">
                   <div className="flex justify-between items-center">
-                    <span className="font-mono font-bold text-gray-900 text-xs">{ord.orderNumber}</span>
+                    <Link
+                      href={`/admin/orders/${ord._id}`}
+                      className="font-mono font-bold text-emerald-700 hover:underline text-xs"
+                    >
+                      {ord.orderNumber}
+                    </Link>
                     <StatusDropdown
                       currentStatus={statusText}
                       onChange={(newStatus) => handleStatusChange(ord._id, newStatus)}
                     />
                   </div>
-                  <div>
-                    <span className="font-bold text-gray-900 block text-sm">{serviceName}</span>
+                  <Link href={`/admin/orders/${ord._id}`} className="block group">
+                    <span className="font-bold text-gray-900 block text-sm group-hover:text-emerald-700 transition-colors">
+                      {serviceName}
+                    </span>
                     <span className="text-[10px] uppercase font-bold text-success">PUJA</span>
-                  </div>
+                  </Link>
                   <div className="flex justify-between items-end">
                     <div>
                       <span className="font-bold text-gray-800 block text-sm">{devoteeName}</span>
@@ -470,10 +478,21 @@ export default function AdminOrdersPage() {
                   const devoteeName = ord.devoteeName || "Devotee";
                   return (
                     <tr key={ord._id} className="hover:bg-gray-50/80 transition">
-                      <td className="px-6 py-4 font-mono font-bold text-gray-900">{ord.orderNumber}</td>
+                      <td className="px-6 py-4 font-mono font-bold text-gray-900">
+                        <Link
+                          href={`/admin/orders/${ord._id}`}
+                          className="text-emerald-700 hover:text-emerald-900 hover:underline flex items-center gap-1"
+                        >
+                          {ord.orderNumber}
+                        </Link>
+                      </td>
                       <td className="px-6 py-4">
-                        <span className="font-bold text-gray-900 block">{serviceName}</span>
-                        <span className="text-[10px] uppercase font-bold text-success">PUJA</span>
+                        <Link href={`/admin/orders/${ord._id}`} className="group block">
+                          <span className="font-bold text-gray-900 block group-hover:text-emerald-700 transition-colors">
+                            {serviceName}
+                          </span>
+                          <span className="text-[10px] uppercase font-bold text-success">PUJA</span>
+                        </Link>
                       </td>
                       <td className="px-6 py-4">
                         <span className="font-bold text-gray-800 block">{devoteeName}</span>

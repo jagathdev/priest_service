@@ -419,19 +419,29 @@ export default function BookingsTab() {
               </div>
 
               {/* Step 5: Video Delivered */}
-              <div className={`relative flex items-center justify-end md:justify-between md:odd:flex-row-reverse group ${selectedOrder.orderStatus === 'completed' ? 'is-active' : ''}`}>
-                <div className={`absolute left-0 md:left-1/2 md:-translate-x-1/2 flex items-center justify-center w-8 h-8 rounded-full border-4 border-white shadow shrink-0 z-10 ${selectedOrder.orderStatus === 'completed' ? 'bg-primary text-white' : 'bg-white'}`}>
-                  {selectedOrder.orderStatus === 'completed' ? (
-                    <Check className="w-3 h-3" strokeWidth={3} />
+              <div className={`relative flex items-center justify-end md:justify-between md:odd:flex-row-reverse group ${selectedOrder.orderStatus === 'completed' || selectedOrder.videoLink ? 'is-active' : ''}`}>
+                <div className={`absolute left-0 md:left-1/2 md:-translate-x-1/2 flex items-center justify-center w-8 h-8 rounded-full border-4 border-white shadow shrink-0 z-10 ${selectedOrder.orderStatus === 'completed' || selectedOrder.videoLink ? 'bg-primary text-white' : 'bg-white'}`}>
+                  {selectedOrder.orderStatus === 'completed' || selectedOrder.videoLink ? (
+                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                   ) : (
                     <div className="w-2.5 h-2.5 rounded-full bg-stone-300"></div>
                   )}
                 </div>
-                <div className={`w-[calc(100%-2.5rem)] sm:w-[calc(100%-3rem)] md:w-[calc(50%-2.5rem)] p-3 sm:p-4 border border-stone-100 rounded-xl ${selectedOrder.orderStatus === 'completed' ? 'bg-stone-50' : 'bg-white opacity-60'}`}>
+                <div className={`w-[calc(100%-2.5rem)] sm:w-[calc(100%-3rem)] md:w-[calc(50%-2.5rem)] p-3 sm:p-4 border border-stone-100 rounded-xl ${selectedOrder.orderStatus === 'completed' || selectedOrder.videoLink ? 'bg-stone-50' : 'bg-white opacity-60'}`}>
                   <div className="text-[10px] font-extrabold text-stone-400 uppercase tracking-wider mb-0.5 sm:mb-1">Step 5</div>
                   <h5 className="font-bold text-stone-800 text-xs sm:text-sm">Video Delivered</h5>
-                  {selectedOrder.videoLink && (selectedOrder.orderStatus === 'performed' || selectedOrder.orderStatus === 'completed') ? (
-                    <a href={selectedOrder.videoLink} target="_blank" rel="noreferrer" className="text-xs text-primary font-bold mt-1 inline-block underline">Watch Recording</a>
+                  {selectedOrder.videoLink ? (
+                    <div className="mt-2">
+                      <a
+                        href={selectedOrder.videoLink}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#14395C] text-white hover:bg-[#0e2740] rounded-lg text-xs font-bold shadow-xs transition"
+                      >
+                        <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                        <span>Watch Puja Video</span>
+                      </a>
+                    </div>
                   ) : (
                     <p className="text-[11px] sm:text-xs text-stone-500 font-medium mt-0.5 sm:mt-1">Available after the puja</p>
                   )}
@@ -691,7 +701,18 @@ export default function BookingsTab() {
                           {/* Step 3: Puja Video */}
                           <div className="flex-1 min-w-0 flex flex-col items-center">
                             <div className="h-10 sm:h-12 flex items-center justify-center mb-1.5 sm:mb-2 z-10">
-                              {isCompleted ? (
+                              {order.videoLink ? (
+                                <a
+                                  href={order.videoLink}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-full bg-[#14395C] hover:bg-[#0e2740] text-white font-bold text-[10px] sm:text-[12px] flex items-center gap-1 sm:gap-1.5 shadow-xs whitespace-nowrap transition cursor-pointer"
+                                >
+                                  <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                                  <span>Watch Video</span>
+                                </a>
+                              ) : isCompleted ? (
                                 <div className="px-2 py-1.5 sm:px-4 sm:py-2 rounded-full bg-primary text-white font-bold text-[10px] sm:text-[12px] flex items-center gap-1 sm:gap-1.5 shadow-xs whitespace-nowrap">
                                   <Play className="w-3 h-3 sm:w-3.5 sm:h-3.5 fill-current" />
                                   <span>Video Delivered</span>
@@ -703,10 +724,14 @@ export default function BookingsTab() {
                                 </div>
                               )}
                             </div>
-                            <p className={`text-[9px] sm:text-[11px] text-center leading-tight mt-0.5 ${isCompleted ? 'font-bold text-primary' : 'font-medium text-[#8c7b74]'}`}>
-                              {isCompleted
+                            <p className={`text-[9px] sm:text-[11px] text-center leading-tight mt-0.5 ${order.videoLink || isCompleted ? 'font-bold text-primary' : 'font-medium text-[#8c7b74]'}`}>
+                              {order.videoLink
                                 ? "Recording is ready"
-                                : <>Available only after<br className="hidden sm:inline" /> puja performed</>}
+                                : isCompleted
+                                  ? "Recording is ready"
+                                  : isCompleted
+                                    ? "Recording is ready"
+                                    : <>Available only after<br className="hidden sm:inline" /> puja performed</>}
                             </p>
                           </div>
                         </div>

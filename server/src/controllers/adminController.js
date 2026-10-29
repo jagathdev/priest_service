@@ -1,6 +1,7 @@
 import Puja from "../models/pujaModel.js";
 import Homa from "../models/homaModel.js";
 import Order from "../models/Order.js";
+import User from "../models/User.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import Admin from "../models/Admin.js";
@@ -153,6 +154,38 @@ export const updateAdminOrder = async (req, res) => {
   }
 };
 
+export const getAdminOrderById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    let order;
+
+    if (id.startsWith("PS-")) {
+      order = await Order.findOne({ orderNumber: id }).populate("customer", "name email mobileNumber whatsappNumber addresses");
+    } else {
+      order = await Order.findById(id).populate("customer", "name email mobileNumber whatsappNumber addresses");
+    }
+
+    if (!order) {
+      return res.status(404).json({ success: false, message: "Order not found" });
+    }
+
+    const serviceName = order.itemName || order.pooja?.title || order.pooja?.name || order.pooja || "Sacred Ritual";
+    const devoteeName = order.customerName || order.participants?.[0]?.name || "Devotee";
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        ...order.toObject(),
+        serviceName,
+        devoteeName
+      }
+    });
+  } catch (error) {
+    console.error("Error fetching admin order details:", error);
+    return res.status(500).json({ success: false, message: "Failed to fetch order details" });
+  }
+};
+
 export const getAdminStats = async (req, res) => {
   try {
     const pujaCount = await Puja.countDocuments({ status: "active" });
@@ -262,5 +295,186 @@ export const bulkScheduleOrders = async (req, res) => {
   } catch (error) {
     console.error("Error bulk updating orders:", error);
     return res.status(500).json({ success: false, message: "Failed to bulk update orders" });
+  }
+};
+
+export const getAdminUsers = async (req, res) => {
+  try {
+    const { search, status, sort, fromDate, toDate, page = 1, limit = 10 } = req.query;
+
+    const query = { role: "user" };
+
+    if (search && search.trim()) {
+      const escaped = escapeRegex(search.trim());
+      const regex = new RegExp(escaped, "i");
+      query.$or = [{ name: regex }, { email: regex }, { mobileNumber: regex }, { whatsappNumber: regex }];
+    }
+
+    if (status && status !== "All") {
+      if (status.toLowerCase() === "active") {
+        query.isVerified = true;
+      } else if (status.toLowerCase() === "inactive") {
+        query.isVerified = false;
+      }
+    }
+
+    // Date range filter on user registration (createdAt)
+    if (fromDate || toDate) {
+      query.createdAt = {};
+      if (fromDate) {
+        const start = new Date(fromDate);
+        start.setHours(0, 0, 0, 0);
+        query.createdAt.$gte = start;
+      }
+      if (toDate) {
+        const end = new Date(toDate);
+        end.setHours(23, 59, 59, 999);
+        query.createdAt.$lte = end;
+      }
+    }
+
+    // Get all completed/confirmed orders aggregated by customer ID to calculate total amount spent
+    const spendAgg = await Order.aggregate([
+      {
+        $match: {
+          $or: [
+            { paymentStatus: "paid" },
+            { paymentStatus: "captured" },
+            { paymentStatus: "successful" },
+            { orderStatus: { $in: ["confirmed", "scheduled", "performed", "completed"] } }
+          ]
+        }
+      },
+      {
+        $group: {
+          _id: "$customer",
+          totalSpent: { $sum: { $ifNull: ["$pricing.total", 0] } },
+          ordersCount: { $sum: 1 }
+        }
+      }
+    ]);
+
+    const spendMap = new Map();
+    spendAgg.forEach((item) => {
+      if (item._id) {
+        spendMap.set(String(item._id), item.totalSpent);
+      }
+    });
+
+    const totalUsersCount = await User.countDocuments({ role: "user" });
+    const activeUsersCount = await User.countDocuments({ role: "user", isVerified: true });
+
+    let totalRevenueAllUsers = 0;
+    spendAgg.forEach((item) => {
+      totalRevenueAllUsers += item.totalSpent || 0;
+    });
+
+    let sortOption = { createdAt: -1 };
+    if (sort === "oldest") sortOption = { createdAt: 1 };
+    else if (sort === "name_asc") sortOption = { name: 1 };
+    else if (sort === "name_desc") sortOption = { name: -1 };
+
+    const totalFiltered = await User.countDocuments(query);
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const limitNum = Math.max(1, Math.min(100, parseInt(limit, 10) || 10));
+    const skip = (pageNum - 1) * limitNum;
+
+    const users = await User.find(query)
+      .sort(sortOption)
+      .skip(skip)
+      .limit(limitNum)
+      .select("-password")
+      .lean();
+
+    const formattedUsers = users.map((u) => {
+      const uId = String(u._id);
+      const totalSpent = spendMap.get(uId) || 0;
+      return {
+        _id: u._id,
+        name: u.name || "Devotee",
+        email: u.email || "N/A",
+        mobileNumber: u.mobileNumber || "N/A",
+        whatsappNumber: u.whatsappNumber || "",
+        totalAmountSpent: totalSpent,
+        isVerified: u.isVerified !== false,
+        status: u.isVerified !== false ? "Active" : "Inactive",
+        createdAt: u.createdAt,
+        addresses: u.addresses || []
+      };
+    });
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        users: formattedUsers,
+        pagination: {
+          total: totalFiltered,
+          page: pageNum,
+          limit: limitNum,
+          totalPages: Math.ceil(totalFiltered / limitNum) || 1
+        },
+        stats: {
+          totalUsers: totalUsersCount,
+          activeUsers: activeUsersCount,
+          totalRevenue: totalRevenueAllUsers
+        }
+      }
+    });
+  } catch (error) {
+    console.error("Error fetching admin users:", error);
+    return res.status(500).json({ success: false, message: "Failed to fetch users" });
+  }
+};
+
+export const updateAdminUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, email, mobileNumber, whatsappNumber, isVerified } = req.body;
+
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    if (name !== undefined) user.name = name.trim();
+    if (email !== undefined) user.email = email.trim().toLowerCase();
+    if (mobileNumber !== undefined) user.mobileNumber = mobileNumber.trim();
+    if (whatsappNumber !== undefined) user.whatsappNumber = whatsappNumber.trim();
+    if (isVerified !== undefined) user.isVerified = Boolean(isVerified);
+
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "User updated successfully",
+      data: user
+    });
+  } catch (error) {
+    console.error("Error updating user:", error);
+    return res.status(500).json({ success: false, message: "Failed to update user" });
+  }
+};
+
+export const deleteAdminUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    if (user.role === "admin") {
+      return res.status(403).json({ success: false, message: "Admin users cannot be deleted" });
+    }
+
+    await User.findByIdAndDelete(id);
+
+    return res.status(200).json({
+      success: true,
+      message: "User deleted successfully"
+    });
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    return res.status(500).json({ success: false, message: "Failed to delete user" });
   }
 };

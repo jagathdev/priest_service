@@ -13,6 +13,7 @@ import {
   XMarkIcon,
   PhotoIcon,
   TagIcon,
+  UserGroupIcon,
 } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -24,6 +25,7 @@ const menuItems = [
   { name: "Homas", href: "/admin/homas", icon: FireIcon },
   { name: "Orders & Bookings", href: "/admin/orders", icon: ShoppingBagIcon },
   { name: "Promo Codes", href: "/admin/promo-codes", icon: TagIcon },
+  { name: "Users", href: "/admin/users", icon: UserGroupIcon },
   // { name: "Payments & Revenue", href: "/admin/payments", icon: CreditCardIcon },
 ];
 
