@@ -66,7 +66,7 @@ const orderSchema = new mongoose.Schema(
         },
         gotra: {
             type: String,
-            default: "Kashyapa",
+            default: "",
             trim: true,
         },
         doesNotKnowGotra: {
@@ -144,7 +144,7 @@ const orderSchema = new mongoose.Schema(
 
 orderSchema.index({ customer: 1, createdAt: -1 });
 
-orderSchema.pre('save', async function() {
+orderSchema.pre('save', async function () {
     if (this.isNew && !this.orderNumber) {
         const counter = await Counter.findByIdAndUpdate(
             { _id: 'orderNumber' },

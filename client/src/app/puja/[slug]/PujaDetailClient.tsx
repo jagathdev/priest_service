@@ -14,16 +14,19 @@ import ShareModal from "@/components/common/ShareModal";
 import GalleryLightboxModal from "@/components/common/GalleryLightboxModal";
 import Image from "next/image";
 import { getStartingPriceINR } from "@/lib/pricing";
-import { 
-  ChevronLeft, 
-  ChevronRight, 
-  ZoomIn, 
-  Share2, 
-  Check, 
-  MessageCircle, 
-  Phone, 
-  Sparkles, 
-  ArrowRight 
+import {
+  ChevronLeft,
+  ChevronRight,
+  ZoomIn,
+  Share2,
+  Check,
+  Phone,
+  Sparkles,
+  ArrowRight,
+  Video,
+  ShieldCheck,
+  Landmark,
+  Scroll,
 } from "lucide-react";
 
 interface PujaPackage {
@@ -69,6 +72,7 @@ interface Puja {
   strengthFor?: string;
   ritualSummary?: string;
   date?: string;
+  time?: string;
   eventDateTime?: string;
   showTimer?: boolean;
   buttonText?: string;
@@ -901,7 +905,7 @@ export default function PujaDetailClient({
               <PujaCountdownCard
                 templeVenue={templeVenueText || "Sacred Temple Venue"}
                 location={templeLocationText !== templeVenueText ? templeLocationText : puja.location || "India"}
-                dateText={puja.date || "Saturday, 10 October"}
+                dateText={`${puja.date || "Saturday, 10 October"}${puja.time ? " at " + puja.time : ""}`}
                 occasionText={puja.subtitle || (puja as any).occasion || (puja as any).dateOccasion || puja.badge || (puja as any).tithis || "Mahalaya Amavasya"}
                 eventDateTime={puja.eventDateTime}
                 showTimer={puja.showTimer}
@@ -994,7 +998,7 @@ export default function PujaDetailClient({
                   rel="noopener noreferrer"
                   className="w-full sm:flex-1 inline-flex items-center justify-center gap-2 bg-white border border-[#CBD5E1] text-[#14395C] hover:bg-slate-50 font-extrabold text-xs sm:text-sm py-2.5 px-4 rounded-full transition-colors shadow-xs"
                 >
-                  <MessageCircle className="w-5 h-5 shrink-0 text-[#25D366]" />
+                  <i className="fa-brands fa-whatsapp text-lg text-[#25D366]"></i>
                   <span>Book via WhatsApp</span>
                 </a>
                 <a
@@ -1015,12 +1019,19 @@ export default function PujaDetailClient({
       {/* ── 2. Trust Strip Badges ── */}
       {(() => {
         const defaultBadges = [
-          { icon: "🎥", text: "Puja Video Delivered Within 48 hours" },
-          { icon: "✓", text: "Verified & Experienced Pandits" },
-          { icon: "🏛", text: "Puja Performed in Sacred Temples" },
-          { icon: "📜", text: "100% Authentic Vedic Rituals" },
+          { icon: <Video className="w-3.5 h-3.5" />, text: "Puja Video Delivered Within 48 hours" },
+          { icon: <ShieldCheck className="w-3.5 h-3.5" />, text: "Verified & Experienced Pandits" },
+          { icon: <Landmark className="w-3.5 h-3.5" />, text: "Puja Performed in Sacred Temples" },
+          { icon: <Scroll className="w-3.5 h-3.5" />, text: "100% Authentic Vedic Rituals" },
         ];
-        const icons = ["🎥", "✓", "🏛", "📜", "⭐", "✨"];
+        const icons = [
+          <Video key="v" className="w-3.5 h-3.5" />,
+          <ShieldCheck key="s" className="w-3.5 h-3.5" />,
+          <Landmark key="l" className="w-3.5 h-3.5" />,
+          <Scroll key="sc" className="w-3.5 h-3.5" />,
+          <Sparkles key="sp" className="w-3.5 h-3.5" />,
+          <Check key="c" className="w-3.5 h-3.5" />
+        ];
         const badgeList = (Array.isArray(puja.trustBadges) && puja.trustBadges.length > 0)
           ? puja.trustBadges.map((text, i) => ({ icon: icons[i % icons.length], text }))
           : defaultBadges;
@@ -1036,14 +1047,14 @@ export default function PujaDetailClient({
                 <div className="flex shrink-0 items-center gap-8 sm:gap-12 pr-8 sm:pr-12 text-xs sm:text-sm font-bold text-[#14395C]">
                   {trackBadges.map((b, idx) => (
                     <span key={`t1-${idx}`} className="flex items-center gap-2 shrink-0 whitespace-nowrap">
-                      <span className="bg-white text-[#14395C] shadow-2xs rounded-full p-1">{b.icon}</span> {b.text}
+                      <span className="bg-white text-[#14395C] shadow-2xs rounded-full p-1.5 flex items-center justify-center shrink-0">{b.icon}</span> {b.text}
                     </span>
                   ))}
                 </div>
                 <div className="flex shrink-0 items-center gap-8 sm:gap-12 pr-8 sm:pr-12 text-xs sm:text-sm font-bold text-[#14395C]" aria-hidden="true">
                   {trackBadges.map((b, idx) => (
                     <span key={`t2-${idx}`} className="flex items-center gap-2 shrink-0 whitespace-nowrap">
-                      <span className="bg-white text-[#14395C] shadow-2xs rounded-full p-1">{b.icon}</span> {b.text}
+                      <span className="bg-white text-[#14395C] shadow-2xs rounded-full p-1.5 flex items-center justify-center shrink-0">{b.icon}</span> {b.text}
                     </span>
                   ))}
                 </div>
@@ -1054,7 +1065,7 @@ export default function PujaDetailClient({
             <div className="badge-static-1440 hidden min-[1440px]:flex max-w-[1350px] mx-auto items-center justify-around gap-6 px-4 text-xs sm:text-sm font-bold text-[#14395C] whitespace-nowrap">
               {badgeList.map((b, idx) => (
                 <span key={idx} className="flex items-center gap-2">
-                  <span className="bg-white text-[#14395C] shadow-2xs rounded-full p-1">{b.icon}</span> {b.text}
+                  <span className="bg-white text-[#14395C] shadow-2xs rounded-full p-1.5 flex items-center justify-center shrink-0">{b.icon}</span> {b.text}
                 </span>
               ))}
             </div>
@@ -1192,7 +1203,7 @@ export default function PujaDetailClient({
               <div className="flex flex-row items-center justify-around gap-6 border-t border-[#f0e4d0] pt-6 text-xs text-stone-700">
                 <div>
                   <span className="text-stone-400 font-bold block mb-1 uppercase tracking-wider">Occasion</span>
-                  <span className="font-extrabold text-stone-900 text-sm sm:text-base">{puja.date || "Auspicious Tithis"}</span>
+                  <span className="font-extrabold text-stone-900 text-sm sm:text-base">{puja.date || "Auspicious Tithis"}{puja.time ? " at " + puja.time : ""}</span>
                 </div>
                 <div className="w-px h-8 bg-[#f0e4d0]" />
                 <div>
@@ -1442,11 +1453,11 @@ export default function PujaDetailClient({
 
             <div className="space-y-2.5 text-xs sm:text-sm text-stone-700 font-medium">
               <div className="flex items-start gap-2.5">
-                <span className="text-[#14395C] font-bold text-base shrink-0">✓</span>
+                <Check className="w-4 h-4 text-[#14395C] shrink-0 mt-0.5" strokeWidth={3} />
                 <span>Personalized Sankalpam performed with your Name, Gotra &amp; Wish</span>
               </div>
               <div className="flex items-start gap-2.5">
-                <span className="text-[#14395C] font-bold text-base shrink-0">✓</span>
+                <Check className="w-4 h-4 text-[#14395C] shrink-0 mt-0.5" strokeWidth={3} />
                 <span>Full Puja Video Recording delivered on WhatsApp within 48 hours</span>
               </div>
             </div>
@@ -1464,7 +1475,7 @@ export default function PujaDetailClient({
                   rel="noopener noreferrer"
                   className="w-full bg-[#14395C] hover:bg-[#0f2d4a] text-white font-extrabold text-xs sm:text-sm py-3 px-4 rounded-full transition-colors flex items-center justify-center gap-2 shadow-sm"
                 >
-                  <MessageCircle className="w-5 h-5 shrink-0 text-white" />
+                  <i className="fa-brands fa-whatsapp text-lg text-[#25D366]"></i>
                   <span>WhatsApp Agent</span>
                 </a>
               </div>

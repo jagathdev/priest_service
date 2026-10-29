@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useMemo, useState, useEffect } from "react";
-import { Mail, MessageCircle, X, Eye, EyeOff, Loader2 } from "lucide-react";
+import { Mail, X, Eye, EyeOff, Loader2 } from "lucide-react";
 import type { CountryOption } from "@/types/auth";
 const DEFAULT_COUNTRY: CountryOption = { name: "India", isoCode: "IN", dialCode: "91" };
 import { authService } from "@/services/auth.service";
@@ -242,7 +242,7 @@ export default function LoginMethods() {
               type="button"
               className="flex-1 flex items-center justify-center gap-2 rounded-lg py-2 text-sm font-semibold transition-all text-primary bg-white shadow-sm"
             >
-              <MessageCircle className="h-5 w-5" />
+              <i className="fa-brands fa-whatsapp text-lg text-[#25D366]"></i>
               WhatsApp OTP
             </button>
           ) : (

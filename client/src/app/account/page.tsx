@@ -38,7 +38,6 @@ import {
   BookOpen,
   Tag,
   Star,
-  MessageCircle,
   ArrowRight,
   Globe,
   Landmark,
@@ -1031,7 +1030,7 @@ function AccountPageContent() {
                   )}
 
                   {activeTab === 'bookings' && (
-                  <BookingsTab />
+                    <BookingsTab />
                   )}
 
                   {activeTab === 'subscriptions' && (
@@ -1643,7 +1642,7 @@ function AccountPageContent() {
                         {/* WhatsApp */}
                         <div className="bg-white border border-gray-150 rounded-2xl p-5 shadow-sm hover:shadow-md transition">
                           <div className="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center mb-4">
-                            <MessageCircle className="w-5 h-5" />
+                            <i className="fa-brands fa-whatsapp text-2xl text-[#25D366]"></i>
                           </div>
                           <h4 className="text-[14px] font-bold text-gray-900 mb-1">WhatsApp Support</h4>
                           <p className="text-[11px] text-gray-500 mb-4">Reply within minutes</p>
@@ -1824,7 +1823,7 @@ function AccountPageContent() {
                           </div>
                         </div>
 
-                        <label className="flex items-start gap-2 cursor-pointer mb-6">
+                        {/* <label className="flex items-start gap-2 cursor-pointer mb-6">
                           <input
                             type="checkbox"
                             checked={helpFormData.consent}
@@ -1832,7 +1831,7 @@ function AccountPageContent() {
                             className="mt-0.5 w-3.5 h-3.5 rounded border-gray-300 text-primary focus:ring-primary"
                           />
                           <span className="text-[11px] font-medium text-gray-600">I authorize astroved to send notifications via SMS / WhatsApp / email. <span className="text-red-500">*</span></span>
-                        </label>
+                        </label> */}
 
                         <button
                           onClick={handleHelpSubmit}

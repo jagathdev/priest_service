@@ -3,16 +3,17 @@ import React, { useEffect, useState, useCallback, useMemo } from "react";
 import Image from "next/image";
 import Navbar from "@/components/layout/Navbar";
 import { SparklesIcon } from "@heroicons/react/24/outline";
-import { 
-  X, 
-  Search, 
-  SlidersHorizontal, 
-  ArrowRight, 
-  Check, 
-  MapPin, 
-  Calendar, 
-  ChevronRight, 
-  Share2 
+import {
+  X,
+  Search,
+  SlidersHorizontal,
+  ArrowRight,
+  Check,
+  MapPin,
+  Calendar,
+  ChevronRight,
+  Share2,
+  Clock
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import WishlistButton from "@/components/common/WishlistButton";
@@ -29,6 +30,7 @@ interface Puja {
   buttonText: string;
   location?: string;
   date?: string;
+  time?: string;
   slug?: string;
   packages?: Array<{
     priceINR?: number | string;
@@ -613,10 +615,27 @@ export default function PujaClient({ initialPujas }: { initialPujas?: Puja[] }) 
                             <MapPin className="w-5 h-5 text-[#d95a2b] shrink-0" />
                             <span className="line-clamp-1">{puja.location}</span>
                           </div>
-                          <div className="flex items-center gap-2.5 text-[13px] font-medium text-gray-700">
-                            <Calendar className="w-5 h-5 text-[#d95a2b] shrink-0" />
-                            <span className="line-clamp-1">{puja.date}</span>
+                          <div className="flex items-start gap-2.5 text-[13px] font-medium text-gray-700">
+                            <Calendar className="w-5 h-5 text-[#d95a2b] shrink-0 mt-0.5" />
+                            <div className="flex flex-col min-w-0">
+                              <span className="font-bold text-gray-900 leading-snug">
+                                {puja.date}
+                              </span>
+                              {puja.subtitle && (
+                                <span className="text-gray-400 font-normal text-[11px] leading-tight truncate">
+                                  {puja.subtitle}
+                                </span>
+                              )}
+                            </div>
                           </div>
+                          {puja.time && (
+                            <div className="flex items-center gap-2.5 text-[13px] font-medium text-gray-700">
+                              <Clock className="w-5 h-5 text-[#d95a2b] shrink-0" />
+                              <span className="font-bold text-gray-900 leading-snug">
+                                {puja.time}
+                              </span>
+                            </div>
+                          )}
                         </div>
 
                         <div className="flex items-center justify-between mt-auto pt-2 border-t border-gray-100">

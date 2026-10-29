@@ -10,7 +10,6 @@ import {
   Home, 
   PlayCircle, 
   Calendar, 
-  MessageCircle 
 } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 
@@ -304,7 +303,7 @@ function SuccessContent() {
           </div>
 
           <p className="text-xs font-bold text-success flex items-center gap-1.5 mt-4">
-            <MessageCircle className="w-4 h-4" />
+            <i className="fa-brands fa-whatsapp text-sm text-[#25D366]"></i>
             A confirmation has been sent to your WhatsApp.
           </p>
         </div>

@@ -7,6 +7,7 @@ interface PujaCountdownCardProps {
   templeVenue?: string;
   location?: string;
   dateText?: string;
+  timeText?: string;
   occasionText?: string;
   eventDateTime?: string; // e.g. "2026-10-10T18:30" or ISO string or timestamp
   showTimer?: boolean;

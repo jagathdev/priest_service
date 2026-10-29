@@ -14,7 +14,7 @@ import {
   MapPin,
   Calendar,
   Share2,
-  MessageCircle,
+  Clock,
 } from "lucide-react";
 
 import HeroSection, { get1024BannerImage } from "@/components/home/HeroSection";
@@ -527,6 +527,8 @@ export default function DashboardClient({
                       templeVenue={venueVal}
                       location={locVal}
                       date={p.date}
+                      time={p.time}
+                      buttonText={p.buttonText}
                       dateOccasion={occasionVal}
                       price={priceVal}
                       slug={slugVal}
@@ -625,54 +627,6 @@ export default function DashboardClient({
         </div>
       </section>
 
-      {/* ── 5. Trust Badges Strip (Marquee below 1440px screen size) ── */}
-      <div className="w-full bg-[#f0f8f1] border-y border-green-100 py-6 sm:py-8 overflow-hidden">
-        {/* Continuous Marquee on all screens below 1440px */}
-        <div className="badge-marquee-below-1440 min-[1440px]:hidden overflow-hidden w-full relative">
-          <div className="flex animate-marquee">
-            <div className="flex shrink-0 items-center gap-8 sm:gap-12 pr-8 sm:pr-12">
-              {[
-                { icon: "🎥", text: "Puja Video Delivered Within 48 hours" },
-                { icon: "✓", text: "Verified & Experienced Pandits" },
-                { icon: "🏛", text: "Puja Performed in Sacred Temples" },
-                { icon: "📜", text: "100% Authentic Vedic Rituals" },
-                { icon: "🎥", text: "Puja Video Delivered Within 48 hours" },
-                { icon: "✓", text: "Verified & Experienced Pandits" },
-                { icon: "🏛", text: "Puja Performed in Sacred Temples" },
-                { icon: "📜", text: "100% Authentic Vedic Rituals" }
-              ].map((b, idx) => (
-                <div key={`d1-${idx}`} className="shrink-0">
-                  <Badge icon={b.icon} text={b.text} />
-                </div>
-              ))}
-            </div>
-            <div className="flex shrink-0 items-center gap-8 sm:gap-12 pr-8 sm:pr-12" aria-hidden="true">
-              {[
-                { icon: "🎥", text: "Puja Video Delivered Within 48 hours" },
-                { icon: "✓", text: "Verified & Experienced Pandits" },
-                { icon: "🏛", text: "Puja Performed in Sacred Temples" },
-                { icon: "📜", text: "100% Authentic Vedic Rituals" },
-                { icon: "🎥", text: "Puja Video Delivered Within 48 hours" },
-                { icon: "✓", text: "Verified & Experienced Pandits" },
-                { icon: "🏛", text: "Puja Performed in Sacred Temples" },
-                { icon: "📜", text: "100% Authentic Vedic Rituals" }
-              ].map((b, idx) => (
-                <div key={`d2-${idx}`} className="shrink-0">
-                  <Badge icon={b.icon} text={b.text} />
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Standard flex layout on 1440px and wider desktop screens (>= 1440px) */}
-        <div className="badge-static-1440 hidden min-[1440px]:flex max-w-[1350px] mx-auto items-center justify-center gap-12 px-10">
-          <Badge icon="🎥" text="Puja Video Delivered Within 48 hours" />
-          <Badge icon="✓" text="Verified & Experienced Pandits" />
-          <Badge icon="🏛" text="Puja Performed in Sacred Temples" />
-          <Badge icon="📜" text="100% Authentic Vedic Rituals" />
-        </div>
-      </div>
 
       {/* ── 6. FAQ Section ── */}
       <section id="faq-section" className="py-16 bg-white">
@@ -719,32 +673,32 @@ export default function DashboardClient({
             <ul className="flex items-center justify-center gap-3">
               <li>
                 <a href="https://www.facebook.com/astroved" aria-label="Facebook" rel="nofollow" target="_blank" className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white shadow-sm border border-stone-200 text-[#1877F2] transition-all duration-300 hover:scale-110 hover:-translate-y-1 hover:border-[#1877F2] hover:shadow-lg hover:shadow-[#1877F2]/20">
-                  <Share2 className="w-5 h-5" />
+                  <i className="fa-brands fa-facebook-f text-lg text-[#1877F2]"></i>
                 </a>
               </li>
               <li>
                 <a href="https://twitter.com/astroved" aria-label="X (formerly Twitter)" rel="nofollow" target="_blank" className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white shadow-sm border border-stone-200 text-black transition-all duration-300 hover:scale-110 hover:-translate-y-1 hover:border-black hover:shadow-lg hover:shadow-black/10">
-                  <Share2 className="w-4 h-4" />
+                  <i className="fa-brands fa-x-twitter text-base text-black"></i>
                 </a>
               </li>
               <li>
                 <a href="https://www.youtube.com/channel/UCLzw8opUlMnSA2TQfj34K9w" aria-label="YouTube" rel="nofollow" target="_blank" className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white shadow-sm border border-stone-200 text-[#FF0000] transition-all duration-300 hover:scale-110 hover:-translate-y-1 hover:border-[#FF0000] hover:shadow-lg hover:shadow-[#FF0000]/20">
-                  <Share2 className="w-5 h-5" />
+                  <i className="fa-brands fa-youtube text-lg text-[#FF0000]"></i>
                 </a>
               </li>
               <li>
                 <a href="https://www.instagram.com/astroved/" aria-label="Instagram" rel="nofollow" target="_blank" className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white shadow-sm border border-stone-200 text-[#E1306C] transition-all duration-300 hover:scale-110 hover:-translate-y-1 hover:border-[#E1306C] hover:shadow-lg hover:shadow-[#E1306C]/20">
-                  <Share2 className="w-5 h-5" />
+                  <i className="fa-brands fa-instagram text-lg text-[#E1306C]"></i>
                 </a>
               </li>
               <li>
                 <a href="https://www.linkedin.com/company/astroved-com" aria-label="LinkedIn" rel="nofollow" target="_blank" className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white shadow-sm border border-stone-200 text-[#0A66C2] transition-all duration-300 hover:scale-110 hover:-translate-y-1 hover:border-[#0A66C2] hover:shadow-lg hover:shadow-[#0A66C2]/20">
-                  <Share2 className="w-5 h-5" />
+                  <i className="fa-brands fa-linkedin-in text-lg text-[#0A66C2]"></i>
                 </a>
               </li>
               <li>
                 <a href="https://whatsapp.com/channel/0029VaAG971AInPbquhYnI3u" aria-label="WhatsApp Channel" rel="nofollow" target="_blank" className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white shadow-sm border border-stone-200 text-[#25D366] transition-all duration-300 hover:scale-110 hover:-translate-y-1 hover:border-[#25D366] hover:shadow-lg hover:shadow-[#25D366]/20">
-                  <MessageCircle className="w-5 h-5" />
+                  <i className="fa-brands fa-whatsapp text-xl text-[#25D366]"></i>
                 </a>
               </li>
             </ul>
@@ -884,14 +838,6 @@ const defaultGalleryImages = [
   },
 ];
 
-function Badge({ icon, text }: { icon: string; text: string }) {
-  return (
-    <div className="flex items-center gap-2 text-xs md:text-sm font-bold text-[#14395C]">
-      <span className="bg-[#14395C]/10 rounded-full w-6 h-6 flex items-center justify-center text-sm">{icon}</span>
-      <span>{text}</span>
-    </div>
-  );
-}
 
 interface PujaCardProps {
   id: string;
@@ -902,6 +848,8 @@ interface PujaCardProps {
   templeVenue?: string;
   location?: string;
   date: string;
+  time?: string;
+  buttonText?: string;
   dateOccasion?: string;
   price: string | number;
   slug?: string;
@@ -918,6 +866,8 @@ function PujaCard({
   location,
   date,
   dateOccasion,
+  time,
+  buttonText,
   price,
   slug,
   onShare,
@@ -998,21 +948,35 @@ function PujaCard({
             <div className="w-full h-[1px] bg-stone-200/70" />
 
             {/* Date & Occasion (Row 2) */}
-            <div className="flex items-center gap-2.5">
-              <div className="text-stone-700 shrink-0">
+            <div className="flex items-start gap-2.5">
+              <div className="text-stone-700 shrink-0 mt-0.5">
                 <Calendar className="w-4 h-4 text-stone-700" strokeWidth={2} />
               </div>
-              <div className="flex flex-wrap items-baseline gap-x-2 truncate">
+              <div className="flex flex-col min-w-0">
                 <span className="font-bold text-stone-900 leading-snug">
                   {date}
                 </span>
                 {dateOccasion && (
-                  <span className="text-stone-400 font-normal text-[11px] sm:text-xs truncate">
+                  <span className="text-stone-400 font-normal text-[11px] sm:text-xs leading-tight truncate">
                     {dateOccasion}
                   </span>
                 )}
               </div>
             </div>
+
+            {time && (
+              <>
+                <div className="w-full h-[1px] bg-stone-200/70" />
+                <div className="flex items-center gap-2.5">
+                  <div className="text-stone-700 shrink-0">
+                    <Clock className="w-4 h-4 text-stone-700" strokeWidth={2} />
+                  </div>
+                  <span className="font-bold text-stone-900 leading-snug text-xs sm:text-sm">
+                    {time}
+                  </span>
+                </div>
+              </>
+            )}
           </div>
 
           {/* Bottom Footer Row: Price + Participate Button */}
@@ -1025,7 +989,7 @@ function PujaCard({
 
             {/* CTA Button */}
             <div className="inline-flex items-center gap-2 bg-[#14395C] hover:bg-[#0e2740] active:scale-95 text-white font-extrabold text-xs sm:text-sm px-5 py-2.5 sm:py-3 rounded-full shadow-md shadow-[#14395C]/20 transition-all duration-200 group/btn">
-              <span>Book My Puja</span>
+              <span>{buttonText || "Book My Puja"}</span>
               <div className="w-5 h-5 rounded-full bg-white text-[#14395C] flex items-center justify-center shrink-0">
                 <ChevronRight className="w-3.5 h-3.5 text-[#14395C]" strokeWidth={3} />
               </div>

@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useMemo, useRef, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { CheckCircle, Mail, MessageCircle, Loader2 } from "lucide-react";
+import { CheckCircle, Mail, Loader2 } from "lucide-react";
 const DEFAULT_COUNTRY = { name: "India", isoCode: "IN", dialCode: "91" };
 
 
@@ -205,7 +205,7 @@ export default function OtpClient() {
                 {isEmail ? (
                   <Mail className="w-4 h-4 text-primary" />
                 ) : (
-                  <MessageCircle className="w-4 h-4 text-primary" />
+                  <i className="fa-brands fa-whatsapp text-base text-[#25D366]"></i>
                 )}
                 <span className="text-sm font-semibold text-[#342151]">{summary}</span>
                 <button

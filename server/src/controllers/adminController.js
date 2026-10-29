@@ -86,15 +86,15 @@ export const getAdminOrders = async (req, res) => {
       query.$and = andConditions;
     }
 
-    const [totalOrders, orders, itemNames, poojaNames, statusesRaw] = await Promise.all([
+    const [totalOrders, orders, activePujas, activeHomas, statusesRaw] = await Promise.all([
       Order.countDocuments(query),
       Order.find(query)
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limitNum)
         .populate("pooja", "title name imageUrl"),
-      Order.distinct("itemName"),
-      Order.distinct("pooja"),
+      Puja.find({ status: "active" }).select("title").lean(),
+      Homa.find({ status: "active" }).select("title").lean(),
       Order.distinct("orderStatus")
     ]);
 
@@ -111,7 +111,8 @@ export const getAdminOrders = async (req, res) => {
       totalPages: Math.max(1, Math.ceil(totalOrders / limitNum)),
       currentPage: parseInt(page, 10),
       limit: limitNum,
-      services: ["All", ...new Set([...itemNames, ...poojaNames].filter(Boolean))],
+      services: ["All", ...new Set([...activePujas.map(p => p.title), ...activeHomas.map(h => h.title)].filter(Boolean))],
+
       statuses: ["All", ...new Set(statusesRaw.filter(Boolean))]
     });
   } catch (error) {

@@ -138,6 +138,13 @@ export default function AdminHomasPage() {
       section: "Schedule & Muhurat",
     },
     {
+      name: "time",
+      label: "Homa Time (e.g. 06:00 PM / 10:30 AM)",
+      type: "text",
+      placeholder: "e.g. 06:00 PM or 10:30 AM",
+      section: "Schedule & Muhurat",
+    },
+    {
       name: "subtitle",
       label: "Date Occasion / Ceremony Tag (e.g. Beside Date)",
       type: "text",

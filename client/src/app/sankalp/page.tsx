@@ -12,7 +12,7 @@ import { checkAuthStatus } from "@/lib/authCheck";
 import { useUser } from "@/contexts/UserContext";
 import { apiClient, getAuthToken } from "@/services/api";
 import { getStartingPriceINR } from "@/lib/pricing";
-import { ArrowLeft, MessageCircle, CheckCircle, CreditCard, QrCode, Calendar, Lock, Check } from "lucide-react";
+import { ArrowLeft, CheckCircle, CreditCard, QrCode, Calendar, Lock, Check } from "lucide-react";
 
 interface RazorpayResponse {
   razorpay_order_id: string;
@@ -57,7 +57,7 @@ function SankalpContent() {
   const [showErrors, setShowErrors] = useState(false);
   const [step, setStep] = useState(1);
   const [selectedOfferings, setSelectedOfferings] = useState<any[]>([]);
-  const [paymentMethod, setPaymentMethod] = useState("upi");
+  // const [paymentMethod, setPaymentMethod] = useState("upi");
   const [isProcessing, setIsProcessing] = useState(false);
   const [loadingMsg, setLoadingMsg] = useState("");
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -357,7 +357,7 @@ function SankalpContent() {
         mobileNumber: originalUserPhone,
         whatsappNumber: formattedWa,
         participants: formData.participants.filter((p: string) => p.trim()).map((p: string) => ({ name: p.trim() })),
-        gotra: (formData.dontKnowGotra || !formData.gotra.trim()) ? "Kashyapa" : formData.gotra.trim(),
+        gotra: formData.dontKnowGotra ? "" : formData.gotra.trim(),
         doesNotKnowGotra: formData.dontKnowGotra,
         wish: formData.wish,
         promoCode: appliedPromo?.promoCode || "",
@@ -633,7 +633,7 @@ function SankalpContent() {
                     <div>
                       <label className="flex items-center gap-2 text-stone-900 font-bold text-sm mb-3">
                         Your WhatsApp Number
-                        <MessageCircle className="w-4 h-4 text-[#25D366]" />
+                        <i className="fa-brands fa-whatsapp text-base text-[#25D366]"></i>
                       </label>
                       <div className={`border rounded-xl flex items-center px-4 py-3 transition shadow-sm ${showErrors && !isPhoneValid ? "border-red-400 focus-within:border-red-400 bg-red-50/20" : "border-stone-200 focus-within:border-[#14395C] bg-white"}`}>
                         <div className="flex items-center gap-2 pr-3 border-r border-stone-200 mr-3">
@@ -738,7 +738,7 @@ function SankalpContent() {
                       <input
                         type="text"
                         disabled={formData.dontKnowGotra}
-                        value={formData.dontKnowGotra ? "Kashyapa" : formData.gotra}
+                        value={formData.dontKnowGotra ? "" : formData.gotra}
                         onChange={(e) => setFormData({ ...formData, gotra: e.target.value })}
                         placeholder="Gotra of Puja performer (e.g. Kashyapa, Bharadwaja)"
                         className={`w-full border border-stone-200 rounded-xl px-4 py-3 text-sm font-medium outline-none focus:border-[#14395C] shadow-sm ${formData.dontKnowGotra ? "bg-[#f4f2ee] text-stone-500 cursor-not-allowed" : "bg-white"
@@ -779,18 +779,18 @@ function SankalpContent() {
                       <h3 className="text-base font-extrabold text-stone-900 mb-4">Payment Method</h3>
                       <div className="grid grid-cols-2 gap-4">
                         <div
-                          onClick={() => setPaymentMethod("upi")}
-                          className={`border rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer transition-colors ${paymentMethod === "upi" ? "border-[#14395C] bg-[#14395C]/5 shadow-sm" : "border-stone-200 hover:border-[#14395C]"}`}
+                          // onClick={() => setPaymentMethod("upi")}
+                          className={`border rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer transition-colors  border-stone-200 hover:border-[#14395C]`}
                         >
-                          <CreditCard className={`w-8 h-8 mb-2 ${paymentMethod === "upi" ? "text-[#14395C]" : "text-stone-400"}`} />
-                          <span className={`text-xs font-bold text-center ${paymentMethod === "upi" ? "text-[#14395C]" : "text-stone-700"}`}>Cards / Netbanking / UPI</span>
+                          <CreditCard className={`w-8 h-8 mb-2 "text-stone-400"`} />
+                          <span className={`text-xs font-bold text-center text-stone-700`}>Cards / Netbanking / UPI</span>
                         </div>
                         <div
-                          onClick={() => setPaymentMethod("qr")}
-                          className={`border rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer transition-colors ${paymentMethod === "qr" ? "border-[#14395C] bg-[#14395C]/5 shadow-sm" : "border-stone-200 hover:border-[#14395C]"}`}
+                          // onClick={() => setPaymentMethod("qr")}
+                          className={`border rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer transition-colors  border-stone-200 hover:border-[#14395C]`}
                         >
-                          <QrCode className={`w-8 h-8 mb-2 ${paymentMethod === "qr" ? "text-[#14395C]" : "text-stone-400"}`} />
-                          <span className={`text-xs font-bold text-center ${paymentMethod === "qr" ? "text-[#14395C]" : "text-stone-700"}`}>Scan QR to Pay</span>
+                          <QrCode className={`w-8 h-8 mb-2 "text-stone-400"`} />
+                          <span className={`text-xs font-bold text-center text-stone-700`}>Scan QR to Pay</span>
                         </div>
                       </div>
                     </div>
