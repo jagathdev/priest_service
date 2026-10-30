@@ -10,9 +10,7 @@ import {
   CheckCircleIcon,
   UserIcon,
   SparklesIcon,
-  ChatBubbleLeftRightIcon,
-  PhoneIcon,
-  GiftIcon,
+
   ClockIcon,
   ArrowPathIcon,
   PrinterIcon,
@@ -21,7 +19,7 @@ import {
   ShieldCheckIcon,
   VideoCameraIcon,
   XMarkIcon,
-  XCircleIcon
+
 } from "@heroicons/react/24/outline";
 
 const STATUS_CONFIG: Record<
@@ -239,14 +237,7 @@ export default function AdminOrderDetailPage({ params }: { params: Promise<{ id:
   const extraParticipantCount = order.pricing?.extraParticipantCount || 0;
   const totalAmount = order.pricing?.total || 0;
   const isPaid = order.paymentStatus === "paid" || order.paymentStatus === "captured" || order.paymentStatus === "successful";
-  const isScheduledState = Boolean(
-    selectedStatus === "scheduled" ||
-    selectedStatus === "performed" ||
-    selectedStatus === "completed" ||
-    scheduledDate ||
-    order.scheduledDate
-  );
-  const displayScheduledDate = scheduledDate || order.scheduledDate;
+    const displayScheduledDate = scheduledDate || order.scheduledDate;
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-5 max-w-[1550px] mx-auto min-h-screen">

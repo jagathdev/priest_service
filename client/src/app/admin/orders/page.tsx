@@ -5,20 +5,15 @@ import Link from "next/link";
 import {
   ChevronDownIcon,
   CheckIcon,
-  SparklesIcon,
   CalendarDaysIcon,
   CheckCircleIcon,
   ClockIcon,
   ExclamationCircleIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
   MagnifyingGlassIcon,
   VideoCameraIcon,
   EyeIcon,
   PencilSquareIcon,
-  EllipsisVerticalIcon,
   XMarkIcon,
-  FunnelIcon,
   ArrowPathIcon,
 } from "@heroicons/react/24/outline";
 
@@ -92,76 +87,6 @@ const STATUS_ACTION_OPTIONS = [
   { id: "cancelled", label: "Cancelled", color: "text-rose-700 bg-rose-50 hover:bg-rose-100" },
 ];
 
-function StatusDropdown({
-  currentStatus,
-  onChange,
-}: {
-  currentStatus: string;
-  onChange: (status: string) => void;
-}) {
-  const [open, setOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-  const normalized = (currentStatus || "created").toLowerCase();
-  const current = STATUS_CONFIG[normalized] || STATUS_CONFIG.created;
-
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    }
-    if (open) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [open]);
-
-  const options = Object.keys(STATUS_CONFIG).filter((k) => k !== "refund");
-
-  return (
-    <div className="relative inline-block text-left" ref={dropdownRef}>
-      <button
-        type="button"
-        onClick={() => setOpen(!open)}
-        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border ${current.bg} ${current.text} ${current.border} hover:brightness-95 transition-all shadow-2xs`}
-      >
-        <span className={`w-2 h-2 rounded-full ${current.dot}`} />
-        <span>{current.label}</span>
-        <ChevronDownIcon className="w-3.5 h-3.5 opacity-60 ml-0.5" />
-      </button>
-
-      {open && (
-        <div className="absolute right-0 z-30 mt-1.5 w-44 rounded-xl bg-white shadow-xl border border-gray-150 py-1.5 focus:outline-none animate-in fade-in zoom-in-95 duration-100">
-          <div className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-gray-400 border-b border-gray-100 mb-1">
-            Update Status
-          </div>
-          {options.map((opt) => {
-            const conf = STATUS_CONFIG[opt];
-            const isSelected = opt === normalized;
-            return (
-              <button
-                key={opt}
-                type="button"
-                onClick={() => {
-                  onChange(opt);
-                  setOpen(false);
-                }}
-                className={`w-full text-left px-3 py-2 text-xs flex items-center justify-between hover:bg-gray-50 transition ${isSelected ? "font-bold text-gray-900 bg-gray-50" : "text-gray-600"
-                  }`}
-              >
-                <div className="flex items-center gap-2">
-                  <span className={`w-2 h-2 rounded-full ${conf.dot}`} />
-                  <span>{conf.label}</span>
-                </div>
-                {isSelected && <CheckIcon className="w-4 h-4 text-emerald-600" />}
-              </button>
-            );
-          })}
-        </div>
-      )}
-    </div>
-  );
-}
 
 const getEmbedVideoUrl = (rawUrl?: string): string | null => {
   if (!rawUrl) return null;
@@ -398,50 +323,7 @@ export default function AdminOrdersPage() {
   const isAllSelected = data.orders.length > 0 && selectedOrderIds.length === data.orders.length;
 
   // Intercept status changes to ask for date or video link when needed
-  const requestStatusChange = (orderId: string, newStatus: string) => {
-    if (newStatus === "scheduled") {
-      const existing = data.orders.find((o) => o._id === orderId);
-      setStatusPromptModal({
-        open: true,
-        status: "scheduled",
-        mode: "single",
-        targetOrderId: orderId,
-        dateValue: existing?.scheduledDate
-          ? new Date(existing.scheduledDate).toISOString().split("T")[0]
-          : new Date().toISOString().split("T")[0],
-        videoLinkValue: "",
-      });
-      return;
-    }
-    if (newStatus === "performed") {
-      const existing = data.orders.find((o) => o._id === orderId);
-      setStatusPromptModal({
-        open: true,
-        status: "performed",
-        mode: "single",
-        targetOrderId: orderId,
-        dateValue: existing?.performedDate
-          ? new Date(existing.performedDate).toISOString().split("T")[0]
-          : new Date().toISOString().split("T")[0],
-        videoLinkValue: "",
-      });
-      return;
-    }
-    if (newStatus === "completed") {
-      const existing = data.orders.find((o) => o._id === orderId);
-      setStatusPromptModal({
-        open: true,
-        status: "completed",
-        mode: "single",
-        targetOrderId: orderId,
-        dateValue: "",
-        videoLinkValue: existing?.videoLink || "",
-      });
-      return;
-    }
-    executeStatusChange(orderId, newStatus);
-  };
-
+  
   const requestBulkStatusChange = (newStatus: string) => {
     if (selectedOrderIds.length === 0 && selectedService === "All") {
       showToast("Please select orders or choose a specific service to bulk update", "error");
@@ -647,45 +529,6 @@ export default function AdminOrdersPage() {
     }
   };
 
-  const handleScheduleChange = async (orderId: string, dateStr: string) => {
-    if (!dateStr) return;
-
-    const selectedDate = new Date(dateStr);
-    const newStatus = "scheduled";
-
-    setData((prev) => ({
-      ...prev,
-      orders: prev.orders.map((ord) => {
-        if (ord._id === orderId) {
-          return { ...ord, orderStatus: newStatus, scheduledDate: selectedDate.toISOString() };
-        }
-        return ord;
-      }),
-    }));
-
-    try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
-      const res = await fetch(`${baseUrl}/api/admin/orders/${orderId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          ...getAdminAuthHeaders(),
-        },
-        credentials: "include",
-        body: JSON.stringify({
-          orderStatus: newStatus,
-          scheduledDate: selectedDate.toISOString(),
-        }),
-      });
-      if (!res.ok) {
-        fetchOrders(currentPage, selectedService, selectedStatus, searchQuery, activeTab, startDate, endDate);
-      }
-    } catch (err) {
-      console.error("Failed to update schedule:", err);
-      fetchOrders(currentPage, selectedService, selectedStatus, searchQuery, activeTab, startDate, endDate);
-    }
-  };
-
   const formatBookingTimestamp = (rawDate?: string) => {
     if (!rawDate) return "–";
     const d = new Date(rawDate);
@@ -709,8 +552,8 @@ export default function AdminOrdersPage() {
       {toast && (
         <div
           className={`fixed bottom-5 right-5 z-50 flex items-center gap-2 px-4 py-3 rounded-xl shadow-lg border text-xs font-bold transition-all ${toast.type === "success"
-              ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-              : "bg-red-50 text-red-800 border-red-200"
+            ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+            : "bg-red-50 text-red-800 border-red-200"
             }`}
         >
           {toast.type === "success" ? (
@@ -785,10 +628,20 @@ export default function AdminOrdersPage() {
       {/* KPI Overview Metrics Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         {/* Total Bookings */}
-        <div className="bg-white p-3.5 rounded-2xl border border-gray-200 shadow-2xs flex flex-col justify-between">
-          <div className="flex items-center justify-between text-gray-500 mb-1">
-            <span className="text-[11px] font-bold">Total Bookings</span>
-            <div className="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+        <button
+          type="button"
+          onClick={() => {
+            setActiveTab("active");
+            setSelectedStatus("All");
+          }}
+          className={`p-3.5 rounded-2xl border text-left transition-all duration-150 flex flex-col justify-between cursor-pointer ${activeTab === "active" && (selectedStatus === "All" || !selectedStatus)
+            ? "bg-blue-50/60 border-blue-400 shadow-sm ring-2 ring-blue-400/40"
+            : "bg-white border-gray-200 hover:border-gray-300 hover:shadow-2xs shadow-2xs"
+            }`}
+        >
+          <div className="flex items-center justify-between text-gray-500 mb-1 w-full">
+            <span className="text-[11px] font-bold text-gray-700">Total Bookings</span>
+            <div className="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
               <CalendarDaysIcon className="w-4 h-4" />
             </div>
           </div>
@@ -796,13 +649,23 @@ export default function AdminOrdersPage() {
             <span className="text-xl font-black text-gray-900">{data.stats?.total ?? data.totalOrders}</span>
             <span className="text-[10px] font-extrabold text-emerald-600 bg-emerald-50 px-1 py-0.2 rounded">All time</span>
           </div>
-        </div>
+        </button>
 
         {/* Scheduled */}
-        <div className="bg-white p-3.5 rounded-2xl border border-gray-200 shadow-2xs flex flex-col justify-between">
-          <div className="flex items-center justify-between text-gray-500 mb-1">
-            <span className="text-[11px] font-bold">Scheduled</span>
-            <div className="w-7 h-7 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
+        <button
+          type="button"
+          onClick={() => {
+            setActiveTab("active");
+            setSelectedStatus("scheduled");
+          }}
+          className={`p-3.5 rounded-2xl border text-left transition-all duration-150 flex flex-col justify-between cursor-pointer ${activeTab === "active" && selectedStatus.toLowerCase() === "scheduled"
+            ? "bg-amber-50/70 border-amber-500 shadow-sm ring-2 ring-amber-400/50"
+            : "bg-white border-gray-200 hover:border-amber-300 hover:shadow-2xs shadow-2xs"
+            }`}
+        >
+          <div className="flex items-center justify-between text-gray-500 mb-1 w-full">
+            <span className="text-[11px] font-bold text-gray-700">Scheduled</span>
+            <div className="w-7 h-7 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
               <ClockIcon className="w-4 h-4" />
             </div>
           </div>
@@ -810,13 +673,23 @@ export default function AdminOrdersPage() {
             <span className="text-xl font-black text-amber-700">{data.stats?.scheduled ?? 0}</span>
             <span className="text-[10px] font-semibold text-gray-400">Rituals</span>
           </div>
-        </div>
+        </button>
 
         {/* Confirmed */}
-        <div className="bg-white p-3.5 rounded-2xl border border-gray-200 shadow-2xs flex flex-col justify-between">
-          <div className="flex items-center justify-between text-gray-500 mb-1">
-            <span className="text-[11px] font-bold">Confirmed</span>
-            <div className="w-7 h-7 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center">
+        <button
+          type="button"
+          onClick={() => {
+            setActiveTab("active");
+            setSelectedStatus("confirmed");
+          }}
+          className={`p-3.5 rounded-2xl border text-left transition-all duration-150 flex flex-col justify-between cursor-pointer ${activeTab === "active" && selectedStatus.toLowerCase() === "confirmed"
+            ? "bg-sky-50/70 border-sky-500 shadow-sm ring-2 ring-sky-400/50"
+            : "bg-white border-gray-200 hover:border-sky-300 hover:shadow-2xs shadow-2xs"
+            }`}
+        >
+          <div className="flex items-center justify-between text-gray-500 mb-1 w-full">
+            <span className="text-[11px] font-bold text-gray-700">Confirmed</span>
+            <div className="w-7 h-7 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center shrink-0">
               <CheckCircleIcon className="w-4 h-4" />
             </div>
           </div>
@@ -824,13 +697,23 @@ export default function AdminOrdersPage() {
             <span className="text-xl font-black text-sky-700">{data.stats?.confirmed ?? 0}</span>
             <span className="text-[10px] font-semibold text-gray-400">Ready</span>
           </div>
-        </div>
+        </button>
 
         {/* Cancelled */}
-        <div className="bg-white p-3.5 rounded-2xl border border-gray-200 shadow-2xs flex flex-col justify-between">
-          <div className="flex items-center justify-between text-gray-500 mb-1">
-            <span className="text-[11px] font-bold">Cancelled</span>
-            <div className="w-7 h-7 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center">
+        <button
+          type="button"
+          onClick={() => {
+            setActiveTab("active");
+            setSelectedStatus("cancelled");
+          }}
+          className={`p-3.5 rounded-2xl border text-left transition-all duration-150 flex flex-col justify-between cursor-pointer ${activeTab === "active" && selectedStatus.toLowerCase() === "cancelled"
+            ? "bg-rose-50/70 border-rose-500 shadow-sm ring-2 ring-rose-400/50"
+            : "bg-white border-gray-200 hover:border-rose-300 hover:shadow-2xs shadow-2xs"
+            }`}
+        >
+          <div className="flex items-center justify-between text-gray-500 mb-1 w-full">
+            <span className="text-[11px] font-bold text-gray-700">Cancelled</span>
+            <div className="w-7 h-7 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
               <XMarkIcon className="w-4 h-4" />
             </div>
           </div>
@@ -838,13 +721,23 @@ export default function AdminOrdersPage() {
             <span className="text-xl font-black text-rose-700">{data.stats?.cancelled ?? 0}</span>
             <span className="text-[10px] font-semibold text-gray-400">Voided</span>
           </div>
-        </div>
+        </button>
 
         {/* Refunded */}
-        <div className="bg-white p-3.5 rounded-2xl border border-gray-200 shadow-2xs flex flex-col justify-between">
-          <div className="flex items-center justify-between text-gray-500 mb-1">
-            <span className="text-[11px] font-bold">Refunded</span>
-            <div className="w-7 h-7 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center">
+        <button
+          type="button"
+          onClick={() => {
+            setActiveTab("active");
+            setSelectedStatus("refunded");
+          }}
+          className={`p-3.5 rounded-2xl border text-left transition-all duration-150 flex flex-col justify-between cursor-pointer ${activeTab === "active" && selectedStatus.toLowerCase() === "refunded"
+            ? "bg-purple-50/70 border-purple-500 shadow-sm ring-2 ring-purple-400/50"
+            : "bg-white border-gray-200 hover:border-purple-300 hover:shadow-2xs shadow-2xs"
+            }`}
+        >
+          <div className="flex items-center justify-between text-gray-500 mb-1 w-full">
+            <span className="text-[11px] font-bold text-gray-700">Refunded</span>
+            <div className="w-7 h-7 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
               <ArrowPathIcon className="w-4 h-4" />
             </div>
           </div>
@@ -852,13 +745,23 @@ export default function AdminOrdersPage() {
             <span className="text-xl font-black text-purple-700">{data.stats?.refunded ?? 0}</span>
             <span className="text-[10px] font-semibold text-gray-400">Reversed</span>
           </div>
-        </div>
+        </button>
 
         {/* Completed */}
-        <div className="bg-white p-3.5 rounded-2xl border border-gray-200 shadow-2xs flex flex-col justify-between">
-          <div className="flex items-center justify-between text-gray-500 mb-1">
-            <span className="text-[11px] font-bold">Completed</span>
-            <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+        <button
+          type="button"
+          onClick={() => {
+            setActiveTab("completed");
+            setSelectedStatus("All");
+          }}
+          className={`p-3.5 rounded-2xl border text-left transition-all duration-150 flex flex-col justify-between cursor-pointer ${activeTab === "completed"
+            ? "bg-emerald-50/70 border-emerald-500 shadow-sm ring-2 ring-emerald-400/50"
+            : "bg-white border-gray-200 hover:border-emerald-300 hover:shadow-2xs shadow-2xs"
+            }`}
+        >
+          <div className="flex items-center justify-between text-gray-500 mb-1 w-full">
+            <span className="text-[11px] font-bold text-gray-700">Completed</span>
+            <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
               <CheckIcon className="w-4 h-4 stroke-[3]" />
             </div>
           </div>
@@ -866,7 +769,7 @@ export default function AdminOrdersPage() {
             <span className="text-xl font-black text-emerald-700">{data.stats?.completed ?? 0}</span>
             <span className="text-[10px] font-semibold text-gray-400">Delivered</span>
           </div>
-        </div>
+        </button>
       </div>
 
       {/* Tabs & Date Range Filter Toolbar */}
@@ -877,8 +780,8 @@ export default function AdminOrdersPage() {
             type="button"
             onClick={() => setActiveTab("active")}
             className={`px-4 py-2 rounded-lg text-xs font-extrabold transition-all cursor-pointer flex items-center gap-2 ${activeTab === "active"
-                ? "bg-white text-gray-900 shadow-xs"
-                : "text-gray-600 hover:text-gray-900"
+              ? "bg-white text-gray-900 shadow-xs"
+              : "text-gray-600 hover:text-gray-900"
               }`}
           >
             <span>Active Bookings</span>
@@ -894,8 +797,8 @@ export default function AdminOrdersPage() {
             type="button"
             onClick={() => setActiveTab("completed")}
             className={`px-4 py-2 rounded-lg text-xs font-extrabold transition-all cursor-pointer flex items-center gap-2 ${activeTab === "completed"
-                ? "bg-white text-emerald-800 shadow-xs"
-                : "text-gray-600 hover:text-gray-900"
+              ? "bg-white text-emerald-800 shadow-xs"
+              : "text-gray-600 hover:text-gray-900"
               }`}
           >
             <CheckIcon className="w-3.5 h-3.5 stroke-[3] text-emerald-600" />
