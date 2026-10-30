@@ -169,6 +169,12 @@ export default function HomaDetailClient({
   const heroCtaRef = useRef<HTMLButtonElement | null>(null);
   const tabsContainerRef = useRef<HTMLDivElement | null>(null);
 
+  // Touch Swipe state for Hero Banner Carousel
+  const heroTouchStartX = useRef<number | null>(null);
+  const heroTouchEndX = useRef<number | null>(null);
+  const heroTouchStartY = useRef<number | null>(null);
+  const heroTouchEndY = useRef<number | null>(null);
+
   useEffect(() => {
     if (tabsContainerRef.current) {
       const activeEl = tabsContainerRef.current.querySelector(`[data-tab-id="${activeTab}"]`) as HTMLElement;
@@ -758,7 +764,37 @@ export default function HomaDetailClient({
 
             {/* Left 6 Cols: Main Banner Image (Slightly Increased Width) */}
             <div className="lg:col-span-6 flex flex-col relative">
-              <div className="relative w-full aspect-[4/3] min-h-[260px] sm:min-h-0 sm:aspect-auto sm:h-[350px] md:h-[390px] lg:h-[410px] rounded-3xl overflow-hidden border border-stone-200/90 shadow-md group">
+              <div
+                onTouchStart={(e) => {
+                  heroTouchStartX.current = e.touches[0].clientX;
+                  heroTouchStartY.current = e.touches[0].clientY;
+                }}
+                onTouchMove={(e) => {
+                  heroTouchEndX.current = e.touches[0].clientX;
+                  heroTouchEndY.current = e.touches[0].clientY;
+                }}
+                onTouchEnd={() => {
+                  if (heroTouchStartX.current === null || heroTouchEndX.current === null) return;
+                  const deltaX = heroTouchStartX.current - heroTouchEndX.current;
+                  const deltaY = (heroTouchStartY.current ?? 0) - (heroTouchEndY.current ?? 0);
+
+                  // Trigger only if horizontal swipe exceeds 40px and is predominantly horizontal
+                  if (Math.abs(deltaX) > 40 && Math.abs(deltaX) > Math.abs(deltaY)) {
+                    if (deltaX > 0) {
+                      // Swiped Left -> Next Image
+                      setActiveBannerIndex((prev) => (prev + 1) % bannerImages.length);
+                    } else {
+                      // Swiped Right -> Previous Image
+                      setActiveBannerIndex((prev) => (prev - 1 + bannerImages.length) % bannerImages.length);
+                    }
+                  }
+                  heroTouchStartX.current = null;
+                  heroTouchEndX.current = null;
+                  heroTouchStartY.current = null;
+                  heroTouchEndY.current = null;
+                }}
+                className="relative w-full aspect-[4/3] min-h-[260px] sm:min-h-0 sm:aspect-auto sm:h-[350px] md:h-[390px] lg:h-[410px] rounded-3xl overflow-hidden border border-stone-200/90 shadow-md group touch-pan-y"
+              >
                 <Image
                   src={bannerImages[activeBannerIndex] || (homa ? getHomaImageUrl(homa.imageUrl) : "/images/Ganesh-Chaturthi-Mahapuja.jpg")}
                   alt={`${homa?.title || "Homa"} - Sacred Ritual Banner ${activeBannerIndex + 1}`}
@@ -1072,51 +1108,51 @@ export default function HomaDetailClient({
 
       {/* ── 2b. Ratings Stats & Action Strip (Wishlist & Share) Above Nav Tabs (Below 1000px only) ── */}
       <div data-reveal className="lg:hidden w-full bg-white border-b border-stone-200/90 py-3 sm:py-3.5">
-        <div className="max-w-[1350px] mx-auto px-4 sm:px-6 lg:px-10 flex items-center justify-between gap-3">
+        <div className="max-w-[1350px] mx-auto px-2.5 sm:px-6 lg:px-10 flex items-center justify-between gap-1.5 sm:gap-3">
           {/* Stats Container */}
-          <div className="flex items-center gap-3 sm:gap-6 md:gap-8 overflow-x-auto no-scrollbar py-0.5">
+          <div className="flex items-center justify-between flex-1 min-w-0 pr-1">
             {/* Stat 1: Poojas Performed */}
-            <div className="text-left shrink-0">
-              <span className="block text-xs sm:text-base lg:text-lg font-extrabold text-[#1f1a17] leading-tight">
+            <div className="text-center flex-1 min-w-0 px-0.5">
+              <span className="block text-[11px] sm:text-base font-extrabold text-[#1f1a17] leading-tight whitespace-nowrap">
                 10M+
               </span>
-              <span className="text-[10px] sm:text-xs text-stone-500 font-medium block mt-0.5 leading-tight">
-                poojas performed
+              <span className="text-[9px] sm:text-xs text-stone-500 font-medium block mt-0.5 leading-tight truncate">
+                Pujas
               </span>
             </div>
 
-            <div className="w-[1px] h-6 sm:h-7 bg-stone-200 shrink-0" />
+            <div className="w-[1px] h-5 sm:h-7 bg-stone-200 shrink-0 mx-0.5" />
 
             {/* Stat 2: Scholars and Priests */}
-            <div className="text-left shrink-0">
-              <span className="block text-xs sm:text-base lg:text-lg font-extrabold text-[#1f1a17] leading-tight">
+            <div className="text-center flex-1 min-w-0 px-0.5">
+              <span className="block text-[11px] sm:text-base font-extrabold text-[#1f1a17] leading-tight whitespace-nowrap">
                 180+
               </span>
-              <span className="text-[10px] sm:text-xs text-stone-500 font-medium block mt-0.5 leading-tight">
-                scholars and priests
+              <span className="text-[9px] sm:text-xs text-stone-500 font-medium block mt-0.5 leading-tight truncate">
+                Pandits
               </span>
             </div>
 
-            <div className="w-[1px] h-6 sm:h-7 bg-stone-200 shrink-0" />
+            <div className="w-[1px] h-5 sm:h-7 bg-stone-200 shrink-0 mx-0.5" />
 
             {/* Stat 3: Years of Vedic Expertise */}
-            <div className="text-left shrink-0">
-              <span className="block text-xs sm:text-base lg:text-lg font-extrabold text-[#1f1a17] leading-tight">
-                25+ years
+            <div className="text-center flex-1 min-w-0 px-0.5">
+              <span className="block text-[11px] sm:text-base font-extrabold text-[#1f1a17] leading-tight whitespace-nowrap">
+                25+ Yrs
               </span>
-              <span className="text-[10px] sm:text-xs text-stone-500 font-medium block mt-0.5 leading-tight">
-                of Vedic expertise
+              <span className="text-[9px] sm:text-xs text-stone-500 font-medium block mt-0.5 leading-tight truncate">
+                Vedic Seva
               </span>
             </div>
           </div>
 
           {/* Action Buttons: Wishlist & Share (Circular icon buttons matching Image 3) */}
-          <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0 pl-1 border-l border-stone-200/80">
             {/* Circular Wishlist Button */}
             <WishlistButton
               itemId={homa._id}
-              className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-stone-300 hover:border-stone-500 bg-white flex items-center justify-center text-stone-700 shadow-2xs hover:bg-stone-50 transition-all active:scale-95"
-              iconClassName="w-4 h-4 sm:w-5 sm:h-5"
+              className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border border-stone-300 hover:border-stone-500 bg-white flex items-center justify-center text-stone-700 shadow-2xs hover:bg-stone-50 transition-all active:scale-95"
+              iconClassName="w-3.5 h-3.5 sm:w-5 sm:h-5"
             />
 
             {/* Circular Share Button */}
@@ -1132,9 +1168,9 @@ export default function HomaDetailClient({
                   setTimeout(() => setShareSuccess(false), 2000);
                 }
               }}
-              className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-stone-300 hover:border-stone-500 bg-white flex items-center justify-center text-stone-700 shadow-2xs hover:bg-stone-50 transition-all active:scale-95 relative"
+              className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border border-stone-300 hover:border-stone-500 bg-white flex items-center justify-center text-stone-700 shadow-2xs hover:bg-stone-50 transition-all active:scale-95 relative cursor-pointer"
             >
-              <Share2 className="w-4 h-4 sm:w-5 sm:h-5" />
+              <Share2 className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
               {shareSuccess && (
                 <span className="absolute -top-7 right-0 bg-stone-900 text-white text-[10px] font-semibold py-0.5 px-2 rounded shadow-sm whitespace-nowrap">
                   Copied!

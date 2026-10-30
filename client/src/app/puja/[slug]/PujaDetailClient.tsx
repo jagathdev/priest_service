@@ -166,6 +166,18 @@ export default function PujaDetailClient({
   const heroCtaRef = useRef<HTMLButtonElement | null>(null);
   const tabsContainerRef = useRef<HTMLDivElement | null>(null);
 
+  // Touch Swipe state for Hero Banner Carousel
+  const heroTouchStartX = useRef<number | null>(null);
+  const heroTouchEndX = useRef<number | null>(null);
+  const heroTouchStartY = useRef<number | null>(null);
+  const heroTouchEndY = useRef<number | null>(null);
+
+  // Touch Swipe state for Gallery Carousel
+  const galleryTouchStartX = useRef<number | null>(null);
+  const galleryTouchEndX = useRef<number | null>(null);
+  const galleryTouchStartY = useRef<number | null>(null);
+  const galleryTouchEndY = useRef<number | null>(null);
+
   useEffect(() => {
     if (tabsContainerRef.current) {
       const activeEl = tabsContainerRef.current.querySelector(`[data-tab-id="${activeTab}"]`) as HTMLElement;
@@ -772,7 +784,37 @@ export default function PujaDetailClient({
 
             {/* Left 6 Cols: Main Banner Image (Slightly Increased Width) */}
             <div className="lg:col-span-6 flex flex-col relative">
-              <div className="relative w-full aspect-[4/3] min-h-[260px] sm:min-h-0 sm:aspect-auto sm:h-[350px] md:h-[390px] lg:h-[410px] rounded-xl overflow-hidden border border-stone-200/90 shadow-md group">
+              <div
+                onTouchStart={(e) => {
+                  heroTouchStartX.current = e.touches[0].clientX;
+                  heroTouchStartY.current = e.touches[0].clientY;
+                }}
+                onTouchMove={(e) => {
+                  heroTouchEndX.current = e.touches[0].clientX;
+                  heroTouchEndY.current = e.touches[0].clientY;
+                }}
+                onTouchEnd={() => {
+                  if (heroTouchStartX.current === null || heroTouchEndX.current === null) return;
+                  const deltaX = heroTouchStartX.current - heroTouchEndX.current;
+                  const deltaY = (heroTouchStartY.current ?? 0) - (heroTouchEndY.current ?? 0);
+
+                  // Trigger only if horizontal swipe exceeds 40px and is predominantly horizontal
+                  if (Math.abs(deltaX) > 40 && Math.abs(deltaX) > Math.abs(deltaY)) {
+                    if (deltaX > 0) {
+                      // Swiped Left -> Next Image
+                      setActiveBannerIndex((prev) => (prev + 1) % bannerImages.length);
+                    } else {
+                      // Swiped Right -> Previous Image
+                      setActiveBannerIndex((prev) => (prev - 1 + bannerImages.length) % bannerImages.length);
+                    }
+                  }
+                  heroTouchStartX.current = null;
+                  heroTouchEndX.current = null;
+                  heroTouchStartY.current = null;
+                  heroTouchEndY.current = null;
+                }}
+                className="relative w-full aspect-[4/3] min-h-[260px] sm:min-h-0 sm:aspect-auto sm:h-[350px] md:h-[390px] lg:h-[410px] rounded-xl overflow-hidden border border-stone-200/90 shadow-md group touch-pan-y"
+              >
                 <Image
                   src={bannerImages[activeBannerIndex] || (puja ? getPujaImageUrl(puja.imageUrl) : "/images/Ganesh-Chaturthi-Mahapuja.jpg")}
                   alt={`${puja?.title || "Puja"} - Sacred Ritual Banner ${activeBannerIndex + 1}`}
@@ -1075,37 +1117,37 @@ export default function PujaDetailClient({
 
       {/* ── 2b. Ratings Stats & Action Strip (Wishlist & Share) Above Nav Tabs (Below 1000px only) ── */}
       <div data-reveal className="lg:hidden w-full bg-white border-b border-stone-200/90 py-3 sm:py-3.5">
-        {/* Mobile layout: stats left, buttons right */}
-        <div className="md:hidden w-full px-4 sm:px-6 flex items-center justify-between gap-3">
-          <div className="flex items-start gap-3 sm:gap-6 overflow-x-auto no-scrollbar py-0.5">
-            <div className="text-left shrink-0">
-              <span className="block text-xs font-extrabold text-[#1f1a17] leading-tight">10M+</span>
-              <span className="text-[10px] text-stone-500 font-medium block mt-0.5 leading-tight">poojas performed</span>
+        {/* Mobile layout: stats and buttons cleanly proportioned */}
+        <div className="md:hidden w-full px-2.5 sm:px-4 flex items-center justify-between gap-1.5 sm:gap-2.5">
+          <div className="flex items-center justify-between flex-1 min-w-0 pr-1">
+            <div className="text-center flex-1 min-w-0 px-0.5">
+              <span className="block text-[11px] font-extrabold text-[#1f1a17] leading-tight whitespace-nowrap">10M+</span>
+              <span className="text-[9px] text-stone-500 font-medium block mt-0.5 leading-tight truncate">Pujas</span>
             </div>
-            <div className="w-[1px] self-stretch bg-stone-200 shrink-0" />
-            <div className="text-left shrink-0">
-              <span className="block text-xs font-extrabold text-[#1f1a17] leading-tight">180+</span>
-              <span className="text-[10px] text-stone-500 font-medium block mt-0.5 leading-tight">scholars and priests</span>
+            <div className="w-[1px] h-5 bg-stone-200 shrink-0 mx-0.5" />
+            <div className="text-center flex-1 min-w-0 px-0.5">
+              <span className="block text-[11px] font-extrabold text-[#1f1a17] leading-tight whitespace-nowrap">180+</span>
+              <span className="text-[9px] text-stone-500 font-medium block mt-0.5 leading-tight truncate">Pandits</span>
             </div>
-            <div className="w-[1px] self-stretch bg-stone-200 shrink-0" />
-            <div className="text-left shrink-0">
-              <span className="block text-xs font-extrabold text-[#1f1a17] leading-tight">25+ years</span>
-              <span className="text-[10px] text-stone-500 font-medium block mt-0.5 leading-tight">of Vedic expertise</span>
+            <div className="w-[1px] h-5 bg-stone-200 shrink-0 mx-0.5" />
+            <div className="text-center flex-1 min-w-0 px-0.5">
+              <span className="block text-[11px] font-extrabold text-[#1f1a17] leading-tight whitespace-nowrap">25+ Yrs</span>
+              <span className="text-[9px] text-stone-500 font-medium block mt-0.5 leading-tight truncate">Vedic Seva</span>
             </div>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-1.5 shrink-0 pl-1 border-l border-stone-200/80">
             <WishlistButton
               itemId={puja._id}
-              className="w-9 h-9 rounded-full border border-stone-300 hover:border-stone-500 bg-white flex items-center justify-center text-stone-700 shadow-2xs hover:bg-stone-50 transition-all active:scale-95"
-              iconClassName="w-4 h-4"
+              className="w-8 h-8 rounded-full border border-stone-300 hover:border-stone-500 bg-white flex items-center justify-center text-stone-700 shadow-2xs hover:bg-stone-50 transition-all active:scale-95"
+              iconClassName="w-3.5 h-3.5"
             />
             <button
               type="button"
               aria-label="Share puja"
               onClick={() => setShareModalOpen(true)}
-              className="w-9 h-9 rounded-full border border-stone-300 hover:border-stone-500 bg-white flex items-center justify-center text-stone-700 shadow-2xs hover:bg-stone-50 transition-all active:scale-95"
+              className="w-8 h-8 rounded-full border border-stone-300 hover:border-stone-500 bg-white flex items-center justify-center text-stone-700 shadow-2xs hover:bg-stone-50 transition-all active:scale-95 cursor-pointer"
             >
-              <Share2 className="w-4 h-4" />
+              <Share2 className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
@@ -1334,11 +1376,39 @@ export default function PujaDetailClient({
               {/* Mobile: Carousel */}
               <div className="sm:hidden relative">
                 <div
+                  onTouchStart={(e) => {
+                    galleryTouchStartX.current = e.touches[0].clientX;
+                    galleryTouchStartY.current = e.touches[0].clientY;
+                  }}
+                  onTouchMove={(e) => {
+                    galleryTouchEndX.current = e.touches[0].clientX;
+                    galleryTouchEndY.current = e.touches[0].clientY;
+                  }}
+                  onTouchEnd={() => {
+                    if (galleryTouchStartX.current === null || galleryTouchEndX.current === null) return;
+                    const deltaX = galleryTouchStartX.current - galleryTouchEndX.current;
+                    const deltaY = (galleryTouchStartY.current ?? 0) - (galleryTouchEndY.current ?? 0);
+
+                    // Swipe trigger if horizontal swipe > 40px
+                    if (Math.abs(deltaX) > 40 && Math.abs(deltaX) > Math.abs(deltaY)) {
+                      if (deltaX > 0) {
+                        // Swiped Left -> Next Image
+                        setGalleryCarouselIdx((prev) => (prev + 1) % galleryList.length);
+                      } else {
+                        // Swiped Right -> Previous Image
+                        setGalleryCarouselIdx((prev) => (prev - 1 + galleryList.length) % galleryList.length);
+                      }
+                    }
+                    galleryTouchStartX.current = null;
+                    galleryTouchEndX.current = null;
+                    galleryTouchStartY.current = null;
+                    galleryTouchEndY.current = null;
+                  }}
                   onClick={() => {
                     setLightboxImageIdx(galleryCarouselIdx);
                     setGalleryLightboxOpen(true);
                   }}
-                  className="relative h-64 rounded-2xl overflow-hidden border border-stone-200 shadow-xs cursor-pointer group"
+                  className="relative h-64 rounded-2xl overflow-hidden border border-stone-200 shadow-xs cursor-pointer group touch-pan-y"
                 >
                   {/* Full Image */}
                   <Image
