@@ -403,6 +403,27 @@ export default function AdminOrderDetailPage({ params }: { params: Promise<{ id:
                 {order.mobileNumber?.startsWith("+") ? order.mobileNumber : `+91 ${order.mobileNumber || "9876543210"}`}
               </span>
             </div>
+            {(() => {
+              const mob = order.mobileNumber || "";
+              const wa = order.whatsappNumber || order.customer?.whatsappNumber || "";
+              const cleanMob = mob.replace(/\D/g, "");
+              const cleanWa = wa.replace(/\D/g, "");
+              const isSame = cleanMob && cleanWa && (cleanMob === cleanWa || cleanMob.endsWith(cleanWa) || cleanWa.endsWith(cleanMob));
+              
+              if (!isSame && wa) {
+                const fmtWa = wa.startsWith("+") ? wa : (wa.startsWith("91") && wa.length === 12 ? "+" + wa : "+91 " + wa);
+                return (
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-500 flex items-center gap-1">
+                      <span>WhatsApp</span>
+                      <span className="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">WA</span>
+                    </span>
+                    <span className="font-bold text-emerald-800">{fmtWa}</span>
+                  </div>
+                );
+              }
+              return null;
+            })()}
             <div className="flex justify-between items-center">
               <span className="text-gray-500">User ID</span>
               <span className="font-mono text-gray-800 text-[11px] font-bold">

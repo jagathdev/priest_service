@@ -37,12 +37,38 @@ const formatCardDate = (dateVal: any, fallback = "25 Sept 2026") => {
   return `${day} ${months[d.getMonth()]} ${d.getFullYear()}`;
 };
 
+const getEmbedVideoUrl = (rawUrl?: string): string | null => {
+  if (!rawUrl) return null;
+  const str = rawUrl.trim();
+  if (!str) return null;
+
+  // YouTube match
+  const ytMatch = str.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
+  if (ytMatch && ytMatch[1]) {
+    return `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1&rel=0`;
+  }
+
+  // Vimeo match
+  const vimeoMatch = str.match(/(?:vimeo\.com\/)(\d+)/);
+  if (vimeoMatch && vimeoMatch[1]) {
+    return `https://player.vimeo.com/video/${vimeoMatch[1]}?autoplay=1`;
+  }
+
+  // Return standard URL for direct iframe / embed
+  return str;
+};
+
 export default function BookingsTab() {
   const { user } = useUser();
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
   const [filter, setFilter] = useState("All");
+  const [activeVideoModal, setActiveVideoModal] = useState<{ open: boolean; url: string; title: string }>({
+    open: false,
+    url: "",
+    title: "",
+  });
 
   const fetchOrders = useCallback(async () => {
     if (!user?._id && !user?.id) return;
@@ -381,6 +407,7 @@ export default function BookingsTab() {
                 </div>
               </div>
 
+              {/* Step 3: Puja Scheduled */}
               <div className={`relative flex items-center justify-end md:justify-between md:odd:flex-row-reverse group ${selectedOrder.orderStatus === 'scheduled' || selectedOrder.orderStatus === 'performed' || selectedOrder.orderStatus === 'completed' ? 'is-active' : ''}`}>
                 <div className={`absolute left-0 md:left-1/2 md:-translate-x-1/2 flex items-center justify-center w-8 h-8 rounded-full border-4 border-white shadow shrink-0 z-10 ${selectedOrder.orderStatus === 'scheduled' || selectedOrder.orderStatus === 'performed' || selectedOrder.orderStatus === 'completed' ? 'bg-primary text-white' : 'bg-white'}`}>
                   {selectedOrder.orderStatus === 'scheduled' || selectedOrder.orderStatus === 'performed' || selectedOrder.orderStatus === 'completed' ? (
@@ -394,7 +421,7 @@ export default function BookingsTab() {
                   <h5 className="font-bold text-stone-800 text-xs sm:text-sm">Puja Scheduled</h5>
                   <p className="text-[11px] sm:text-xs text-stone-500 font-medium mt-0.5 sm:mt-1">
                     {selectedOrder.scheduledDate
-                      ? `Muhurat - ${formatCardDate(selectedOrder.scheduledDate, "")}`
+                      ? `Muhurat Date: ${formatCardDate(selectedOrder.scheduledDate, "")}`
                       : "Date to be scheduled"}
                   </p>
                 </div>
@@ -413,7 +440,9 @@ export default function BookingsTab() {
                   <div className="text-[10px] font-extrabold text-stone-400 uppercase tracking-wider mb-0.5 sm:mb-1">Step 4</div>
                   <h5 className="font-bold text-stone-800 text-xs sm:text-sm">Puja Performed</h5>
                   <p className="text-[11px] sm:text-xs text-stone-500 font-medium mt-0.5 sm:mt-1">
-                    {selectedOrder.orderStatus === 'performed' || selectedOrder.orderStatus === 'completed' ? "Sacred rituals successfully completed" : "Rituals to be performed by Vedic pandits"}
+                    {selectedOrder.orderStatus === 'performed' || selectedOrder.orderStatus === 'completed'
+                      ? (selectedOrder.performedDate ? `Performed on ${formatCardDate(selectedOrder.performedDate, "")}` : "Sacred rituals successfully completed")
+                      : "Rituals to be performed by Vedic pandits"}
                   </p>
                 </div>
               </div>
@@ -431,16 +460,35 @@ export default function BookingsTab() {
                   <div className="text-[10px] font-extrabold text-stone-400 uppercase tracking-wider mb-0.5 sm:mb-1">Step 5</div>
                   <h5 className="font-bold text-stone-800 text-xs sm:text-sm">Video Delivered</h5>
                   {selectedOrder.videoLink ? (
-                    <div className="mt-2">
-                      <a
-                        href={selectedOrder.videoLink}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#14395C] text-white hover:bg-[#0e2740] rounded-lg text-xs font-bold shadow-xs transition"
+                    <div className="mt-2.5 space-y-2">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveVideoModal({
+                            open: true,
+                            url: selectedOrder.videoLink,
+                            title: selectedOrder.itemName || selectedOrder.pooja || "Puja Video",
+                          });
+                        }}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#14395C] text-white hover:bg-[#0e2740] rounded-lg text-xs font-bold shadow-xs transition cursor-pointer"
                       >
                         <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
                         <span>Watch Puja Video</span>
-                      </a>
+                      </button>
+
+                      {/* Embedded Video Player Iframe */}
+                      {getEmbedVideoUrl(selectedOrder.videoLink) && (
+                        <div className="mt-3 aspect-video w-full rounded-xl overflow-hidden border border-stone-200 shadow-sm bg-black">
+                          <iframe
+                            src={getEmbedVideoUrl(selectedOrder.videoLink) || ""}
+                            title="Priest Services Puja Video"
+                            className="w-full h-full border-0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                          />
+                        </div>
+                      )}
                     </div>
                   ) : (
                     <p className="text-[11px] sm:text-xs text-stone-500 font-medium mt-0.5 sm:mt-1">Available after the puja</p>
@@ -702,16 +750,21 @@ export default function BookingsTab() {
                           <div className="flex-1 min-w-0 flex flex-col items-center">
                             <div className="h-10 sm:h-12 flex items-center justify-center mb-1.5 sm:mb-2 z-10">
                               {order.videoLink ? (
-                                <a
-                                  href={order.videoLink}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  onClick={(e) => e.stopPropagation()}
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setActiveVideoModal({
+                                      open: true,
+                                      url: order.videoLink,
+                                      title: order.itemName || order.pooja || "Puja Video",
+                                    });
+                                  }}
                                   className="px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-full bg-[#14395C] hover:bg-[#0e2740] text-white font-bold text-[10px] sm:text-[12px] flex items-center gap-1 sm:gap-1.5 shadow-xs whitespace-nowrap transition cursor-pointer"
                                 >
                                   <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
                                   <span>Watch Video</span>
-                                </a>
+                                </button>
                               ) : isCompleted ? (
                                 <div className="px-2 py-1.5 sm:px-4 sm:py-2 rounded-full bg-primary text-white font-bold text-[10px] sm:text-[12px] flex items-center gap-1 sm:gap-1.5 shadow-xs whitespace-nowrap">
                                   <Play className="w-3 h-3 sm:w-3.5 sm:h-3.5 fill-current" />
@@ -749,6 +802,75 @@ export default function BookingsTab() {
           </div>
         </div>
       )}
+    
+      {/* Video Iframe Player Modal */}
+      {activeVideoModal.open && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/75 backdrop-blur-xs animate-in fade-in duration-200"
+          onClick={() => setActiveVideoModal({ open: false, url: "", title: "" })}
+        >
+          <div 
+            className="bg-stone-900 rounded-2xl w-full max-w-3xl overflow-hidden shadow-2xl border border-stone-800"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Bar */}
+            <div className="px-4 py-3 bg-stone-950 flex items-center justify-between border-b border-stone-800 text-white">
+              <div className="flex items-center gap-2 truncate pr-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                <h4 className="font-bold text-xs sm:text-sm truncate">
+                  {activeVideoModal.title} — Priest Services Sacred Ritual Recording
+                </h4>
+              </div>
+              <button
+                type="button"
+                onClick={() => setActiveVideoModal({ open: false, url: "", title: "" })}
+                className="w-8 h-8 rounded-full bg-stone-800 hover:bg-stone-700 text-stone-300 hover:text-white flex items-center justify-center transition cursor-pointer shrink-0"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Iframe player container */}
+            <div className="relative aspect-video w-full bg-black">
+              {getEmbedVideoUrl(activeVideoModal.url) ? (
+                <iframe
+                  src={getEmbedVideoUrl(activeVideoModal.url) || ""}
+                  title={activeVideoModal.title}
+                  className="w-full h-full border-0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              ) : (
+                <div className="h-full flex flex-col items-center justify-center text-stone-400 p-6 text-center">
+                  <p className="text-sm mb-3">Recording link:</p>
+                  <a
+                    href={activeVideoModal.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="px-4 py-2 bg-primary text-white rounded-lg text-xs font-bold hover:brightness-110"
+                  >
+                    Open Video in New Tab
+                  </a>
+                </div>
+              )}
+            </div>
+
+            {/* Modal Bottom note */}
+            <div className="px-4 py-2.5 bg-stone-950 border-t border-stone-800 flex items-center justify-between text-[11px] text-stone-400">
+              <span>Priest Services • Blessed by Vedic Pandits</span>
+              <a
+                href={activeVideoModal.url}
+                target="_blank"
+                rel="noreferrer"
+                className="text-stone-300 hover:text-white underline font-semibold"
+              >
+                Direct link ↗
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

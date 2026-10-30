@@ -1,3 +1,8 @@
+import {
+  getAdminPreOrders,
+  deleteAdminPreOrder,
+  bulkDeleteAdminPreOrders
+} from "../controllers/preOrder.controller.js";
 import express from "express";
 import {
   getAdminStats,
@@ -7,6 +12,7 @@ import {
   getAdminPayments,
   updateAdminOrder,
   bulkScheduleOrders,
+  bulkUpdateOrdersStatus,
   getAdminUsers,
   updateAdminUser,
   deleteAdminUser,
@@ -28,8 +34,14 @@ router.get("/stats", getAdminStats);
 router.get("/orders", getAdminOrders);
 router.get("/orders/:id", getAdminOrderById);
 router.post("/orders/bulk-schedule", bulkScheduleOrders);
+router.post("/orders/bulk-status", bulkUpdateOrdersStatus);
 router.put("/orders/:id", updateAdminOrder);
 router.get("/payments", getAdminPayments);
+
+// Pre-Orders / Incomplete Booking Leads
+router.get("/pre-orders", getAdminPreOrders);
+router.post("/pre-orders/bulk-delete", bulkDeleteAdminPreOrders);
+router.delete("/pre-orders/:id", deleteAdminPreOrder);
 
 // User routes & bulk/trash operations
 router.get("/users", getAdminUsers);

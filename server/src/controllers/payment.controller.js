@@ -1,3 +1,4 @@
+import PreOrderLead from "../models/PreOrderLead.js";
 import crypto from "crypto";
 import Order from "../models/Order.js";
 import {
@@ -170,6 +171,35 @@ export const createPaymentOrder = async (req, res) => {
                     success: false,
                     message: valErr.message || "Invalid order details",
                 });
+            }
+
+            // Save lead in pre_order_leads collection for admin pre-orders monitoring
+            try {
+                await PreOrderLead.create({
+                    user: authenticatedUserId,
+                    userName: customerName || "Devotee",
+                    mobileNumber: mobileNumber || "",
+                    whatsappNumber: String(whatsappNumber).trim(),
+                    email: req.user?.email || "",
+                    serviceType: pricingCalculation.serviceType || serviceType || "Puja",
+                    serviceId: serviceId || null,
+                    serviceName: itemName || pooja || "Sacred Ritual",
+                    packageName: orderDetails.packageName || (pricingCalculation.package ? pricingCalculation.package.name : "") || "Standard Package",
+                    packageId: String(packageId || ""),
+                    packagePrice: pricingCalculation.basePrice || 0,
+                    totalAmount: pricingCalculation.finalAmount || 0,
+                    preferredDate: parsedBookingDate ? parsedBookingDate.toISOString().split("T")[0] : "",
+                    participants: cleanParticipants,
+                    gotra: doesNotKnowGotra ? "" : (gotra || ""),
+                    doesNotKnowGotra: Boolean(doesNotKnowGotra),
+                    wish: wish || "",
+                    offerings: pricingCalculation.validatedOfferings || [],
+                    razorpayOrderId: razorpayOrder.id,
+                    uniqueId: customUniqueId,
+                    promoCode: promoCode || ""
+                });
+            } catch (leadErr) {
+                console.warn("[payment.controller] Failed to save pre-order lead:", leadErr.message);
             }
 
             return res.status(200).json({

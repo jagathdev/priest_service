@@ -875,26 +875,28 @@ export default function AdminUsersPage() {
 
                       {/* Name with Avatar */}
                       <td className="py-4 px-4">
-                        <div className="flex items-center gap-3">
-                          <div
-                            className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-extrabold shrink-0 ${avatarColor}`}
-                          >
-                            {initial}
-                          </div>
-                          <span className="font-bold text-gray-900 truncate max-w-[170px]">
-                            {u.name}
-                          </span>
+                        <div className="font-semibold text-gray-900">
+                          {u.mobileNumber.startsWith("+")
+                            ? u.mobileNumber
+                            : `+91 ${u.mobileNumber}`}
                         </div>
-                      </td>
+                        {(() => {
+                          const mob = u.mobileNumber || "";
+                          const wa = u.whatsappNumber || "";
+                          const cleanMob = mob.replace(/\D/g, "");
+                          const cleanWa = wa.replace(/\D/g, "");
+                          const isSame = cleanMob && cleanWa && (cleanMob === cleanWa || cleanMob.endsWith(cleanWa) || cleanWa.endsWith(cleanMob));
 
-                      {/* Email */}
-                      <td className="py-4 px-4 text-gray-600">{u.email}</td>
-
-                      {/* Mobile */}
-                      <td className="py-4 px-4 font-semibold text-gray-800">
-                        {u.mobileNumber.startsWith("+")
-                          ? u.mobileNumber
-                          : `+91 ${u.mobileNumber}`}
+                          if (!isSame && wa) {
+                            return (
+                              <div className="flex items-center gap-1 text-[11px] text-emerald-700 font-semibold mt-0.5">
+                                <span className="text-[9px] bg-emerald-50 px-1 py-0.2 rounded border border-emerald-200 font-bold">WA</span>
+                                <span>{wa.startsWith("+") ? wa : (wa.startsWith("91") && wa.length === 12 ? `+${wa}` : `+91 ${wa}`)}</span>
+                              </div>
+                            );
+                          }
+                          return null;
+                        })()}
                       </td>
 
                       {/* Total Amount Spent */}

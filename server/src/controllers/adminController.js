@@ -122,10 +122,48 @@ export const getAdminOrders = async (req, res) => {
   }
 };
 
+export const bulkUpdateOrdersStatus = async (req, res) => {
+  try {
+    const { orderIds, service, orderStatus, scheduledDate, performedDate, videoLink } = req.body;
+    if (!orderStatus) {
+      return res.status(400).json({ success: false, message: "orderStatus is required" });
+    }
+
+    const filter = {};
+    if (Array.isArray(orderIds) && orderIds.length > 0) {
+      filter._id = { $in: orderIds };
+    } else if (service && service !== "All") {
+      filter.$or = [{ itemName: service }, { pooja: service }];
+    } else {
+      return res.status(400).json({ success: false, message: "Please provide orderIds or a specific service" });
+    }
+
+    const updateData = { orderStatus };
+    if (orderStatus === "refunded" || orderStatus === "refund") {
+      updateData.paymentStatus = "refunded";
+    }
+    if (scheduledDate !== undefined) updateData.scheduledDate = scheduledDate ? new Date(scheduledDate) : null;
+    if (performedDate !== undefined) updateData.performedDate = performedDate ? new Date(performedDate) : null;
+    if (performedDate !== undefined) updateData.performedDate = performedDate ? new Date(performedDate) : null;
+    if (videoLink !== undefined) updateData.videoLink = videoLink;
+
+    const result = await Order.updateMany(filter, { $set: updateData });
+
+    return res.status(200).json({
+      success: true,
+      message: `Successfully updated ${result.modifiedCount} order(s) to ${orderStatus}`,
+      modifiedCount: result.modifiedCount
+    });
+  } catch (error) {
+    console.error("Error in bulkUpdateOrdersStatus:", error);
+    return res.status(500).json({ success: false, message: "Failed to bulk update orders status" });
+  }
+};
+
 export const updateAdminOrder = async (req, res) => {
   try {
     const { id } = req.params;
-    const { orderStatus, scheduledDate, videoLink } = req.body;
+    const { orderStatus, scheduledDate, performedDate, videoLink } = req.body;
 
     const updateData = {};
     if (orderStatus !== undefined) {

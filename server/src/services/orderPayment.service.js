@@ -1,3 +1,4 @@
+import PreOrderLead from "../models/PreOrderLead.js";
 import Order from "../models/Order.js";
 import Payment from "../models/Payment.js";
 import { toPaise } from "../utils/currency.js";
@@ -115,6 +116,23 @@ export const markOrderPaid = async ({ payment }) => {
         console.log(`[orderPayment] WhatsApp confirmation dispatched for order: ${updatedOrder._id}`);
     } catch (waError) {
         console.error(`[orderPayment] Failed to dispatch WhatsApp confirmation for order ${updatedOrder._id}:`, waError.message);
+    }
+
+    // Delete pre-order lead data once payment is completed (only incomplete orders remain)
+    try {
+        await PreOrderLead.deleteMany({
+            $or: [
+                { razorpayOrderId: razorpayOrderId },
+                { uniqueId: uniqueId },
+                {
+                    mobileNumber: updatedOrder.mobileNumber || updatedOrder.whatsappNumber,
+                    serviceId: updatedOrder.serviceId
+                }
+            ]
+        });
+        console.log(`[orderPayment] Cleaned up pre-order leads for completed order ${updatedOrder._id}`);
+    } catch (delLeadErr) {
+        console.warn(`[orderPayment] Failed to delete pre-order leads:`, delLeadErr.message);
     }
 
     return { status: "paid_now", order: updatedOrder };

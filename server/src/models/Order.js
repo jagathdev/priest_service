@@ -144,6 +144,7 @@ const orderSchema = new mongoose.Schema(
             default: "created",
         },
         scheduledDate: { type: Date, default: null },
+        performedDate: { type: Date, default: null },
         videoLink: { type: String, default: "" },
     },
     {
