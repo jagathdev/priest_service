@@ -1,8 +1,0 @@
-$kind: http-request
-name: Get Devotee Wishlist
-order: 2000
-method: GET
-url: '{{baseUrl}}/api/wishlist/{{userId}}'
-headers:
-  - key: Authorization
-    value: 'Bearer {{authToken}}'

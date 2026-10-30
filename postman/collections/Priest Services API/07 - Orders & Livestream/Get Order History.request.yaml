@@ -1,8 +1,0 @@
-$kind: http-request
-name: Get Order History
-order: 2000
-method: GET
-url: '{{baseUrl}}/api/orders/user/{{userId}}'
-headers:
-  - key: Authorization
-    value: 'Bearer {{authToken}}'

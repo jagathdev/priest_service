@@ -1,8 +1,0 @@
-$kind: http-request
-name: Delete Image
-order: 3000
-method: DELETE
-url: '{{baseUrl}}/api/upload/:filename'
-pathVariables:
-  - key: filename
-    value: shani-pooja-banner.png

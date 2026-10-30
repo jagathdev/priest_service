@@ -300,9 +300,13 @@ export const bulkScheduleOrders = async (req, res) => {
 
 export const getAdminUsers = async (req, res) => {
   try {
-    const { search, status, sort, fromDate, toDate, page = 1, limit = 10 } = req.query;
+    const { search, status, sort, fromDate, toDate, trash, page = 1, limit = 10 } = req.query;
 
-    const query = { role: "user" };
+    const isTrash = trash === "true" || trash === true;
+    const query = {
+      role: "user",
+      isDeleted: isTrash ? true : { $ne: true }
+    };
 
     if (search && search.trim()) {
       const escaped = escapeRegex(search.trim());
@@ -318,18 +322,19 @@ export const getAdminUsers = async (req, res) => {
       }
     }
 
-    // Date range filter on user registration (createdAt)
+    // Date range filter on user registration (createdAt) or deletedAt for trash
     if (fromDate || toDate) {
-      query.createdAt = {};
+      const dateField = isTrash ? "deletedAt" : "createdAt";
+      query[dateField] = {};
       if (fromDate) {
         const start = new Date(fromDate);
         start.setHours(0, 0, 0, 0);
-        query.createdAt.$gte = start;
+        query[dateField].$gte = start;
       }
       if (toDate) {
         const end = new Date(toDate);
         end.setHours(23, 59, 59, 999);
-        query.createdAt.$lte = end;
+        query[dateField].$lte = end;
       }
     }
 
@@ -361,8 +366,9 @@ export const getAdminUsers = async (req, res) => {
       }
     });
 
-    const totalUsersCount = await User.countDocuments({ role: "user" });
-    const activeUsersCount = await User.countDocuments({ role: "user", isVerified: true });
+    const totalUsersCount = await User.countDocuments({ role: "user", isDeleted: { $ne: true } });
+    const activeUsersCount = await User.countDocuments({ role: "user", isDeleted: { $ne: true }, isVerified: true });
+    const trashUsersCount = await User.countDocuments({ role: "user", isDeleted: true });
 
     let totalRevenueAllUsers = 0;
     spendAgg.forEach((item) => {
@@ -399,6 +405,8 @@ export const getAdminUsers = async (req, res) => {
         isVerified: u.isVerified !== false,
         status: u.isVerified !== false ? "Active" : "Inactive",
         createdAt: u.createdAt,
+        deletedAt: u.deletedAt || null,
+        isDeleted: Boolean(u.isDeleted),
         addresses: u.addresses || []
       };
     });
@@ -416,6 +424,7 @@ export const getAdminUsers = async (req, res) => {
         stats: {
           totalUsers: totalUsersCount,
           activeUsers: activeUsersCount,
+          trashUsers: trashUsersCount,
           totalRevenue: totalRevenueAllUsers
         }
       }
@@ -455,6 +464,7 @@ export const updateAdminUser = async (req, res) => {
   }
 };
 
+// Soft delete a single user -> moves to trash
 export const deleteAdminUser = async (req, res) => {
   try {
     const { id } = req.params;
@@ -467,14 +477,137 @@ export const deleteAdminUser = async (req, res) => {
       return res.status(403).json({ success: false, message: "Admin users cannot be deleted" });
     }
 
+    user.isDeleted = true;
+    user.deletedAt = new Date();
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "User moved to trash successfully"
+    });
+  } catch (error) {
+    console.error("Error soft deleting user:", error);
+    return res.status(500).json({ success: false, message: "Failed to delete user" });
+  }
+};
+
+// Bulk soft delete users -> moves to trash
+export const bulkSoftDeleteUsers = async (req, res) => {
+  try {
+    const { userIds } = req.body;
+    if (!Array.isArray(userIds) || userIds.length === 0) {
+      return res.status(400).json({ success: false, message: "Please provide an array of userIds" });
+    }
+
+    const result = await User.updateMany(
+      { _id: { $in: userIds }, role: { $ne: "admin" } },
+      { $set: { isDeleted: true, deletedAt: new Date() } }
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: `${result.modifiedCount} user(s) moved to trash`,
+      modifiedCount: result.modifiedCount
+    });
+  } catch (error) {
+    console.error("Error in bulkSoftDeleteUsers:", error);
+    return res.status(500).json({ success: false, message: "Failed to move users to trash" });
+  }
+};
+
+// Restore a single user from trash
+export const restoreAdminUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    user.isDeleted = false;
+    user.deletedAt = null;
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "User restored successfully",
+      data: user
+    });
+  } catch (error) {
+    console.error("Error restoring user:", error);
+    return res.status(500).json({ success: false, message: "Failed to restore user" });
+  }
+};
+
+// Bulk restore users from trash
+export const bulkRestoreUsers = async (req, res) => {
+  try {
+    const { userIds } = req.body;
+    if (!Array.isArray(userIds) || userIds.length === 0) {
+      return res.status(400).json({ success: false, message: "Please provide an array of userIds" });
+    }
+
+    const result = await User.updateMany(
+      { _id: { $in: userIds } },
+      { $set: { isDeleted: false, deletedAt: null } }
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: `${result.modifiedCount} user(s) restored successfully`,
+      modifiedCount: result.modifiedCount
+    });
+  } catch (error) {
+    console.error("Error in bulkRestoreUsers:", error);
+    return res.status(500).json({ success: false, message: "Failed to restore users" });
+  }
+};
+
+// Permanently delete a single user
+export const permanentDeleteAdminUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    if (user.role === "admin") {
+      return res.status(403).json({ success: false, message: "Admin users cannot be permanently deleted" });
+    }
+
     await User.findByIdAndDelete(id);
 
     return res.status(200).json({
       success: true,
-      message: "User deleted successfully"
+      message: "User permanently deleted from database"
     });
   } catch (error) {
-    console.error("Error deleting user:", error);
-    return res.status(500).json({ success: false, message: "Failed to delete user" });
+    console.error("Error permanently deleting user:", error);
+    return res.status(500).json({ success: false, message: "Failed to permanently delete user" });
+  }
+};
+
+// Bulk permanent delete users from trash
+export const bulkPermanentDeleteUsers = async (req, res) => {
+  try {
+    const { userIds } = req.body;
+    if (!Array.isArray(userIds) || userIds.length === 0) {
+      return res.status(400).json({ success: false, message: "Please provide an array of userIds" });
+    }
+
+    const result = await User.deleteMany({
+      _id: { $in: userIds },
+      role: { $ne: "admin" }
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: `${result.deletedCount} user(s) permanently deleted`,
+      deletedCount: result.deletedCount
+    });
+  } catch (error) {
+    console.error("Error in bulkPermanentDeleteUsers:", error);
+    return res.status(500).json({ success: false, message: "Failed to permanently delete users" });
   }
 };

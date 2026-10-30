@@ -1,5 +1,0 @@
-$kind: http-request
-name: Get All Homas
-order: 3000
-method: GET
-url: '{{baseUrl}}/api/homas'
