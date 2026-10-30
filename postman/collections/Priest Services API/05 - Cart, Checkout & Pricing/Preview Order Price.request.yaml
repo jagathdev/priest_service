@@ -1,0 +1,31 @@
+$kind: http-request
+name: Preview Order Price
+order: 1000
+method: POST
+url: '{{baseUrl}}/api/orders/preview'
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "serviceId": "6abd0362cd62648ac4fa1c4b",
+      "serviceType": "Puja",
+      "packageName": "Individual Puja",
+      "participants": [
+        {
+          "name": "Devotee Name",
+          "gotra": "Kashyapa",
+          "doesNotKnowGotra": false
+        }
+      ],
+      "offerings": [
+        {
+          "name": "Pitru Shanti Goseva",
+          "priceINR": 201
+        }
+      ],
+      "promoCode": "FESTIVE100",
+      "currency": "INR"
+    }

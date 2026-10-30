@@ -1,0 +1,25 @@
+$kind: http-request
+name: Create Hero Banner
+order: 1000
+method: POST
+url: '{{baseUrl}}/api/hero-banners'
+headers:
+  - key: Content-Type
+    value: application/json
+  - key: Authorization
+    value: 'Bearer {{adminToken}}'
+body:
+  type: json
+  content: |-
+    {
+      "title": "Karthigai Deepam Special Puja",
+      "tagLine": "Festival of Lights",
+      "description": "Light lamps at sacred Thiruvannamalai temple.",
+      "cta": {
+        "text": "Book Now",
+        "url": "/puja/karthigai-deepam"
+      },
+      "imageUrl": "/images/deepam_banner.jpg",
+      "isActive": true,
+      "displayOrder": 1
+    }

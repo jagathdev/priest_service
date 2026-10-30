@@ -1,0 +1,11 @@
+$kind: http-request
+name: Delete Puja
+order: 3000
+method: DELETE
+url: '{{baseUrl}}/api/pujas/:id'
+headers:
+  - key: Authorization
+    value: 'Bearer {{adminToken}}'
+pathVariables:
+  - key: id
+    value: 6ac34786f7cfde13bd90239c

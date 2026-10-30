@@ -1,0 +1,8 @@
+$kind: http-request
+name: Get Single Homa
+order: 4000
+method: GET
+url: '{{baseUrl}}/api/homas/:id'
+pathVariables:
+  - key: id
+    value: maha-ganapati-homa

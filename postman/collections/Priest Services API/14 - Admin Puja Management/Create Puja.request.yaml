@@ -1,0 +1,32 @@
+$kind: http-request
+name: Create Puja
+order: 1000
+method: POST
+url: '{{baseUrl}}/api/pujas'
+headers:
+  - key: Content-Type
+    value: application/json
+  - key: Authorization
+    value: 'Bearer {{adminToken}}'
+body:
+  type: json
+  content: |-
+    {
+      "title": "Maha Mrityunjaya Puja",
+      "slug": "maha-mrityunjaya-puja",
+      "subtitle": "Conquering Health Challenges & Longevity",
+      "description": "Vedic ritual for rejuvenation and long life.",
+      "imageUrl": "/images/mrityunjaya_puja.png",
+      "location": "AstroVed Homa Center, Chennai",
+      "date": "15-11-2026",
+      "eventDateTime": "2026-11-15T02:30:00.000Z",
+      "deity": "Lord Shiva",
+      "status": "active",
+      "packages": [
+        {
+          "name": "Individual",
+          "priceINR": 1500,
+          "description": "Individual Sankalpam"
+        }
+      ]
+    }

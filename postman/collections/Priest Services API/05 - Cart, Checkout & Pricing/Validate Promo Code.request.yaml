@@ -1,0 +1,15 @@
+$kind: http-request
+name: Validate Promo Code
+order: 2000
+method: POST
+url: '{{baseUrl}}/api/promos/apply'
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "code": "DIWALI500",
+      "cartTotal": 2500
+    }

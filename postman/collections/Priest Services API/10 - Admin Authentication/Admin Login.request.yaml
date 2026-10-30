@@ -1,0 +1,23 @@
+$kind: http-request
+name: Admin Login
+order: 1000
+method: POST
+url: '{{baseUrl}}/api/admin/login'
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "email": "admin@astroved.com",
+      "password": "astroved_admin_2026"
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      const res = pm.response.json();
+      if (res.token) {
+        pm.collectionVariables.set("adminToken", res.token);
+      }

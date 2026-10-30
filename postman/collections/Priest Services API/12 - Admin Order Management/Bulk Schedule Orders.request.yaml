@@ -1,0 +1,17 @@
+$kind: http-request
+name: Bulk Schedule Orders
+order: 4000
+method: POST
+url: '{{baseUrl}}/api/admin/orders/bulk-schedule'
+headers:
+  - key: Content-Type
+    value: application/json
+  - key: Authorization
+    value: 'Bearer {{adminToken}}'
+body:
+  type: json
+  content: |-
+    {
+      "service": "Rameshwaram Tharpanam",
+      "scheduledDate": "2026-11-08T03:30:00.000Z"
+    }

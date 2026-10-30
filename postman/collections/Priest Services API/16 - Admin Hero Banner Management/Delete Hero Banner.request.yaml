@@ -1,0 +1,11 @@
+$kind: http-request
+name: Delete Hero Banner
+order: 3000
+method: DELETE
+url: '{{baseUrl}}/api/hero-banners/:id'
+headers:
+  - key: Authorization
+    value: 'Bearer {{adminToken}}'
+pathVariables:
+  - key: id
+    value: 60d5ecb8b392d700153f93c1

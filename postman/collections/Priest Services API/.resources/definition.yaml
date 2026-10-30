@@ -1,0 +1,11 @@
+$kind: collection
+description: Official REST API collection for Priest Services backend. Organized by user roles and application flows.
+auth:
+  type: bearer
+  credentials:
+    token: "{{authToken}}"
+variables:
+  baseUrl: http://localhost:8564
+  authToken: ""
+  adminToken: ""
+  userId: ""

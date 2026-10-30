@@ -1,0 +1,16 @@
+$kind: http-request
+name: 'WhatsApp Opt-in'
+order: 1000
+method: POST
+url: '{{baseUrl}}/api/whatsapp/opt-in'
+headers:
+  - key: Content-Type
+    value: application/json
+  - key: Authorization
+    value: 'Bearer {{authToken}}'
+body:
+  type: json
+  content: |-
+    {
+      "phone": "9876543210"
+    }

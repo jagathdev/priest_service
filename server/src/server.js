@@ -3,6 +3,7 @@ import { validateEnv } from './config/env.js';
 import connectDB from './config/db.js';
 import setupAdmin from './config/setupAdmin.js';
 import app from './app.js';
+import { initPujaDateScheduler } from './services/pujaDateCalculator.service.js';
 
 // 1. Validate environment variables at startup
 validateEnv();
@@ -13,6 +14,7 @@ const PORT = process.env.PORT || 8564;
 connectDB()
     .then(async () => {
         await setupAdmin();
+        initPujaDateScheduler();
     })
     .catch((err) => {
         console.error("FATAL: Could not connect to Database on startup:", err);

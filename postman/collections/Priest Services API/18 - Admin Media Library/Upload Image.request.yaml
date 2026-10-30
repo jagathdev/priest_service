@@ -1,0 +1,20 @@
+$kind: http-request
+name: Upload Image
+order: 1000
+method: POST
+url: '{{baseUrl}}/api/upload'
+body:
+  type: formdata
+  content:
+    - key: image
+      type: file
+      src: ''
+      description: 'Image file (.png, .jpg, .jpeg, .webp, max 5MB)'
+    - key: customName
+      type: text
+      value: shani-pooja-banner
+      description: Clean slug identifier (optional)
+    - key: overwrite
+      type: text
+      value: 'false'
+      description: Overwrite existing file (optional)

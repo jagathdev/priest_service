@@ -1,57 +1,327 @@
-# API Endpoints Documentation
+# Priest Services API Documentation
 
-Comprehensive documentation for all REST API endpoints configured and mounted in `server.js` and `app.js`.
+Official, comprehensive REST API specification for Priest Services backend. This document is organized by user roles and application flows (Client Devotee Website vs. Admin Management Portal).
 
-- **Base URL (Production):** `https://priestservices.astroved.com`
-- **Base URL (Local Development):** `http://localhost:8564` (Configurable via `process.env.PORT`)
+- **Production Base URL:** `https://priestservices.astroved.com`
+- **Local Development Base URL:** `http://localhost:8564`
+- **Content-Type:** `application/json` (except file uploads which use `multipart/form-data`)
+
+---
+
+## Architecture & Authentication Overview
+
+### 1. Devotee Authentication
+- Devotees authenticate via SMS OTP.
+- Upon verification, the backend issues a JSON Web Token (JWT).
+- Protected devotee endpoints require the header:  
+  `Authorization: Bearer <user_jwt_token>`
+
+### 2. Admin Authentication
+- Admins authenticate via secure email and password.
+- Upon successful login, the backend issues an Admin JWT with `role: "admin"`.
+- All admin endpoints require:  
+  `Authorization: Bearer <admin_jwt_token>`
+
+### 3. Standard HTTP Status Codes
+| Code | Meaning |
+|---|---|
+| `200 OK` | Request completed successfully. |
+| `201 Created` | New record created successfully. |
+| `400 Bad Request` | Validation error or missing required fields. |
+| `401 Unauthorized` | Missing, invalid, or expired JWT token. |
+| `403 Forbidden` | Insufficient permissions (e.g. non-admin attempting admin operation). |
+| `404 Not Found` | Requested resource does not exist. |
+| `409 Conflict` | Duplicate resource (e.g. image name already exists). |
+| `429 Too Many Requests` | Rate limit exceeded. |
+| `500 Internal Server Error` | Unhandled server error. |
 
 ---
 
 ## Table of Contents
-1. [Health Check API](#1-health-check-api)
-2. [Hero Banners API](#2-hero-banners-api)
-3. [Pujas API](#3-pujas-api)
-4. [Homas API](#4-homas-api)
-5. [Pooja Details API](#5-pooja-details-api)
-6. [OTP & Authentication API](#6-otp--authentication-api)
-7. [Users API](#7-users-api)
-8. [Orders API](#8-orders-api)
-9. [Wishlist API](#9-wishlist-api)
-10. [Customer Queries API](#10-customer-queries-api)
-11. [Payments API (Razorpay)](#11-payments-api-razorpay)
-12. [Promo Codes API](#12-promo-codes-api)
-13. [WhatsApp Notifications API](#13-whatsapp-notifications-api)
-14. [Admin Management API](#14-admin-management-api)
+
+### PART 1: Devotee & Client Website APIs
+1. [Authentication & OTP](#1-authentication--otp-client)
+2. [Catalog & Discovery (Pujas, Homas, Banners)](#2-catalog--discovery-client)
+3. [User Profile & Address Book](#3-user-profile--address-book-client)
+4. [Wishlist](#4-wishlist-client)
+5. [Cart, Checkout & Pricing](#5-cart-checkout--pricing-client)
+6. [Payments & Razorpay Integration](#6-payments--razorpay-integration-client)
+7. [Devotee Orders & Livestream Tracking](#7-devotee-orders--livestream-tracking-client)
+8. [WhatsApp Notifications & Consent](#8-whatsapp-notifications--consent-client)
+9. [Customer Support & Inquiries](#9-customer-support--inquiries-client)
+
+### PART 2: Admin Portal Management APIs
+10. [Admin Authentication](#10-admin-authentication)
+11. [Admin Analytics & KPI Dashboard](#11-admin-analytics--kpi-dashboard)
+12. [Admin Order Management & Livestream Scheduling](#12-admin-order-management--livestream-scheduling)
+13. [Admin Devotee User Management](#13-admin-devotee-user-management)
+14. [Admin Puja & Ritual Catalog Management](#14-admin-puja--ritual-catalog-management)
+15. [Admin Homa Catalog Management](#15-admin-homa-catalog-management)
+16. [Admin Hero Banner Management](#16-admin-hero-banner-management)
+17. [Admin Promo Code Management](#17-admin-promo-code-management)
+18. [Admin Media Library & Asset Upload](#18-admin-media-library--asset-upload)
+
+### PART 3: Webhooks & System Operations
+19. [Razorpay Webhook](#19-razorpay-webhook)
+20. [System Health Check](#20-system-health-check)
 
 ---
 
-## 1. Health Check API
-**Base Path:** `/health`
+# PART 1: Devotee & Client Website APIs
 
-### 1.1 Server Health Status
-- **Endpoint:** `/health`
-- **Method:** `GET`
+## 1. Authentication & OTP (Client)
+
+### 1.1 Send Login / Verification OTP
+Initiates mobile verification by sending a 6-digit numeric OTP via SMS.
+- **Endpoint:** `POST /api/otp/sendOtp`
 - **Auth Required:** No
-- **Payload:** None
-- **Response:** `200 OK`
+- **Rate Limit:** 3 requests per 10 minutes per IP / mobile
+- **Request Payload:**
 ```json
 {
-  "status": "ok",
-  "timestamp": "2026-10-12T09:20:00.000Z"
+  "mobileNumber": "9876543210"
+}
+```
+- **Response (`200 OK`):**
+```json
+{
+  "success": true,
+  "message": "OTP sent successfully to 9876543210"
+}
+```
+- **Error Response (`400 Bad Request`):**
+```json
+{
+  "success": false,
+  "message": "Valid 10-digit mobile number is required"
 }
 ```
 
 ---
 
-## 2. Hero Banners API
-**Base Path:** `/api/hero-banners`
-
-### 2.1 Get All Active Hero Banners
-- **Endpoint:** `/api/hero-banners`
-- **Method:** `GET`
+### 1.2 Verify OTP & Login
+Validates the SMS OTP. If the user does not exist, an account is automatically created. Returns a signed JWT token and devotee user profile.
+- **Endpoint:** `POST /api/otp/verifyOtp`
 - **Auth Required:** No
-- **Payload:** None
-- **Response:** `200 OK`
+- **Rate Limit:** 5 verification attempts per 10 minutes
+- **Request Payload:**
+```json
+{
+  "mobileNumber": "9876543210",
+  "otp": "458921"
+}
+```
+- **Response (`200 OK`):**
+```json
+{
+  "success": true,
+  "message": "OTP verified successfully",
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "user": {
+    "_id": "60d5ecb8b392d700153f93c7",
+    "name": "Devotee Name",
+    "mobileNumber": "9876543210",
+    "whatsappNumber": "9876543210",
+    "email": "devotee@example.com",
+    "role": "user",
+    "isVerified": true
+  }
+}
+```
+- **Error Response (`400 Bad Request`):**
+```json
+{
+  "success": false,
+  "message": "Invalid or expired OTP. Please try again."
+}
+```
+
+---
+
+## 2. Catalog & Discovery (Client)
+
+### 2.1 Get All Pujas (With Auto-Calculated Recurring Dates)
+Retrieves the list of all available pujas. Auspicious recurring dates (Saturdays for Shani Puja, Sundays for Navagraha Puja, Amavasya for Rameshwaram Tharpanam) are calculated dynamically in Indian Standard Time (IST) and synchronized.
+- **Endpoint:** `GET /api/pujas`
+- **Auth Required:** No
+- **Query Parameters:** None
+- **Response (`200 OK`):**
+```json
+{
+  "success": true,
+  "count": 3,
+  "data": [
+    {
+      "_id": "6abd0334cd62648ac4fa1c49",
+      "title": "Shani Dosha Nivarana Puja",
+      "slug": "shani-dosha-nivarana-puja",
+      "shortTitle": "Shani Puja",
+      "subtitle": "Shani Dosha relief",
+      "badge": "Popular",
+      "description": "Seek Shani's grace through a traditional Vedic puja.",
+      "imageUrl": "/images/shani_puja.png",
+      "location": "AstroVed Homa Center, Chennai, Tamil Nadu",
+      "date": "07-11-2026",
+      "eventDateTime": "2026-11-07T02:30:00.000Z",
+      "time": "08:00 AM to 09:00 AM",
+      "deity": "Lord Shani",
+      "tithis": "Every Saturday",
+      "dosha": "Shani Dosha",
+      "benefit": "Career & Stability",
+      "packages": [
+        {
+          "name": "Individual Puja",
+          "priceINR": 525,
+          "priceUSD": 7,
+          "priceMYR": 32,
+          "description": "1 Devotee Sankalp"
+        },
+        {
+          "name": "Couple Puja",
+          "priceINR": 1001,
+          "priceUSD": 13,
+          "priceMYR": 60,
+          "description": "2 Devotees Sankalp"
+        },
+        {
+          "name": "Family Puja",
+          "priceINR": 2500,
+          "priceUSD": 32,
+          "priceMYR": 150,
+          "description": "Up to 4 Family Members"
+        }
+      ],
+      "offerings": [
+        {
+          "_id": "6ac34786f7cfde13bd902398",
+          "name": "Sesame Oil Archana",
+          "priceINR": 251,
+          "description": "Special archana with sacred sesame oil."
+        }
+      ],
+      "trustBadges": [
+        "Puja Video Delivered Within 48 hours",
+        "Verified & Experienced Pandits",
+        "Puja Performed in Sacred Temples",
+        "100% Authentic Vedic Rituals"
+      ]
+    }
+  ]
+}
+```
+
+---
+
+### 2.2 Get Single Puja Details by ID or Slug
+Retrieves comprehensive details for a specific puja including rituals, benefits, step-by-step process, FAQs, packages, and offerings.
+- **Endpoint:** `GET /api/pujas/:id`
+- **Auth Required:** No
+- **URL Parameters:**
+  - `:id` (MongoDB `_id` or clean `slug` e.g. `rameshwaram-tharpanam`)
+- **Response (`200 OK`):**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "6abd0362cd62648ac4fa1c4b",
+    "title": "Rameshwaram Tharpanam",
+    "slug": "rameshwaram-tharpanam",
+    "subtitle": "Sacred Ancestral Offering",
+    "description": "Traditional Tharpanam performed at sacred Rameshwaram.",
+    "imageUrl": "/Service images/rameshwaram_puja.png",
+    "date": "08-11-2026",
+    "time": "09:00 AM to 11:00 AM",
+    "eventDateTime": "2026-11-08T03:30:00.000Z",
+    "location": "Ramanathaswamy Temple, Rameshwaram, Tamil Nadu",
+    "about": "Tharpanam is the essential ritual to resolve Pitru karma...",
+    "benefits": [
+      {
+        "title": "Relief from Pitru Dosha",
+        "description": "Helps appease ancestral souls and clear roadblocks."
+      }
+    ],
+    "process": [
+      {
+        "title": "Sankalpam",
+        "description": "Making sacred resolve with devotee details."
+      }
+    ],
+    "packages": [
+      {
+        "name": "Individual Puja",
+        "priceINR": 1,
+        "description": "1 Devotee Sankalp"
+      }
+    ]
+  }
+}
+```
+
+---
+
+### 2.3 Get All Homas
+Retrieves all active Vedic fire lab (Homa) services.
+- **Endpoint:** `GET /api/homas`
+- **Auth Required:** No
+- **Response (`200 OK`):**
+```json
+{
+  "success": true,
+  "count": 2,
+  "data": [
+    {
+      "_id": "6ac14980de79cf10de45681a",
+      "title": "Maha Ganapati Homa",
+      "slug": "maha-ganapati-homa",
+      "subtitle": "Obstacle Removal & New Beginnings",
+      "imageUrl": "/images/ganapathi_homa.png",
+      "location": "AstroVed Fire Lab, Chennai",
+      "packages": [
+        {
+          "name": "Standard Homa",
+          "priceINR": 3500,
+          "priceUSD": 45,
+          "priceMYR": 210
+        }
+      ]
+    }
+  ]
+}
+```
+
+---
+
+### 2.4 Get Single Homa Details by ID or Slug
+- **Endpoint:** `GET /api/homas/:id`
+- **Auth Required:** No
+- **Response (`200 OK`):**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "6ac14980de79cf10de45681a",
+    "title": "Maha Ganapati Homa",
+    "slug": "maha-ganapati-homa",
+    "subtitle": "Obstacle Removal",
+    "about": "Maha Ganapati Homa invokes Lord Ganesha to remove obstacles...",
+    "packages": [
+      {
+        "name": "Standard Homa",
+        "priceINR": 3500,
+        "description": "Complete fire lab ritual with dedicated priests."
+      }
+    ]
+  }
+}
+```
+
+---
+
+### 2.5 Get Active Hero Banners
+Retrieves promotional hero banners for home and catalog pages.
+- **Endpoint:** `GET /api/hero-banners`
+- **Auth Required:** No
+- **Response (`200 OK`):**
 ```json
 {
   "success": true,
@@ -59,1567 +329,504 @@ Comprehensive documentation for all REST API endpoints configured and mounted in
   "data": [
     {
       "_id": "60d5ecb8b392d700153f93c1",
-      "tagLine": "Special Offer",
-      "title": "Ganesh Chaturthi Special",
-      "description": "Book your puja now and get 10% off.",
+      "title": "Perform Sacred Tharpanam at Rameshwaram",
+      "tagLine": "Ancestral Blessings",
+      "description": "Appease your ancestors on this upcoming Amavasya.",
       "cta": {
-        "text": "Book Now",
-        "url": "/puja/ganesh-chaturthi"
+        "text": "Book My Puja",
+        "url": "/puja/rameshwaram-tharpanam"
       },
-      "imageUrl": "https://example.com/banner.jpg",
+      "imageUrl": "/images/banner_rameshwaram.jpg",
       "isActive": true,
-      "displayOrder": 1,
-      "createdAt": "2026-10-01T12:00:00.000Z",
-      "updatedAt": "2026-10-01T12:00:00.000Z"
+      "displayOrder": 1
     }
   ]
 }
 ```
 
-### 2.2 Get Hero Banner by ID
-- **Endpoint:** `/api/hero-banners/:id`
-- **Method:** `GET`
-- **Auth Required:** No
-- **Payload:** None
-- **Response:** `200 OK`
-```json
-{
-  "success": true,
-  "data": {
-    "_id": "60d5ecb8b392d700153f93c1",
-    "tagLine": "Special Offer",
-    "title": "Ganesh Chaturthi Special",
-    "description": "Book your puja now and get 10% off.",
-    "cta": {
-      "text": "Book Now",
-      "url": "/puja/ganesh-chaturthi"
-    },
-    "imageUrl": "https://example.com/banner.jpg",
-    "isActive": true,
-    "displayOrder": 1,
-    "createdAt": "2026-10-01T12:00:00.000Z",
-    "updatedAt": "2026-10-01T12:00:00.000Z"
-  }
-}
-```
-
-### 2.3 Create Hero Banner (Admin)
-- **Endpoint:** `/api/hero-banners`
-- **Method:** `POST`
-- **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
-- **Payload:**
-```json
-{
-  "tagLine": "Special Offer",
-  "title": "Ganesh Chaturthi Special",
-  "description": "Book your puja now and get 10% off.",
-  "cta": {
-    "text": "Book Now",
-    "url": "/puja/ganesh-chaturthi"
-  },
-  "imageUrl": "https://example.com/banner.jpg",
-  "isActive": true,
-  "displayOrder": 1
-}
-```
-- **Response:** `201 Created`
-```json
-{
-  "success": true,
-  "message": "Hero banner created successfully",
-  "data": {
-    "_id": "60d5ecb8b392d700153f93c1",
-    "tagLine": "Special Offer",
-    "title": "Ganesh Chaturthi Special",
-    "description": "Book your puja now and get 10% off.",
-    "cta": {
-      "text": "Book Now",
-      "url": "/puja/ganesh-chaturthi"
-    },
-    "imageUrl": "https://example.com/banner.jpg",
-    "isActive": true,
-    "displayOrder": 1,
-    "createdAt": "2026-10-01T12:00:00.000Z",
-    "updatedAt": "2026-10-01T12:00:00.000Z"
-  }
-}
-```
-
-### 2.4 Update Hero Banner (Admin)
-- **Endpoint:** `/api/hero-banners/:id`
-- **Method:** `PUT`
-- **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
-- **Payload:**
-```json
-{
-  "title": "Updated Ganesh Chaturthi Special",
-  "displayOrder": 2
-}
-```
-- **Response:** `200 OK`
-```json
-{
-  "success": true,
-  "message": "Hero banner updated successfully",
-  "data": {
-    "_id": "60d5ecb8b392d700153f93c1",
-    "tagLine": "Special Offer",
-    "title": "Updated Ganesh Chaturthi Special",
-    "description": "Book your puja now and get 10% off.",
-    "cta": {
-      "text": "Book Now",
-      "url": "/puja/ganesh-chaturthi"
-    },
-    "imageUrl": "https://example.com/banner.jpg",
-    "isActive": true,
-    "displayOrder": 2,
-    "createdAt": "2026-10-01T12:00:00.000Z",
-    "updatedAt": "2026-10-05T12:00:00.000Z"
-  }
-}
-```
-
-### 2.5 Delete Hero Banner (Admin)
-- **Endpoint:** `/api/hero-banners/:id`
-- **Method:** `DELETE`
-- **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
-- **Payload:** None
-- **Response:** `200 OK`
-```json
-{
-  "success": true,
-  "message": "Hero banner deleted successfully"
-}
-```
-
 ---
 
-## 3. Pujas API
-**Base Path:** `/api/pujas`
+## 3. User Profile & Address Book (Client)
 
-### 3.1 Get All Pujas
-- **Endpoint:** `/api/pujas`
-- **Method:** `GET`
-- **Auth Required:** No
-- **Payload:** None
-- **Response:** `200 OK`
-```json
-{
-  "success": true,
-  "count": 1,
-  "data": [
-    {
-      "_id": "60d5ecb8b392d700153f93c2",
-      "name": "Ganesh Puja",
-      "title": "Ganesh Puja",
-      "description": "Removes obstacles and brings prosperity.",
-      "about": "Detailed about section for Ganesh Puja...",
-      "benefits": ["Removes Obstacles", "Brings Success"],
-      "process": ["Ganapati Sthapana", "Sankalpa", "Aarti"],
-      "deity": "Lord Ganesha",
-      "price": 1000,
-      "basePrice": 1000,
-      "extraParticipantPrice": 250,
-      "maxParticipants": 5,
-      "imageUrl": "https://example.com/ganesh-puja.jpg",
-      "image": "https://example.com/ganesh-puja.jpg",
-      "status": "active",
-      "isActive": true,
-      "createdAt": "2026-10-01T12:00:00.000Z",
-      "updatedAt": "2026-10-01T12:00:00.000Z"
-    }
-  ]
-}
-```
-
-### 3.2 Get Puja by ID
-- **Endpoint:** `/api/pujas/:id`
-- **Method:** `GET`
-- **Auth Required:** No
-- **Payload:** None
-- **Response:** `200 OK`
+### 3.1 Get Devotee Profile (Self)
+Retrieves the authenticated devotee's profile, including saved gotra, family details, and address book.
+- **Endpoint:** `GET /api/users/profile`
+- **Auth Required:** Yes (`Authorization: Bearer <user_jwt_token>`)
+- **Response (`200 OK`):**
 ```json
 {
   "success": true,
   "data": {
-    "_id": "60d5ecb8b392d700153f93c2",
-    "name": "Ganesh Puja",
-    "title": "Ganesh Puja",
-    "description": "Removes obstacles and brings prosperity.",
-    "about": "Detailed about section for Ganesh Puja...",
-    "benefits": ["Removes Obstacles", "Brings Success"],
-    "process": ["Ganapati Sthapana", "Sankalpa", "Aarti"],
-    "deity": "Lord Ganesha",
-    "price": 1000,
-    "basePrice": 1000,
-    "extraParticipantPrice": 250,
-    "maxParticipants": 5,
-    "imageUrl": "https://example.com/ganesh-puja.jpg",
-    "image": "https://example.com/ganesh-puja.jpg",
-    "status": "active",
-    "isActive": true,
-    "createdAt": "2026-10-01T12:00:00.000Z",
-    "updatedAt": "2026-10-01T12:00:00.000Z"
-  }
-}
-```
-
-### 3.3 Create Puja (Admin)
-- **Endpoint:** `/api/pujas`
-- **Method:** `POST`
-- **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
-- **Payload:**
-```json
-{
-  "title": "Ganesh Puja",
-  "description": "Removes obstacles and brings prosperity.",
-  "about": "Detailed about section for Ganesh Puja...",
-  "benefits": ["Removes Obstacles", "Brings Success"],
-  "process": ["Ganapati Sthapana", "Sankalpa", "Aarti"],
-  "deity": "Lord Ganesha",
-  "price": 1000,
-  "basePrice": 1000,
-  "extraParticipantPrice": 250,
-  "maxParticipants": 5,
-  "imageUrl": "https://example.com/ganesh-puja.jpg",
-  "status": "active",
-  "isActive": true
-}
-```
-- **Response:** `201 Created`
-```json
-{
-  "success": true,
-  "message": "Puja created successfully",
-  "data": {
-    "_id": "60d5ecb8b392d700153f93c2",
-    "name": "Ganesh Puja",
-    "title": "Ganesh Puja",
-    "description": "Removes obstacles and brings prosperity.",
-    "about": "Detailed about section for Ganesh Puja...",
-    "benefits": ["Removes Obstacles", "Brings Success"],
-    "process": ["Ganapati Sthapana", "Sankalpa", "Aarti"],
-    "deity": "Lord Ganesha",
-    "price": 1000,
-    "basePrice": 1000,
-    "extraParticipantPrice": 250,
-    "maxParticipants": 5,
-    "imageUrl": "https://example.com/ganesh-puja.jpg",
-    "image": "https://example.com/ganesh-puja.jpg",
-    "status": "active",
-    "isActive": true,
-    "createdAt": "2026-10-01T12:00:00.000Z",
-    "updatedAt": "2026-10-01T12:00:00.000Z"
-  }
-}
-```
-
-### 3.4 Update Puja (Admin)
-- **Endpoint:** `/api/pujas/:id`
-- **Method:** `PUT`
-- **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
-- **Payload:**
-```json
-{
-  "price": 1200,
-  "basePrice": 1200,
-  "extraParticipantPrice": 300
-}
-```
-- **Response:** `200 OK`
-```json
-{
-  "success": true,
-  "message": "Puja updated successfully",
-  "data": {
-    "_id": "60d5ecb8b392d700153f93c2",
-    "name": "Ganesh Puja",
-    "title": "Ganesh Puja",
-    "price": 1200,
-    "basePrice": 1200,
-    "extraParticipantPrice": 300
-  }
-}
-```
-
-### 3.5 Delete Puja (Admin)
-- **Endpoint:** `/api/pujas/:id`
-- **Method:** `DELETE`
-- **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
-- **Payload:** None
-- **Response:** `200 OK`
-```json
-{
-  "success": true,
-  "message": "Puja deleted successfully"
-}
-```
-
----
-
-## 4. Homas API
-**Base Path:** `/api/homas`
-
-### 4.1 Get All Homas
-- **Endpoint:** `/api/homas`
-- **Method:** `GET`
-- **Auth Required:** No
-- **Payload:** None
-- **Response:** `200 OK`
-```json
-{
-  "success": true,
-  "count": 1,
-  "data": [
-    {
-      "_id": "60d5ecb8b392d700153f93c3",
-      "name": "Lakshmi Homa",
-      "title": "Lakshmi Homa",
-      "description": "For wealth and prosperity.",
-      "about": "Detailed about section for Lakshmi Homa...",
-      "benefits": ["Wealth", "Prosperity"],
-      "process": ["Ganapati Sthapana", "Sankalpa", "Havan"],
-      "deity": "Goddess Lakshmi",
-      "price": 2500,
-      "basePrice": 2500,
-      "extraParticipantPrice": 500,
-      "maxParticipants": 5,
-      "imageUrl": "https://example.com/lakshmi-homa.jpg",
-      "image": "https://example.com/lakshmi-homa.jpg",
-      "status": "active",
-      "isActive": true,
-      "createdAt": "2026-10-01T12:00:00.000Z",
-      "updatedAt": "2026-10-01T12:00:00.000Z"
-    }
-  ]
-}
-```
-
-### 4.2 Get Homa by ID
-- **Endpoint:** `/api/homas/:id`
-- **Method:** `GET`
-- **Auth Required:** No
-- **Payload:** None
-- **Response:** `200 OK`
-```json
-{
-  "success": true,
-  "data": {
-    "_id": "60d5ecb8b392d700153f93c3",
-    "name": "Lakshmi Homa",
-    "title": "Lakshmi Homa",
-    "price": 2500,
-    "basePrice": 2500
-  }
-}
-```
-
-### 4.3 Create Homa (Admin)
-- **Endpoint:** `/api/homas`
-- **Method:** `POST`
-- **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
-- **Payload:**
-```json
-{
-  "title": "Lakshmi Homa",
-  "description": "For wealth and prosperity.",
-  "about": "Detailed about section for Lakshmi Homa...",
-  "benefits": ["Wealth", "Prosperity"],
-  "process": ["Ganapati Sthapana", "Sankalpa", "Havan"],
-  "deity": "Goddess Lakshmi",
-  "price": 2500,
-  "basePrice": 2500,
-  "extraParticipantPrice": 500,
-  "maxParticipants": 5,
-  "imageUrl": "https://example.com/lakshmi-homa.jpg",
-  "status": "active"
-}
-```
-- **Response:** `201 Created`
-```json
-{
-  "success": true,
-  "message": "Homa created successfully",
-  "data": {
-    "_id": "60d5ecb8b392d700153f93c3",
-    "name": "Lakshmi Homa",
-    "title": "Lakshmi Homa",
-    "price": 2500,
-    "basePrice": 2500,
-    "status": "active"
-  }
-}
-```
-
-### 4.4 Update Homa (Admin)
-- **Endpoint:** `/api/homas/:id`
-- **Method:** `PUT`
-- **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
-- **Payload:**
-```json
-{
-  "price": 2700,
-  "basePrice": 2700
-}
-```
-- **Response:** `200 OK`
-```json
-{
-  "success": true,
-  "message": "Homa updated successfully",
-  "data": {
-    "_id": "60d5ecb8b392d700153f93c3",
-    "price": 2700,
-    "basePrice": 2700
-  }
-}
-```
-
-### 4.5 Delete Homa (Admin)
-- **Endpoint:** `/api/homas/:id`
-- **Method:** `DELETE`
-- **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
-- **Payload:** None
-- **Response:** `200 OK`
-```json
-{
-  "success": true,
-  "message": "Homa deleted successfully"
-}
-```
-
----
-
-## 5. Pooja Details API
-**Base Path:** `/api/pooja-details`
-
-### 5.1 Get Pooja by ID
-- **Endpoint:** `/api/pooja-details/:poojaId`
-- **Method:** `GET`
-- **Auth Required:** No
-- **Payload:** None
-- **Response:** `200 OK`
-```json
-{
-  "success": true,
-  "data": {
-    "_id": "60d5ecb8b392d700153f93c2",
-    "name": "Ganesh Puja",
-    "title": "Ganesh Puja",
-    "description": "Removes obstacles and brings prosperity.",
-    "about": "Detailed about section for Ganesh Puja...",
-    "benefits": ["Removes Obstacles", "Brings Success"],
-    "process": ["Ganapati Sthapana", "Sankalpa", "Aarti"],
-    "deity": "Lord Ganesha",
-    "price": 1000,
-    "basePrice": 1000,
-    "extraParticipantPrice": 250,
-    "maxParticipants": 5,
-    "imageUrl": "https://example.com/ganesh-puja.jpg",
-    "status": "active",
-    "isActive": true
-  }
-}
-```
-
----
-
-## 6. OTP & Authentication API
-**Base Path:** `/api/otp`
-
-### 6.1 Send OTP
-- **Endpoint:** `/api/otp/sendOtp`
-- **Method:** `POST`
-- **Auth Required:** No
-- **Rate Limit:** `otpSendLimiter` (Max 5 requests per 10-minute window per IP + mobile key)
-- **Security & Constraints:**
-  - Enforces a 60-second cooldown between successive OTP requests for the same mobile number.
-  - Generates cryptographically secure 6-digit numeric OTPs.
-  - OTP values are securely hashed with SHA-256 before storage in MongoDB; plaintext OTP is never logged or stored.
-  - SMS gateway credentials and gateway URLs are masked/redacted in backend logs.
-- **Payload:**
-```json
-{
-  "mobileNumber": "9360270984"
-}
-```
-- **Response:** `200 OK`
-```json
-{
-  "success": true,
-  "message": "OTP sent successfully",
-  "data": {
-    "otpSent": true
-  }
-}
-```
-
-### 6.2 Verify OTP & Login
-- **Endpoint:** `/api/otp/verifyOtp`
-- **Method:** `POST`
-- **Auth Required:** No
-- **Rate Limit:** `otpVerifyLimiter` (Max 10 requests per 10-minute window per IP + mobile key)
-- **Security & Constraints:**
-  - Verifies OTP using timing-safe SHA-256 hash comparison (`crypto.timingSafeEqual`) to prevent timing attacks.
-  - Atomic attempt counter via MongoDB `$inc: { attempts: 1 }`.
-  - Maximum 5 failed verification attempts allowed; exceeding 5 attempts immediately locks out and deletes the OTP record.
-  - OTP expires automatically after 10 minutes (enforced via MongoDB TTL and server validation).
-- **Payload:**
-```json
-{
-  "mobileNumber": "9360270984",
-  "otp": "123456"
-}
-```
-- **Response:** `200 OK`
-```json
-{
-  "success": true,
-  "is_user": true,
-  "message": "Login successful",
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "data": {
-    "is_user": true,
-    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "user": {
-      "id": "6abd0358cd62648ac4fa1c4a",
-      "mobileNumber": "9360270984",
-      "name": "Jagathratchagan",
-      "email": "jagath@example.com",
-      "isVerified": true,
-      "walletBalance": 0,
-      "addresses": []
-    },
-    "isNewUser": false
-  }
-}
-```
-
----
-
-## 7. Users API
-**Base Path:** `/api/users`
-
-### 7.1 Get User Profile (Self)
-- **Endpoint:** `/api/users/profile`
-- **Method:** `GET`
-- **Auth Required:** Yes (`Authorization: Bearer <user_token>`)
-- **Payload:** None
-- **Response:** `200 OK`
-```json
-{
-  "success": true,
-  "data": {
-    "id": "6abd0358cd62648ac4fa1c4a",
+    "id": "60d5ecb8b392d700153f93c7",
     "name": "Jagathratchagan",
-    "email": "jagath@example.com",
-    "mobileNumber": "9360270984",
+    "email": "devotee@example.com",
+    "mobileNumber": "9876543210",
+    "whatsappNumber": "9876543210",
+    "gender": "Male",
+    "dob": "1995-05-15",
+    "placeOfBirth": "Chennai",
     "addresses": [
       {
+        "_id": "6ac21498af920cf10de45681",
         "type": "Home",
         "name": "Jagathratchagan",
-        "phone": "9360270984",
-        "addressLine1": "No 1, Main Road",
+        "phone": "9876543210",
+        "addressLine1": "No. 45 Temple Street",
+        "addressLine2": "Mylapore",
         "city": "Chennai",
         "state": "Tamil Nadu",
-        "pincode": "600001",
-        "country": "India",
-        "isDefault": true
+        "pincode": "600004"
       }
-    ],
-    "gender": "Male",
-    "dob": "1990-01-01",
-    "placeOfBirth": "Chennai",
-    "occupation": "Software Engineer"
+    ]
   }
 }
 ```
 
-### 7.2 Get User Profile by ID
-- **Endpoint:** `/api/users/profile/:userId`
-- **Method:** `GET`
-- **Auth Required:** Yes (`Authorization: Bearer <user_token>`)
-- **Security & Authorization:**
-  - Enforces resource ownership / IDOR prevention: Non-admin users can only retrieve their own profile matching `req.user.id`. Requesting another user's profile returns `403 Forbidden`.
-- **Payload:** None
-- **Response:** `200 OK`
-```json
-{
-  "success": true,
-  "data": {
-    "id": "6abd0358cd62648ac4fa1c4a",
-    "name": "Jagathratchagan",
-    "email": "jagath@example.com",
-    "mobileNumber": "9360270984",
-    "addresses": [],
-    "gender": "Male",
-    "dob": "1990-01-01",
-    "placeOfBirth": "Chennai",
-    "occupation": "Software Engineer"
-  }
-}
-```
+---
 
-### 7.3 Update User Profile
-- **Endpoint:** `/api/users/updateProfile`
-- **Method:** `PUT`
-- **Auth Required:** Yes (`Authorization: Bearer <user_token>`)
-- **Security & Validation:**
-  - IDOR Protection: Profile updates are strictly pinned to the authenticated user (`req.user.id`). Non-admin users cannot update another user's profile.
-  - Strict Email Validation: Enforces genuine email format regex (`/^[^\s@]+@[^\s@]+\.[^\s@]+$/`). Fabricated placeholder emails are rejected with `400 Bad Request`.
-- **Payload:**
+### 3.2 Update Devotee Profile & Addresses
+Updates personal information, WhatsApp contact, or adds/modifies delivery addresses for prasadam shipment.
+- **Endpoint:** `PUT /api/users/updateProfile`
+- **Auth Required:** Yes (`Authorization: Bearer <user_jwt_token>`)
+- **Request Payload:**
 ```json
 {
-  "userId": "6abd0358cd62648ac4fa1c4a",
-  "name": "Jagathratchagan",
-  "email": "jagath.updated@example.com",
+  "name": "Jagathratchagan S",
+  "email": "updated_email@example.com",
+  "whatsappNumber": "9876543210",
   "gender": "Male",
-  "dob": "1990-01-01",
-  "placeOfBirth": "Chennai",
-  "occupation": "Senior Software Engineer",
   "addresses": [
     {
       "type": "Home",
-      "name": "Jagathratchagan",
-      "phone": "9360270984",
-      "addressLine1": "No 1, Main Road",
-      "addressLine2": "Near Temple",
+      "name": "Jagathratchagan S",
+      "phone": "9876543210",
+      "addressLine1": "No. 45 Temple Street",
       "city": "Chennai",
       "state": "Tamil Nadu",
-      "pincode": "600001",
-      "country": "India",
-      "isDefault": true
+      "pincode": "600004"
     }
   ]
 }
 ```
-- **Response:** `200 OK`
+- **Response (`200 OK`):**
 ```json
 {
   "success": true,
   "message": "Profile updated successfully",
   "data": {
-    "id": "6abd0358cd62648ac4fa1c4a",
-    "name": "Jagathratchagan",
-    "email": "jagath.updated@example.com",
-    "mobileNumber": "9360270984",
-    "addresses": [
-      {
-        "type": "Home",
-        "name": "Jagathratchagan",
-        "phone": "9360270984",
-        "addressLine1": "No 1, Main Road",
-        "addressLine2": "Near Temple",
-        "city": "Chennai",
-        "state": "Tamil Nadu",
-        "pincode": "600001",
-        "country": "India",
-        "isDefault": true
-      }
-    ],
-    "gender": "Male",
-    "dob": "1990-01-01",
-    "placeOfBirth": "Chennai",
-    "occupation": "Senior Software Engineer"
+    "id": "60d5ecb8b392d700153f93c7",
+    "name": "Jagathratchagan S",
+    "email": "updated_email@example.com",
+    "whatsappNumber": "9876543210"
   }
 }
 ```
 
 ---
 
-## 8. Orders API
-**Base Path:** `/api/orders`
+## 4. Wishlist (Client)
 
-### 8.1 Get Order Status (Payment Status Polling)
-- **Endpoint:** `/api/orders/status`
-- **Method:** `GET`
-- **Query Params:** `razorpayOrderId=<string>`
-- **Auth Required:** No
-- **Rate Limit:** 60 requests per minute
-- **Description:** Polling endpoint used by the payment success / review page to read the live database status of an order. Exposes safe order details while omitting sensitive personal devotee information.
-- **Response:** `200 OK`
+### 4.1 Toggle Wishlist Item (Add / Remove)
+Adds or removes a puja or homa from the devotee's saved rituals.
+- **Endpoint:** `POST /api/wishlist/updateWishlist`
+- **Auth Required:** Yes (`Authorization: Bearer <user_jwt_token>`)
+- **Request Payload:**
+```json
+{
+  "userId": "60d5ecb8b392d700153f93c7",
+  "itemId": "6abd0334cd62648ac4fa1c49",
+  "itemType": "Pooja"
+}
+```
+*(itemType must be `"Pooja"` or `"Homa"`)*
+- **Response (`200 OK`):**
+```json
+{
+  "success": true,
+  "message": "Item added to wishlist successfully",
+  "action": "added"
+}
+```
+
+---
+
+### 4.2 Get Devotee Wishlist
+Retrieves all rituals saved by the user.
+- **Endpoint:** `GET /api/wishlist/:userId`
+- **Auth Required:** Yes (`Authorization: Bearer <user_jwt_token>`)
+- **Response (`200 OK`):**
 ```json
 {
   "success": true,
   "data": {
-    "orderId": "6ac06417d6fcac10cf339e5c",
-    "orderNumber": "PS-2026-000123",
-    "razorpayOrderId": "order_TjGKDZrwmLS1kA",
-    "paymentStatus": "paid",
-    "orderStatus": "confirmed",
-    "amount": 2500,
-    "currency": "INR",
-    "itemName": "Rameshwaram Tharpanam",
-    "bookingDate": "2026-10-12T00:00:00.000Z"
+    "poojas": [
+      {
+        "_id": "6abd0334cd62648ac4fa1c49",
+        "title": "Shani Dosha Nivarana Puja",
+        "slug": "shani-dosha-nivarana-puja",
+        "imageUrl": "/images/shani_puja.png",
+        "date": "07-11-2026"
+      }
+    ],
+    "homas": []
   }
 }
 ```
 
-### 8.2 Preview Order Price & Summary
-- **Endpoint:** `/api/orders/preview`
-- **Method:** `POST`
-- **Auth Required:** No
-- **Payload:**
+---
+
+## 5. Cart, Checkout & Pricing (Client)
+
+### 5.1 Preview Order Price Calculation
+Calculates the exact billing breakdown before initiating payment. Computes base package price, extra participant fees, optional offerings, and promo discounts.
+- **Endpoint:** `POST /api/orders/preview`
+- **Auth Required:** No (Optional auth supported)
+- **Request Payload:**
 ```json
 {
-  "poojaId": "6abd0362cd62648ac4fa1c4b",
+  "serviceId": "6abd0362cd62648ac4fa1c4b",
+  "serviceType": "Puja",
+  "packageName": "Individual Puja",
   "participants": [
     {
-      "name": "Jagathratchagan"
+      "name": "Devotee Name",
+      "gotra": "Kashyapa",
+      "doesNotKnowGotra": false
     }
   ],
-  "whatsappNumber": "9360270984",
-  "gotra": "shiva gotra",
-  "doesNotKnowGotra": false,
-  "wish": "For wealth and prosperity.",
-  "bookingDate": "2026-10-12T00:00:00.000Z"
-}
-```
-- **Response:** `200 OK`
-```json
-{
-  "success": true,
-  "data": {
-    "type": "pooja",
-    "service": {
-      "id": "6abd0362cd62648ac4fa1c4b",
-      "name": "Rameshwaram Tharpanam",
-      "image": "https://example.com/image.jpg"
-    },
-    "booking": {
-      "whatsappNumber": "9360270984",
-      "participants": [
-        {
-          "name": "Jagathratchagan"
-        }
-      ],
-      "gotra": "shiva gotra",
-      "doesNotKnowGotra": false,
-      "wish": "For wealth and prosperity.",
-      "bookingDate": "2026-10-12T00:00:00.000Z"
-    },
-    "pricing": {
-      "basePrice": 2500,
-      "extraParticipantCount": 0,
-      "extraParticipantAmount": 0,
-      "total": 2500,
-      "convenienceFee": 0,
-      "panditFee": 0,
-      "recordingFee": 0,
-      "currency": "INR"
-    }
-  }
-}
-```
-
-### 8.3 Get Orders for User
-- **Endpoint:** `/api/orders/user` (or `/api/orders/user/:userId`)
-- **Method:** `GET`
-- **Auth Required:** Yes (`Authorization: Bearer <user_token>`)
-- **Security & Authorization:**
-  - Retrieves orders strictly using the verified account identifier (`customer: req.user.id`), eliminating customer-entered phone regex lookups (IDOR prevention).
-  - Unpaid or abandoned orders (`paymentStatus: "pending"`) are filtered out from user order history until successful payment confirmation.
-- **Payload:** None
-- **Response:** `200 OK`
-```json
-{
-  "success": true,
-  "data": [
+  "offerings": [
     {
-      "_id": "6ac06417d6fcac10cf339e5c",
-      "pooja": "Rameshwaram Tharpanam",
-      "customer": "6abd0358cd62648ac4fa1c4a",
-      "customerName": "Jagathratchagan",
-      "orderNumber": "200627",
-      "whatsappNumber": "9360270984",
-      "mobileNumber": "9360270984",
-      "participants": [
-        {
-          "name": "Jagathratchagan"
-        }
-      ],
-      "gotra": "shiva gotra",
-      "doesNotKnowGotra": false,
-      "wish": "Prayers offered for family happiness and prosperity.",
-      "bookingDate": "2026-10-12T00:00:00.000Z",
-      "pricing": {
-        "basePrice": 2500,
-        "extraParticipantCount": 0,
-        "extraParticipantAmount": 0,
-        "total": 2500,
-        "currency": "INR"
-      },
-      "paymentDetails": {
-        "transactionId": "pay_TjGKajdznC2zO8",
-        "paymentMethod": "Razorpay",
-        "paymentDate": "2026-10-12T01:59:08.972Z"
-      },
-      "paymentStatus": "paid",
-      "orderStatus": "confirmed",
-      "createdAt": "2026-10-12T01:59:08.972Z"
+      "name": "Pitru Shanti Goseva",
+      "priceINR": 201
     }
-  ]
+  ],
+  "promoCode": "FESTIVE100",
+  "currency": "INR"
+}
+```
+- **Response (`200 OK`):**
+```json
+{
+  "success": true,
+  "pricing": {
+    "basePrice": 1,
+    "extraParticipantCount": 0,
+    "extraParticipantAmount": 0,
+    "offeringsAmount": 201,
+    "originalAmount": 202,
+    "discountAmount": 100,
+    "total": 102,
+    "currency": "INR"
+  },
+  "promoCode": "FESTIVE100"
 }
 ```
 
 ---
 
-## 9. Wishlist API
-**Base Path:** `/api/wishlist`
-
-### 9.1 Add / Remove Item from Wishlist
-- **Endpoint:** `/api/wishlist/updateWishlist`
-- **Method:** `POST`
-- **Auth Required:** Yes (`Authorization: Bearer <user_token>`)
-- **Security & Authorization:**
-  - Wishlist mutations are strictly pinned to the authenticated user (`req.user.id`).
-- **Payload:**
-```json
-{
-  "itemId": "60d5ecb8b392d700153f93c2",
-  "action": "add"
-}
-```
-*(Note: `action` accepts `"add"` or `"remove"`)*
-- **Response:** `200 OK`
-```json
-{
-  "success": true,
-  "message": "Wishlist updated successfully",
-  "data": {
-    "user": "6abd0358cd62648ac4fa1c4a",
-    "items": ["60d5ecb8b392d700153f93c2"]
-  }
-}
-```
-
-### 9.2 Get Wishlist by User ID
-- **Endpoint:** `/api/wishlist` (or `/api/wishlist/:userId`)
-- **Method:** `GET`
-- **Auth Required:** Yes (`Authorization: Bearer <user_token>`)
-- **Security & Authorization:**
-  - Pinned to `req.user.id`. Non-admin users cannot read or modify another user's wishlist.
-- **Payload:** None
-- **Response:** `200 OK`
-```json
-{
-  "success": true,
-  "data": {
-    "items": [
-      {
-        "_id": "60d5ecb8b392d700153f93c2",
-        "name": "Ganesh Puja",
-        "price": 1000,
-        "imageUrl": "https://example.com/ganesh-puja.jpg"
-      }
-    ]
-  }
-}
-```
-
----
-
-## 10. Customer Queries API
-**Base Path:** `/api/customerQueries`
-
-### 10.1 Create Customer Query / Support Request
-- **Endpoint:** `/api/customerQueries`
-- **Method:** `POST`
+### 5.2 Validate & Apply Promo Code
+Allows devotees to verify a discount code and see savings before checkout.
+- **Endpoint:** `POST /api/promos/apply`
 - **Auth Required:** No
-- **Payload:**
+- **Request Payload:**
 ```json
 {
-  "userId": "6abd0358cd62648ac4fa1c4a",
-  "name": "Jagathratchagan",
-  "mobileNumber": "9360270984",
-  "email": "jagath@example.com",
-  "bookingId": "200627",
-  "subject": "Booking Issue",
-  "message": "I would like to confirm my booking schedule.",
-  "consent": true
+  "code": "DIWALI500",
+  "cartTotal": 2500
 }
 ```
-*(Note: `subject` must be one of: `"Booking Issue"`, `"Puja Video Query"`, `"Refund/Cancellation"`, `"Other"`. `mobileNumber` must be 10 digits. `consent` must be `true`)*
-- **Response:** `201 Created`
-```json
-{
-  "success": true,
-  "message": "Your request has been submitted successfully",
-  "data": {
-    "queryId": "6abd0999cd62648ac4fa1c9f",
-    "status": "OPEN",
-    "createdAt": "2026-10-12T09:20:00.000Z"
-  }
-}
-```
-
----
-
-## 11. Payments API (Razorpay)
-**Base Path:** `/api/payments`
-
-### 11.1 Create Razorpay Order
-- **Endpoint:** `/api/payments/create-order`
-- **Method:** `POST`
-- **Auth Required:** No
-- **Security & Constraints:**
-  - `orderDetails` object is **strictly mandatory**. Path B (arbitrary direct amount without orderDetails) is completely removed; omitting `orderDetails` returns `400 Bad Request`.
-  - Server-side price calculation: The server recomputes prices using `computeServerPrice` based on package base price, per-extra participant fee (₹200), validated offerings, and validated promo discounts.
-  - Generates a cryptographically random receipt identifier on the server (`rcpt_<HEX>`).
-  - Automatically creates a pending `Order` record in MongoDB with `paymentStatus: "pending"`, `orderStatus: "created"`.
-- **Payload:**
-```json
-{
-  "orderDetails": {
-    "pooja": "Rameshwaram Tharpanam",
-    "serviceId": "6abd0362cd62648ac4fa1c4b",
-    "serviceType": "POOJA",
-    "customer": "6abd0358cd62648ac4fa1c4a",
-    "customerName": "Jagathratchagan",
-    "itemName": "Rameshwaram Tharpanam",
-    "mobileNumber": "9360270984",
-    "whatsappNumber": "919360270984",
-    "participants": [
-      { "name": "Jagath" },
-      { "name": "Friend" }
-    ],
-    "gotra": "Kashyapa",
-    "doesNotKnowGotra": false,
-    "wish": "Peace and good health",
-    "promoCode": "FESTIVE50",
-    "packageId": "pkg-1",
-    "offerings": [
-      {
-        "name": "Vastra Daan",
-        "priceINR": 501,
-        "description": "Offer sacred clothes to the deity.",
-        "imageUrl": "/images/vastra.jpg"
-      },
-      {
-        "name": "Kumkum Archana",
-        "priceINR": 101,
-        "description": "Offering of Kumkum for blessings.",
-        "imageUrl": ""
-      }
-    ],
-    "pricing": {
-      "basePrice": 1251,
-      "extraParticipantCount": 1,
-      "extraParticipantAmount": 200,
-      "offeringsAmount": 602,
-      "total": 2053
-    }
-  }
-}
-```
-- **Response:** `200 OK`
-```json
-{
-  "success": true,
-  "message": "Payment order created successfully",
-  "data": {
-    "orderId": "order_TjGKDZrwmLS1kA",
-    "amount": 205300,
-    "currency": "INR",
-    "notes": {
-      "uniqueId": "A1B2C3D4E5F67890"
-    },
-    "keyId": "rzp_test_xxxxxx",
-    "dbOrderId": "6ac06417d6fcac10cf339e5c",
-    "orderNumber": "ORD-123456-7890"
-  }
-}
-```
-
-### 11.2 Verify Payment Signature & Finalize Order
-- **Endpoint:** `/api/payments/verify`
-- **Method:** `POST`
-- **Auth Required:** No
-- **Security & Constraints:**
-  - Verifies HMAC-SHA256 signature against Razorpay key secret.
-  - Fetches original payment status directly from Razorpay gateway API (`fetchRazorpayPayment`).
-  - No manual order creation fallback: If no pending order exists for `razorpayOrderId`, returns `404 Not Found` (`"Order not found for the provided payment."`).
-  - **Authentic Razorpay status conversion**:
-    - **`captured`**: Atomically transitions order to `paid` / `confirmed` via `markOrderPaid`. Returns `200 OK`.
-    - **`authorized`**: Updates order to `authorized`. Returns `200 OK`.
-    - **`failed`**: Does **NOT** convert the order to paid. Updates order `paymentStatus: "failed"` and returns `400 Bad Request` with `status: "failed"` and the gateway decline reason.
-    - **`pending` / `inconclusive`**: Returns `202 Accepted` with `status: "pending"` to guide client to bounded polling.
-- **Payload:**
-```json
-{
-  "razorpayOrderId": "order_TjGKDZrwmLS1kA",
-  "razorpayPaymentId": "pay_TjGKajdznC2zO8",
-  "razorpaySignature": "457b1f686661120c09ba6b0db4794ce1a98ad8e3b8c1fa5e4d90bbda793e6983"
-}
-```
-- **Response (Captured Payment):** `200 OK`
-```json
-{
-  "success": true,
-  "status": "captured",
-  "message": "Payment verified successfully",
-  "data": {
-    "razorpayOrderId": "order_TjGKDZrwmLS1kA",
-    "razorpayPaymentId": "pay_TjGKajdznC2zO8",
-    "orderId": "6ac06417d6fcac10cf339e5c",
-    "orderNumber": "ORD-123456-7890"
-  }
-}
-```
-- **Response (Failed Payment):** `400 Bad Request`
-```json
-{
-  "success": false,
-  "status": "failed",
-  "message": "Payment failed at bank or gateway"
-}
-```
-
-### 11.3 Secure Live Razorpay Webhook
-- **Endpoint:** `/api/payments/getRazorpayWebhook`
-- **Method:** `POST`
-- **Auth Required:** Signature-verified (`X-Razorpay-Signature`, `X-Razorpay-Event-Id`)
-- **Headers:**
-  - `Content-Type: application/json`
-  - `x-razorpay-signature: <hex-digest-of-raw-body-with-RAZORPAY_WEBHOOK_SECRET>`
-  - `x-razorpay-event-id: <unique-event-id>`
-- **Security & Constraints:**
-  - Whitelisted from global rate limiting to prevent dropping webhook notifications.
-  - Raw-body buffer verification using `crypto.timingSafeEqual` to avoid timing attacks.
-  - Idempotent event processing: records `WebhookEvent` by `eventId`; duplicate events immediately return `200 OK`.
-  - Status downgrade protection: a late `payment.failed` event cannot overwrite an already `captured` payment.
-  - Converts orders strictly on `payment.captured` or `order.paid` via atomic `markOrderPaid`.
-- **Payload:** Standard Razorpay Webhook JSON payload
-```json
-{
-  "entity": "event",
-  "account_id": "acc_xxxxxx",
-  "event": "payment.captured",
-  "contains": ["payment"],
-  "payload": {
-    "payment": {
-      "entity": {
-        "id": "pay_TjGKajdznC2zO8",
-        "entity": "payment",
-        "amount": 205300,
-        "currency": "INR",
-        "status": "captured",
-        "order_id": "order_TjGKDZrwmLS1kA",
-        "method": "upi",
-        "notes": {
-          "uniqueId": "A1B2C3D4E5F67890"
-        }
-      }
-    }
-  }
-}
-```
-- **Response:** `200 OK`
-```json
-{
-  "success": true,
-  "message": "Webhook processed successfully"
-}
-```
-
-### 11.4 Legacy Razorpay Webhook Callback
-- **Endpoint:** `/api/payments/webhook-response`
-- **Method:** `POST`
-- **Auth Required:** No
-- **Description:** Backward compatibility webhook callback.
-- **Payload:**
-```json
-{
-  "razorpayres": {
-    "event": "payment.captured",
-    "payload": {
-      "payment": {
-        "entity": {
-          "id": "pay_TjGKajdznC2zO8",
-          "amount": 250000,
-          "status": "captured"
-        }
-      }
-    }
-  }
-}
-```
-- **Response:** `200 OK`
-```json
-{
-  "success": true,
-  "message": "Razorpay webhook response received"
-}
-```
-
----
-
-## 12. Promo Codes API
-**Base Path:** `/api/promos`
-
-### 12.1 Apply Promo Code (Customer)
-- **Endpoint:** `/api/promos/apply`
-- **Method:** `POST`
-- **Auth Required:** Yes (`Authorization: Bearer <user_token>`)
-- **Security & Case Normalization:**
-  - Service type casing: Accepts standard variations (`POOJA`, `HOMA`, `Puja`, `Homa`, `pooja`, `homa`) and normalizes canonically to `POOJA` or `HOMA`.
-  - Promo applicability: Checks if code is valid for `"ALL"`, `"POOJA"`, or `"HOMA"`.
-  - Validates active status, start/end dates, order minimum amount, total usage limits, and per-user limits.
-- **Payload:**
-```json
-{
-  "code": "FESTIVE50",
-  "orderAmount": 2000,
-  "serviceType": "POOJA",
-  "packageId": "6abd0362cd62648ac4fa1c4b",
-  "userId": "6abd0358cd62648ac4fa1c4a"
-}
-```
-- **Response:** `200 OK`
+- **Response (`200 OK`):**
 ```json
 {
   "success": true,
   "message": "Promo code applied successfully",
   "data": {
-    "promoCode": "FESTIVE50",
-    "discountType": "PERCENTAGE",
-    "discountValue": 50,
-    "orderAmount": 2000,
+    "code": "DIWALI500",
+    "discountType": "fixed",
+    "discountValue": 500,
     "discountAmount": 500,
-    "finalAmount": 1500
+    "finalAmount": 2000
+  }
+}
+```
+- **Error Response (`400 Bad Request`):**
+```json
+{
+  "success": false,
+  "message": "Minimum order value of INR 1000 required for this promo code."
+}
+```
+
+---
+
+## 6. Payments & Razorpay Integration (Client)
+
+### 6.1 Create Razorpay Payment Order
+Reserves the order in MongoDB with `paymentStatus: "pending"` and initializes a Razorpay order ID.
+- **Endpoint:** `POST /api/payments/create-order`
+- **Auth Required:** Yes (`Authorization: Bearer <user_jwt_token>`)
+- **Request Payload:**
+```json
+{
+  "serviceId": "6abd0362cd62648ac4fa1c4b",
+  "serviceType": "Puja",
+  "packageName": "Individual Puja",
+  "customerName": "Jagathratchagan",
+  "mobileNumber": "9876543210",
+  "whatsappNumber": "9876543210",
+  "participants": [
+    {
+      "name": "Jagathratchagan",
+      "gotra": "Kashyapa",
+      "doesNotKnowGotra": false
+    }
+  ],
+  "wish": "Seeking health, peace and ancestral liberation.",
+  "offerings": [
+    {
+      "name": "Pitru Shanti Goseva",
+      "priceINR": 201
+    }
+  ],
+  "promoCode": "FESTIVE100",
+  "currency": "INR"
+}
+```
+- **Response (`200 OK`):**
+```json
+{
+  "success": true,
+  "razorpayOrderId": "order_Rz91048KLAjd01",
+  "amount": 10200,
+  "currency": "INR",
+  "orderNumber": "PS-2026-000108",
+  "keyId": "rzp_test_lHaqA31HDZDSHE"
+}
+```
+*(amount is returned in paise for the Razorpay Checkout SDK)*
+
+---
+
+### 6.2 Verify Payment Signature & Confirm Booking
+Called by the client immediately after Razorpay checkout returns the payment signature. Cryptographically verifies HMAC SHA-256 and marks order as `paid` & `confirmed`.
+- **Endpoint:** `POST /api/payments/verify`
+- **Auth Required:** No (Optional auth supported)
+- **Request Payload:**
+```json
+{
+  "razorpay_order_id": "order_Rz91048KLAjd01",
+  "razorpay_payment_id": "pay_TjGKajdznC2zO8",
+  "razorpay_signature": "e5b8d0c2e987f61ad8394bc1234..."
+}
+```
+- **Response (`200 OK`):**
+```json
+{
+  "success": true,
+  "message": "Payment verified and booking confirmed successfully",
+  "order": {
+    "_id": "6ac06417d6fcac10cf339e5c",
+    "orderNumber": "PS-2026-000108",
+    "orderStatus": "confirmed",
+    "paymentStatus": "paid",
+    "paymentDetails": {
+      "transactionId": "pay_TjGKajdznC2zO8",
+      "paymentMethod": "Razorpay",
+      "paymentDate": "2026-10-30T10:00:00.000Z"
+    }
   }
 }
 ```
 
-### 12.2 Get All Promo Codes (Admin)
-- **Endpoint:** `/api/promos`
-- **Method:** `GET`
-- **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
-- **Payload:** None
-- **Response:** `200 OK`
+---
+
+## 7. Devotee Orders & Livestream Tracking (Client)
+
+### 7.1 Get Order Status (Payment Status Polling)
+Used by payment success and confirmation redirect pages to poll until the webhook or verification confirms the order.
+- **Endpoint:** `GET /api/orders/status`
+- **Auth Required:** No
+- **Query Parameters:**
+  - `orderNumber` (e.g. `PS-2026-000108`) OR `transactionId`
+- **Response (`200 OK`):**
+```json
+{
+  "success": true,
+  "status": "paid",
+  "orderStatus": "confirmed",
+  "orderNumber": "PS-2026-000108",
+  "scheduledDate": "2026-11-08T03:30:00.000Z",
+  "videoLink": "https://youtube.com/live/priest-service-live"
+}
+```
+
+---
+
+### 7.2 Get Devotee Order History
+Retrieves all orders booked by the authenticated devotee.
+- **Endpoint:** `GET /api/orders/user/:userId`
+- **Auth Required:** Yes (`Authorization: Bearer <user_jwt_token>`)
+- **Response (`200 OK`):**
 ```json
 {
   "success": true,
   "count": 1,
   "data": [
     {
-      "_id": "670985123456789abcdef012",
-      "code": "FESTIVE50",
-      "description": "50% off on all Pujas up to ₹500",
-      "discountType": "PERCENTAGE",
-      "discountValue": 50,
-      "maxDiscount": 500,
-      "minimumOrderAmount": 1000,
-      "startDate": "2026-10-01T00:00:00.000Z",
-      "endDate": "2026-10-31T23:59:59.000Z",
-      "usageLimit": 100,
-      "usageLimitPerUser": 1,
-      "usedCount": 5,
-      "applicableServices": "ALL",
-      "applicablePackages": [],
-      "isActive": true,
-      "createdAt": "2026-10-01T10:00:00.000Z",
-      "updatedAt": "2026-10-01T10:00:00.000Z"
+      "_id": "6ac06417d6fcac10cf339e5c",
+      "orderNumber": "PS-2026-000108",
+      "itemName": "Rameshwaram Tharpanam",
+      "bookingDate": "2026-10-30T09:00:00.000Z",
+      "scheduledDate": "2026-11-08T03:30:00.000Z",
+      "orderStatus": "confirmed",
+      "paymentStatus": "paid",
+      "pricing": {
+        "total": 102,
+        "currency": "INR"
+      },
+      "videoLink": "https://youtube.com/live/priest-service-live"
     }
   ]
 }
 ```
 
-### 12.3 Get Promo Code by ID (Admin)
-- **Endpoint:** `/api/promos/:id`
-- **Method:** `GET`
-- **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
-- **Payload:** None
-- **Response:** `200 OK`
-```json
-{
-  "success": true,
-  "data": {
-    "_id": "670985123456789abcdef012",
-    "code": "FESTIVE50",
-    "description": "50% off on all Pujas up to ₹500",
-    "discountType": "PERCENTAGE",
-    "discountValue": 50,
-    "maxDiscount": 500,
-    "minimumOrderAmount": 1000,
-    "startDate": "2026-10-01T00:00:00.000Z",
-    "endDate": "2026-10-31T23:59:59.000Z",
-    "usageLimit": 100,
-    "usageLimitPerUser": 1,
-    "usedCount": 5,
-    "applicableServices": "ALL",
-    "applicablePackages": [],
-    "isActive": true,
-    "createdAt": "2026-10-01T10:00:00.000Z",
-    "updatedAt": "2026-10-01T10:00:00.000Z"
-  }
-}
-```
+---
 
-### 12.4 Create Promo Code (Admin)
-- **Endpoint:** `/api/promos`
-- **Method:** `POST`
-- **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
-- **Payload:**
-```json
-{
-  "code": "DIWALI2026",
-  "description": "Flat ₹300 off on orders above ₹1500",
-  "discountType": "FIXED",
-  "discountValue": 300,
-  "maxDiscount": null,
-  "minimumOrderAmount": 1500,
-  "startDate": "2026-10-15T00:00:00.000Z",
-  "endDate": "2026-11-15T23:59:59.000Z",
-  "usageLimit": 200,
-  "usageLimitPerUser": 1,
-  "applicableServices": "ALL",
-  "applicablePackages": [],
-  "isActive": true
-}
-```
-- **Response:** `201 Created`
-```json
-{
-  "success": true,
-  "message": "Promo code created successfully",
-  "data": {
-    "_id": "670985123456789abcdef013",
-    "code": "DIWALI2026",
-    "description": "Flat ₹300 off on orders above ₹1500",
-    "discountType": "FIXED",
-    "discountValue": 300,
-    "maxDiscount": null,
-    "minimumOrderAmount": 1500,
-    "startDate": "2026-10-15T00:00:00.000Z",
-    "endDate": "2026-11-15T23:59:59.000Z",
-    "usageLimit": 200,
-    "usageLimitPerUser": 1,
-    "usedCount": 0,
-    "applicableServices": "ALL",
-    "applicablePackages": [],
-    "isActive": true,
-    "createdAt": "2026-10-12T09:20:00.000Z",
-    "updatedAt": "2026-10-12T09:20:00.000Z"
-  }
-}
-```
+## 8. WhatsApp Notifications & Consent (Client)
 
-### 12.5 Update Promo Code (Admin)
-- **Endpoint:** `/api/promos/:id`
-- **Method:** `PUT`
-- **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
-- **Payload:**
+### 8.1 Register WhatsApp Opt-in
+Registers the devotee's WhatsApp number to receive ritual timing updates and livestream recording links.
+- **Endpoint:** `POST /api/whatsapp/opt-in`
+- **Auth Required:** Yes (`Authorization: Bearer <user_jwt_token>`)
+- **Request Payload:**
 ```json
 {
-  "description": "Updated discount details",
-  "minimumOrderAmount": 2000
+  "phone": "9876543210"
 }
 ```
-- **Response:** `200 OK`
+- **Response (`200 OK`):**
 ```json
 {
   "success": true,
-  "message": "Promo code updated successfully",
-  "data": {
-    "_id": "670985123456789abcdef013",
-    "code": "DIWALI2026",
-    "description": "Updated discount details",
-    "discountType": "FIXED",
-    "discountValue": 300,
-    "minimumOrderAmount": 2000,
-    "isActive": true
-  }
-}
-```
-
-### 12.6 Activate / Deactivate Promo Code (Admin)
-- **Endpoint:** `/api/promos/:id/status`
-- **Method:** `PATCH`
-- **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
-- **Payload:**
-```json
-{
-  "isActive": false
-}
-```
-- **Response:** `200 OK`
-```json
-{
-  "success": true,
-  "message": "Promo code deactivated",
-  "data": {
-    "_id": "670985123456789abcdef013",
-    "code": "DIWALI2026",
-    "isActive": false
-  }
-}
-```
-
-### 12.7 Delete Promo Code (Admin)
-- **Endpoint:** `/api/promos/:id`
-- **Method:** `DELETE`
-- **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
-- **Payload:** None
-- **Response:** `200 OK`
-```json
-{
-  "success": true,
-  "message": "Promo code deleted successfully"
+  "message": "WhatsApp updates opt-in registered successfully"
 }
 ```
 
 ---
 
-## 13. WhatsApp Notifications API
-**Base Path:** `/api/whatsapp`
-
-### 13.1 Register WhatsApp Opt-in
-- **Endpoint:** `/api/whatsapp/opt-in`
-- **Method:** `POST`
-- **Auth Required:** Yes (`Authorization: Bearer <user_token>`)
-- **Security & Authorization:**
-  - Enforces phone ownership: User can only register opt-in consent for their own verified mobile number. Providing a mobile number belonging to another devotee returns `403 Forbidden`.
-- **Payload:**
+### 8.2 Register WhatsApp Opt-out
+- **Endpoint:** `POST /api/whatsapp/opt-out`
+- **Auth Required:** Yes (`Authorization: Bearer <user_jwt_token>`)
+- **Request Payload:**
 ```json
 {
-  "mobileNumber": "9360270984",
-  "consent": true
+  "phone": "9876543210"
 }
 ```
-- **Response:** `200 OK`
+- **Response (`200 OK`):**
 ```json
 {
   "success": true,
-  "message": "Customer opt-in registered",
-  "data": {
-    "alreadyOptedIn": false,
-    "consentStatus": "active"
-  }
-}
-```
-
-### 13.2 Register WhatsApp Opt-out
-- **Endpoint:** `/api/whatsapp/opt-out`
-- **Method:** `POST`
-- **Auth Required:** Yes (`Authorization: Bearer <user_token>`)
-- **Security & Authorization:**
-  - Revokes WhatsApp notifications consent for the authenticated user and sets `optedOutAt` timestamp in MongoDB.
-- **Payload:**
-```json
-{
-  "mobileNumber": "9360270984"
-}
-```
-- **Response:** `200 OK`
-```json
-{
-  "success": true,
-  "message": "Customer opt-out registered"
-}
-```
-
-### 13.3 Send WhatsApp Order Confirmation
-- **Endpoint:** `/api/whatsapp/order-confirmation`
-- **Method:** `POST`
-- **Auth Required:** No (Internal / payment service triggered)
-- **Payload:**
-```json
-{
-  "mobileNumber": "919360270984",
-  "customerName": "Jagathratchagan",
-  "orderId": "200627",
-  "serviceName": "Ganesh Homa",
-  "bookingDate": "2026-10-25T10:00:00Z",
-  "amount": 2500
-}
-```
-*(Note: Mobile numbers are automatically formatted with the `91` country code prefix for 10-digit Indian numbers)*
-- **Response:** `200 OK`
-```json
-{
-  "success": true,
-  "message": "Confirmation request accepted by Netcore",
-  "data": {
-    "messageId": "msg_12345"
-  }
+  "message": "Opted out from WhatsApp notifications"
 }
 ```
 
 ---
 
-## 14. Admin Management API
-**Base Path:** `/api/admin`
+## 9. Customer Support & Inquiries (Client)
 
-### 14.1 Admin Login
-- **Endpoint:** `/api/admin/login`
-- **Method:** `POST`
+### 9.1 Submit Customer Inquiry / Help Request
+Used by contact forms, footer queries, or "Book via WhatsApp/Call" assistance popups.
+- **Endpoint:** `POST /api/customerQueries`
 - **Auth Required:** No
-- **Rate Limit:** `loginLimiter` (Strict rate limit on consecutive attempts)
-- **Security & Input Sanitization:**
-  - Validates email format using regex; rejects malformed inputs with `400 Bad Request`.
-  - Enforces password string type check to prevent NoSQL operator injection.
-  - Issues dedicated `adminToken` with admin claim verification.
-- **Payload:**
+- **Request Payload:**
+```json
+{
+  "name": "Devotee Name",
+  "email": "devotee@example.com",
+  "phone": "9876543210",
+  "message": "I would like guidance on selecting the right homa for career growth.",
+  "subject": "Puja Consultation"
+}
+```
+- **Response (`201 Created`):**
+```json
+{
+  "success": true,
+  "message": "Your query has been submitted. Our Vedic priest team will contact you shortly."
+}
+```
+
+---
+
+# PART 2: Admin Portal Management APIs
+
+## 10. Admin Authentication
+
+### 10.1 Admin Login
+Authenticates an administrator with email and password, returning an elevated JWT.
+- **Endpoint:** `POST /api/admin/login`
+- **Auth Required:** No
+- **Rate Limit:** 5 failed attempts per 15 minutes
+- **Request Payload:**
 ```json
 {
   "email": "admin@astroved.com",
-  "password": "StrongAdminPassword123!"
+  "password": "astroved_admin_2026"
 }
 ```
-- **Response:** `200 OK`
+- **Response (`200 OK`):**
 ```json
 {
   "success": true,
-  "message": "Admin logged in successfully",
   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
   "admin": {
-    "id": "6abd0358cd62648ac4fa1c4a",
+    "id": "60d5ecb8b392d700153f93a1",
+    "name": "Super Admin",
     "email": "admin@astroved.com",
-    "name": "Super Admin"
+    "role": "admin"
   }
 }
 ```
 
-### 14.2 Get Admin Dashboard Stats
-- **Endpoint:** `/api/admin/stats`
-- **Method:** `GET`
+---
+
+## 11. Admin Analytics & KPI Dashboard
+
+### 11.1 Get Dashboard Statistics & Metrics
+Returns summary metrics for the admin overview dashboard.
+- **Endpoint:** `GET /api/admin/stats`
 - **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
-- **Payload:** None
-- **Response:** `200 OK`
+- **Response (`200 OK`):**
 ```json
 {
   "success": true,
   "data": {
-    "pujas": 12,
-    "homas": 8,
-    "orders": 150,
-    "revenue": 525000,
-    "recentBookings": [
-      {
-        "_id": "6ac06417d6fcac10cf339e5c",
-        "pooja": {
-          "_id": "6abd0362cd62648ac4fa1c4b",
-          "title": "Rameshwaram Tharpanam",
-          "imageUrl": "https://example.com/image.jpg"
-        },
-        "customerName": "Jagathratchagan",
-        "orderNumber": "200627",
-        "whatsappNumber": "9360270984",
-        "pricing": {
-          "total": 2500,
-          "currency": "INR"
-        },
-        "paymentStatus": "paid",
-        "createdAt": "2026-10-12T01:59:08.972Z"
-      }
-    ]
+    "totalOrders": 128,
+    "activePujas": 3,
+    "activeHomas": 2,
+    "totalRevenue": 245000,
+    "pendingOrders": 14,
+    "completedOrders": 98
   }
 }
 ```
 
-### 14.3 Get Admin Orders (With Filters & Pagination)
-- **Endpoint:** `/api/admin/orders`
-- **Method:** `GET`
-- **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
-- **Query Parameters:**
-  - `page` (number, default: `1`)
-  - `limit` (number, default: `5`)
-  - `service` (string, default: `"All"`)
-  - `status` (string, default: `"All"`)
-  - `search` (string, default: `""`)
-- **Payload:** None
-- **Response:** `200 OK`
-```json
-{
-  "success": true,
-  "data": [
-    {
-      "_id": "6ac06417d6fcac10cf339e5c",
-      "serviceName": "Rameshwaram Tharpanam",
-      "devoteeName": "Jagathratchagan",
-      "orderNumber": "200627",
-      "whatsappNumber": "9360270984",
-      "pricing": {
-        "total": 2500,
-        "currency": "INR"
-      },
-      "paymentStatus": "paid",
-      "orderStatus": "scheduled",
-      "scheduledDate": "2026-10-25T05:30:00.000Z",
-      "videoLink": "https://youtube.com/live/example123",
-      "createdAt": "2026-10-12T01:59:08.972Z"
-    }
-  ],
-  "totalOrders": 1,
-  "totalPages": 1,
-  "currentPage": 1,
-  "limit": 5,
-  "services": ["All", "Rameshwaram Tharpanam"],
-  "statuses": ["All", "paid", "scheduled", "completed"]
-}
-```
+---
 
-### 14.4 Bulk Schedule Orders by Service
-- **Endpoint:** `/api/admin/orders/bulk-schedule`
-- **Method:** `POST`
+### 11.2 Get Admin Financial & Payment Breakdown
+Returns financial aggregates, revenue counts, and recent transaction records.
+- **Endpoint:** `GET /api/admin/payments`
 - **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
-- **Payload:**
-```json
-{
-  "service": "Rameshwaram Tharpanam",
-  "scheduledDate": "2026-10-25T05:30:00.000Z"
-}
-```
-- **Response:** `200 OK`
-```json
-{
-  "success": true,
-  "message": "Successfully updated 12 orders.",
-  "count": 12
-}
-```
-
-### 14.5 Update Single Order Status & Video Link
-- **Endpoint:** `/api/admin/orders/:id`
-- **Method:** `PUT`
-- **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
-- **Payload:**
-```json
-{
-  "orderStatus": "completed",
-  "scheduledDate": "2026-10-25T05:30:00.000Z",
-  "videoLink": "https://youtube.com/live/example123"
-}
-```
-- **Response:** `200 OK`
-```json
-{
-  "success": true,
-  "message": "Order updated successfully",
-  "data": {
-    "_id": "6ac06417d6fcac10cf339e5c",
-    "orderStatus": "completed",
-    "scheduledDate": "2026-10-25T05:30:00.000Z",
-    "videoLink": "https://youtube.com/live/example123"
-  }
-}
-```
-
-### 14.6 Get Admin Payments Analytics
-- **Endpoint:** `/api/admin/payments`
-- **Method:** `GET`
-- **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
-- **Payload:** None
-- **Response:** `200 OK`
+- **Response (`200 OK`):**
 ```json
 {
   "success": true,
   "data": {
-    "totalRevenue": 525000,
-    "monthlyRevenue": 45000,
-    "successfulPayments": 125,
-    "pendingPayments": 25,
+    "totalRevenue": 245000,
+    "monthlyRevenue": 48500,
+    "successfulPayments": 120,
+    "pendingPayments": 8,
     "recentTransactions": [
       {
         "transactionId": "pay_TjGKajdznC2zO8",
@@ -1631,5 +838,604 @@ Comprehensive documentation for all REST API endpoints configured and mounted in
       }
     ]
   }
+}
+```
+
+---
+
+## 12. Admin Order Management & Livestream Scheduling
+
+### 12.1 Get Orders List (With Filters, Search & Pagination)
+- **Endpoint:** `GET /api/admin/orders`
+- **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
+- **Query Parameters:**
+  - `page` (optional, default: `1`)
+  - `limit` (optional, default: `10`)
+  - `search` (optional, matches devotee name, phone, or orderNumber)
+  - `service` (optional, ritual filter e.g. `"Shani Dosha Nivarana Puja"`)
+  - `status` (optional, `"paid"`, `"scheduled"`, `"completed"`, `"refunded"`)
+  - `date` (optional, ISO date e.g. `2026-11-08`)
+- **Response (`200 OK`):**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "_id": "6ac06417d6fcac10cf339e5c",
+      "orderNumber": "PS-2026-000108",
+      "serviceName": "Rameshwaram Tharpanam",
+      "devoteeName": "Jagathratchagan",
+      "whatsappNumber": "9876543210",
+      "orderStatus": "confirmed",
+      "paymentStatus": "paid",
+      "scheduledDate": "2026-11-08T03:30:00.000Z",
+      "videoLink": "https://youtube.com/live/priest-service-live",
+      "createdAt": "2026-10-30T09:00:00.000Z"
+    }
+  ],
+  "totalOrders": 1,
+  "totalPages": 1,
+  "currentPage": 1,
+  "limit": 10,
+  "services": ["All", "Rameshwaram Tharpanam", "Shani Dosha Nivarana Puja"],
+  "statuses": ["All", "created", "confirmed", "scheduled", "completed", "refunded"]
+}
+```
+
+---
+
+### 12.2 Get Single Order Details by ID
+- **Endpoint:** `GET /api/admin/orders/:id`
+- **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
+- **Response (`200 OK`):**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "6ac06417d6fcac10cf339e5c",
+    "orderNumber": "PS-2026-000108",
+    "customer": {
+      "_id": "60d5ecb8b392d700153f93c7",
+      "name": "Jagathratchagan",
+      "email": "devotee@example.com",
+      "mobileNumber": "9876543210"
+    },
+    "participants": [
+      {
+        "name": "Jagathratchagan",
+        "gotra": "Kashyapa"
+      }
+    ],
+    "wish": "Ancestral peace and blessings",
+    "orderStatus": "confirmed",
+    "paymentStatus": "paid",
+    "pricing": {
+      "total": 102,
+      "currency": "INR"
+    }
+  }
+}
+```
+
+---
+
+### 12.3 Update Single Order (Status, Scheduled Date, Video Link, Refunds)
+Updates order progression. When set to `"refunded"`, automatically adjusts `paymentStatus: "refunded"`.
+- **Endpoint:** `PUT /api/admin/orders/:id`
+- **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
+- **Request Payload:**
+```json
+{
+  "orderStatus": "completed",
+  "scheduledDate": "2026-11-08T03:30:00.000Z",
+  "videoLink": "https://youtube.com/live/recording-xyz"
+}
+```
+- **Response (`200 OK`):**
+```json
+{
+  "success": true,
+  "message": "Order updated successfully",
+  "data": {
+    "_id": "6ac06417d6fcac10cf339e5c",
+    "orderStatus": "completed",
+    "scheduledDate": "2026-11-08T03:30:00.000Z",
+    "videoLink": "https://youtube.com/live/recording-xyz"
+  }
+}
+```
+
+---
+
+### 12.4 Bulk Schedule Orders by Service
+Allows admins to schedule all paid bookings for a ritual on an upcoming date in one action.
+- **Endpoint:** `POST /api/admin/orders/bulk-schedule`
+- **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
+- **Request Payload:**
+```json
+{
+  "service": "Rameshwaram Tharpanam",
+  "scheduledDate": "2026-11-08T03:30:00.000Z"
+}
+```
+- **Response (`200 OK`):**
+```json
+{
+  "success": true,
+  "message": "Successfully updated 15 orders.",
+  "count": 15
+}
+```
+
+---
+
+## 13. Admin Devotee User Management
+
+### 13.1 Get Devotees List (With Search, Spend & Pagination)
+- **Endpoint:** `GET /api/admin/users`
+- **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
+- **Query Parameters:**
+  - `page` (optional, default: `1`)
+  - `limit` (optional, default: `10`)
+  - `search` (optional, devotee name, mobile, email)
+  - `status` (optional, `Active` / `Inactive`)
+  - `sortBy` (optional, `createdAt` / `totalSpent` / `name`)
+  - `sortOrder` (optional, `asc` / `desc`)
+- **Response (`200 OK`):**
+```json
+{
+  "success": true,
+  "data": {
+    "users": [
+      {
+        "_id": "60d5ecb8b392d700153f93c7",
+        "name": "Jagathratchagan",
+        "email": "devotee@example.com",
+        "mobileNumber": "9876543210",
+        "whatsappNumber": "9876543210",
+        "totalAmountSpent": 5100,
+        "isVerified": true,
+        "status": "Active",
+        "createdAt": "2026-10-15T10:00:00.000Z"
+      }
+    ],
+    "pagination": {
+      "total": 45,
+      "page": 1,
+      "limit": 10,
+      "totalPages": 5
+    },
+    "stats": {
+      "totalUsers": 45,
+      "activeUsers": 42,
+      "totalRevenue": 245000
+    }
+  }
+}
+```
+
+---
+
+### 13.2 Update Devotee User (Admin)
+- **Endpoint:** `PUT /api/admin/users/:id`
+- **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
+- **Request Payload:**
+```json
+{
+  "name": "Jagathratchagan S",
+  "email": "devotee@example.com",
+  "mobileNumber": "9876543210",
+  "whatsappNumber": "9876543210",
+  "isVerified": true
+}
+```
+- **Response (`200 OK`):**
+```json
+{
+  "success": true,
+  "message": "User updated successfully"
+}
+```
+
+---
+
+### 13.3 Delete Devotee User (Admin)
+- **Endpoint:** `DELETE /api/admin/users/:id`
+- **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
+- **Response (`200 OK`):**
+```json
+{
+  "success": true,
+  "message": "User deleted successfully"
+}
+```
+
+---
+
+## 14. Admin Puja & Ritual Catalog Management
+
+### 14.1 Create New Puja
+- **Endpoint:** `POST /api/pujas`
+- **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
+- **Request Payload:**
+```json
+{
+  "title": "Maha Mrityunjaya Puja",
+  "slug": "maha-mrityunjaya-puja",
+  "subtitle": "Conquering Health Challenges & Longevity",
+  "description": "Vedic ritual for rejuvenation and long life.",
+  "imageUrl": "/images/mrityunjaya_puja.png",
+  "location": "AstroVed Homa Center, Chennai",
+  "date": "15-11-2026",
+  "eventDateTime": "2026-11-15T02:30:00.000Z",
+  "deity": "Lord Shiva",
+  "status": "active",
+  "packages": [
+    {
+      "name": "Individual",
+      "priceINR": 1500,
+      "description": "Individual Sankalpam"
+    }
+  ]
+}
+```
+- **Response (`201 Created`):**
+```json
+{
+  "success": true,
+  "message": "Puja created successfully",
+  "data": {
+    "_id": "6ac34786f7cfde13bd90239c",
+    "title": "Maha Mrityunjaya Puja",
+    "slug": "maha-mrityunjaya-puja"
+  }
+}
+```
+
+---
+
+### 14.2 Update Puja Details
+- **Endpoint:** `PUT /api/pujas/:id`
+- **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
+- **Request Payload:** Same fields as create.
+- **Response (`200 OK`):**
+```json
+{
+  "success": true,
+  "message": "Puja updated successfully"
+}
+```
+
+---
+
+### 14.3 Delete Puja
+- **Endpoint:** `DELETE /api/pujas/:id`
+- **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
+- **Response (`200 OK`):**
+```json
+{
+  "success": true,
+  "message": "Puja deleted successfully"
+}
+```
+
+---
+
+## 15. Admin Homa Catalog Management
+
+### 15.1 Create Homa
+- **Endpoint:** `POST /api/homas`
+- **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
+- **Request Payload:**
+```json
+{
+  "title": "Sudarshana Homa",
+  "slug": "sudarshana-homa",
+  "subtitle": "Protection from Negative Energies",
+  "description": "Powerful fire ritual invoking Lord Sudarshana.",
+  "imageUrl": "/images/sudarshana_homa.png",
+  "packages": [
+    {
+      "name": "Standard Homa",
+      "priceINR": 4500
+    }
+  ]
+}
+```
+- **Response (`201 Created`):**
+```json
+{
+  "success": true,
+  "message": "Homa created successfully"
+}
+```
+
+---
+
+### 15.2 Update Homa
+- **Endpoint:** `PUT /api/homas/:id`
+- **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
+- **Response (`200 OK`):**
+```json
+{
+  "success": true,
+  "message": "Homa updated successfully"
+}
+```
+
+---
+
+### 15.3 Delete Homa
+- **Endpoint:** `DELETE /api/homas/:id`
+- **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
+- **Response (`200 OK`):**
+```json
+{
+  "success": true,
+  "message": "Homa deleted successfully"
+}
+```
+
+---
+
+## 16. Admin Hero Banner Management
+
+### 16.1 Create Hero Banner
+- **Endpoint:** `POST /api/hero-banners`
+- **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
+- **Request Payload:**
+```json
+{
+  "title": "Karthigai Deepam Special Puja",
+  "tagLine": "Festival of Lights",
+  "description": "Light lamps at sacred Thiruvannamalai temple.",
+  "cta": {
+    "text": "Book Now",
+    "url": "/puja/karthigai-deepam"
+  },
+  "imageUrl": "/images/deepam_banner.jpg",
+  "isActive": true,
+  "displayOrder": 1
+}
+```
+- **Response (`201 Created`):**
+```json
+{
+  "success": true,
+  "message": "Banner created successfully"
+}
+```
+
+---
+
+### 16.2 Update Hero Banner
+- **Endpoint:** `PUT /api/hero-banners/:id`
+- **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
+- **Response (`200 OK`):**
+```json
+{
+  "success": true,
+  "message": "Banner updated successfully"
+}
+```
+
+---
+
+### 16.3 Delete Hero Banner
+- **Endpoint:** `DELETE /api/hero-banners/:id`
+- **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
+- **Response (`200 OK`):**
+```json
+{
+  "success": true,
+  "message": "Banner deleted successfully"
+}
+```
+
+---
+
+## 17. Admin Promo Code Management
+
+### 17.1 Get All Promo Codes
+- **Endpoint:** `GET /api/promos`
+- **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
+- **Response (`200 OK`):**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "_id": "60d5ecb8b392d700153f93c8",
+      "code": "FESTIVE100",
+      "discountType": "fixed",
+      "discountValue": 100,
+      "minOrderAmount": 500,
+      "isActive": true,
+      "expiryDate": "2026-12-31T23:59:59.000Z"
+    }
+  ]
+}
+```
+
+---
+
+### 17.2 Create Promo Code
+- **Endpoint:** `POST /api/promos`
+- **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
+- **Request Payload:**
+```json
+{
+  "code": "DIWALI500",
+  "discountType": "fixed",
+  "discountValue": 500,
+  "minOrderAmount": 2000,
+  "maxDiscountAmount": 500,
+  "expiryDate": "2026-11-15T23:59:59.000Z",
+  "usageLimit": 100
+}
+```
+- **Response (`201 Created`):**
+```json
+{
+  "success": true,
+  "message": "Promo code created successfully"
+}
+```
+
+---
+
+### 17.3 Toggle Promo Code Active Status
+- **Endpoint:** `PATCH /api/promos/:id/status`
+- **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
+- **Request Payload:**
+```json
+{
+  "isActive": false
+}
+```
+- **Response (`200 OK`):**
+```json
+{
+  "success": true,
+  "message": "Promo code status updated"
+}
+```
+
+---
+
+### 17.4 Delete Promo Code
+- **Endpoint:** `DELETE /api/promos/:id`
+- **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
+- **Response (`200 OK`):**
+```json
+{
+  "success": true,
+  "message": "Promo code deleted successfully"
+}
+```
+
+---
+
+## 18. Admin Media Library & Asset Upload
+
+### 18.1 Upload Image File
+Uploads images directly to the server asset directory (`server/public/images`) and creates a record in MongoDB.
+- **Endpoint:** `POST /api/upload`
+- **Auth Required:** No (Admin portal frontend)
+- **Content-Type:** `multipart/form-data`
+- **Form Fields:**
+  - `image` (Binary file: .png, .jpg, .jpeg, .webp, max 5MB)
+  - `customName` (optional string): clean slug identifier
+  - `overwrite` (optional boolean / `"true"`): overwrites existing file without conflict error
+- **Response (`200 OK`):**
+```json
+{
+  "success": true,
+  "message": "Image uploaded successfully",
+  "data": {
+    "_id": "6ac34786f7cfde13bd90239b",
+    "filename": "shani-pooja-banner.png",
+    "originalName": "banner.png",
+    "url": "/images/shani-pooja-banner.png",
+    "mimeType": "image/png",
+    "size": 145220
+  },
+  "url": "/images/shani-pooja-banner.png"
+}
+```
+
+---
+
+### 18.2 Get All Uploaded Images (Media Library)
+- **Endpoint:** `GET /api/upload`
+- **Auth Required:** No
+- **Response (`200 OK`):**
+```json
+{
+  "success": true,
+  "count": 14,
+  "data": [
+    {
+      "_id": "6ac34786f7cfde13bd90239b",
+      "filename": "shani-pooja-banner.png",
+      "url": "/images/shani-pooja-banner.png",
+      "mimeType": "image/png",
+      "size": 145220,
+      "createdAt": "2026-10-30T10:00:00.000Z"
+    }
+  ]
+}
+```
+
+---
+
+### 18.3 Delete Image from Storage & Database
+- **Endpoint:** `DELETE /api/upload/:filename`
+- **Auth Required:** No
+- **Response (`200 OK`):**
+```json
+{
+  "success": true,
+  "message": "Image deleted successfully from server storage and database."
+}
+```
+
+---
+
+# PART 3: Webhooks & System Operations
+
+## 19. Razorpay Webhook
+
+### 19.1 Payment Webhook Notification
+Receives server-to-server notifications directly from Razorpay. Verifies HMAC SHA-256 signature using `RAZORPAY_WEBHOOK_SECRET` against the raw request body. Automatically marks the associated order as `paid` and triggers order confirmation workflows.
+- **Endpoint:** `POST /api/payments/getRazorpayWebhook`
+- **Auth Required:** Verified via `x-razorpay-signature` header
+- **Supported Events:**
+  - `order.paid`
+  - `payment.captured`
+  - `payment.failed`
+- **Sample Webhook Payload:**
+```json
+{
+  "entity": "event",
+  "account_id": "acc_BFsOcGQ9GpvD4C",
+  "event": "payment.captured",
+  "contains": ["payment"],
+  "payload": {
+    "payment": {
+      "entity": {
+        "id": "pay_TjGKajdznC2zO8",
+        "amount": 10200,
+        "currency": "INR",
+        "status": "captured",
+        "order_id": "order_Rz91048KLAjd01",
+        "method": "upi",
+        "email": "devotee@example.com",
+        "contact": "+919876543210"
+      }
+    }
+  },
+  "created_at": 1729864200
+}
+```
+- **Response (`200 OK`):**
+```json
+{
+  "received": true
+}
+```
+
+---
+
+## 20. System Health Check
+
+### 20.1 Server Health Status
+- **Endpoint:** `GET /health`
+- **Auth Required:** No
+- **Response (`200 OK`):**
+```json
+{
+  "status": "ok",
+  "timestamp": "2026-10-30T10:30:00.000Z"
 }
 ```

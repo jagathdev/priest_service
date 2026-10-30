@@ -1,0 +1,5 @@
+$kind: http-request
+name: Get Hero Banners
+order: 5000
+method: GET
+url: '{{baseUrl}}/api/hero-banners'
