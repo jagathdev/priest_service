@@ -42,20 +42,27 @@ const getEmbedVideoUrl = (rawUrl?: string): string | null => {
   const str = rawUrl.trim();
   if (!str) return null;
 
-  // YouTube match
-  const ytMatch = str.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
+  // YouTube match: handles youtu.be, youtube.com/watch?v=, youtube.com/embed/, youtube.com/shorts/
+  const ytMatch = str.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|shorts\/|.*[?&]v=))([a-zA-Z0-9_-]{11})/);
   if (ytMatch && ytMatch[1]) {
     return `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1&rel=0`;
   }
 
   // Vimeo match
-  const vimeoMatch = str.match(/(?:vimeo\.com\/)(\d+)/);
+  const vimeoMatch = str.match(/vimeo\.com\/(\d+)/);
   if (vimeoMatch && vimeoMatch[1]) {
     return `https://player.vimeo.com/video/${vimeoMatch[1]}?autoplay=1`;
   }
 
   // Return standard URL for direct iframe / embed
   return str;
+};
+
+const getYouTubeVideoId = (rawUrl?: string): string | null => {
+  if (!rawUrl) return null;
+  const str = rawUrl.trim();
+  const ytMatch = str.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|shorts\/|.*[?&]v=))([a-zA-Z0-9_-]{11})/);
+  return ytMatch && ytMatch[1] ? ytMatch[1] : null;
 };
 
 export default function BookingsTab() {
@@ -69,6 +76,88 @@ export default function BookingsTab() {
     url: "",
     title: "",
   });
+
+  const renderVideoModal = () => {
+    if (!activeVideoModal.open) return null;
+    const embedUrl = getEmbedVideoUrl(activeVideoModal.url);
+    const ytId = getYouTubeVideoId(activeVideoModal.url);
+
+    return (
+      <div
+        className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-xs animate-in fade-in duration-200"
+        onClick={() => setActiveVideoModal({ open: false, url: "", title: "" })}
+      >
+        <div
+          className="bg-stone-900 rounded-2xl w-full max-w-3xl overflow-hidden shadow-2xl border border-stone-800"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Modal Bar */}
+          <div className="px-4 py-3 bg-stone-950 flex items-center justify-between border-b border-stone-800 text-white">
+            <div className="flex items-center gap-2 truncate pr-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+              <h4 className="font-bold text-xs sm:text-sm truncate">
+                {activeVideoModal.title} — Priest Services Sacred Ritual Recording
+              </h4>
+            </div>
+            <button
+              type="button"
+              onClick={() => setActiveVideoModal({ open: false, url: "", title: "" })}
+              className="w-8 h-8 rounded-full bg-stone-800 hover:bg-stone-700 text-stone-300 hover:text-white flex items-center justify-center transition cursor-pointer shrink-0"
+            >
+              ✕
+            </button>
+          </div>
+
+          {/* Iframe player container */}
+          <div className="relative aspect-video w-full bg-black">
+            {embedUrl ? (
+              <iframe
+                src={embedUrl}
+                title={activeVideoModal.title}
+                className="w-full h-full border-0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+              />
+            ) : ytId ? (
+              <iframe
+                src={`https://www.youtube.com/embed/${ytId}?autoplay=1&rel=0`}
+                title={activeVideoModal.title}
+                className="w-full h-full border-0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+              />
+            ) : (
+              <div className="h-full flex flex-col items-center justify-center text-stone-400 p-6 text-center">
+                <p className="text-sm mb-3">Recording link:</p>
+                <a
+                  href={activeVideoModal.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="px-4 py-2 bg-primary text-white rounded-lg text-xs font-bold hover:brightness-110"
+                >
+                  Open Video in New Tab
+                </a>
+              </div>
+            )}
+          </div>
+
+          {/* Modal Bottom note */}
+          <div className="px-4 py-2.5 bg-stone-950 border-t border-stone-800 flex items-center justify-between text-[11px] text-stone-400">
+            <span>Priest Services • Blessed by Vedic Pandits</span>
+            <a
+              href={activeVideoModal.url}
+              target="_blank"
+              rel="noreferrer"
+              className="text-stone-300 hover:text-white underline font-semibold flex items-center gap-1"
+            >
+              <span>Direct Link</span>
+              <span>↗</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   const fetchOrders = useCallback(async () => {
     if (!user?._id && !user?.id) return;
@@ -381,124 +470,252 @@ export default function BookingsTab() {
                 );
               })()}
             </div>
-          ) : (
+          ) : (() => {
             /* Standard Journey Timeline */
-            <div className={`space-y-6 sm:space-y-8 relative before:absolute before:inset-0 before:ml-4 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 ${selectedOrder.orderStatus === 'completed' ? 'before:bg-primary' : selectedOrder.orderStatus === 'performed' ? 'before:bg-gradient-to-b before:from-primary before:via-primary before:to-stone-200' : selectedOrder.orderStatus === 'scheduled' ? 'before:bg-gradient-to-b before:from-primary before:via-stone-200 before:to-stone-200' : 'before:bg-gradient-to-b before:from-primary before:via-stone-200 before:to-stone-200'}`}>
+            const isTimelineCompleted = Boolean(
+              selectedOrder.orderStatus === 'completed' ||
+              selectedOrder.videoLink
+            );
+            const isTimelinePerformed = Boolean(
+              selectedOrder.orderStatus === 'performed' ||
+              selectedOrder.performedDate
+            );
+            const isTimelineScheduled = Boolean(
+              selectedOrder.orderStatus === 'scheduled' ||
+              selectedOrder.scheduledDate
+            );
 
-              <div className="relative flex items-center justify-end md:justify-between md:odd:flex-row-reverse group is-active">
-                <div className="absolute left-0 md:left-1/2 md:-translate-x-1/2 flex items-center justify-center w-8 h-8 rounded-full border-4 border-white bg-primary text-white shadow shrink-0 z-10">
-                  <Check className="w-3 h-3" strokeWidth={3} />
-                </div>
-                <div className="w-[calc(100%-2.5rem)] sm:w-[calc(100%-3rem)] md:w-[calc(50%-2.5rem)] p-3 sm:p-4 border border-stone-100 rounded-xl bg-stone-50">
-                  <div className="text-[10px] font-extrabold text-stone-400 uppercase tracking-wider mb-0.5 sm:mb-1">Step 1</div>
-                  <h5 className="font-bold text-stone-800 text-xs sm:text-sm">Booking Confirmed</h5>
-                  <p className="text-[11px] sm:text-xs text-stone-500 font-medium mt-0.5 sm:mt-1">{formatCardDate(selectedOrder.createdAt, "Recent")} • Payment received</p>
-                </div>
-              </div>
+            const lineClass = isTimelineCompleted
+              ? 'before:bg-primary'
+              : isTimelinePerformed
+                ? 'before:bg-gradient-to-b before:from-primary before:via-primary before:to-stone-200'
+                : isTimelineScheduled
+                  ? 'before:bg-gradient-to-b before:from-primary before:via-stone-200 before:to-stone-200'
+                  : 'before:bg-gradient-to-b before:from-primary before:via-stone-200 before:to-stone-200';
 
-              <div className="relative flex items-center justify-end md:justify-between md:odd:flex-row-reverse group is-active">
-                <div className="absolute left-0 md:left-1/2 md:-translate-x-1/2 flex items-center justify-center w-8 h-8 rounded-full border-4 border-white bg-primary text-white shadow shrink-0 z-10">
-                  <Check className="w-3 h-3" strokeWidth={3} />
-                </div>
-                <div className="w-[calc(100%-2.5rem)] sm:w-[calc(100%-3rem)] md:w-[calc(50%-2.5rem)] p-3 sm:p-4 border border-stone-100 rounded-xl bg-stone-50">
-                  <div className="text-[10px] font-extrabold text-stone-400 uppercase tracking-wider mb-0.5 sm:mb-1">Step 2</div>
-                  <h5 className="font-bold text-stone-800 text-xs sm:text-sm">Sankalpam Details Submitted</h5>
-                  <p className="text-[11px] sm:text-xs text-stone-500 font-medium mt-0.5 sm:mt-1">Devotee names & gotra noted</p>
-                </div>
-              </div>
+            return (
+              <div className={`space-y-6 sm:space-y-8 relative before:absolute before:inset-0 before:ml-4 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 ${lineClass}`}>
 
-              {/* Step 3: Puja Scheduled */}
-              <div className={`relative flex items-center justify-end md:justify-between md:odd:flex-row-reverse group ${selectedOrder.orderStatus === 'scheduled' || selectedOrder.orderStatus === 'performed' || selectedOrder.orderStatus === 'completed' ? 'is-active' : ''}`}>
-                <div className={`absolute left-0 md:left-1/2 md:-translate-x-1/2 flex items-center justify-center w-8 h-8 rounded-full border-4 border-white shadow shrink-0 z-10 ${selectedOrder.orderStatus === 'scheduled' || selectedOrder.orderStatus === 'performed' || selectedOrder.orderStatus === 'completed' ? 'bg-primary text-white' : 'bg-white'}`}>
-                  {selectedOrder.orderStatus === 'scheduled' || selectedOrder.orderStatus === 'performed' || selectedOrder.orderStatus === 'completed' ? (
+                <div className="relative flex items-center justify-end md:justify-between md:odd:flex-row-reverse group is-active">
+                  <div className="absolute left-0 md:left-1/2 md:-translate-x-1/2 flex items-center justify-center w-8 h-8 rounded-full border-4 border-white bg-primary text-white shadow shrink-0 z-10">
                     <Check className="w-3 h-3" strokeWidth={3} />
-                  ) : (
-                    <div className="w-2.5 h-2.5 rounded-full bg-stone-300"></div>
-                  )}
+                  </div>
+                  <div className="w-[calc(100%-2.5rem)] sm:w-[calc(100%-3rem)] md:w-[calc(50%-2.5rem)] p-3 sm:p-4 border border-stone-100 rounded-xl bg-stone-50">
+                    <div className="text-[10px] font-extrabold text-stone-400 uppercase tracking-wider mb-0.5 sm:mb-1">Step 1</div>
+                    <h5 className="font-bold text-stone-800 text-xs sm:text-sm">Booking Confirmed</h5>
+                    <p className="text-[11px] sm:text-xs text-stone-500 font-medium mt-0.5 sm:mt-1">{formatCardDate(selectedOrder.createdAt, "Recent")} • Payment received</p>
+                  </div>
                 </div>
-                <div className={`w-[calc(100%-2.5rem)] sm:w-[calc(100%-3rem)] md:w-[calc(50%-2.5rem)] p-3 sm:p-4 border border-stone-100 rounded-xl ${selectedOrder.orderStatus === 'scheduled' || selectedOrder.orderStatus === 'performed' || selectedOrder.orderStatus === 'completed' ? 'bg-stone-50' : 'bg-white opacity-60'}`}>
-                  <div className="text-[10px] font-extrabold text-stone-400 uppercase tracking-wider mb-0.5 sm:mb-1">Step 3</div>
-                  <h5 className="font-bold text-stone-800 text-xs sm:text-sm">Puja Scheduled</h5>
-                  <p className="text-[11px] sm:text-xs text-stone-500 font-medium mt-0.5 sm:mt-1">
-                    {selectedOrder.scheduledDate
-                      ? `Muhurat Date: ${formatCardDate(selectedOrder.scheduledDate, "")}`
-                      : "Date to be scheduled"}
-                  </p>
-                </div>
-              </div>
 
-              {/* Step 4: Puja Performed */}
-              <div className={`relative flex items-center justify-end md:justify-between md:odd:flex-row-reverse group ${selectedOrder.orderStatus === 'performed' || selectedOrder.orderStatus === 'completed' ? 'is-active' : ''}`}>
-                <div className={`absolute left-0 md:left-1/2 md:-translate-x-1/2 flex items-center justify-center w-8 h-8 rounded-full border-4 border-white shadow shrink-0 z-10 ${selectedOrder.orderStatus === 'performed' || selectedOrder.orderStatus === 'completed' ? 'bg-primary text-white' : 'bg-white'}`}>
-                  {selectedOrder.orderStatus === 'performed' || selectedOrder.orderStatus === 'completed' ? (
+                <div className="relative flex items-center justify-end md:justify-between md:odd:flex-row-reverse group is-active">
+                  <div className="absolute left-0 md:left-1/2 md:-translate-x-1/2 flex items-center justify-center w-8 h-8 rounded-full border-4 border-white bg-primary text-white shadow shrink-0 z-10">
                     <Check className="w-3 h-3" strokeWidth={3} />
-                  ) : (
-                    <div className="w-2.5 h-2.5 rounded-full bg-stone-300"></div>
-                  )}
+                  </div>
+                  <div className="w-[calc(100%-2.5rem)] sm:w-[calc(100%-3rem)] md:w-[calc(50%-2.5rem)] p-3 sm:p-4 border border-stone-100 rounded-xl bg-stone-50">
+                    <div className="text-[10px] font-extrabold text-stone-400 uppercase tracking-wider mb-0.5 sm:mb-1">Step 2</div>
+                    <h5 className="font-bold text-stone-800 text-xs sm:text-sm">Sankalpam Details Submitted</h5>
+                    <p className="text-[11px] sm:text-xs text-stone-500 font-medium mt-0.5 sm:mt-1">Devotee names & gotra noted</p>
+                  </div>
                 </div>
-                <div className={`w-[calc(100%-2.5rem)] sm:w-[calc(100%-3rem)] md:w-[calc(50%-2.5rem)] p-3 sm:p-4 border border-stone-100 rounded-xl ${selectedOrder.orderStatus === 'performed' || selectedOrder.orderStatus === 'completed' ? 'bg-stone-50' : 'bg-white opacity-60'}`}>
-                  <div className="text-[10px] font-extrabold text-stone-400 uppercase tracking-wider mb-0.5 sm:mb-1">Step 4</div>
-                  <h5 className="font-bold text-stone-800 text-xs sm:text-sm">Puja Performed</h5>
-                  <p className="text-[11px] sm:text-xs text-stone-500 font-medium mt-0.5 sm:mt-1">
-                    {selectedOrder.orderStatus === 'performed' || selectedOrder.orderStatus === 'completed'
-                      ? (selectedOrder.performedDate ? `Performed on ${formatCardDate(selectedOrder.performedDate, "")}` : "Sacred rituals successfully completed")
-                      : "Rituals to be performed by Vedic pandits"}
-                  </p>
-                </div>
-              </div>
 
-              {/* Step 5: Video Delivered */}
-              <div className={`relative flex items-center justify-end md:justify-between md:odd:flex-row-reverse group ${selectedOrder.orderStatus === 'completed' || selectedOrder.videoLink ? 'is-active' : ''}`}>
-                <div className={`absolute left-0 md:left-1/2 md:-translate-x-1/2 flex items-center justify-center w-8 h-8 rounded-full border-4 border-white shadow shrink-0 z-10 ${selectedOrder.orderStatus === 'completed' || selectedOrder.videoLink ? 'bg-primary text-white' : 'bg-white'}`}>
-                  {selectedOrder.orderStatus === 'completed' || selectedOrder.videoLink ? (
-                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                  ) : (
-                    <div className="w-2.5 h-2.5 rounded-full bg-stone-300"></div>
-                  )}
-                </div>
-                <div className={`w-[calc(100%-2.5rem)] sm:w-[calc(100%-3rem)] md:w-[calc(50%-2.5rem)] p-3 sm:p-4 border border-stone-100 rounded-xl ${selectedOrder.orderStatus === 'completed' || selectedOrder.videoLink ? 'bg-stone-50' : 'bg-white opacity-60'}`}>
-                  <div className="text-[10px] font-extrabold text-stone-400 uppercase tracking-wider mb-0.5 sm:mb-1">Step 5</div>
-                  <h5 className="font-bold text-stone-800 text-xs sm:text-sm">Video Delivered</h5>
-                  {selectedOrder.videoLink ? (
-                    <div className="mt-2.5 space-y-2">
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setActiveVideoModal({
-                            open: true,
-                            url: selectedOrder.videoLink,
-                            title: selectedOrder.itemName || selectedOrder.pooja || "Puja Video",
-                          });
-                        }}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#14395C] text-white hover:bg-[#0e2740] rounded-lg text-xs font-bold shadow-xs transition cursor-pointer"
-                      >
-                        <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
-                        <span>Watch Puja Video</span>
-                      </button>
-
-                      {/* Embedded Video Player Iframe */}
-                      {getEmbedVideoUrl(selectedOrder.videoLink) && (
-                        <div className="mt-3 aspect-video w-full rounded-xl overflow-hidden border border-stone-200 shadow-sm bg-black">
-                          <iframe
-                            src={getEmbedVideoUrl(selectedOrder.videoLink) || ""}
-                            title="Priest Services Puja Video"
-                            className="w-full h-full border-0"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowFullScreen
-                          />
-                        </div>
-                      )}
+                {/* Step 3: Puja Scheduled */}
+                {(() => {
+                  const isStep3Active = Boolean(
+                    selectedOrder.orderStatus === 'scheduled' ||
+                    selectedOrder.orderStatus === 'performed' ||
+                    selectedOrder.orderStatus === 'completed' ||
+                    selectedOrder.scheduledDate ||
+                    selectedOrder.performedDate ||
+                    selectedOrder.videoLink
+                  );
+                  return (
+                    <div className={`relative flex items-center justify-end md:justify-between md:odd:flex-row-reverse group ${isStep3Active ? 'is-active' : ''}`}>
+                      <div className={`absolute left-0 md:left-1/2 md:-translate-x-1/2 flex items-center justify-center w-8 h-8 rounded-full border-4 border-white shadow shrink-0 z-10 ${isStep3Active ? 'bg-primary text-white' : 'bg-white'}`}>
+                        {isStep3Active ? (
+                          <Check className="w-3 h-3" strokeWidth={3} />
+                        ) : (
+                          <div className="w-2.5 h-2.5 rounded-full bg-stone-300"></div>
+                        )}
+                      </div>
+                      <div className={`w-[calc(100%-2.5rem)] sm:w-[calc(100%-3rem)] md:w-[calc(50%-2.5rem)] p-3 sm:p-4 border border-stone-100 rounded-xl ${isStep3Active ? 'bg-stone-50' : 'bg-white opacity-60'}`}>
+                        <div className="text-[10px] font-extrabold text-stone-400 uppercase tracking-wider mb-0.5 sm:mb-1">Step 3</div>
+                        <h5 className="font-bold text-stone-800 text-xs sm:text-sm">Puja Scheduled</h5>
+                        <p className="text-[11px] sm:text-xs text-stone-500 font-medium mt-0.5 sm:mt-1">
+                          {selectedOrder.scheduledDate
+                            ? `Muhurat Date: ${formatCardDate(selectedOrder.scheduledDate, "")}`
+                            : "Date to be scheduled"}
+                        </p>
+                      </div>
                     </div>
-                  ) : (
-                    <p className="text-[11px] sm:text-xs text-stone-500 font-medium mt-0.5 sm:mt-1">Available after the puja</p>
-                  )}
-                </div>
-              </div>
+                  );
+                })()}
 
-            </div>
-          )}
+                {/* Step 4: Puja Performed */}
+                {(() => {
+                  const isStep4Active = Boolean(
+                    selectedOrder.orderStatus === 'performed' ||
+                    selectedOrder.orderStatus === 'completed' ||
+                    selectedOrder.performedDate ||
+                    selectedOrder.videoLink
+                  );
+                  return (
+                    <div className={`relative flex items-center justify-end md:justify-between md:odd:flex-row-reverse group ${isStep4Active ? 'is-active' : ''}`}>
+                      <div className={`absolute left-0 md:left-1/2 md:-translate-x-1/2 flex items-center justify-center w-8 h-8 rounded-full border-4 border-white shadow shrink-0 z-10 ${isStep4Active ? 'bg-primary text-white' : 'bg-white'}`}>
+                        {isStep4Active ? (
+                          <Check className="w-3 h-3" strokeWidth={3} />
+                        ) : (
+                          <div className="w-2.5 h-2.5 rounded-full bg-stone-300"></div>
+                        )}
+                      </div>
+                      <div className={`w-[calc(100%-2.5rem)] sm:w-[calc(100%-3rem)] md:w-[calc(50%-2.5rem)] p-3 sm:p-4 border border-stone-100 rounded-xl ${isStep4Active ? 'bg-stone-50' : 'bg-white opacity-60'}`}>
+                        <div className="text-[10px] font-extrabold text-stone-400 uppercase tracking-wider mb-0.5 sm:mb-1">Step 4</div>
+                        <h5 className="font-bold text-stone-800 text-xs sm:text-sm">Puja Performed</h5>
+                        <p className="text-[11px] sm:text-xs text-stone-500 font-medium mt-0.5 sm:mt-1">
+                          {isStep4Active
+                            ? (selectedOrder.performedDate ? `Performed on ${formatCardDate(selectedOrder.performedDate, "")}` : "Sacred rituals successfully completed")
+                            : "Rituals to be performed by Vedic pandits"}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* Step 5: Video Delivered */}
+                {(() => {
+                  const isStep5Active = Boolean(
+                    selectedOrder.orderStatus === 'completed' ||
+                    selectedOrder.videoLink
+                  );
+                  return (
+                    <div className={`relative flex items-center justify-end md:justify-between md:odd:flex-row-reverse group ${isStep5Active ? 'is-active' : ''}`}>
+                      <div className={`absolute left-0 md:left-1/2 md:-translate-x-1/2 flex items-center justify-center w-8 h-8 rounded-full border-4 border-white shadow shrink-0 z-10 ${isStep5Active ? 'bg-primary text-white' : 'bg-white'}`}>
+                        {isStep5Active ? (
+                          <Check className="w-3 h-3" strokeWidth={3} />
+                        ) : (
+                          <div className="w-2.5 h-2.5 rounded-full bg-stone-300"></div>
+                        )}
+                      </div>
+                      <div className={`w-[calc(100%-2.5rem)] sm:w-[calc(100%-3rem)] md:w-[calc(50%-2.5rem)] p-3 sm:p-4 border border-stone-100 rounded-xl ${isStep5Active ? 'bg-stone-50' : 'bg-white opacity-60'}`}>
+                        <div className="text-[10px] font-extrabold text-stone-400 uppercase tracking-wider mb-0.5 sm:mb-1">Step 5</div>
+                        <h5 className="font-bold text-stone-800 text-xs sm:text-sm">Video Delivered</h5>
+                        {selectedOrder.videoLink ? (
+                          <div className="mt-3 space-y-3">
+                            {/* Watch Video Button */}
+                            <div>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setActiveVideoModal({
+                                    open: true,
+                                    url: selectedOrder.videoLink,
+                                    title: selectedOrder.itemName || selectedOrder.pooja || "Puja Video",
+                                  });
+                                }}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#14395C] text-white hover:bg-[#0e2740] rounded-lg text-xs font-bold shadow-xs transition cursor-pointer"
+                              >
+                                <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                                <span>Watch Puja Video</span>
+                              </button>
+                            </div>
+
+                            {/* Small Video Preview Box inside Puja Booking Details */}
+                            {(() => {
+                              const ytId = getYouTubeVideoId(selectedOrder.videoLink);
+                              const embedUrl = getEmbedVideoUrl(selectedOrder.videoLink);
+                              return (
+                                <div className="rounded-xl overflow-hidden border border-stone-800 bg-stone-900 shadow-md max-w-sm">
+                                  <div className="px-3 py-2 bg-stone-950 flex items-center justify-between border-b border-stone-800 text-white">
+                                    <div className="flex items-center gap-1.5 truncate pr-2">
+                                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+                                      <span className="font-bold text-[11px] truncate text-stone-200">
+                                        {selectedOrder.itemName || selectedOrder.pooja || "Puja"} Recording
+                                      </span>
+                                    </div>
+                                    <button
+                                      type="button"
+                                      onClick={() => setActiveVideoModal({
+                                        open: true,
+                                        url: selectedOrder.videoLink,
+                                        title: selectedOrder.itemName || selectedOrder.pooja || "Puja Video",
+                                      })}
+                                      className="text-[10px] text-stone-300 hover:text-white underline font-bold shrink-0 cursor-pointer"
+                                    >
+                                      Full Video ↗
+                                    </button>
+                                  </div>
+
+                                  {/* Thumbnail / Embed Container with Play Overlay */}
+                                  <div
+                                    onClick={() => setActiveVideoModal({
+                                      open: true,
+                                      url: selectedOrder.videoLink,
+                                      title: selectedOrder.itemName || selectedOrder.pooja || "Puja Video",
+                                    })}
+                                    className="relative aspect-video w-full bg-black cursor-pointer group flex items-center justify-center overflow-hidden"
+                                  >
+                                    {ytId ? (
+                                      <Image
+                                        src={`https://img.youtube.com/vi/${ytId}/hqdefault.jpg`}
+                                        alt="Puja Video Preview"
+                                        fill
+                                        unoptimized
+                                        className="object-cover group-hover:scale-105 transition-transform duration-300 opacity-90 group-hover:opacity-100"
+                                      />
+                                    ) : embedUrl ? (
+                                      <iframe
+                                        src={embedUrl}
+                                        title="Puja Video"
+                                        className="w-full h-full border-0 pointer-events-none"
+                                        tabIndex={-1}
+                                      />
+                                    ) : (
+                                      <div className="text-center p-4 text-stone-400">
+                                        <p className="text-xs">Click to watch sacred ritual video</p>
+                                      </div>
+                                    )}
+
+                                    {/* Play Overlay Button */}
+                                    <div className="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition flex items-center justify-center">
+                                      <div className="w-11 h-11 rounded-full bg-[#14395C]/90 text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                                        <svg className="w-5 h-5 fill-current ml-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  <div className="px-3 py-1.5 bg-stone-950 border-t border-stone-800 flex items-center justify-between text-[10px] text-stone-400">
+                                    <span>Priest Services</span>
+                                    <button
+                                      type="button"
+                                      onClick={() => setActiveVideoModal({
+                                        open: true,
+                                        url: selectedOrder.videoLink,
+                                        title: selectedOrder.itemName || selectedOrder.pooja || "Puja Video",
+                                      })}
+                                      className="font-bold text-emerald-400 hover:text-emerald-300"
+                                    >
+                                      Watch Full Video ▶
+                                    </button>
+                                  </div>
+                                </div>
+                              );
+                            })()}
+                          </div>
+                        ) : (
+                          <p className="text-[11px] sm:text-xs text-stone-500 font-medium mt-0.5 sm:mt-1">Available after the puja</p>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })()}
+
+              </div>
+            );
+          })()}
         </div>
+
+        {/* Video Iframe Player Modal (Rendered whenever open, including inside Puja Booking Details) */}
+        {renderVideoModal()}
       </div>
     );
   }
@@ -587,16 +804,20 @@ export default function BookingsTab() {
                 order.orderStatus === 'scheduled' ||
                 order.orderStatus === 'performed' ||
                 order.orderStatus === 'completed' ||
-                order.scheduledDate
+                order.scheduledDate ||
+                order.performedDate ||
+                order.videoLink
               );
               const isPerformed = Boolean(
                 order.orderStatus === 'performed' ||
-                order.orderStatus === 'completed'
+                order.orderStatus === 'completed' ||
+                order.performedDate ||
+                order.videoLink
               );
-              // Only mark video as completed / ready when orderStatus is actually 'completed'
+              // Video is completed/ready when order has a videoLink or orderStatus is completed
               const isCompleted = Boolean(
-                order.orderStatus === 'completed' && order.videoLink
-              ) || order.orderStatus === 'completed';
+                order.videoLink || order.orderStatus === 'completed'
+              );
 
               const bookingDate = formatCardDate(order.createdAt || order.bookingDate);
               const scheduledDate = order.scheduledDate ? formatCardDate(order.scheduledDate, "") : "";
@@ -802,74 +1023,9 @@ export default function BookingsTab() {
           </div>
         </div>
       )}
-    
+
       {/* Video Iframe Player Modal */}
-      {activeVideoModal.open && (
-        <div 
-          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/75 backdrop-blur-xs animate-in fade-in duration-200"
-          onClick={() => setActiveVideoModal({ open: false, url: "", title: "" })}
-        >
-          <div 
-            className="bg-stone-900 rounded-2xl w-full max-w-3xl overflow-hidden shadow-2xl border border-stone-800"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Modal Bar */}
-            <div className="px-4 py-3 bg-stone-950 flex items-center justify-between border-b border-stone-800 text-white">
-              <div className="flex items-center gap-2 truncate pr-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-                <h4 className="font-bold text-xs sm:text-sm truncate">
-                  {activeVideoModal.title} — Priest Services Sacred Ritual Recording
-                </h4>
-              </div>
-              <button
-                type="button"
-                onClick={() => setActiveVideoModal({ open: false, url: "", title: "" })}
-                className="w-8 h-8 rounded-full bg-stone-800 hover:bg-stone-700 text-stone-300 hover:text-white flex items-center justify-center transition cursor-pointer shrink-0"
-              >
-                ✕
-              </button>
-            </div>
-
-            {/* Iframe player container */}
-            <div className="relative aspect-video w-full bg-black">
-              {getEmbedVideoUrl(activeVideoModal.url) ? (
-                <iframe
-                  src={getEmbedVideoUrl(activeVideoModal.url) || ""}
-                  title={activeVideoModal.title}
-                  className="w-full h-full border-0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                />
-              ) : (
-                <div className="h-full flex flex-col items-center justify-center text-stone-400 p-6 text-center">
-                  <p className="text-sm mb-3">Recording link:</p>
-                  <a
-                    href={activeVideoModal.url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="px-4 py-2 bg-primary text-white rounded-lg text-xs font-bold hover:brightness-110"
-                  >
-                    Open Video in New Tab
-                  </a>
-                </div>
-              )}
-            </div>
-
-            {/* Modal Bottom note */}
-            <div className="px-4 py-2.5 bg-stone-950 border-t border-stone-800 flex items-center justify-between text-[11px] text-stone-400">
-              <span>Priest Services • Blessed by Vedic Pandits</span>
-              <a
-                href={activeVideoModal.url}
-                target="_blank"
-                rel="noreferrer"
-                className="text-stone-300 hover:text-white underline font-semibold"
-              >
-                Direct link ↗
-              </a>
-            </div>
-          </div>
-        </div>
-      )}
+      {renderVideoModal()}
 
     </div>
   );

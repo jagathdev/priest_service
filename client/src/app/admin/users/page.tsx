@@ -9,6 +9,7 @@ import {
   TrashIcon,
   MagnifyingGlassIcon,
   CalendarDaysIcon,
+  ClockIcon,
   ChevronDownIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -371,14 +372,20 @@ export default function AdminUsersPage() {
   };
 
   const formatDate = (isoString?: string) => {
-    if (!isoString) return "N/A";
+    if (!isoString) return { datePart: "N/A", timePart: "" };
     const d = new Date(isoString);
-    if (isNaN(d.getTime())) return "N/A";
-    return d.toLocaleDateString("en-GB", {
+    if (isNaN(d.getTime())) return { datePart: "N/A", timePart: "" };
+    const datePart = d.toLocaleDateString("en-GB", {
       day: "2-digit",
       month: "short",
       year: "numeric",
     });
+    const timePart = d.toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    }).toLowerCase();
+    return { datePart, timePart };
   };
 
   const getAvatarBg = (name: string, index: number) => {
@@ -403,9 +410,8 @@ export default function AdminUsersPage() {
       {/* Toast */}
       {toast && (
         <div
-          className={`fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-xl shadow-xl text-xs font-bold text-white transition-all transform animate-in slide-in-from-bottom-5 ${
-            toast.type === "success" ? "bg-emerald-600" : "bg-red-600"
-          }`}
+          className={`fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-xl shadow-xl text-xs font-bold text-white transition-all transform animate-in slide-in-from-bottom-5 ${toast.type === "success" ? "bg-emerald-600" : "bg-red-600"
+            }`}
         >
           {toast.type === "success" ? (
             <CheckCircleIcon className="w-5 h-5 shrink-0" />
@@ -440,22 +446,20 @@ export default function AdminUsersPage() {
             <button
               type="button"
               onClick={() => setActiveTab("active")}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                activeTab === "active"
-                  ? "bg-white text-gray-900 shadow-xs"
-                  : "text-gray-600 hover:text-gray-900"
-              }`}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${activeTab === "active"
+                ? "bg-white text-gray-900 shadow-xs"
+                : "text-gray-600 hover:text-gray-900"
+                }`}
             >
               All Users ({stats.totalUsers})
             </button>
             <button
               type="button"
               onClick={() => setActiveTab("trash")}
-              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                activeTab === "trash"
-                  ? "bg-red-50 text-red-700 shadow-xs"
-                  : "text-gray-600 hover:text-red-600"
-              }`}
+              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${activeTab === "trash"
+                ? "bg-red-50 text-red-700 shadow-xs"
+                : "text-gray-600 hover:text-red-600"
+                }`}
             >
               <TrashIcon className="w-3.5 h-3.5" />
               <span>Trash ({stats.trashUsers || 0})</span>
@@ -467,21 +471,20 @@ export default function AdminUsersPage() {
             <button
               type="button"
               onClick={() => setDateFilterOpen(!dateFilterOpen)}
-              className={`flex items-center gap-2 bg-white border rounded-xl px-3 py-1.5 text-xs font-bold transition shadow-2xs ${
-                fromDate || toDate
-                  ? "border-emerald-500 text-emerald-700 bg-emerald-50/30"
-                  : "border-gray-200 text-gray-700 hover:border-gray-300"
-              }`}
+              className={`flex items-center gap-2 bg-white border rounded-xl px-3 py-1.5 text-xs font-bold transition shadow-2xs ${fromDate || toDate
+                ? "border-emerald-500 text-emerald-700 bg-emerald-50/30"
+                : "border-gray-200 text-gray-700 hover:border-gray-300"
+                }`}
             >
               <CalendarDaysIcon className="w-4 h-4 text-gray-400" />
               <span>
                 {fromDate && toDate
                   ? `${fromDate} to ${toDate}`
                   : fromDate
-                  ? `From ${fromDate}`
-                  : toDate
-                  ? `Until ${toDate}`
-                  : "Filter by Date"}
+                    ? `From ${fromDate}`
+                    : toDate
+                      ? `Until ${toDate}`
+                      : "Filter by Date"}
               </span>
               <ChevronDownIcon className="w-3.5 h-3.5 text-gray-400" />
             </button>
@@ -651,9 +654,8 @@ export default function AdminUsersPage() {
                         setStatusDropdownOpen(false);
                         setCurrentPage(1);
                       }}
-                      className={`w-full text-left px-3.5 py-1.5 text-xs font-semibold hover:bg-gray-50 ${
-                        statusFilter === opt ? "text-emerald-600 bg-emerald-50/50" : "text-gray-700"
-                      }`}
+                      className={`w-full text-left px-3.5 py-1.5 text-xs font-semibold hover:bg-gray-50 ${statusFilter === opt ? "text-emerald-600 bg-emerald-50/50" : "text-gray-700"
+                        }`}
                     >
                       {opt === "All" ? "All Users" : opt}
                     </button>
@@ -674,10 +676,10 @@ export default function AdminUsersPage() {
                   {sortBy === "latest"
                     ? "Latest"
                     : sortBy === "oldest"
-                    ? "Oldest"
-                    : sortBy === "name_asc"
-                    ? "Name (A-Z)"
-                    : "Name (Z-A)"}
+                      ? "Oldest"
+                      : sortBy === "name_asc"
+                        ? "Name (A-Z)"
+                        : "Name (Z-A)"}
                 </span>
                 <ChevronDownIcon className="w-3.5 h-3.5 text-gray-400" />
               </button>
@@ -696,9 +698,8 @@ export default function AdminUsersPage() {
                         setSortDropdownOpen(false);
                         setCurrentPage(1);
                       }}
-                      className={`w-full text-left px-3.5 py-1.5 text-xs font-semibold hover:bg-gray-50 ${
-                        sortBy === s.id ? "text-emerald-600 bg-emerald-50/50" : "text-gray-700"
-                      }`}
+                      className={`w-full text-left px-3.5 py-1.5 text-xs font-semibold hover:bg-gray-50 ${sortBy === s.id ? "text-emerald-600 bg-emerald-50/50" : "text-gray-700"
+                        }`}
                     >
                       {s.label}
                     </button>
@@ -815,7 +816,7 @@ export default function AdminUsersPage() {
                 <th className="py-3.5 px-4">Total Amount Spent</th>
                 <th className="py-3.5 px-4">Status</th>
                 <th className="py-3.5 px-4">
-                  {activeTab === "trash" ? "Deleted On" : "Joined On"}
+                  {activeTab === "trash" ? "Deleted On (Date & Time)" : "Joined On (Date & Time)"}
                 </th>
                 <th className="py-3.5 pr-6 pl-4 text-center w-28">Actions</th>
               </tr>
@@ -854,9 +855,8 @@ export default function AdminUsersPage() {
                   return (
                     <tr
                       key={u._id}
-                      className={`hover:bg-gray-50/80 transition-colors duration-150 ${
-                        isChecked ? "bg-emerald-50/40" : ""
-                      }`}
+                      className={`hover:bg-gray-50/80 transition-colors duration-150 ${isChecked ? "bg-emerald-50/40" : ""
+                        }`}
                     >
                       {/* Individual Checkbox */}
                       <td className="py-4 pl-6 pr-2 text-center">
@@ -875,10 +875,31 @@ export default function AdminUsersPage() {
 
                       {/* Name with Avatar */}
                       <td className="py-4 px-4">
-                        <div className="font-semibold text-gray-900">
-                          {u.mobileNumber.startsWith("+")
-                            ? u.mobileNumber
-                            : `+91 ${u.mobileNumber}`}
+                        <div className="flex items-center gap-3">
+                          <div
+                            className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-extrabold shrink-0 ${avatarColor}`}
+                          >
+                            {initial}
+                          </div>
+                          <span className="font-bold text-gray-900 truncate max-w-[170px]">
+                            {u.name || "Devotee"}
+                          </span>
+                        </div>
+                      </td>
+
+                      {/* Email */}
+                      <td className="py-4 px-4 text-gray-600">
+                        {u.email && u.email !== "N/A" ? u.email : <span className="text-gray-400 italic">Not Provided</span>}
+                      </td>
+
+                      {/* Mobile & WhatsApp */}
+                      <td className="py-4 px-4">
+                        <div className="font-semibold text-gray-800">
+                          {u.mobileNumber && u.mobileNumber !== "N/A"
+                            ? (u.mobileNumber.startsWith("+")
+                              ? u.mobileNumber
+                              : `+91 ${u.mobileNumber}`)
+                            : <span className="text-gray-400 italic">Not Provided</span>}
                         </div>
                         {(() => {
                           const mob = u.mobileNumber || "";
@@ -907,19 +928,34 @@ export default function AdminUsersPage() {
                       {/* Status */}
                       <td className="py-4 px-4">
                         <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
-                            u.status === "Active"
-                              ? "bg-emerald-50 text-emerald-700"
-                              : "bg-red-50 text-red-600"
-                          }`}
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold ${u.status === "Active"
+                            ? "bg-emerald-50 text-emerald-700"
+                            : "bg-red-50 text-red-600"
+                            }`}
                         >
                           {u.status}
                         </span>
                       </td>
 
-                      {/* Joined or Deleted Date */}
+                      {/* Joined or Deleted Date & Time */}
                       <td className="py-4 px-4 text-gray-500 font-medium">
-                        {formatDate(activeTab === "trash" ? u.deletedAt || u.createdAt : u.createdAt)}
+                        {(() => {
+                          const timeInfo = formatDate(activeTab === "trash" ? u.deletedAt || u.createdAt : u.createdAt);
+                          return (
+                            <div className="space-y-0.5">
+                              <div className="font-bold text-gray-900 flex items-center gap-1">
+                                <CalendarDaysIcon className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                                <span>{timeInfo.datePart}</span>
+                              </div>
+                              {timeInfo.timePart && (
+                                <div className="text-[11px] font-semibold text-gray-500 flex items-center gap-1">
+                                  <ClockIcon className="w-3 h-3 text-gray-400 shrink-0" />
+                                  <span>{timeInfo.timePart}</span>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })()}
                       </td>
 
                       {/* Actions */}
@@ -1045,11 +1081,10 @@ export default function AdminUsersPage() {
                       <button
                         type="button"
                         onClick={() => setCurrentPage(p)}
-                        className={`w-8 h-8 rounded-lg text-xs font-bold transition ${
-                          currentPage === p
-                            ? "bg-emerald-600 text-white"
-                            : "border border-gray-200 text-gray-700 hover:bg-gray-50"
-                        }`}
+                        className={`w-8 h-8 rounded-lg text-xs font-bold transition ${currentPage === p
+                          ? "bg-emerald-600 text-white"
+                          : "border border-gray-200 text-gray-700 hover:bg-gray-50"
+                          }`}
                       >
                         {p}
                       </button>
@@ -1172,11 +1207,10 @@ export default function AdminUsersPage() {
         <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-2xs flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-gray-150 text-center animate-in fade-in zoom-in-95 duration-200">
             <div
-              className={`w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 ${
-                confirmModal.actionType.includes("restore")
-                  ? "bg-emerald-50 text-emerald-600"
-                  : "bg-red-50 text-red-600"
-              }`}
+              className={`w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 ${confirmModal.actionType.includes("restore")
+                ? "bg-emerald-50 text-emerald-600"
+                : "bg-red-50 text-red-600"
+                }`}
             >
               {confirmModal.actionType.includes("restore") ? (
                 <ArrowUturnLeftIcon className="w-6 h-6" />
@@ -1203,11 +1237,10 @@ export default function AdminUsersPage() {
                 type="button"
                 disabled={modalProcessing}
                 onClick={handleExecuteModalAction}
-                className={`flex-1 px-4 py-2 rounded-xl text-white text-xs font-bold transition shadow-sm disabled:opacity-60 ${
-                  confirmModal.actionType.includes("restore")
-                    ? "bg-emerald-600 hover:bg-emerald-700"
-                    : "bg-red-600 hover:bg-red-700"
-                }`}
+                className={`flex-1 px-4 py-2 rounded-xl text-white text-xs font-bold transition shadow-sm disabled:opacity-60 ${confirmModal.actionType.includes("restore")
+                  ? "bg-emerald-600 hover:bg-emerald-700"
+                  : "bg-red-600 hover:bg-red-700"
+                  }`}
               >
                 {modalProcessing ? "Processing..." : confirmModal.actionLabel}
               </button>

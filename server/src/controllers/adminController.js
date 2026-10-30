@@ -52,8 +52,19 @@ export const adminLogin = async (req, res) => {
 
 export const getAdminOrders = async (req, res) => {
   try {
-    const { page = 1, limit = 5, service = "All", status = "All", search = "", paymentStatus } = req.query;
-    const limitNum = parseInt(limit, 10) || 5;
+    const {
+      page = 1,
+      limit = 10,
+      service = "All",
+      status = "All",
+      tab = "active", // "active" | "completed" | "all"
+      search = "",
+      paymentStatus,
+      startDate,
+      endDate,
+    } = req.query;
+
+    const limitNum = parseInt(limit, 10) || 10;
     const skip = (Math.max(1, parseInt(page, 10)) - 1) * limitNum;
 
     const query = {};
@@ -66,20 +77,56 @@ export const getAdminOrders = async (req, res) => {
       query.paymentStatus = { $nin: ["pending", "failed"] };
     }
 
-    if (service !== "All") {
-      andConditions.push({ $or: [{ itemName: service }, { pooja: service }] });
+    // Tab-based filtering
+    if (tab === "completed") {
+      andConditions.push({ orderStatus: "completed" });
+    } else if (tab === "active") {
+      // Exclude completed orders from the active table
+      andConditions.push({ orderStatus: { $ne: "completed" } });
     }
-    if (status !== "All") {
+
+    // Status filter (if explicitly passed and not "All")
+    if (status && status !== "All") {
       query.orderStatus = new RegExp(`^${escapeRegex(status)}$`, "i");
     }
-    if (search) {
-      const searchRegex = new RegExp(escapeRegex(search), "i");
+
+    // Service filter
+    if (service && service !== "All") {
+      andConditions.push({ $or: [{ itemName: service }, { pooja: service }] });
+    }
+
+    // Date range filter (filters on createdAt / booking date)
+    if (startDate || endDate) {
+      const dateFilter = {};
+      if (startDate) {
+        const start = new Date(startDate);
+        start.setHours(0, 0, 0, 0);
+        dateFilter.$gte = start;
+      }
+      if (endDate) {
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+        dateFilter.$lte = end;
+      }
+      andConditions.push({
+        $or: [
+          { createdAt: dateFilter },
+          { bookingDate: dateFilter },
+        ],
+      });
+    }
+
+    // Devotee / Order Number search
+    if (search && search.trim()) {
+      const searchRegex = new RegExp(escapeRegex(search.trim()), "i");
       andConditions.push({
         $or: [
           { customerName: searchRegex },
           { "participants.name": searchRegex },
-          { orderNumber: searchRegex }
-        ]
+          { orderNumber: searchRegex },
+          { mobileNumber: searchRegex },
+          { whatsappNumber: searchRegex },
+        ],
       });
     }
 
@@ -87,7 +134,22 @@ export const getAdminOrders = async (req, res) => {
       query.$and = andConditions;
     }
 
-    const [totalOrders, orders, activePujas, activeHomas, statusesRaw] = await Promise.all([
+    // Base query for counts / stats (paid orders)
+    const baseStatsQuery = { paymentStatus: { $nin: ["pending", "failed"] } };
+
+    const [
+      totalOrders,
+      orders,
+      activePujas,
+      activeHomas,
+      statusesRaw,
+      totalCount,
+      scheduledCount,
+      confirmedCount,
+      completedCount,
+      cancelledCount,
+      refundedCount,
+    ] = await Promise.all([
       Order.countDocuments(query),
       Order.find(query)
         .sort({ createdAt: -1 })
@@ -96,13 +158,27 @@ export const getAdminOrders = async (req, res) => {
         .populate("pooja", "title name imageUrl"),
       Puja.find({ status: "active" }).select("title").lean(),
       Homa.find({ status: "active" }).select("title").lean(),
-      Order.distinct("orderStatus")
+      Order.distinct("orderStatus"),
+      Order.countDocuments(baseStatsQuery),
+      Order.countDocuments({ ...baseStatsQuery, orderStatus: "scheduled" }),
+      Order.countDocuments({ ...baseStatsQuery, orderStatus: { $in: ["confirmed", "created"] } }),
+      Order.countDocuments({ ...baseStatsQuery, orderStatus: "completed" }),
+      Order.countDocuments({ ...baseStatsQuery, orderStatus: "cancelled" }),
+      Order.countDocuments({ ...baseStatsQuery, orderStatus: { $in: ["refunded", "refund"] } }),
     ]);
 
-    const formattedOrders = orders.map(ord => ({
+    const formattedOrders = orders.map((ord) => ({
       ...ord.toObject(),
-      serviceName: ord.itemName || ord.pooja?.title || ord.pooja?.name || ord.pooja || "Sacred Ritual",
-      devoteeName: ord.customerName || ord.participants?.[0]?.name || "Devotee"
+      serviceName:
+        ord.itemName ||
+        ord.pooja?.title ||
+        ord.pooja?.name ||
+        ord.pooja ||
+        "Sacred Ritual",
+      devoteeName:
+        ord.customerName ||
+        ord.participants?.[0]?.name ||
+        "Devotee",
     }));
 
     return res.status(200).json({
@@ -112,9 +188,23 @@ export const getAdminOrders = async (req, res) => {
       totalPages: Math.max(1, Math.ceil(totalOrders / limitNum)),
       currentPage: parseInt(page, 10),
       limit: limitNum,
-      services: ["All", ...new Set([...activePujas.map(p => p.title), ...activeHomas.map(h => h.title)].filter(Boolean))],
-
-      statuses: ["All", ...new Set(statusesRaw.filter(Boolean))]
+      services: [
+        "All",
+        ...new Set(
+          [...activePujas.map((p) => p.title), ...activeHomas.map((h) => h.title)].filter(
+            Boolean
+          )
+        ),
+      ],
+      statuses: ["All", ...new Set(statusesRaw.filter(Boolean))],
+      stats: {
+        total: totalCount,
+        scheduled: scheduledCount,
+        confirmed: confirmedCount,
+        completed: completedCount,
+        cancelled: cancelledCount,
+        refunded: refundedCount,
+      },
     });
   } catch (error) {
     console.error("Error fetching admin orders:", error);
@@ -163,7 +253,7 @@ export const bulkUpdateOrdersStatus = async (req, res) => {
 export const updateAdminOrder = async (req, res) => {
   try {
     const { id } = req.params;
-    const { orderStatus, scheduledDate, performedDate, videoLink } = req.body;
+    const { orderStatus, scheduledDate, videoLink } = req.body;
 
     const updateData = {};
     if (orderStatus !== undefined) {
