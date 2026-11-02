@@ -2,6 +2,7 @@ import Puja from "../models/pujaModel.js";
 import Homa from "../models/homaModel.js";
 import Order from "../models/Order.js";
 import User from "../models/user.js";
+import Otp from "../models/otp.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import Admin from "../models/Admin.js";
@@ -320,6 +321,27 @@ export const getAdminStats = async (req, res) => {
     const homaCount = await Homa.countDocuments({ status: "active" });
     const ordersCount = await Order.countDocuments({});
 
+    // OTP Statistics
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+
+    // Active / stored OTP records in collection
+    const totalOtps = await Otp.countDocuments({});
+    const todayOtps = await Otp.countDocuments({ updatedAt: { $gte: startOfToday } });
+    const rawVerifiedOtps = await Otp.countDocuments({ verified: true });
+    const pendingOtps = await Otp.countDocuments({ verified: false, expiresAt: { $gt: new Date() } });
+
+    // Devotee users who have verified via OTP
+    const verifiedUsersCount = await User.countDocuments({ isVerified: true });
+    const todayVerifiedUsers = await User.countDocuments({ isVerified: true, updatedAt: { $gte: startOfToday } });
+
+    // Aggregate verified count: OTP records verified or verified user accounts
+    const verifiedOtps = Math.max(rawVerifiedOtps, verifiedUsersCount);
+    // Display total OTP generation count: active records plus past verified devotee sessions
+    const totalGenerated = Math.max(totalOtps, verifiedUsersCount);
+    // OTPs generated today: today records or today verified users
+    const todayGenerated = Math.max(todayOtps, todayVerifiedUsers);
+
     const revenueResult = await Order.aggregate([
       { $match: { paymentStatus: "paid" } },
       { $group: { _id: null, total: { $sum: "$pricing.total" } } }
@@ -338,6 +360,12 @@ export const getAdminStats = async (req, res) => {
         homas: homaCount,
         orders: ordersCount,
         revenue,
+        otps: {
+          total: totalGenerated,
+          today: todayGenerated,
+          verified: verifiedOtps,
+          pending: pendingOtps
+        },
         recentBookings,
       },
     });

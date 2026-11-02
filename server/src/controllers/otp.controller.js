@@ -198,13 +198,19 @@ export const verifyOtp = async (req, res) => {
             await user.save();
         }
 
-        // ==========================================
-        // DELETE OTP
+                // ==========================================
+        // MARK OTP AS VERIFIED (Do NOT delete so history/counts persist in DB)
         // ==========================================
 
-        await Otp.deleteOne({
-            _id: otpRecord._id,
-        });
+        await Otp.updateOne(
+            { _id: otpRecord._id },
+            {
+                $set: {
+                    verified: true,
+                    verifiedAt: new Date(),
+                }
+            }
+        );
 
         // ==========================================
         // GENERATE AUTH TOKEN & SUCCESS RESPONSE

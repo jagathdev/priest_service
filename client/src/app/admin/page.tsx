@@ -1,11 +1,30 @@
 import React from "react";
 import Link from "next/link";
 import { cookies } from "next/headers";
-import { SparklesIcon, FireIcon, ShoppingBagIcon, BanknotesIcon } from "@heroicons/react/24/outline";
+import {
+  SparklesIcon,
+  FireIcon,
+  ShoppingBagIcon,
+  BanknotesIcon,
+  DevicePhoneMobileIcon,
+  CheckCircleIcon,
+  ClockIcon,
+} from "@heroicons/react/24/outline";
 
 export default async function AdminDashboard() {
-  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
-  let stats = { pujas: 0, homas: 0, orders: 0, revenue: 0 };
+  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
+  let stats = {
+    pujas: 0,
+    homas: 0,
+    orders: 0,
+    revenue: 0,
+    otps: {
+      total: 0,
+      today: 0,
+      verified: 0,
+      pending: 0,
+    },
+  };
   let recentBookings: any[] = [];
 
   const cookieStore = await cookies();
@@ -27,6 +46,12 @@ export default async function AdminDashboard() {
           homas: resData.data.homas ?? 0,
           orders: resData.data.orders ?? 0,
           revenue: resData.data.revenue ?? 0,
+          otps: {
+            total: resData.data.otps?.total ?? 0,
+            today: resData.data.otps?.today ?? 0,
+            verified: resData.data.otps?.verified ?? 0,
+            pending: resData.data.otps?.pending ?? 0,
+          },
         };
         if (Array.isArray(resData.data.recentBookings)) {
           recentBookings = resData.data.recentBookings;
@@ -65,7 +90,6 @@ export default async function AdminDashboard() {
 
       {/* Metric Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-
         {/* Total Pujas Card */}
         <Link href="/admin/pujas" className="bg-white rounded-2xl border border-gray-200 p-6 shadow-xs hover:shadow-md transition group">
           <div className="flex items-center justify-between">
@@ -113,6 +137,73 @@ export default async function AdminDashboard() {
           <dd className="text-3xl font-black text-success mt-3">₹{stats.revenue.toLocaleString()}</dd>
           <span className="text-xs font-bold text-success mt-2 inline-block group-hover:underline">Revenue Details →</span>
         </Link>
+      </div>
+
+      {/* OTP Activity & Database Metrics */}
+      <div className="space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <h2 className="text-base font-bold text-gray-900 flex items-center gap-2">
+              <DevicePhoneMobileIcon className="w-5 h-5 text-indigo-600" />
+              <span>OTP Activity &amp; Database Counts</span>
+            </h2>
+            <p className="text-xs text-gray-500 mt-0.5">Real-time counts of OTPs generated today and stored in the database.</p>
+          </div>
+          <span className="self-start sm:self-auto inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-100">
+            <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
+            Database Synced
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* OTPs Generated Today */}
+          <div className="bg-white rounded-2xl border-2 border-indigo-200 p-5 shadow-xs relative overflow-hidden bg-gradient-to-br from-white to-indigo-50/40">
+            <div className="flex items-center justify-between">
+              <dt className="text-xs font-bold text-indigo-700 uppercase tracking-wider">OTPs Generated Today</dt>
+              <div className="w-8 h-8 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center">
+                <ClockIcon className="w-4 h-4" />
+              </div>
+            </div>
+            <dd className="text-3xl font-black text-indigo-950 mt-2">{stats.otps.today}</dd>
+            <p className="text-[11px] text-indigo-600/80 font-medium mt-1">Generated since 12:00 AM today</p>
+          </div>
+
+          {/* Total Stored in DB */}
+          <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-xs">
+            <div className="flex items-center justify-between">
+              <dt className="text-xs font-bold text-gray-400 uppercase tracking-wider">Total OTPs in DB</dt>
+              <div className="w-8 h-8 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
+                <DevicePhoneMobileIcon className="w-4 h-4" />
+              </div>
+            </div>
+            <dd className="text-3xl font-black text-gray-900 mt-2">{stats.otps.total}</dd>
+            <p className="text-[11px] text-gray-500 font-medium mt-1">All unique devotee mobile records</p>
+          </div>
+
+          {/* Verified OTPs */}
+          <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-xs">
+            <div className="flex items-center justify-between">
+              <dt className="text-xs font-bold text-gray-400 uppercase tracking-wider">Verified Sessions</dt>
+              <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                <CheckCircleIcon className="w-4 h-4" />
+              </div>
+            </div>
+            <dd className="text-3xl font-black text-emerald-600 mt-2">{stats.otps.verified}</dd>
+            <p className="text-[11px] text-gray-500 font-medium mt-1">Successfully authenticated</p>
+          </div>
+
+          {/* Active / Pending OTPs */}
+          <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-xs">
+            <div className="flex items-center justify-between">
+              <dt className="text-xs font-bold text-gray-400 uppercase tracking-wider">Active / Pending OTPs</dt>
+              <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+                <ClockIcon className="w-4 h-4" />
+              </div>
+            </div>
+            <dd className="text-3xl font-black text-amber-600 mt-2">{stats.otps.pending}</dd>
+            <p className="text-[11px] text-gray-500 font-medium mt-1">Within 5-minute validity window</p>
+          </div>
+        </div>
       </div>
 
       {/* Quick Recent Bookings Section */}

@@ -29,6 +29,10 @@ const otpSchema = new mongoose.Schema(
             default: false,
         },
 
+        verifiedAt: {
+            type: Date,
+        },
+
         attempts: {
             type: Number,
             default: 0,
