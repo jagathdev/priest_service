@@ -510,12 +510,12 @@ export default function PujaDetailClient({
       }
     };
 
-    // 1. Primary main image
+    // 1. Primary main image directly from DB
     if (puja.imageUrl && typeof puja.imageUrl === "string" && puja.imageUrl.trim()) {
       addUrl(puja.imageUrl);
     }
 
-    // 2. Additional carousel images
+    // 2. Additional carousel images directly from DB
     const addImgs = puja.additionalImages || (puja as any).additionalImageUrls;
     const hasAdditional =
       (Array.isArray(addImgs) && addImgs.length > 0) ||
@@ -524,18 +524,18 @@ export default function PujaDetailClient({
     if (hasAdditional) {
       addUrl(addImgs);
     } else {
-      // 3. Fallback to gallery images if no additionalImages provided
+      // 3. Gallery images from DB if no additionalImages provided
       addUrl(puja.gallery);
       addUrl((puja as any).galleryUrl);
       addUrl((puja as any).details?.gallery);
     }
 
-    // 4. Details sub-object main image
+    // 4. Details sub-object main image from DB
     if (list.length === 0) {
       addUrl((puja?.details as any)?.imageUrl);
     }
 
-    // Fallback default image if no image exists in DB at all
+    // Fallback default image only if no image exists in DB at all
     if (list.length === 0) {
       list.push(DEFAULT_BANNER_IMAGE);
     }
@@ -819,15 +819,16 @@ export default function PujaDetailClient({
                   heroTouchStartY.current = null;
                   heroTouchEndY.current = null;
                 }}
-                className="relative w-full aspect-[4/3] min-h-[260px] sm:min-h-0 sm:aspect-auto sm:h-[350px] md:h-[390px] lg:h-[410px] rounded-xl overflow-hidden border border-stone-200/90 shadow-md group touch-pan-y"
+                className="relative w-full aspect-[4/3] min-h-[260px] sm:min-h-0 sm:aspect-[4/3] sm:h-auto md:max-h-[460px] lg:max-h-[440px] xl:max-h-[480px] rounded-xl overflow-hidden border border-stone-200/90 shadow-md group touch-pan-y bg-stone-900"
               >
                 <Image
                   src={bannerImages[activeBannerIndex] || (puja ? getPujaImageUrl(puja.imageUrl) : "/images/Ganesh-Chaturthi-Mahapuja.jpg")}
                   alt={`${puja?.title || "Puja"} - Sacred Ritual Banner ${activeBannerIndex + 1}`}
                   fill
-                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  priority
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, (max-width: 1280px) 50vw, 650px"
                   unoptimized
-                  className="w-full h-full object-cover object-center transition-all duration-300 cursor-pointer"
+                  className="w-full h-full object-cover sm:object-contain lg:object-cover object-center transition-all duration-300 cursor-pointer"
                   onClick={handleAddPujaToCart}
                 />
               </div>
