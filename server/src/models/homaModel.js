@@ -18,6 +18,7 @@ const faqSchema = new mongoose.Schema({
 const packageSchema = new mongoose.Schema({
   name: { type: String, default: "" },
   priceINR: { type: Number, default: 0 },
+  listPriceINR: { type: Number, default: 0 },
   priceUSD: { type: Number, default: 0 },
   priceMYR: { type: Number, default: 0 },
   description: { type: String, default: "" },
@@ -68,6 +69,12 @@ const homaSchema = new mongoose.Schema(
     time: { type: String, default: "" },
     eventDateTime: { type: String, default: "" },
     showTimer: { type: Boolean, default: true },
+
+    // Pricing (Selling Price & List Price)
+    priceINR: { type: Number, default: 0 },
+    listPriceINR: { type: Number, default: 0 },
+    listPrice: { type: Number, default: 0 },
+    sellingPrice: { type: Number, default: 0 },
     buttonText: { type: String, default: "" },
 
     // SEO

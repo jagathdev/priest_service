@@ -226,9 +226,15 @@ export default function AdminHomasPage() {
 
         {
           name: "priceINR",
-          label: "Price (INR ₹)",
+          label: "Selling Price (INR ₹)",
           type: "number",
-          placeholder: "Price in INR",
+          placeholder: "Selling Price in INR (e.g. 2500)",
+        },
+        {
+          name: "listPriceINR",
+          label: "List Price / MRP (INR ₹)",
+          type: "number",
+          placeholder: "List Price in INR (struck out if > selling price)",
         },
 
       ],
@@ -240,7 +246,8 @@ export default function AdminHomasPage() {
       section: "Packages & Pricing",
       objectSchema: [
         { name: "name", label: "Offering Name", type: "text", placeholder: "e.g. Special Prasadam Box" },
-        { name: "priceINR", label: "Price (INR ₹)", type: "number", placeholder: "Price in INR" },
+        { name: "priceINR", label: "Selling Price (INR ₹)", type: "number", placeholder: "Selling Price in INR (e.g. 501)" },
+        { name: "listPriceINR", label: "List Price / MRP (INR ₹)", type: "number", placeholder: "List Price in INR (struck out if > selling price)" },
         { name: "description", label: "Description", type: "textarea", placeholder: "Offering details" },
         { name: "imageUrl", label: "Image URL", type: "url", placeholder: "https://example.com/offering.jpg" },
         { name: "badge", label: "Badge (Optional)", type: "text", placeholder: "e.g. Popular, Sacred" },

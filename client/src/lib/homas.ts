@@ -5,6 +5,8 @@ export type PujaPackage = {
   name: string;
   price: number;
   priceINR?: number;
+  listPriceINR?: number;
+  listPrice?: number;
   priceUSD?: number;
   priceMYR?: number;
   description: string;
@@ -91,7 +93,7 @@ const normalizeOfferings = (items: unknown) => {
     ];
   }
   return items.map((item, index) => {
-    const off = item as Partial<PujaOffering> & { productId?: number };
+    const off = item as Partial<PujaOffering> & { productId?: number; listPriceINR?: number | string; listPrice?: number | string };
     const priceSource = off.priceINR ?? off.price ?? 0;
     const numericPrice = typeof priceSource === 'number' ? priceSource : Number(priceSource);
     return {
@@ -99,6 +101,7 @@ const normalizeOfferings = (items: unknown) => {
       name: off.name || "Special Offering",
       price: numericPrice,
       priceINR: typeof off.priceINR === 'number' ? off.priceINR : Number(off.priceINR || numericPrice),
+      listPriceINR: typeof off.listPriceINR === 'number' ? off.listPriceINR : (off.listPrice ? Number(off.listPrice) : (off.listPriceINR ? Number(off.listPriceINR) : 0)),
       priceUSD: typeof off.priceUSD === 'number' ? off.priceUSD : Number(off.priceUSD || 0),
       priceMYR: typeof off.priceMYR === 'number' ? off.priceMYR : Number(off.priceMYR || 0),
       description: off.description || "Divine offering for the deity",
@@ -190,6 +193,7 @@ const normalizePackages = (items: unknown, fallback: PujaPackage[]) => {
         name,
         price: numericPrice,
         priceINR: typeof pkg.priceINR === 'number' ? pkg.priceINR : Number(pkg.priceINR || 0),
+        listPriceINR: typeof pkg.listPriceINR === 'number' ? pkg.listPriceINR : (pkg.listPrice ? Number(pkg.listPrice) : (pkg.listPriceINR ? Number(pkg.listPriceINR) : 0)),
         priceUSD: typeof pkg.priceUSD === 'number' ? pkg.priceUSD : Number(pkg.priceUSD || 0),
         priceMYR: typeof pkg.priceMYR === 'number' ? pkg.priceMYR : Number(pkg.priceMYR || 0),
         description:
@@ -569,7 +573,7 @@ export const normalizePuja = (homa: any, offeringsMap: Record<string, any> = {})
 
 export async function getAllHomas() {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || 'https://priestservices.astroved.com';
+    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || (process.env.NODE_ENV === 'development' ? 'http://localhost:8564' : 'https://priestservices.astroved.com');
     const res = await fetch(`${baseUrl}/api/homas`, { cache: 'no-store' });
     if (res.ok) {
       const resData = await res.json();

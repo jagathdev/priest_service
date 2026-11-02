@@ -4,6 +4,8 @@ import React, { useState, useMemo } from "react";
 import Image from "next/image";
 import Navbar from "@/components/layout/Navbar";
 import Link from "next/link";
+import { getPriceComparison } from "@/lib/pricing";
+import PriceTag from "@/components/ui/PriceTag";
 import { useRouter } from "next/navigation";
 import {
   ArrowRight,
@@ -446,7 +448,18 @@ export default function HomaClient({ initialHomas }: { initialHomas?: Homa[] }) 
                             {/* ── Card Footer ── */}
                             <div className="mt-auto pt-3.5 border-t border-gray-100 flex items-center justify-between bg-white">
                               <div>
-                                <span className="text-xl font-extrabold text-gray-900">₹{priceVal}</span>
+                                {(() => {
+                                  const pInfo = getPriceComparison(homa);
+                                  return (
+                                    <PriceTag
+                                      sellingPrice={pInfo.sellingPrice ?? priceVal}
+                                      listPrice={pInfo.listPrice}
+                                      sellingPriceClassName="text-xl font-extrabold text-gray-900"
+                                      listPriceClassName="text-xs font-bold text-stone-400 line-through decoration-red-500 decoration-1.5 ml-1"
+                                      className="flex items-baseline gap-1.5 flex-wrap"
+                                    />
+                                  );
+                                })()}
                                 <span className="text-[11px] text-gray-400 font-medium block -mt-1">Per Booking</span>
                               </div>
 

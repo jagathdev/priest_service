@@ -26,7 +26,8 @@ import PujaFilterModal, {
 } from "@/components/common/PujaFilterModal";
 import ShareModal, { ShareData } from "@/components/common/ShareModal";
 import GalleryLightboxModal from "@/components/common/GalleryLightboxModal";
-import { formatStartingPrice } from "@/lib/pricing";
+import { formatStartingPrice, getPriceComparison } from "@/lib/pricing";
+import PriceTag from "@/components/ui/PriceTag";
 import priestservicesLogo from "../../../public/images/priest-services-logo.png";
 
 const getSafeImageUrl = (imageUrl?: string): string => {
@@ -506,6 +507,7 @@ export default function DashboardClient({
             ) : (
               filteredPujas.map((p) => {
                 const priceVal = formatStartingPrice(p);
+                const priceInfo = getPriceComparison(p);
                 const slugVal = p.slug || (p.title ? p.title.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-") : "");
                 const topTagVal = p.badge || p.shortTitle || p.subtitle;
                 const descriptionVal = p.description || p.subtitle;
@@ -531,6 +533,8 @@ export default function DashboardClient({
                       buttonText={p.buttonText}
                       dateOccasion={occasionVal}
                       price={priceVal}
+                      listPrice={priceInfo.listPrice}
+                      sellingPriceNum={priceInfo.sellingPrice}
                       slug={slugVal}
                       onShare={(sharePayload) => {
                         setShareData(sharePayload);
@@ -852,6 +856,8 @@ interface PujaCardProps {
   buttonText?: string;
   dateOccasion?: string;
   price: string | number;
+  listPrice?: number | null;
+  sellingPriceNum?: number | null;
   slug?: string;
   onShare?: (data: ShareData) => void;
 }
@@ -869,6 +875,8 @@ function PujaCard({
   time,
   buttonText,
   price,
+  listPrice,
+  sellingPriceNum,
   slug,
   onShare,
 }: PujaCardProps) {
@@ -983,7 +991,13 @@ function PujaCard({
           <div className="flex items-center justify-between pt-0.5">
             {/* Price */}
             <div>
-              <span className="font-extrabold text-2xl sm:text-3xl text-[#1f1a17] leading-none block">{price}</span>
+              <PriceTag
+                sellingPrice={sellingPriceNum ?? price}
+                listPrice={listPrice}
+                sellingPriceClassName="font-extrabold text-2xl sm:text-3xl text-[#1f1a17] leading-none block"
+                listPriceClassName="text-sm font-bold text-stone-400 line-through decoration-red-500 decoration-1.5 ml-1"
+                className="flex items-baseline gap-1.5 flex-wrap"
+              />
               <span className="text-xs text-stone-500 font-semibold mt-0.5 block">Per Booking</span>
             </div>
 

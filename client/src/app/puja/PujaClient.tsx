@@ -17,7 +17,8 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import WishlistButton from "@/components/common/WishlistButton";
-import { formatStartingPrice } from "@/lib/pricing";
+import { formatStartingPrice, getPriceComparison } from "@/lib/pricing";
+import PriceTag from "@/components/ui/PriceTag";
 
 interface Puja {
   _id: string;
@@ -641,7 +642,18 @@ export default function PujaClient({ initialPujas }: { initialPujas?: Puja[] }) 
                         <div className="flex items-center justify-between mt-auto pt-2 border-t border-gray-100">
                           <div>
                             {/* Price display */}
-                            <div className="text-[20px] sm:text-[22px] font-black text-gray-900">{formatStartingPrice(puja)}</div>
+                            {(() => {
+                              const pInfo = getPriceComparison(puja);
+                              return (
+                                <PriceTag
+                                  sellingPrice={pInfo.sellingPrice ?? formatStartingPrice(puja)}
+                                  listPrice={pInfo.listPrice}
+                                  sellingPriceClassName="text-[20px] sm:text-[22px] font-black text-gray-900"
+                                  listPriceClassName="text-sm font-bold text-stone-400 line-through decoration-red-500 decoration-1.5 ml-1"
+                                  className="flex items-baseline gap-1.5 flex-wrap"
+                                />
+                              );
+                            })()}
                             <div className="text-[11px] text-gray-500 font-bold uppercase tracking-wider">Per Booking</div>
                           </div>
                           <div

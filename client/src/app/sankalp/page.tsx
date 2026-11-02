@@ -12,6 +12,7 @@ import { checkAuthStatus } from "@/lib/authCheck";
 import { useUser } from "@/contexts/UserContext";
 import { apiClient, getAuthToken } from "@/services/api";
 import { getStartingPriceINR } from "@/lib/pricing";
+import PriceTag from "@/components/ui/PriceTag";
 import { ArrowLeft, CreditCard, QrCode, Calendar, Lock, Check } from "lucide-react";
 
 interface RazorpayResponse {
@@ -209,6 +210,7 @@ function SankalpContent() {
           name: pkg.name || `Package ${idx + 1}`,
           devoteeCount: pkg.devoteeCount || pkg.devotees || defaultDevotees,
           priceINR: pkg.priceINR ?? pkg.price ?? (queryAmount ? Number(queryAmount) : pujaData?.price || 501),
+          listPriceINR: pkg.listPriceINR ?? pkg.listPrice,
         };
       });
     }
@@ -285,6 +287,17 @@ function SankalpContent() {
   const extraParticipantFee = extraParticipantCount * 300;
   const offeringsTotal = selectedOfferings.reduce((sum, item) => sum + (Number(item.priceINR ?? item.price) || 0), 0);
   const finalPrice = basePrice + extraParticipantFee + offeringsTotal;
+
+  // Total list price / MRP calculation:
+  // (package list price or selling price) + Convenience (25) + Pandit (150) + Photo/Video (500) + extra participants + offerings list price
+  const packageListPrice = Number(selectedPackage?.listPriceINR ?? selectedPackage?.listPrice) || basePrice;
+  const offeringsListTotal = selectedOfferings.reduce((sum, item) => {
+    const lPrice = Number(item.listPriceINR ?? item.listPrice);
+    return sum + (lPrice && lPrice > 0 ? lPrice : (Number(item.priceINR ?? item.price) || 0));
+  }, 0);
+  const totalListPrice = packageListPrice + 25 + 150 + 500 + extraParticipantFee + offeringsListTotal;
+  const totalActualAmount = appliedPromo ? appliedPromo.finalAmount : finalPrice;
+  const totalSavings = totalListPrice > totalActualAmount ? (totalListPrice - totalActualAmount) : 0;
 
   const isPhoneValid = /^[6-9]\d{9}$/.test(formData.whatsapp.trim());
   const areParticipantsValid = formData.participants.length > 0 && formData.participants.every(p => {
@@ -899,7 +912,15 @@ function SankalpContent() {
                                 <h4 className="text-[12px] font-bold text-stone-800">{offeringName}</h4>
                                 <p className="text-[10px] text-stone-500 truncate">{offering.description || offering.badge}</p>
                               </div>
-                              <div className="font-extrabold text-[#f15a29] text-sm">₹{offering.priceINR || offering.price || 0}</div>
+                              <div>
+                                <PriceTag
+                                  sellingPrice={offering.priceINR || offering.price || 0}
+                                  listPrice={offering.listPriceINR ?? offering.listPrice}
+                                  sellingPriceClassName="font-extrabold text-[#f15a29] text-sm"
+                                  listPriceClassName="text-xs font-bold text-stone-400 line-through decoration-red-500 decoration-1.5 mr-1.5"
+                                  className="flex items-baseline gap-1 flex-wrap justify-end"
+                                />
+                              </div>
                               <button
                                 onClick={() => {
                                   if (isAdded) setSelectedOfferings(prev => prev.filter((o: any) => (o.name || o.title) !== offeringName));
@@ -970,7 +991,13 @@ function SankalpContent() {
                   <div className="space-y-4 text-xs text-stone-700 border-b-2 border-stone-100 pb-5 mb-5">
                     <div className="flex justify-between items-center">
                       <span className="font-medium">{packageName}</span>
-                      <span className="font-extrabold text-[#980000]">₹{basePrice}</span>
+                      <PriceTag
+                        sellingPrice={basePrice}
+                        listPrice={selectedPackage?.listPriceINR ?? selectedPackage?.listPrice}
+                        sellingPriceClassName="font-extrabold text-[#980000]"
+                        listPriceClassName="text-xs font-bold text-stone-400 line-through decoration-red-500 decoration-1.5 mr-1.5"
+                        className="flex items-baseline gap-1 flex-wrap justify-end"
+                      />
                     </div>
                     {extraParticipantCount > 0 && (
                       <div className="flex justify-between items-center">
@@ -1011,9 +1038,27 @@ function SankalpContent() {
                         <span className="font-extrabold">-₹{appliedPromo.discountAmount}</span>
                       </div>
                     )}
-                    <div className="mt-3 flex justify-between border-t pt-3 text-sm font-bold">
-                      <span>Total</span>
-                      <span>₹{appliedPromo ? appliedPromo.finalAmount : finalPrice}</span>
+                    <div className="mt-3 flex flex-col border-t pt-3">
+                      <div className="flex justify-between items-baseline text-sm font-bold">
+                        <span className="text-stone-900 font-extrabold">Total</span>
+                        <div className="flex items-baseline gap-2">
+                          {totalListPrice > totalActualAmount && (
+                            <span className="text-xs sm:text-sm font-bold text-stone-400 line-through decoration-red-500 decoration-1.5">
+                              ₹{totalListPrice.toLocaleString("en-IN")}
+                            </span>
+                          )}
+                          <span className="text-base sm:text-lg font-black text-stone-900">
+                            ₹{totalActualAmount.toLocaleString("en-IN")}
+                          </span>
+                        </div>
+                      </div>
+                      {totalSavings > 0 && (
+                        <div className="flex justify-end mt-1">
+                          <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                            You save ₹{totalSavings.toLocaleString("en-IN")}
+                          </span>
+                        </div>
+                      )}
                     </div>
                   </div>
 

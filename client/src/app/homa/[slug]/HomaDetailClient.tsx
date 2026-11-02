@@ -2,6 +2,8 @@
 
 import React, { useEffect, useState, useMemo, useRef } from "react";
 import Image from "next/image";
+import { getStartingListPriceINR } from "@/lib/pricing";
+import PriceTag from "@/components/ui/PriceTag";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
@@ -18,7 +20,6 @@ import {
   ZoomIn,
   Share2,
   Check,
-  Phone,
   Flame,
   ArrowRight,
   Video,
@@ -32,6 +33,7 @@ interface HomaPackage {
   id: string;
   name: string;
   priceINR?: number;
+  listPriceINR?: number;
   priceUSD?: number;
   priceMYR?: number;
   price?: number;
@@ -237,7 +239,7 @@ export default function HomaDetailClient({
           return;
         }
 
-        const rawBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
+        const rawBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || (typeof window !== "undefined" && window.location.origin.includes("localhost") ? "http://localhost:8564" : "https://priestservices.astroved.com");
         const isClient = typeof window !== "undefined";
         const isLanMobile = isClient && window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1" && rawBaseUrl.includes("localhost");
         const backendUrl = isLanMobile ? "" : rawBaseUrl;
@@ -395,6 +397,7 @@ export default function HomaDetailClient({
           name: normalizePackageName(pkg.name, idx),
           devoteeCount: pkg.devoteeCount || pkg.devotees || defaultDevotees,
           priceINR: basePrice,
+          listPriceINR: pkg.listPriceINR ?? pkg.listPrice,
           priceUSD: pkg.priceUSD,
           priceMYR: pkg.priceMYR,
           description: pkg.description || "Includes personalized sankalpam and havan video proof.",
@@ -441,6 +444,10 @@ export default function HomaDetailClient({
 
   const getDisplayPrice = (item: Record<string, any>) => {
     return item?.[`price${currency}`] ?? item?.priceINR ?? item?.price ?? 1250;
+  };
+
+  const getDisplayListPrice = (item: Record<string, any>) => {
+    return item?.[`listPrice${currency}`] ?? item?.listPriceINR ?? item?.listPrice ?? getStartingListPriceINR(item) ?? 0;
   };
 
   const selectedPackage = useMemo(() => {
@@ -991,9 +998,13 @@ export default function HomaDetailClient({
                               {devoteesText}
                             </span>
                             <div className="flex items-center justify-between mt-1 sm:mt-0.5">
-                              <span className={`font-extrabold text-base sm:text-sm lg:text-base ${isSelected ? "text-[#14395C]" : "text-stone-900"}`}>
-                                ₹{displayPrice}
-                              </span>
+                              <PriceTag
+                                sellingPrice={displayPrice}
+                                listPrice={getDisplayListPrice(pkg)}
+                                sellingPriceClassName={`font-extrabold text-base sm:text-sm lg:text-base ${isSelected ? "text-[#14395C]" : "text-stone-900"}`}
+                                listPriceClassName="text-xs font-bold text-stone-400 line-through decoration-red-500 decoration-1.5 mr-1"
+                                className="flex items-baseline gap-1 flex-wrap"
+                              />
                               {/* Checkmark Badge on Selected Package */}
                               {isSelected && (
                                 <div className="w-5 h-5 rounded-full bg-[#14395C] text-white flex items-center justify-center shrink-0 shadow-xs ml-1">
@@ -1013,17 +1024,17 @@ export default function HomaDetailClient({
               <button
                 ref={heroCtaRef}
                 onClick={handleAddHomaToCart}
-                className="w-full bg-[#14395C] hover:bg-[#0f2d4a] active:scale-[0.98] text-white font-extrabold text-lg sm:text-2xl py-3.5 sm:py-4.5 px-6 sm:px-8 rounded-full shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-3 sm:gap-4 mb-4 tracking-wide group"
+                className="w-full bg-[#00B05F] hover:bg-[#008F4C] active:scale-[0.98] text-white font-extrabold text-lg sm:text-2xl py-3.5 sm:py-4.5 px-6 sm:px-8 rounded-full shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-3 sm:gap-4 mb-4 tracking-wide group"
               >
-                <span className="tabular-nums font-black">₹{priceVal.toLocaleString("en-IN")}</span>
-                <span className="opacity-40 font-light select-none">|</span>
+                {/* <span className="tabular-nums font-black">₹{priceVal.toLocaleString("en-IN")}</span> */}
+                {/* <span className="opacity-40 font-light select-none">|</span> */}
                 <span className="flex items-center gap-2">
-                  {homa.buttonText || "Book Now"}
+                  {homa.buttonText || "Book My Homa"}
                 </span>
               </button>
 
               {/* Secondary WhatsApp & Call Buttons */}
-              <div className="flex flex-wrap items-center gap-3">
+              {/* <div className="flex flex-wrap items-center gap-3">
                 <a
                   href="https://wa.me/919566777645"
                   target="_blank"
@@ -1041,7 +1052,7 @@ export default function HomaDetailClient({
                   <span>Book via Call</span>
                 </a>
 
-              </div>
+              </div> */}
 
             </div>
 
@@ -1461,9 +1472,13 @@ export default function HomaDetailClient({
               <span className="text-[10px] sm:text-xs font-extrabold text-slate-200 tracking-wider uppercase block truncate max-w-[120px] sm:max-w-none">
                 {homa.title}
               </span>
-              <span className="text-base sm:text-2xl font-black text-white block leading-tight mt-0.5 whitespace-nowrap">
-                ₹{priceVal.toLocaleString("en-IN")}
-              </span>
+              <PriceTag
+                sellingPrice={priceVal}
+                listPrice={selectedPackage ? getDisplayListPrice(selectedPackage) : getStartingListPriceINR(homa)}
+                sellingPriceClassName="text-base sm:text-2xl font-black text-white block leading-tight whitespace-nowrap"
+                listPriceClassName="text-xs sm:text-sm font-semibold text-slate-300 line-through decoration-red-400 decoration-1.5 mr-1.5 whitespace-nowrap"
+                className="flex items-baseline gap-1.5 flex-wrap mt-0.5"
+              />
             </div>
           </div>
 
@@ -1512,7 +1527,13 @@ export default function HomaDetailClient({
                         <p className="text-stone-600 text-xs mt-1">{pkg.description || "Includes personalized sankalpam and video proof."}</p>
                       </div>
                       <div className="text-right">
-                        <span className="font-extrabold text-lg text-stone-900 block">₹{getDisplayPrice(pkg)}</span>
+                        <PriceTag
+                          sellingPrice={getDisplayPrice(pkg)}
+                          listPrice={getDisplayListPrice(pkg)}
+                          sellingPriceClassName="font-extrabold text-lg text-stone-900 block"
+                          listPriceClassName="text-xs font-bold text-stone-400 line-through decoration-red-500 decoration-1.5 mr-1"
+                          className="flex items-baseline gap-1 flex-wrap justify-end"
+                        />
                         <span className="text-[10px] font-bold text-[#14395C] uppercase">{isSelected ? "Selected ✓" : "Select"}</span>
                       </div>
                     </div>
