@@ -921,12 +921,10 @@ export default function HomaDetailClient({
             {/* Right 6 Cols: Details & CTA */}
             <div className="lg:col-span-6 flex flex-col lg:pl-[10px]">
               {/* Filigree Subtag */}
-              <div className="flex items-center justify-center lg:justify-start gap-2 mb-2">
-                <div className="w-8 h-[1px] bg-[#F47820]/40" />
-                <span className="text-[#F47820] font-serif font-extrabold text-xs sm:text-[13px] tracking-wider uppercase flex items-center gap-1.5">
-                  <span className="text-[10px]">♦</span> {badgeText} <span className="text-[10px]">♦</span>
+              <div className="flex items-center justify-center lg:justify-start gap-2 mb-2 w-full max-w-full overflow-hidden">
+                <span className="text-[#F47820] font-serif font-extrabold text-xs sm:text-[13px] tracking-wider uppercase flex items-center justify-center text-center gap-1.5 flex-wrap">
+                  <span className="text-center">{badgeText}</span>
                 </span>
-                <div className="w-8 h-[1px] bg-[#F47820]/40" />
               </div>
 
               {/* Title */}

@@ -97,7 +97,7 @@ export default function CheckoutClient({ homa }: { homa: any }) {
                       value={details.whatsapp}
                       onChange={(e) => setDetails({ ...details, whatsapp: e.target.value.replace(/\D/g, '').slice(0, 10) })}
                       className="w-full bg-[#f9fafb] border border-gray-200 rounded-xl py-3.5 pl-28 pr-12 font-bold text-gray-900 outline-none focus:border-green-500 transition-all focus:bg-white focus:ring-4 focus:ring-green-500/10"
-                      placeholder="9360270984"
+                      placeholder="9566777645"
                     />
                     <div className="absolute right-4 top-1/2 -translate-y-1/2 text-blue-500">
                       <i className="fa-solid fa-circle-check text-xl"></i>
