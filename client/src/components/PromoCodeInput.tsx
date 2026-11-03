@@ -92,20 +92,20 @@ export default function PromoCodeInput({
                         type="button"
                         onClick={handleApply}
                         disabled={loading}
-                        className="shrink-0 rounded-xl bg-[#14395C] px-5 sm:px-8 py-3 text-sm font-bold text-white hover:bg-[#0e2740] transition-colors disabled:opacity-50 shadow-sm"
+                        className="shrink-0 rounded-xl bg-[#00B05F] px-5 sm:px-8 py-3 text-sm font-bold text-white hover:bg-[#008F4C] transition-colors disabled:opacity-50 shadow-sm"
                     >
                         {loading ? "..." : "Apply"}
                     </button>
                 </div>
             ) : (
-                <div className="flex items-center justify-between rounded-xl border border-[#14395C]/30 bg-[#14395C]/5 px-5 py-4 shadow-sm">
+                <div className="flex items-center justify-between rounded-xl border border-[#00B05F]/30 bg-[#00B05F]/5 px-5 py-4 shadow-sm">
                     <div>
-                        <div className="font-extrabold text-[#14395C] flex items-center gap-2">
-                            <Check className="w-5 h-5 text-[#14395C]" strokeWidth={2.5} />
+                        <div className="font-extrabold text-[#00B05F] flex items-center gap-2">
+                            <Check className="w-5 h-5 text-[#00B05F]" strokeWidth={2.5} />
                             {code} applied
                         </div>
                         <div className="text-xs font-bold text-stone-600 mt-1">
-                            You saved <span className="text-[#14395C]">₹{discountAmount.toLocaleString("en-IN")}</span>
+                            You saved <span className="text-[#00B05F]">₹{discountAmount.toLocaleString("en-IN")}</span>
                         </div>
                     </div>
                     <button

@@ -485,7 +485,7 @@ function SankalpContent() {
           email: userEmail
         },
         theme: {
-          color: "#14395C",
+          color: "#00B05F",
           image_padding: false
         },
         readonly: {
@@ -602,38 +602,38 @@ function SankalpContent() {
             <div className="flex items-center justify-between relative">
               <div className="absolute left-10 right-10 top-5 h-[3px] bg-[#e4dfd9] -z-10" />
               <div className="absolute left-10 right-10 top-5 h-[3px] -z-10 flex justify-start">
-                <div className={`h-full bg-[#14395C] transition-all duration-300 ${step === 1 ? 'w-0' : step === 2 ? 'w-1/2' : 'w-full'}`} />
+                <div className={`h-full bg-[#00B05F] transition-all duration-300 ${step === 1 ? 'w-0' : step === 2 ? 'w-1/2' : 'w-full'}`} />
               </div>
 
               <div
                 className={`flex flex-col items-center gap-2 bg-white px-2 sm:px-4 ${step > 1 ? "cursor-pointer hover:opacity-80 transition-opacity" : ""}`}
                 onClick={() => { if (step > 1) setStep(1); }}
               >
-                <div className={`h-10 w-10 rounded-full flex items-center justify-center font-bold text-base transition-all ${step >= 1 ? 'bg-[#14395C] text-white' : 'bg-white border-2 border-[#e4dfd9] text-stone-500'} ${step === 1 ? 'ring-4 ring-[#14395C]/15' : ''}`}>
+                <div className={`h-10 w-10 rounded-full flex items-center justify-center font-bold text-base transition-all ${step >= 1 ? 'bg-[#00B05F] text-white' : 'bg-white border-2 border-[#e4dfd9] text-stone-500'} ${step === 1 ? 'ring-4 ring-[#00B05F]/15' : ''}`}>
                   {step > 1 ? '✓' : '1'}
                 </div>
-                <span className={`text-[13px] font-semibold text-center leading-tight ${step === 1 ? 'text-[#14395C]' : 'text-[#8b8276]'}`}>Devotee<br />Details</span>
+                <span className={`text-[13px] font-semibold text-center leading-tight ${step === 1 ? 'text-[#00B05F]' : 'text-[#8b8276]'}`}>Devotee<br />Details</span>
               </div>
 
               <div className="flex flex-col items-center gap-2 bg-white px-2 sm:px-4">
-                <div className={`h-10 w-10 rounded-full flex items-center justify-center font-bold text-base transition-all ${step >= 2 ? 'bg-[#14395C] text-white shadow-sm' : 'bg-white border-2 border-[#e4dfd9] text-stone-500'} ${step === 2 ? 'ring-4 ring-[#14395C]/15' : ''}`}>
+                <div className={`h-10 w-10 rounded-full flex items-center justify-center font-bold text-base transition-all ${step >= 2 ? 'bg-[#00B05F] text-white shadow-sm' : 'bg-white border-2 border-[#e4dfd9] text-stone-500'} ${step === 2 ? 'ring-4 ring-[#00B05F]/15' : ''}`}>
                   {step > 2 ? '✓' : '2'}
                 </div>
-                <span className={`text-[13px] font-semibold text-center leading-tight ${step === 2 ? 'text-[#14395C]' : 'text-[#8b8276]'}`}>Review</span>
+                <span className={`text-[13px] font-semibold text-center leading-tight ${step === 2 ? 'text-[#00B05F]' : 'text-[#8b8276]'}`}>Review</span>
               </div>
 
               <div className="flex flex-col items-center gap-2 bg-white px-2 sm:px-4">
-                <div className={`h-10 w-10 rounded-full flex items-center justify-center font-bold text-base transition-all ${step >= 3 ? 'bg-[#14395C] text-white shadow-sm' : 'bg-white border-2 border-[#e4dfd9] text-stone-500'} ${step === 3 ? 'ring-4 ring-[#14395C]/15' : ''}`}>
+                <div className={`h-10 w-10 rounded-full flex items-center justify-center font-bold text-base transition-all ${step >= 3 ? 'bg-[#00B05F] text-white shadow-sm' : 'bg-white border-2 border-[#e4dfd9] text-stone-500'} ${step === 3 ? 'ring-4 ring-[#00B05F]/15' : ''}`}>
                   3
                 </div>
-                <span className={`text-[13px] font-semibold text-center leading-tight ${step === 3 ? 'text-[#14395C]' : 'text-[#8b8276]'}`}>Payment</span>
+                <span className={`text-[13px] font-semibold text-center leading-tight ${step === 3 ? 'text-[#00B05F]' : 'text-[#8b8276]'}`}>Payment</span>
               </div>
             </div>
           </div>
 
           {loading ? (
             <div className="flex flex-col items-center justify-center py-20 text-stone-600 font-serif text-base">
-              <div className="w-10 h-10 border-4 border-[#14395C] border-t-transparent rounded-full animate-spin mb-4" />
+              <div className="w-10 h-10 border-4 border-[#00B05F] border-t-transparent rounded-full animate-spin mb-4" />
               Loading sacred order details...
             </div>
           ) : error ? (
@@ -650,7 +650,7 @@ function SankalpContent() {
                     setError("");
                     setStep(2);
                   }}
-                  className="bg-[#14395C] text-white font-bold py-2.5 px-6 rounded-full inline-block text-sm shadow-sm hover:opacity-90 transition-opacity"
+                  className="bg-[#00B05F] text-white font-bold py-2.5 px-6 rounded-full inline-block text-sm shadow-sm hover:opacity-90 transition-opacity"
                 >
                   Retry Payment
                 </button>
@@ -675,7 +675,7 @@ function SankalpContent() {
                         Your WhatsApp Number
                         <i className="fa-brands fa-whatsapp text-base text-[#25D366]"></i>
                       </label>
-                      <div className={`border rounded-xl flex items-center px-4 py-3 transition shadow-sm ${showErrors && !isPhoneValid ? "border-red-400 focus-within:border-red-400 bg-red-50/20" : "border-stone-600 focus-within:border-[#14395C] bg-white"}`}>
+                      <div className={`border rounded-xl flex items-center px-4 py-3 transition shadow-sm ${showErrors && !isPhoneValid ? "border-red-400 focus-within:border-red-400 bg-red-50/20" : "border-stone-600 focus-within:border-[#00B05F] bg-white"}`}>
                         <div className="flex items-center gap-2 pr-3 border-r border-stone-600 mr-3">
                           <span className="text-[13px] font-semibold text-[#1c2c5c]">IN</span>
                           <span className="text-[13px] font-extrabold text-stone-900">+91</span>
@@ -768,7 +768,7 @@ function SankalpContent() {
                                   placeholder="Enter devotee name"
                                   className={`w-full border rounded-xl px-4 py-2.5 text-sm font-medium outline-none transition ${hasNameError
                                     ? "border-red-400 bg-red-50/20"
-                                    : "border-stone-600 focus:border-[#14395C] bg-white"
+                                    : "border-stone-600 focus:border-[#00B05F] bg-white"
                                     }`}
                                 />
                                 {hasNameError && (
@@ -795,7 +795,7 @@ function SankalpContent() {
                                   placeholder="Enter gotra (e.g. Kashyapa)"
                                   className={`w-full border rounded-xl px-4 py-2.5 text-sm font-medium outline-none transition ${p.dontKnowGotra
                                     ? "bg-[#f4f2ee] text-stone-500 cursor-not-allowed border-stone-400"
-                                    : "border-stone-600 focus:border-[#14395C] bg-white"
+                                    : "border-stone-600 focus:border-[#00B05F] bg-white"
                                     }`}
                                 />
                                 <label className="flex items-center gap-2 mt-2.5 cursor-pointer select-none">
@@ -812,7 +812,7 @@ function SankalpContent() {
                                       };
                                       setFormData({ ...formData, participants: newP });
                                     }}
-                                    className="w-4 h-4 rounded border-stone-300 text-[#14395C] focus:ring-[#14395C]"
+                                    className="w-4 h-4 rounded border-stone-300 text-[#00B05F] focus:ring-[#00B05F]"
                                   />
                                   <span className="text-xs font-medium text-stone-600">
                                     I do not know my gotra
@@ -837,7 +837,7 @@ function SankalpContent() {
                               ]
                             })
                           }
-                          className="text-sm font-bold text-[#14395C] bg-white border border-dashed border-[#14395C] rounded-full px-5 py-2.5 flex items-center gap-1.5 hover:bg-[#14395C]/5 transition-colors shadow-2xs"
+                          className="text-sm font-bold text-[#00B05F] bg-white border border-dashed border-[#00B05F] rounded-full px-5 py-2.5 flex items-center gap-1.5 hover:bg-[#00B05F]/5 transition-colors shadow-2xs"
                         >
                           <span>+ Add participant</span>
                           <span className="font-extrabold">+₹300</span>
@@ -857,7 +857,7 @@ function SankalpContent() {
                         rows={4}
                         value={formData.wish}
                         onChange={(e) => setFormData({ ...formData, wish: e.target.value })}
-                        className="w-full border border-stone-600 rounded-xl p-4 text-xs font-medium text-stone-700 outline-none focus:border-[#14395C] resize-none shadow-sm"
+                        className="w-full border border-stone-600 rounded-xl p-4 text-xs font-medium text-stone-700 outline-none focus:border-[#00B05F] resize-none shadow-sm"
                         placeholder="e.g. FAMILY WELL BEING"
                       />
                     </div>
@@ -871,14 +871,14 @@ function SankalpContent() {
                       <div className="grid grid-cols-2 gap-4">
                         <div
                           // onClick={() => setPaymentMethod("upi")}
-                          className={`border rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer transition-colors  border-stone-200 hover:border-[#14395C]`}
+                          className={`border rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer transition-colors  border-stone-200 hover:border-[#00B05F]`}
                         >
                           <CreditCard className={`w-8 h-8 mb-2 "text-stone-400"`} />
                           <span className={`text-xs font-bold text-center text-stone-700`}>Cards / Netbanking / UPI</span>
                         </div>
                         <div
                           // onClick={() => setPaymentMethod("qr")}
-                          className={`border rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer transition-colors  border-stone-200 hover:border-[#14395C]`}
+                          className={`border rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer transition-colors  border-stone-200 hover:border-[#00B05F]`}
                         >
                           <QrCode className={`w-8 h-8 mb-2 "text-stone-400"`} />
                           <span className={`text-xs font-bold text-center text-stone-700`}>Scan QR to Pay</span>
@@ -928,7 +928,7 @@ function SankalpContent() {
                                 }}
                                 className={`text-[11px] font-bold px-5 py-2 rounded-full transition-colors shrink-0 flex items-center gap-1 ${isAdded
                                   ? "bg-red-50 text-red-600 border border-red-200"
-                                  : "bg-[#14395C] text-white hover:bg-[#0e2740]"
+                                  : "bg-[#00B05F] text-white hover:bg-[#008F4C]"
                                   }`}
                               >
                                 {isAdded ? "− Remove" : "+ Add"}
@@ -982,8 +982,8 @@ function SankalpContent() {
                   </div>
 
                   {/* Date Box */}
-                  <div className="bg-[#f0f4f8] border border-[#d6e2ed] rounded-xl px-4 py-2.5 flex items-center gap-3 text-xs font-bold text-[#14395C] mb-6">
-                    <Calendar className="w-4 h-4 text-[#14395C]" />
+                  <div className="bg-[#f0f4f8] border border-[#d6e2ed] rounded-xl px-4 py-2.5 flex items-center gap-3 text-xs font-bold text-[#00B05F] mb-6">
+                    <Calendar className="w-4 h-4 text-[#00B05F]" />
                     <span>{pujaData?.date || "Saturday, 10 October"}</span>
                   </div>
 
@@ -1033,7 +1033,7 @@ function SankalpContent() {
                       </div>
                     </div>
                     {appliedPromo && (
-                      <div className="flex justify-between items-center text-[#14395C]">
+                      <div className="flex justify-between items-center text-[#00B05F]">
                         <span className="font-medium">Promo ({appliedPromo.promoCode})</span>
                         <span className="font-extrabold">-₹{appliedPromo.discountAmount}</span>
                       </div>
@@ -1065,19 +1065,19 @@ function SankalpContent() {
                   {/* Continue Button */}
                   {isProcessing ? (
                     <div className="flex flex-col items-center justify-center py-3 mb-4 border border-stone-200 rounded-xl bg-stone-50">
-                      <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-[#14395C] mb-2"></div>
+                      <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-[#00B05F] mb-2"></div>
                       <span className="text-[11px] font-bold text-stone-600 animate-pulse">{loadingMsg}</span>
                     </div>
                   ) : (
                     <button
                       onClick={step === 1 ? handleProceedToStep2 : handleFinalCheckout}
-                      className="w-full bg-[#14395C] hover:bg-[#0e2740] active:scale-[0.99] text-white font-extrabold text-sm py-4 rounded-xl transition-all shadow-md mb-4"
+                      className="w-full bg-[#00B05F] hover:bg-[#008F4C] active:scale-[0.99] text-white font-extrabold text-sm py-4 rounded-xl transition-all shadow-md mb-4"
                     >
                       {step === 1 ? "Continue" : "Continue with Payment"}
                     </button>
                   )}
 
-                  <div className="flex items-center justify-center gap-1.5 text-[11px] font-bold text-[#14395C]">
+                  <div className="flex items-center justify-center gap-1.5 text-[11px] font-bold text-[#00B05F]">
                     <Lock className="w-3.5 h-3.5" />
                     100% Secure
                   </div>
@@ -1086,26 +1086,26 @@ function SankalpContent() {
                 {/* Badges Box */}
                 <div className="bg-white rounded-3xl border border-stone-200 p-5 shadow-sm space-y-4">
                   <div className="flex items-center gap-3 text-xs text-stone-600 font-medium">
-                    <div className="w-5 h-5 rounded-full bg-[#14395C]/10 flex items-center justify-center shrink-0">
-                      <Check className="w-3 h-3 text-[#14395C]" strokeWidth={3.5} />
+                    <div className="w-5 h-5 rounded-full bg-[#00B05F]/10 flex items-center justify-center shrink-0">
+                      <Check className="w-3 h-3 text-[#00B05F]" strokeWidth={3.5} />
                     </div>
                     Puja Video Delivered Within 48 Hours
                   </div>
                   <div className="flex items-center gap-3 text-xs text-stone-600 font-medium">
-                    <div className="w-5 h-5 rounded-full bg-[#14395C]/10 flex items-center justify-center shrink-0">
-                      <Check className="w-3 h-3 text-[#14395C]" strokeWidth={3.5} />
+                    <div className="w-5 h-5 rounded-full bg-[#00B05F]/10 flex items-center justify-center shrink-0">
+                      <Check className="w-3 h-3 text-[#00B05F]" strokeWidth={3.5} />
                     </div>
                     Verified & Experienced Pandits
                   </div>
                   <div className="flex items-center gap-3 text-xs text-stone-600 font-medium">
-                    <div className="w-5 h-5 rounded-full bg-[#14395C]/10 flex items-center justify-center shrink-0">
-                      <Check className="w-3 h-3 text-[#14395C]" strokeWidth={3.5} />
+                    <div className="w-5 h-5 rounded-full bg-[#00B05F]/10 flex items-center justify-center shrink-0">
+                      <Check className="w-3 h-3 text-[#00B05F]" strokeWidth={3.5} />
                     </div>
                     Pujas Performed in Sacred Temples
                   </div>
                   <div className="flex items-center gap-3 text-xs text-stone-600 font-medium">
-                    <div className="w-5 h-5 rounded-full bg-[#14395C]/10 flex items-center justify-center shrink-0">
-                      <Check className="w-3 h-3 text-[#14395C]" strokeWidth={3.5} />
+                    <div className="w-5 h-5 rounded-full bg-[#00B05F]/10 flex items-center justify-center shrink-0">
+                      <Check className="w-3 h-3 text-[#00B05F]" strokeWidth={3.5} />
                     </div>
                     100% Authentic Vedic Rituals
                   </div>

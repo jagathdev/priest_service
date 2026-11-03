@@ -12,7 +12,7 @@ const HIDDEN_ON_PATHS = ["/sankalp", "/payment", "/auth", "/admin"];
 function HomeIcon({ active }: { active: boolean }) {
   return (
     <Home
-      className={`h-[22px] w-[22px] mb-0.5 ${active ? "text-[#14395C]" : "text-gray-500"}`}
+      className={`h-[22px] w-[22px] mb-0.5 ${active ? "text-[#00B05F]" : "text-gray-500"}`}
       strokeWidth={active ? 2.5 : 2}
     />
   );
@@ -21,7 +21,7 @@ function HomeIcon({ active }: { active: boolean }) {
 function PujaIcon({ active }: { active: boolean }) {
   return (
     <Flame
-      className={`h-[22px] w-[22px] mb-0.5 ${active ? "text-[#14395C] fill-[#14395C]/20" : "text-gray-500"}`}
+      className={`h-[22px] w-[22px] mb-0.5 ${active ? "text-[#00B05F] fill-[#00B05F]/20" : "text-gray-500"}`}
       strokeWidth={active ? 2.5 : 2}
     />
   );
@@ -30,7 +30,7 @@ function PujaIcon({ active }: { active: boolean }) {
 function AccountIcon({ active }: { active: boolean }) {
   return (
     <User
-      className={`h-[22px] w-[22px] mb-0.5 ${active ? "text-[#14395C]" : "text-gray-500"}`}
+      className={`h-[22px] w-[22px] mb-0.5 ${active ? "text-[#00B05F]" : "text-gray-500"}`}
       strokeWidth={active ? 2.5 : 2}
     />
   );
@@ -73,7 +73,7 @@ export default function MobileBottomNav() {
         >
           <HomeIcon active={isHomeActive} />
           <span
-            className={`text-[11px] font-bold tracking-wider uppercase ${isHomeActive ? "text-[#14395C]" : "text-gray-500"
+            className={`text-[11px] font-bold tracking-wider uppercase ${isHomeActive ? "text-[#00B05F]" : "text-gray-500"
               }`}
           >
             HOME
@@ -87,7 +87,7 @@ export default function MobileBottomNav() {
         >
           <PujaIcon active={isPujaActive} />
           <span
-            className={`text-[11px] font-bold tracking-wider uppercase ${isPujaActive ? "text-[#14395C]" : "text-gray-500"
+            className={`text-[11px] font-bold tracking-wider uppercase ${isPujaActive ? "text-[#00B05F]" : "text-gray-500"
               }`}
           >
             PUJA
@@ -101,7 +101,7 @@ export default function MobileBottomNav() {
         >
           <AccountIcon active={isAccountActive} />
           <span
-            className={`text-[11px] font-bold tracking-wider uppercase ${isAccountActive ? "text-[#14395C]" : "text-gray-500"
+            className={`text-[11px] font-bold tracking-wider uppercase ${isAccountActive ? "text-[#00B05F]" : "text-gray-500"
               }`}
           >
             ACCOUNT

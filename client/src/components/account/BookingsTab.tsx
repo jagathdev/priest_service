@@ -612,7 +612,7 @@ export default function BookingsTab() {
                                     title: selectedOrder.itemName || selectedOrder.pooja || "Puja Video",
                                   });
                                 }}
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#14395C] text-white hover:bg-[#0e2740] rounded-lg text-xs font-bold shadow-xs transition cursor-pointer"
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#00B05F] text-white hover:bg-[#008F4C] rounded-lg text-xs font-bold shadow-xs transition cursor-pointer"
                               >
                                 <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
                                 <span>Watch Puja Video</span>
@@ -677,7 +677,7 @@ export default function BookingsTab() {
 
                                     {/* Play Overlay Button */}
                                     <div className="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition flex items-center justify-center">
-                                      <div className="w-11 h-11 rounded-full bg-[#14395C]/90 text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                                      <div className="w-11 h-11 rounded-full bg-[#00B05F]/90 text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
                                         <svg className="w-5 h-5 fill-current ml-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
                                       </div>
                                     </div>
@@ -981,7 +981,7 @@ export default function BookingsTab() {
                                       title: order.itemName || order.pooja || "Puja Video",
                                     });
                                   }}
-                                  className="px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-full bg-[#14395C] hover:bg-[#0e2740] text-white font-bold text-[10px] sm:text-[12px] flex items-center gap-1 sm:gap-1.5 shadow-xs whitespace-nowrap transition cursor-pointer"
+                                  className="px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-full bg-[#00B05F] hover:bg-[#008F4C] text-white font-bold text-[10px] sm:text-[12px] flex items-center gap-1 sm:gap-1.5 shadow-xs whitespace-nowrap transition cursor-pointer"
                                 >
                                   <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
                                   <span>Watch Video</span>

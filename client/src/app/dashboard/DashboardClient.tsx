@@ -426,7 +426,7 @@ export default function DashboardClient({
                 type="button"
                 onClick={clearFilters}
                 className={`font-bold px-4 sm:px-5 py-2 rounded-full text-xs sm:text-sm transition-all whitespace-nowrap cursor-pointer ${!hasActiveFilters
-                  ? "bg-[#14395C] text-white shadow-sm hover:bg-[#0e2740]"
+                  ? "bg-[#00B05F] text-white shadow-sm hover:bg-[#008F4C]"
                   : "bg-white border border-stone-200 text-stone-700 hover:border-stone-400 font-semibold px-3.5 sm:px-4"
                   }`}
               >
@@ -442,13 +442,13 @@ export default function DashboardClient({
                     type="button"
                     onClick={() => openFilterModal(group.label)}
                     className={`font-bold px-3.5 sm:px-4 py-2 rounded-full text-xs sm:text-sm transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 ${isSelected
-                      ? "bg-[#14395C] text-white shadow-sm hover:bg-[#0e2740]"
+                      ? "bg-[#00B05F] text-white shadow-sm hover:bg-[#008F4C]"
                       : "bg-white border border-stone-200 text-stone-700 hover:border-stone-400 font-semibold"
                       }`}
                   >
                     <span>{group.label === "Benefits" ? "Benefit" : group.label}</span>
                     {selectedCount > 0 && (
-                      <span className="w-4 h-4 rounded-full bg-white text-[#14395C] text-[10px] font-extrabold flex items-center justify-center shrink-0">
+                      <span className="w-4 h-4 rounded-full bg-white text-[#00B05F] text-[10px] font-extrabold flex items-center justify-center shrink-0">
                         {selectedCount}
                       </span>
                     )}
@@ -550,7 +550,7 @@ export default function DashboardClient({
           {/* <div className="text-center mt-10">
             <Link
               href="/puja"
-              className="inline-block text-[#14395C] font-extrabold px-8 py-3 rounded-full border-2 border-[#14395C] hover:bg-[#14395C]/5 active:scale-95 transition-all text-base shadow-sm"
+              className="inline-block text-[#00B05F] font-extrabold px-8 py-3 rounded-full border-2 border-[#00B05F] hover:bg-[#00B05F]/5 active:scale-95 transition-all text-base shadow-sm"
             >
               View All Pujas
             </Link>
@@ -644,7 +644,7 @@ export default function DashboardClient({
             </p>
             <a
               href="tel:+919677391108"
-              className="inline-block bg-[#14395C] text-white px-8 py-3 rounded-full font-bold shadow-md hover:bg-[#0e2740] transition-colors text-center"
+              className="inline-block bg-[#00B05F] text-white px-8 py-3 rounded-full font-bold shadow-md hover:bg-[#008F4C] transition-colors text-center"
             >
               Speak to Devotee Care
             </a>
@@ -707,8 +707,8 @@ export default function DashboardClient({
               </li>
             </ul>
           </div>
-          {/* <Link href="/puja" className="bg-[#14395C] hover:bg-[#0e2740] active:scale-95 text-white font-extrabold px-8 py-3.5 rounded-full text-sm sm:text-base transition-all inline-flex items-center gap-2.5 shadow-md shadow-[#14395C]/20">
-            Find the Right Puja <div className="bg-white text-[#14395C] rounded-full w-5 h-5 flex items-center justify-center shadow-sm"><ChevronRight className="w-3 h-3 text-[#14395C]" strokeWidth={3} /></div>
+          {/* <Link href="/puja" className="bg-[#00B05F] hover:bg-[#008F4C] active:scale-95 text-white font-extrabold px-8 py-3.5 rounded-full text-sm sm:text-base transition-all inline-flex items-center gap-2.5 shadow-md shadow-[#00B05F]/20">
+            Find the Right Puja <div className="bg-white text-[#00B05F] rounded-full w-5 h-5 flex items-center justify-center shadow-sm"><ChevronRight className="w-3 h-3 text-[#00B05F]" strokeWidth={3} /></div>
           </Link> */}
         </div>
 
@@ -1002,10 +1002,10 @@ function PujaCard({
             </div>
 
             {/* CTA Button */}
-            <div className="inline-flex items-center gap-2 bg-[#14395C] hover:bg-[#0e2740] active:scale-95 text-white font-extrabold text-xs sm:text-sm px-5 py-2.5 sm:py-3 rounded-full shadow-md shadow-[#14395C]/20 transition-all duration-200 group/btn">
+            <div className="inline-flex items-center gap-2 bg-[#00B05F] hover:bg-[#008F4C] active:scale-95 text-white font-extrabold text-xs sm:text-sm px-5 py-2.5 sm:py-3 rounded-full shadow-md shadow-[#00B05F]/20 transition-all duration-200 group/btn">
               <span>{buttonText || "Book My Puja"}</span>
-              <div className="w-5 h-5 rounded-full bg-white text-[#14395C] flex items-center justify-center shrink-0">
-                <ChevronRight className="w-3.5 h-3.5 text-[#14395C]" strokeWidth={3} />
+              <div className="w-5 h-5 rounded-full bg-white text-[#00B05F] flex items-center justify-center shrink-0">
+                <ChevronRight className="w-3.5 h-3.5 text-[#00B05F]" strokeWidth={3} />
               </div>
             </div>
           </div>

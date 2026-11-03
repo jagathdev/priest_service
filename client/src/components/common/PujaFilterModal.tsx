@@ -321,7 +321,7 @@ export default function PujaFilterModal({
           <button
             type="button"
             onClick={() => onApply(draftFilters)}
-            className="flex-1 h-11 sm:h-12 bg-[#14395C] hover:bg-[#0e2740] active:bg-[#0b1f33] text-white rounded-full text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 shadow-md shadow-[#14395C]/25 active:scale-[0.99] transition-all group cursor-pointer"
+            className="flex-1 h-11 sm:h-12 bg-[#00B05F] hover:bg-[#008F4C] active:bg-[#0b1f33] text-white rounded-full text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 shadow-md shadow-[#00B05F]/25 active:scale-[0.99] transition-all group cursor-pointer"
           >
             <span>Apply Filter</span>
             {totalSelectedCount > 0 && (

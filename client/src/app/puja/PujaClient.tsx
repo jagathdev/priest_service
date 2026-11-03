@@ -221,15 +221,15 @@ function PujaFilterModal({
                     setActiveTab(group.label);
                     setSearchQuery("");
                   }}
-                  className={`w-full text-left px-3 sm:px-4 py-3 sm:py-3.5 text-xs sm:text-sm font-bold transition-colors relative flex items-center justify-between ${isActive ? 'bg-[#F1F5F9] text-[#14395C]' : 'text-gray-700 hover:bg-gray-100/60'}`}
+                  className={`w-full text-left px-3 sm:px-4 py-3 sm:py-3.5 text-xs sm:text-sm font-bold transition-colors relative flex items-center justify-between ${isActive ? 'bg-[#F1F5F9] text-[#00B05F]' : 'text-gray-700 hover:bg-gray-100/60'}`}
                 >
                   <span className="truncate">{group.label}</span>
                   {groupSelectedCount > 0 && (
-                    <span className="w-4 h-4 rounded-full bg-[#14395C] text-white text-[10px] font-bold flex items-center justify-center shrink-0 ml-1">
+                    <span className="w-4 h-4 rounded-full bg-[#00B05F] text-white text-[10px] font-bold flex items-center justify-center shrink-0 ml-1">
                       {groupSelectedCount}
                     </span>
                   )}
-                  {isActive && <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#14395C]"></div>}
+                  {isActive && <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#00B05F]"></div>}
                 </button>
               )
             })}
@@ -263,10 +263,10 @@ function PujaFilterModal({
                           type="checkbox"
                           checked={isSelected}
                           onChange={() => selectFilter(activeGroup.label, option.value)}
-                          className="peer w-[18px] h-[18px] appearance-none rounded-[4px] border border-gray-300 checked:bg-white checked:border-[#14395C] transition-colors cursor-pointer"
+                          className="peer w-[18px] h-[18px] appearance-none rounded-[4px] border border-gray-300 checked:bg-white checked:border-[#00B05F] transition-colors cursor-pointer"
                         />
                         {/* Custom checkmark */}
-                        <Check className="absolute w-3 h-3 text-transparent peer-checked:text-[#14395C] pointer-events-none transition-colors" strokeWidth={3} />
+                        <Check className="absolute w-3 h-3 text-transparent peer-checked:text-[#00B05F] pointer-events-none transition-colors" strokeWidth={3} />
                       </div>
                       <span className="text-xs sm:text-sm font-semibold text-gray-700 group-hover:text-gray-900 leading-snug pt-[1px]">{option.value}</span>
                     </label>
@@ -291,7 +291,7 @@ function PujaFilterModal({
           <button
             type="button"
             onClick={() => onApply(draftFilters)}
-            className="flex-1 h-11 sm:h-12 bg-[#14395C] hover:bg-[#0f2d4a] active:bg-[#091e32] text-white rounded-full text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 shadow-md shadow-slate-900/20 active:scale-[0.99] transition-all group"
+            className="flex-1 h-11 sm:h-12 bg-[#00B05F] hover:bg-[#008F4C] active:bg-[#091e32] text-white rounded-full text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 shadow-md shadow-slate-900/20 active:scale-[0.99] transition-all group"
           >
             <span>Apply Filter</span>
             {totalSelectedCount > 0 && (
@@ -657,7 +657,7 @@ export default function PujaClient({ initialPujas }: { initialPujas?: Puja[] }) 
                             <div className="text-[11px] text-gray-500 font-bold uppercase tracking-wider">Per Booking</div>
                           </div>
                           <div
-                            className="bg-[#14395C] text-white text-[14px] font-bold px-7 py-3 min-w-[130px] justify-center rounded-full hover:bg-[#0f2d4a] transition-all duration-200 flex items-center gap-2 shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-95"
+                            className="bg-[#00B05F] text-white text-[14px] font-bold px-7 py-3 min-w-[130px] justify-center rounded-full hover:bg-[#008F4C] transition-all duration-200 flex items-center gap-2 shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-95"
                           >
                             <span>{puja.buttonText || "Book Now"}</span>
                             <ChevronRight className="w-4 h-4" strokeWidth={3} />
