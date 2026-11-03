@@ -237,7 +237,7 @@ export default function AdminOrderDetailPage({ params }: { params: Promise<{ id:
   const extraParticipantCount = order.pricing?.extraParticipantCount || 0;
   const totalAmount = order.pricing?.total || 0;
   const isPaid = order.paymentStatus === "paid" || order.paymentStatus === "captured" || order.paymentStatus === "successful";
-    const displayScheduledDate = scheduledDate || order.scheduledDate;
+  const displayScheduledDate = scheduledDate || order.scheduledDate;
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-5 max-w-[1550px] mx-auto min-h-screen">
@@ -286,7 +286,7 @@ export default function AdminOrderDetailPage({ params }: { params: Promise<{ id:
                 showToast("Order link copied to clipboard!");
               }
             }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#14395C] text-white hover:bg-[#0e2740] text-xs font-bold shadow-sm transition active:scale-95"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#00B05F] text-white hover:bg-[#008F4C] text-xs font-bold shadow-sm transition active:scale-95"
           >
             <ShareIcon className="w-4 h-4" />
             Share with Service Team
@@ -400,7 +400,7 @@ export default function AdminOrderDetailPage({ params }: { params: Promise<{ id:
               const cleanMob = mob.replace(/\D/g, "");
               const cleanWa = wa.replace(/\D/g, "");
               const isSame = cleanMob && cleanWa && (cleanMob === cleanWa || cleanMob.endsWith(cleanWa) || cleanWa.endsWith(cleanMob));
-              
+
               if (!isSame && wa) {
                 const fmtWa = wa.startsWith("+") ? wa : (wa.startsWith("91") && wa.length === 12 ? "+" + wa : "+91 " + wa);
                 return (

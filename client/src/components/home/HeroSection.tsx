@@ -243,14 +243,14 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
       </div>
 
       <div
-        className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8 lg:gap-10 xl:gap-14 group"
+        className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-6 lg:gap-8 xl:gap-10 group"
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={handleTouchEnd}
       >
 
-        {/* ── Left Content (Text & CTA) ── 50% equal balance with right side */}
-        <div className="order-2 lg:order-1 flex-1 w-full lg:w-1/2 text-center lg:text-left flex flex-col justify-start items-center lg:items-start h-auto min-h-0 pt-2 pb-1">
+        {/* ── Left Content (Text & CTA) ── 40% width on xl+, 45% on lg ── */}
+        <div className="order-2 lg:order-1 w-full lg:w-[45%] xl:w-[40%] text-center lg:text-left flex flex-col justify-start items-center lg:items-start h-auto min-h-0 pt-2 pb-1 shrink-0 relative z-10">
 
           {/* Top Block: Always starts at fixed top position */}
           <div className="flex flex-col items-center lg:items-start text-center lg:text-left w-full">
@@ -294,9 +294,9 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
             <div className="mb-4 sm:mb-5 lg:mb-4 xl:mb-6 w-full flex justify-center lg:justify-start">
               <Link
                 href={current.ctaLink}
-                className="inline-flex items-center justify-between gap-5 sm:gap-6 bg-[#0f3456] hover:bg-[#0a253e] active:scale-95 text-white font-extrabold text-base sm:text-lg px-7 sm:px-8 py-3.5 sm:py-4 rounded-full shadow-lg shadow-[#0f3456]/25 transition-all duration-200 group w-auto min-w-[250px] sm:min-w-[270px]"
+                className="inline-flex items-center justify-between gap-5 sm:gap-6 bg-[#00B05F] hover:bg-[#008F4C]active:scale-95 text-white font-extrabold text-base sm:text-lg px-7 sm:px-8 py-3.5 sm:py-4 rounded-full shadow-lg shadow-[#008F4C]/25 transition-all duration-200 group w-auto min-w-[250px] sm:min-w-[270px]"
               >
-                <span className="tracking-normal font-sans font-bold">{current.ctaText}</span>
+                <span className="tracking-normal font-sans font-bold">{current.ctaText || "Book My Puja"} </span>
                 <div className="w-8 h-8 rounded-full bg-white text-[#0f3456] flex items-center justify-center shadow-xs shrink-0 group-hover:translate-x-0.5 transition-transform">
                   <ChevronRight className="w-4 h-4 text-[#0f3456]" strokeWidth={3} />
                 </div>
@@ -316,68 +316,66 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
               {/* 3-Stat Trust Card */}
               <div className="border border-stone-200/90 bg-white/95 backdrop-blur-sm rounded-xl py-2.5 px-3 shadow-sm flex items-center justify-between w-full">
                 <div className="flex-1 text-center px-1">
-                  <p className="text-[#14395C] font-black text-base leading-none">10M+</p>
+                  <p className="text-[#00B05F] font-black text-base leading-none">10M+</p>
                   <p className="text-[9px] text-stone-500 font-medium mt-1 leading-tight">Pujas performed</p>
                 </div>
 
                 <div className="w-[1px] h-7 bg-stone-200 shrink-0" />
 
                 <div className="flex-1 text-center px-1">
-                  <p className="text-[#14395C] font-black text-base leading-none">180+</p>
+                  <p className="text-[#00B05F] font-black text-base leading-none">180+</p>
                   <p className="text-[9px] text-stone-500 font-medium mt-1 leading-tight">Scholars & priests</p>
                 </div>
 
                 <div className="w-[1px] h-7 bg-stone-200 shrink-0" />
 
                 <div className="flex-1 text-center px-1">
-                  <p className="text-[#14395C] font-black text-base leading-none">25+</p>
+                  <p className="text-[#00B05F] font-black text-base leading-none">25+</p>
                   <p className="text-[9px] text-stone-500 font-medium mt-1 leading-tight">Years of expertise</p>
                 </div>
               </div>
             </div>
 
-            {/* ── TABLET & LAPTOP (sm+ / >= 640px): Previous Inline Style ── */}
-            <div className="hidden sm:flex border border-stone-200/90 bg-white/95 backdrop-blur-sm rounded-xl py-2 px-2.5 md:px-3 lg:px-2.5 xl:px-4 shadow-sm items-center justify-between gap-1.5 sm:gap-2.5 lg:gap-2 xl:gap-3.5 w-full max-w-[560px] mx-auto lg:mx-0">
+            {/* ── TABLET & LAPTOP (sm+ / >= 640px): Standard Trust Bar ── */}
+            <div className="hidden sm:flex border border-stone-200/90 bg-white/95 backdrop-blur-sm rounded-xl py-2 px-2 lg:px-2.5 xl:px-3.5 shadow-sm items-center justify-between gap-1.5 lg:gap-2 xl:gap-2.5 w-full max-w-full">
               {/* Sun Icon Section */}
-              <div className="flex items-center gap-1.5 lg:gap-1.5 xl:gap-2 shrink-0">
-                <div className="text-stone-400 shrink-0">
-                  <Sun className="w-5 h-5 sm:w-6 sm:h-6 text-amber-500" />
-                </div>
-                <p className="text-[10px] sm:text-[11px] lg:text-[9.5px] xl:text-[11px] text-stone-900 font-bold leading-tight text-left">
+              <div className="flex items-center gap-1.5 shrink-0">
+                <Sun className="w-4 h-4 sm:w-5 sm:h-5 text-amber-500 shrink-0" />
+                <p className="text-[9.5px] sm:text-[10px] xl:text-[11px] text-stone-900 font-bold leading-tight text-left">
                   One of India&apos;s most<br />loved devotional<br />platforms
                 </p>
               </div>
 
-              <div className="w-[1px] h-6 bg-stone-200 shrink-0" />
+              <div className="w-[1px] h-6 sm:h-7 bg-stone-200 shrink-0" />
 
               {/* Devotees Count */}
-              <div className="text-center px-0.5 sm:px-1 shrink-0">
-                <p className="text-[#14395C] font-black text-base sm:text-lg lg:text-[15px] xl:text-lg leading-none">10M+</p>
-                <p className="text-[9px] sm:text-[10px] lg:text-[8.5px] xl:text-[10px] text-stone-500 font-medium mt-0.5">Pujas performed</p>
+              <div className="flex-1 text-center px-0.5 sm:px-1 shrink-0">
+                <p className="text-[#0f3456] font-black text-xs sm:text-sm lg:text-base xl:text-lg leading-none">10M+</p>
+                <p className="text-[8px] sm:text-[8.5px] xl:text-[9.5px] text-stone-500 font-medium mt-0.5 whitespace-nowrap">Pujas performed</p>
               </div>
 
-              <div className="w-[1px] h-6 bg-stone-200 shrink-0" />
+              <div className="w-[1px] h-6 sm:h-7 bg-stone-200 shrink-0" />
 
               {/* Scholars and priests */}
-              <div className="text-center px-0.5 sm:px-1 shrink-0">
-                <p className="text-[#14395C] font-black text-base sm:text-lg lg:text-[15px] xl:text-lg leading-none">180+</p>
-                <p className="text-[9px] sm:text-[10px] lg:text-[8.5px] xl:text-[10px] text-stone-500 font-medium mt-0.5">Scholars & priests</p>
+              <div className="flex-1 text-center px-0.5 sm:px-1 shrink-0">
+                <p className="text-[#0f3456] font-black text-xs sm:text-sm lg:text-base xl:text-lg leading-none">180+</p>
+                <p className="text-[8px] sm:text-[8.5px] xl:text-[9.5px] text-stone-500 font-medium mt-0.5 whitespace-nowrap">Scholars & priests</p>
               </div>
 
-              <div className="w-[1px] h-6 bg-stone-200 shrink-0" />
+              <div className="w-[1px] h-6 sm:h-7 bg-stone-200 shrink-0" />
 
               {/* 25+ years of Vedic expertise */}
-              <div className="text-center px-0.5 sm:px-1 shrink-0">
-                <p className="text-[#14395C] font-black text-base sm:text-lg lg:text-[15px] xl:text-lg leading-none">25+</p>
-                <p className="text-[9px] sm:text-[10px] lg:text-[8.5px] xl:text-[10px] text-stone-500 font-medium mt-0.5">Years of Vedic expertise</p>
+              <div className="flex-1 text-center px-0.5 sm:px-1 shrink-0">
+                <p className="text-[#0f3456] font-black text-xs sm:text-sm lg:text-base xl:text-lg leading-none">25+</p>
+                <p className="text-[8px] sm:text-[8.5px] xl:text-[9.5px] text-stone-500 font-medium mt-0.5 whitespace-nowrap">Years of expertise</p>
               </div>
             </div>
           </div>
 
         </div>
 
-        {/* ── Right Content (Hero Banner Card) ── 50% equal balance with left side */}
-        <div className="order-1 lg:order-2 flex-1 w-full lg:w-1/2 shrink-0 flex flex-col items-center relative">
+        {/* ── Right Content (Hero Banner Card) ── 60% on xl+, 55% on lg ── */}
+        <div className="order-1 lg:order-2 w-full lg:w-[55%] xl:w-[60%] shrink-0 flex flex-col items-center relative z-20 px-3 sm:px-5 xl:px-6">
 
           {/* Smooth Fade Carousel Viewport */}
           <div className="relative w-full aspect-[4/3] min-h-[250px] sm:min-h-[360px] sm:aspect-auto sm:h-[390px] md:h-[440px] lg:h-[370px] xl:h-[500px] rounded-2xl min-[375px]:rounded-3xl overflow-hidden shadow-2xl border border-stone-200/80 bg-stone-100 shrink-0 group/carousel">
@@ -424,7 +422,7 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
                 prevSlide();
               }}
               aria-label="Previous slide"
-              className="absolute -left-3.5 sm:-left-4 md:-left-5 xl:-left-6 top-[calc(50%-18px)] -translate-y-1/2 z-30 hidden sm:flex h-9 w-9 xl:h-11 xl:w-11 items-center justify-center rounded-full bg-white/95 hover:bg-white text-stone-800 border border-stone-200/90 shadow-xl transition-all duration-200 active:scale-95 cursor-pointer hover:scale-110 backdrop-blur-sm"
+              className="absolute left-0 sm:left-1 md:left-1.5 lg:left-1 top-[calc(50%-18px)] -translate-y-1/2 z-40 hidden sm:flex h-9 w-9 xl:h-11 xl:w-11 items-center justify-center rounded-full bg-white/95 hover:bg-white text-stone-800 border border-stone-200/90 shadow-xl transition-all duration-200 active:scale-95 cursor-pointer hover:scale-110 backdrop-blur-sm"
             >
               <ChevronLeft className="w-5 h-5 xl:w-6 xl:h-6 text-stone-800" strokeWidth={2.5} />
             </button>
@@ -440,7 +438,7 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
                 nextSlide();
               }}
               aria-label="Next slide"
-              className="absolute -right-3.5 sm:-right-4 md:-right-5 xl:-right-6 top-[calc(50%-18px)] -translate-y-1/2 z-30 hidden sm:flex h-9 w-9 xl:h-11 xl:w-11 items-center justify-center rounded-full bg-white/95 hover:bg-white text-stone-800 border border-stone-200/90 shadow-xl transition-all duration-200 active:scale-95 cursor-pointer hover:scale-110 backdrop-blur-sm"
+              className="absolute right-0 sm:right-1 md:right-1.5 lg:right-1 top-[calc(50%-18px)] -translate-y-1/2 z-40 hidden sm:flex h-9 w-9 xl:h-11 xl:w-11 items-center justify-center rounded-full bg-white/95 hover:bg-white text-stone-800 border border-stone-200/90 shadow-xl transition-all duration-200 active:scale-95 cursor-pointer hover:scale-110 backdrop-blur-sm"
             >
               <ChevronRight className="w-5 h-5 xl:w-6 xl:h-6 text-stone-800" strokeWidth={2.5} />
             </button>
@@ -457,7 +455,7 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
                 }}
                 aria-label={`Go to slide ${index + 1}`}
                 className={`transition-all duration-300 rounded-full cursor-pointer ${index === currentSafeSlideIndex
-                  ? "w-7 h-2 bg-[#14395C]"
+                  ? "w-7 h-2 bg-[#00B05F]"
                   : "w-2 h-2 bg-stone-300 hover:bg-stone-400"
                   }`}
               />
@@ -513,7 +511,7 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
         {/* Original Grid on Desktop screens (>= 1440px) */}
         <div className="badge-static-1440-grid hidden min-[1440px]:grid min-[1440px]:grid-cols-4 items-center justify-between gap-2 divide-x divide-stone-200">
           <div className="flex items-center justify-start gap-3 px-4 py-0">
-            <div className="text-[#14395C] shrink-0">
+            <div className="text-[#00B05F] shrink-0">
               <Video className="w-5 h-5" />
             </div>
             <span className="text-sm font-bold text-stone-800 leading-tight">

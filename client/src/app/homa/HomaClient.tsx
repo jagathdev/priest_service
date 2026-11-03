@@ -464,7 +464,7 @@ export default function HomaClient({ initialHomas }: { initialHomas?: Homa[] }) 
                               </div>
 
                               <div
-                                className="bg-primary hover:bg-[#0f2d4a] text-white text-xs font-black px-4.5 py-2.5 rounded-full transition-all shadow-xs flex items-center gap-2 group-hover:shadow-md"
+                                className="bg-primary hover:bg-[#008F4C] text-white text-xs font-black px-4.5 py-2.5 rounded-full transition-all shadow-xs flex items-center gap-2 group-hover:shadow-md"
                               >
                                 <span>{homa.buttonText || "BOOK NOW"}</span>
                                 <div className="w-4 h-4 rounded-full bg-white/20 flex items-center justify-center">

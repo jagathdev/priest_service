@@ -248,22 +248,22 @@ export default function Navbar() {
           <nav aria-label="Main navigation" className="hidden lg:flex flex-1 justify-center">
             <ul className="flex items-center gap-10 xl:gap-12 text-base xl:text-[17px] font-bold text-[#1a1a1a] tracking-wider">
               <li>
-                <Link href="/" className={isActivePath("/") ? "text-[#14395C] font-extrabold border-b-2 border-[#14395C] pb-1" : "transition-colors hover:text-[#14395C] uppercase"}>
+                <Link href="/" className={isActivePath("/") ? "text-[#00B05F] font-extrabold border-b-2 border-[#00B05F] pb-1" : "transition-colors hover:text-[#00B05F] uppercase"}>
                   HOME
                 </Link>
               </li>
               <li>
-                <Link href="/puja" className={isActivePath("/puja") ? "text-[#14395C] font-extrabold border-b-2 border-[#14395C] pb-1" : "transition-colors hover:text-[#14395C] uppercase"}>
+                <Link href="/puja" className={isActivePath("/puja") ? "text-[#00B05F] font-extrabold border-b-2 border-[#00B05F] pb-1" : "transition-colors hover:text-[#00B05F] uppercase"}>
                   PUJA
                 </Link>
               </li>
               {/* <li>
-                <Link href="/homa" className={isActivePath("/homa") ? "text-[#14395C] font-extrabold border-b-2 border-[#14395C] pb-1" : "transition-colors hover:text-[#14395C] uppercase"}>
+                <Link href="/homa" className={isActivePath("/homa") ? "text-[#00B05F] font-extrabold border-b-2 border-[#00B05F] pb-1" : "transition-colors hover:text-[#00B05F] uppercase"}>
                   HOMAS
                 </Link>
               </li> */}
               <li>
-                <Link href="/account" className={isActivePath("/account") || isActivePath("/profile") ? "text-[#14395C] font-extrabold border-b-2 border-[#14395C] pb-1" : "transition-colors hover:text-[#14395C] uppercase"}>
+                <Link href="/account" className={isActivePath("/account") || isActivePath("/profile") ? "text-[#00B05F] font-extrabold border-b-2 border-[#00B05F] pb-1" : "transition-colors hover:text-[#00B05F] uppercase"}>
                   ACCOUNT
                 </Link>
               </li>
@@ -278,12 +278,12 @@ export default function Navbar() {
               href="https://wa.me/919566777645"
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden sm:flex items-center justify-center gap-2.5 w-[140px] sm:w-[160px] h-10 sm:h-12 rounded-full bg-[#14395C] hover:bg-[#0f2d4a] active:scale-95 text-white transition-all shadow-sm shrink-0"
+              className="hidden sm:flex items-center justify-center gap-2.5 w-[140px] sm:w-[160px] h-10 sm:h-12 rounded-full bg-[#00B05F] hover:bg-[#008F4C] active:scale-95 text-white transition-all shadow-sm shrink-0"
             >
               {/* <MessageCircle className="w-5 h-5 sm:w-6 sm:h-6 text-white" /> */}
-              <i className="fa-brands fa-whatsapp text-2xl text-[#25D366]"></i>
+              <i className="fa-brands fa-whatsapp text-2xl text-white"></i>
               <div className="flex flex-col text-left leading-none">
-                <span className="text-[10px] sm:text-xs text-slate-200 font-medium">Need Help?</span>
+                <span className="text-[10px] sm:text-xs text-white font-medium">Need Help?</span>
                 <span className="text-xs sm:text-sm font-extrabold text-white mt-0.5">WhatsApp</span>
               </div>
             </a>
@@ -292,12 +292,10 @@ export default function Navbar() {
             <a
               href="https://wa.me/919566777645"
               target="_blank"
-              rel="noopener noreferrer"
-              className="sm:hidden flex items-center justify-center p-1 text-[#25D366] hover:opacity-90 active:scale-95 transition-all shrink-0"
+              className="sm:hidden flex items-center justify-center p-1 text-white hover:opacity-90 active:scale-95 transition-all shrink-0"
               aria-label="WhatsApp Support"
             >
-              {/* <MessageCircle className="w-8 h-8 text-[#25D366]" /> */}
-              <i className="fa-brands fa-whatsapp text-2xl text-[#25D366]"></i>
+              <i className="fa-brands fa-whatsapp text-2xl text-white"></i>
             </a>
 
             <AccountPanel

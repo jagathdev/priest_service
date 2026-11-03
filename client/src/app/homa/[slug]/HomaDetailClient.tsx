@@ -572,7 +572,7 @@ export default function HomaDetailClient({
           <p className="text-stone-600 mb-6">The requested homa offering could not be found.</p>
           <Link
             href="/homa"
-            className="bg-[#14395C] text-white font-extrabold px-8 py-3 rounded-full hover:bg-[#0f2d4a] transition-colors"
+            className="bg-[#00B05F] text-white font-extrabold px-8 py-3 rounded-full hover:bg-[#008F4C] transition-colors"
           >
             Explore All Homas
           </Link>
@@ -853,7 +853,7 @@ export default function HomaDetailClient({
                       aria-label={`Go to slide ${idx + 1}`}
                       className={
                         idx === activeBannerIndex
-                          ? "w-7 h-2 bg-[#14395C] rounded-full transition-all cursor-pointer"
+                          ? "w-7 h-2 bg-[#00B05F] rounded-full transition-all cursor-pointer"
                           : "w-2.5 h-2.5 bg-stone-300 hover:bg-stone-400 rounded-full transition-all cursor-pointer"
                       }
                     />
@@ -965,13 +965,13 @@ export default function HomaDetailClient({
                           key={pkg.id}
                           onClick={() => setSelectedPackageId(pkg.id)}
                           className={`relative border-2 rounded-2xl p-3.5 sm:p-2.5 lg:p-3 cursor-pointer transition-all flex flex-row items-center justify-start min-h-[96px] sm:min-h-[80px] lg:min-h-[85px] hover:shadow-xs ${isSelected
-                            ? "border-[#14395C] bg-[#F1F5F9] shadow-xs"
+                            ? "border-[#00B05F] bg-[#F1F5F9] shadow-xs"
                             : "border-stone-200 hover:border-stone-300 bg-white"
                             }`}
                         >
                           {/* Recommended Badge on Couple Package (idx === 1) */}
                           {idx === 1 && (
-                            <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#14395C] text-white text-[11px] font-bold px-3 py-0.5 rounded-full shadow-xs z-10 whitespace-nowrap">
+                            <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#00B05F] text-white text-[11px] font-bold px-3 py-0.5 rounded-full shadow-xs z-10 whitespace-nowrap">
                               Recommended
                             </div>
                           )}
@@ -1000,13 +1000,13 @@ export default function HomaDetailClient({
                               <PriceTag
                                 sellingPrice={displayPrice}
                                 listPrice={getDisplayListPrice(pkg)}
-                                sellingPriceClassName={`font-extrabold text-base sm:text-sm lg:text-base ${isSelected ? "text-[#14395C]" : "text-stone-900"}`}
+                                sellingPriceClassName={`font-extrabold text-base sm:text-sm lg:text-base ${isSelected ? "text-[#00B05F]" : "text-stone-900"}`}
                                 listPriceClassName="text-xs font-bold text-stone-400 line-through decoration-red-500 decoration-1.5 mr-1"
                                 className="flex items-baseline gap-1 flex-wrap"
                               />
                               {/* Checkmark Badge on Selected Package */}
                               {isSelected && (
-                                <div className="w-5 h-5 rounded-full bg-[#14395C] text-white flex items-center justify-center shrink-0 shadow-xs ml-1">
+                                <div className="w-5 h-5 rounded-full bg-[#00B05F] text-white flex items-center justify-center shrink-0 shadow-xs ml-1">
                                   <Check className="w-3 h-3" strokeWidth={3.5} />
                                 </div>
                               )}
@@ -1038,7 +1038,7 @@ export default function HomaDetailClient({
                   href="https://wa.me/919566777645"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex-1 min-w-[150px] inline-flex items-center justify-center gap-2 bg-white border border-[#CBD5E1] text-[#14395C] hover:bg-slate-50 font-extrabold text-xs sm:text-sm py-2.5 px-4 rounded-full transition-colors shadow-xs"
+                  className="flex-1 min-w-[150px] inline-flex items-center justify-center gap-2 bg-white border border-[#CBD5E1] text-[#00B05F] hover:bg-slate-50 font-extrabold text-xs sm:text-sm py-2.5 px-4 rounded-full transition-colors shadow-xs"
                 >
                   <i className="fa-brands fa-whatsapp text-lg text-[#25D366]"></i>
                   <span>Book via WhatsApp</span>
@@ -1047,7 +1047,7 @@ export default function HomaDetailClient({
                   href="tel:+919677391108"
                   className="flex-1 min-w-[150px] inline-flex items-center justify-center gap-2 bg-white border border-[#CBD5E1] text-[#1E293B] hover:bg-slate-50 font-extrabold text-xs sm:text-sm py-2.5 px-4 rounded-full transition-colors shadow-xs"
                 >
-                  <Phone className="w-4 h-4 min-w-[16px] min-h-[16px] text-[#14395C]" />
+                  <Phone className="w-4 h-4 min-w-[16px] min-h-[16px] text-[#00B05F]" />
                   <span>Book via Call</span>
                 </a>
 
@@ -1087,17 +1087,17 @@ export default function HomaDetailClient({
             {/* Continuous Marquee on all screens below 1440px */}
             <div className="badge-marquee-below-1440 min-[1440px]:hidden overflow-hidden w-full relative">
               <div className="flex animate-marquee">
-                <div className="flex shrink-0 items-center gap-8 sm:gap-12 pr-8 sm:pr-12 text-xs sm:text-sm font-bold text-[#14395C]">
+                <div className="flex shrink-0 items-center gap-8 sm:gap-12 pr-8 sm:pr-12 text-xs sm:text-sm font-bold text-[#00B05F]">
                   {trackBadges.map((b, idx) => (
                     <span key={`t1-${idx}`} className="flex items-center gap-2 shrink-0 whitespace-nowrap">
-                      <span className="bg-white text-[#14395C] shadow-2xs rounded-full p-1.5 flex items-center justify-center shrink-0">{b.icon}</span> {b.text}
+                      <span className="bg-white text-[#00B05F] shadow-2xs rounded-full p-1.5 flex items-center justify-center shrink-0">{b.icon}</span> {b.text}
                     </span>
                   ))}
                 </div>
-                <div className="flex shrink-0 items-center gap-8 sm:gap-12 pr-8 sm:pr-12 text-xs sm:text-sm font-bold text-[#14395C]" aria-hidden="true">
+                <div className="flex shrink-0 items-center gap-8 sm:gap-12 pr-8 sm:pr-12 text-xs sm:text-sm font-bold text-[#00B05F]" aria-hidden="true">
                   {trackBadges.map((b, idx) => (
                     <span key={`t2-${idx}`} className="flex items-center gap-2 shrink-0 whitespace-nowrap">
-                      <span className="bg-white text-[#14395C] shadow-2xs rounded-full p-1.5 flex items-center justify-center shrink-0">{b.icon}</span> {b.text}
+                      <span className="bg-white text-[#00B05F] shadow-2xs rounded-full p-1.5 flex items-center justify-center shrink-0">{b.icon}</span> {b.text}
                     </span>
                   ))}
                 </div>
@@ -1105,10 +1105,10 @@ export default function HomaDetailClient({
             </div>
 
             {/* Standard layout on 1440px and wider desktop screens (>= 1440px) */}
-            <div className="badge-static-1440 hidden min-[1440px]:flex max-w-[1350px] mx-auto items-center justify-around gap-6 px-4 text-xs sm:text-sm font-bold text-[#14395C] whitespace-nowrap">
+            <div className="badge-static-1440 hidden min-[1440px]:flex max-w-[1350px] mx-auto items-center justify-around gap-6 px-4 text-xs sm:text-sm font-bold text-[#00B05F] whitespace-nowrap">
               {badgeList.map((b, idx) => (
                 <span key={idx} className="flex items-center gap-2">
-                  <span className="bg-white text-[#14395C] shadow-2xs rounded-full p-1.5 flex items-center justify-center shrink-0">{b.icon}</span> {b.text}
+                  <span className="bg-white text-[#00B05F] shadow-2xs rounded-full p-1.5 flex items-center justify-center shrink-0">{b.icon}</span> {b.text}
                 </span>
               ))}
             </div>
@@ -1214,7 +1214,7 @@ export default function HomaDetailClient({
                   }
                 }}
                 className={`py-3 sm:py-3.5 px-1 border-b-2 transition-colors whitespace-nowrap shrink-0 ${activeTab === tab.id
-                  ? "border-[#14395C] text-[#14395C]"
+                  ? "border-[#00B05F] text-[#00B05F]"
                   : "border-transparent hover:text-stone-900"
                   }`}
               >
@@ -1346,11 +1346,11 @@ export default function HomaDetailClient({
                 <div
                   key={idx}
                   onClick={() => setOpenFaqIndex(openFaqIndex === idx ? null : idx)}
-                  className={`border rounded-2xl px-5 py-4 transition-all duration-300 cursor-pointer select-none ${openFaqIndex === idx ? 'border-[#14395C] bg-white shadow-xs' : 'border-stone-200 bg-[#faf9f6]'}`}
+                  className={`border rounded-2xl px-5 py-4 transition-all duration-300 cursor-pointer select-none ${openFaqIndex === idx ? 'border-[#00B05F] bg-white shadow-xs' : 'border-stone-200 bg-[#faf9f6]'}`}
                 >
                   <div className="flex justify-between items-center">
                     <h4 className="text-sm sm:text-base font-bold text-stone-800">{faq.question}</h4>
-                    <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ml-4 ${openFaqIndex === idx ? 'bg-[#14395C] text-white' : 'bg-stone-200 text-stone-600'}`}>
+                    <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ml-4 ${openFaqIndex === idx ? 'bg-[#00B05F] text-white' : 'bg-stone-200 text-stone-600'}`}>
                       {openFaqIndex === idx ? '−' : '+'}
                     </div>
                   </div>
@@ -1418,11 +1418,11 @@ export default function HomaDetailClient({
 
             <div className="space-y-2.5 text-xs sm:text-sm text-stone-700 font-medium">
               <div className="flex items-start gap-2.5">
-                <Check className="w-4 h-4 text-[#14395C] shrink-0 mt-0.5" strokeWidth={3} />
+                <Check className="w-4 h-4 text-[#00B05F] shrink-0 mt-0.5" strokeWidth={3} />
                 <span>Personalized Sankalpam performed with your Name, Gotra &amp; Wish</span>
               </div>
               <div className="flex items-start gap-2.5">
-                <Check className="w-4 h-4 text-[#14395C] shrink-0 mt-0.5" strokeWidth={3} />
+                <Check className="w-4 h-4 text-[#00B05F] shrink-0 mt-0.5" strokeWidth={3} />
                 <span>Full Homa Video Recording delivered on WhatsApp within 48 hours</span>
               </div>
             </div>
@@ -1438,7 +1438,7 @@ export default function HomaDetailClient({
                   href="https://wa.me/919566777645"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full bg-[#14395C] hover:bg-[#0f2d4a] text-white font-extrabold text-xs sm:text-sm py-3 px-4 rounded-full transition-colors flex items-center justify-center gap-2 shadow-sm"
+                  className="w-full bg-[#00B05F] hover:bg-[#008F4C] text-white font-extrabold text-xs sm:text-sm py-3 px-4 rounded-full transition-colors flex items-center justify-center gap-2 shadow-sm"
                 >
                   <i className="fa-brands fa-whatsapp text-lg text-[#25D366]"></i>
                   <span>WhatsApp</span>
@@ -1461,11 +1461,11 @@ export default function HomaDetailClient({
           : "translate-y-12 opacity-0 pointer-events-none"
           }`}
       >
-        <div className="bg-[#14395C] text-white rounded-2xl sm:rounded-3xl p-2.5 sm:py-3.5 sm:px-6 flex items-center justify-between gap-2 sm:gap-4 shadow-2xl shadow-slate-950/30 border border-slate-700/30 backdrop-blur-md">
+        <div className="bg-[#00B05F] text-white rounded-2xl sm:rounded-3xl p-2.5 sm:py-3.5 sm:px-6 flex items-center justify-between gap-2 sm:gap-4 shadow-2xl shadow-slate-950/30 border border-slate-700/30 backdrop-blur-md">
           {/* Left Column: Lotus Icon + Uppercase Title + Price */}
           <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
-            <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-white text-[#14395C] flex items-center justify-center shrink-0 shadow-sm">
-              <Flame className="w-5 h-5 sm:w-6 sm:h-6 text-[#14395C]" />
+            <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-white text-[#00B05F] flex items-center justify-center shrink-0 shadow-sm">
+              <Flame className="w-5 h-5 sm:w-6 sm:h-6 text-[#00B05F]" />
             </div>
             <div className="min-w-0 flex-1">
               <span className="text-[10px] sm:text-xs font-extrabold text-slate-200 tracking-wider uppercase block truncate max-w-[120px] sm:max-w-none">
@@ -1484,10 +1484,10 @@ export default function HomaDetailClient({
           {/* Right Column: White Pill Button with Navy Circle Arrow */}
           <button
             onClick={handleAddHomaToCart}
-            className="bg-white hover:bg-slate-100 active:scale-95 text-[#14395C] font-extrabold text-xs sm:text-sm px-3 sm:px-6 py-2 sm:py-2.5 rounded-full shadow-md transition-all flex items-center gap-1.5 sm:gap-2 shrink-0 whitespace-nowrap cursor-pointer"
+            className="bg-white hover:bg-slate-100 active:scale-95 text-[#00B05F] font-extrabold text-xs sm:text-sm px-3 sm:px-6 py-2 sm:py-2.5 rounded-full shadow-md transition-all flex items-center gap-1.5 sm:gap-2 shrink-0 whitespace-nowrap cursor-pointer"
           >
             <span className="max-w-[125px] sm:max-w-none truncate">{homa.buttonText || "Book Now"}</span>
-            <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-[#14395C] text-white flex items-center justify-center shrink-0">
+            <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-[#00B05F] text-white flex items-center justify-center shrink-0">
               <ArrowRight className="w-3 h-3 sm:w-3.5 sm:h-3.5 stroke-[3]" />
             </div>
           </button>
@@ -1517,7 +1517,7 @@ export default function HomaDetailClient({
                       key={pkg.id}
                       onClick={() => setSelectedPackageId(pkg.id)}
                       className={`border-2 rounded-2xl p-4 cursor-pointer transition-all flex items-center justify-between ${isSelected
-                        ? "border-[#14395C] bg-[#F1F5F9] shadow-xs"
+                        ? "border-[#00B05F] bg-[#F1F5F9] shadow-xs"
                         : "border-stone-200 hover:border-stone-400 bg-white"
                         }`}
                     >
@@ -1533,7 +1533,7 @@ export default function HomaDetailClient({
                           listPriceClassName="text-xs font-bold text-stone-400 line-through decoration-red-500 decoration-1.5 mr-1"
                           className="flex items-baseline gap-1 flex-wrap justify-end"
                         />
-                        <span className="text-[10px] font-bold text-[#14395C] uppercase">{isSelected ? "Selected ✓" : "Select"}</span>
+                        <span className="text-[10px] font-bold text-[#00B05F] uppercase">{isSelected ? "Selected ✓" : "Select"}</span>
                       </div>
                     </div>
                   );
@@ -1546,7 +1546,7 @@ export default function HomaDetailClient({
                 setShowPackageModal(false);
                 handleAddHomaToCart();
               }}
-              className="w-full bg-[#14395C] hover:bg-[#0f2d4a] text-white font-extrabold text-base py-3.5 rounded-full shadow-md transition-all"
+              className="w-full bg-[#00B05F] hover:bg-[#008F4C] text-white font-extrabold text-base py-3.5 rounded-full shadow-md transition-all"
             >
               Proceed to Details
             </button>

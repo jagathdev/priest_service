@@ -675,7 +675,7 @@ function AccountPageContent() {
               <p className="text-gray-500 max-w-sm mb-6">You must be logged in to access your account settings and history.</p>
               <button
                 onClick={() => setShowLoginModal(true)}
-                className="bg-primary text-white font-bold py-2.5 px-8 rounded-full hover:bg-[#0f2d4a] transition"
+                className="bg-primary text-white font-bold py-2.5 px-8 rounded-full hover:bg-[#008F4C] transition"
               >
                 Login Now
               </button>
@@ -872,7 +872,7 @@ function AccountPageContent() {
                                     setShowEditModal(false);
                                   }}
                                   disabled={saving}
-                                  className="px-6 py-2.5 rounded-full bg-primary text-white text-[14px] font-bold hover:bg-[#0f2d4a] transition"
+                                  className="px-6 py-2.5 rounded-full bg-primary text-white text-[14px] font-bold hover:bg-[#008F4C] transition"
                                 >
                                   {saving ? 'Saving...' : 'Save Changes'}
                                 </button>
@@ -1223,7 +1223,7 @@ function AccountPageContent() {
                           <p className="text-[13px] font-medium text-gray-500 mb-6">
                             Save your favorite pujas and homas to view them here later.
                           </p>
-                          <Link href="/" className="bg-primary text-white px-6 py-2.5 rounded-full font-bold text-sm shadow-sm hover:bg-[#0f2d4a] transition">
+                          <Link href="/" className="bg-primary text-white px-6 py-2.5 rounded-full font-bold text-sm shadow-sm hover:bg-[#008F4C] transition">
                             Explore Services
                           </Link>
                         </div>
@@ -1278,7 +1278,7 @@ function AccountPageContent() {
 
                                 <div className="mt-auto flex items-center justify-between pt-1">
                                   <div className="text-[16px] font-extrabold text-gray-900">₹{item.price || 516}</div>
-                                  <Link href={`/${item.serviceType?.toLowerCase() === 'pooja' ? 'puja' : (item.serviceType || 'puja')}/${item.slug || item.serviceId}`} prefetch={true} className="bg-primary text-white text-[12px] font-bold pl-4 pr-1 py-1 rounded-full flex items-center gap-2 hover:bg-[#0f2d4a] transition shadow-sm group">
+                                  <Link href={`/${item.serviceType?.toLowerCase() === 'pooja' ? 'puja' : (item.serviceType || 'puja')}/${item.slug || item.serviceId}`} prefetch={true} className="bg-primary text-white text-[12px] font-bold pl-4 pr-1 py-1 rounded-full flex items-center gap-2 hover:bg-[#008F4C] transition shadow-sm group">
                                     Book Now
                                     <div className="w-6 h-6 rounded-full bg-white/25 flex items-center justify-center shrink-0 group-hover:translate-x-0.5 transition-transform">
                                       <ArrowRight className="w-3.5 h-3.5" strokeWidth={3} />
@@ -1314,7 +1314,7 @@ function AccountPageContent() {
                         {addresses.length > 0 && !loadingAddresses && (
                           <button
                             onClick={() => openAddAddressModal()}
-                            className="bg-primary text-white text-xs sm:text-sm font-bold px-4 py-2 sm:px-5 sm:py-2.5 rounded-full flex items-center gap-1.5 hover:bg-[#0f2d4a] transition"
+                            className="bg-primary text-white text-xs sm:text-sm font-bold px-4 py-2 sm:px-5 sm:py-2.5 rounded-full flex items-center gap-1.5 hover:bg-[#008F4C] transition"
                           >
                             <span>+</span> Add New Address
                           </button>
@@ -1344,7 +1344,7 @@ function AccountPageContent() {
                           <p className="text-[13px] text-gray-500 font-medium mb-6">Add a delivery address to check out faster next time.</p>
                           <button
                             onClick={() => openAddAddressModal()}
-                            className="bg-primary text-white text-[13px] font-bold px-6 py-2.5 rounded-full flex items-center gap-1.5 hover:bg-[#0f2d4a] transition"
+                            className="bg-primary text-white text-[13px] font-bold px-6 py-2.5 rounded-full flex items-center gap-1.5 hover:bg-[#008F4C] transition"
                           >
                             <span>+</span> Add New Address
                           </button>
@@ -1847,7 +1847,7 @@ function AccountPageContent() {
                         <button
                           onClick={handleHelpSubmit}
                           disabled={isSubmittingHelp}
-                          className={`bg-primary text-white text-[13px] font-bold px-6 py-2.5 rounded-full flex items-center gap-1.5 transition w-max ${isSubmittingHelp ? 'opacity-70 cursor-not-allowed' : 'hover:bg-[#0f2d4a]'}`}
+                          className={`bg-primary text-white text-[13px] font-bold px-6 py-2.5 rounded-full flex items-center gap-1.5 transition w-max ${isSubmittingHelp ? 'opacity-70 cursor-not-allowed' : 'hover:bg-[#008F4C]'}`}
                         >
                           {isSubmittingHelp ? 'Submitting...' : 'Submit Request'} {!isSubmittingHelp && <span>&rarr;</span>}
                         </button>
@@ -2108,7 +2108,7 @@ function AccountPageContent() {
                 <button
                   type="button"
                   onClick={handleSaveAddress}
-                  className="px-6 py-2.5 rounded-full bg-primary text-white text-sm font-bold hover:bg-[#0f2d4a] transition"
+                  className="px-6 py-2.5 rounded-full bg-primary text-white text-sm font-bold hover:bg-[#008F4C] transition"
                 >
                   {addressFormData._id ? "Update Address" : "Add Address"}
                 </button>
