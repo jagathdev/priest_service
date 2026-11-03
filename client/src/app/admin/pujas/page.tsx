@@ -236,6 +236,12 @@ export default function AdminPujasPage() {
           type: "number",
           placeholder: "List Price in INR (struck out if > selling price)",
         },
+        {
+          name: "discountPercent",
+          label: "Discount Badge (e.g. 50% OFF)",
+          type: "text",
+          placeholder: "e.g. 50% OFF or 50%",
+        },
 
 
       ],

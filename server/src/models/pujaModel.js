@@ -30,6 +30,7 @@ const packageSchema = new mongoose.Schema({
   priceUSD: { type: Number, default: 0 },
   priceMYR: { type: Number, default: 0 },
   description: { type: String, default: "" },
+  discountPercent: { type: String, default: "" },
 }, { _id: false });
 
 const offeringSchema = new mongoose.Schema({

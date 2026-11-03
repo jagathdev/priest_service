@@ -11,6 +11,7 @@ export type PujaPackage = {
   priceMYR?: number;
   description: string;
   imageUrl?: string;
+  discountPercent?: string;
 };
 
 export type PujaStat = {
@@ -203,6 +204,7 @@ const normalizePackages = (items: unknown, fallback: PujaPackage[]) => {
         imageUrl: typeof pkg.imageUrl === 'string' && pkg.imageUrl.trim().length > 0
           ? pkg.imageUrl.trim()
           : fallback[index]?.imageUrl,
+        discountPercent: (pkg as any).discountPercent ? String((pkg as any).discountPercent).trim() : undefined,
       } as PujaPackage;
     })
     .filter((item): item is NonNullable<typeof item> => item !== null);

@@ -39,6 +39,7 @@ interface PujaPackage {
   price?: number;
   description?: string;
   imageUrl?: string;
+  discountPercent?: string;
 }
 
 interface PujaOffering {
@@ -403,6 +404,7 @@ export default function PujaDetailClient({
           priceMYR: pkg.priceMYR,
           description: pkg.description || "Includes personalized sankalpam and video proof.",
           imageUrl: DEFAULT_PACKAGE_AVATARS[idx % DEFAULT_PACKAGE_AVATARS.length],
+          discountPercent: pkg.discountPercent || "",
         };
       });
     }
@@ -414,24 +416,36 @@ export default function PujaDetailClient({
         name: "Individual",
         devoteeCount: "1 Devotee",
         priceINR: basePrice,
+        listPriceINR: undefined as number | undefined,
+        priceUSD: undefined as number | undefined,
+        priceMYR: undefined as number | undefined,
         description: "Personalized Sankalpam for 1 Person with video recording.",
         imageUrl: DEFAULT_PACKAGE_AVATARS[0],
+        discountPercent: "",
       },
       {
         id: "pkg-2",
         name: "Couple",
         devoteeCount: "2 Devotees",
         priceINR: basePrice + 200,
+        listPriceINR: undefined as number | undefined,
+        priceUSD: undefined as number | undefined,
+        priceMYR: undefined as number | undefined,
         description: "Personalized Sankalpam for Couple / 2 Devotees.",
         imageUrl: DEFAULT_PACKAGE_AVATARS[1],
+        discountPercent: "",
       },
       {
         id: "pkg-3",
         name: "Family",
         devoteeCount: "4 Devotees",
         priceINR: basePrice + 400,
+        listPriceINR: undefined as number | undefined,
+        priceUSD: undefined as number | undefined,
+        priceMYR: undefined as number | undefined,
         description: "Personalized Sankalpam for 4 Family Members.",
         imageUrl: DEFAULT_PACKAGE_AVATARS[2],
+        discountPercent: "",
       },
     ];
   }, [puja]);
@@ -969,6 +983,7 @@ export default function PujaDetailClient({
                     const displayPrice = getDisplayPrice(pkg);
                     const pkgAvatar = DEFAULT_PACKAGE_AVATARS[idx % DEFAULT_PACKAGE_AVATARS.length];
                     const devoteesText = pkg.devoteeCount || (pkg as any).devotees || (idx === 0 ? "1 Devotee" : idx === 1 ? "2 Devotees" : idx === 2 ? "4 Devotees" : "Multiple Devotees");
+                    const discountBadge = pkg.discountPercent ? String(pkg.discountPercent).trim() : null;
 
                     return (
                       <div
@@ -979,6 +994,35 @@ export default function PujaDetailClient({
                           : "border-stone-200 hover:border-stone-300 bg-white"
                           }`}
                       >
+                        {/* Bookmark Ribbon on Mobile & Large Desktop / Sleek Corner Pill on Tablet (1024px lg:max-xl) */}
+                        {discountBadge && (
+                          <>
+                            {/* Tablet / 1024px Screen Style: Elegant Floating Top-Right Corner Pill */}
+                            <div className="hidden lg:flex xl:hidden absolute -top-2.5 right-1 z-20 pointer-events-none items-center shadow-xs">
+                              <span className="bg-gradient-to-r from-rose-600 to-rose-700 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full border border-white shadow-xs tracking-wider flex items-center gap-0.5 leading-none">
+                                <span>{discountBadge.replace(/off/i, "").trim()}</span>
+                                <span className="text-[7px] text-amber-300">OFF</span>
+                              </span>
+                            </div>
+
+                            {/* Mobile, sm, and xl+ Screens: Classic Ribbon Bookmark */}
+                            <div className="flex lg:hidden xl:flex absolute -top-2.5 right-1.5 sm:right-2 z-20 pointer-events-none">
+                              <div className="relative bg-gradient-to-b from-rose-600 via-rose-700 to-rose-800 text-white px-1.5 sm:px-2 pt-1 pb-1.5 rounded-t-md shadow-md flex flex-col items-center leading-none min-w-[34px] sm:min-w-[38px] border-t border-rose-400/30">
+                                <span className="text-[10px] sm:text-[11px] font-black tracking-tight text-white drop-shadow-xs">
+                                  {discountBadge.replace(/off/i, "").trim()}
+                                </span>
+                                <span className="text-[8px] sm:text-[8.5px] font-black text-amber-300 tracking-wider uppercase mt-0.5">
+                                  OFF
+                                </span>
+                                {/* Bottom ribbon notch cutout */}
+                                <div className="absolute -bottom-1 left-0 right-0 flex justify-center">
+                                  <div className="w-0 h-0 border-l-[17px] sm:border-l-[19px] border-l-rose-800 border-r-[17px] sm:border-r-[19px] border-r-rose-800 border-b-[4px] border-b-transparent" />
+                                </div>
+                              </div>
+                            </div>
+                          </>
+                        )}
+
                         {/* Recommended Badge on Couple Package (idx === 1) */}
                         {idx === 1 && (
                           <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#14395C] text-white text-[11px] font-bold px-3 py-0.5 rounded-full shadow-xs z-10 whitespace-nowrap">
@@ -999,7 +1043,7 @@ export default function PujaDetailClient({
                         </div>
 
                         {/* Details on the Right */}
-                        <div className="flex-1 min-w-0 text-left space-y-0.5 sm:space-y-0.5">
+                        <div className="flex-1 min-w-0 text-left space-y-0.5 sm:space-y-0.5 pr-6 sm:pr-0">
                           <h4 className="font-extrabold text-stone-900 text-sm sm:text-xs lg:text-[13px] leading-tight truncate">
                             {pkg.name}
                           </h4>
