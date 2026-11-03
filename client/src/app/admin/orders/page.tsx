@@ -15,6 +15,7 @@ import {
   PencilSquareIcon,
   XMarkIcon,
   ArrowPathIcon,
+  SparklesIcon,
 } from "@heroicons/react/24/outline";
 
 const STATUS_CONFIG: Record<
@@ -131,6 +132,7 @@ interface StatsData {
   total: number;
   scheduled: number;
   confirmed: number;
+  performed: number;
   completed: number;
   cancelled: number;
   refunded: number;
@@ -566,67 +568,22 @@ export default function AdminOrdersPage() {
       )}
 
       {/* Modern Dashboard Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-black text-gray-900 tracking-tight">Orders &amp; Bookings</h1>
+          <div className="flex items-center gap-2.5">
+            <h1 className="text-xl sm:text-2xl font-black text-gray-900 tracking-tight">Orders &amp; Bookings</h1>
             <span className="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200">
               {data.totalOrders} {activeTab === "active" ? "Active" : "Completed"}
             </span>
           </div>
-          <p className="text-xs text-gray-500 mt-1">
-            Manage ritual bookings, update single or bulk statuses (Scheduled, Performed, Completed), and schedule dates.
+          <p className="text-xs text-gray-500 mt-0.5">
+            Manage ritual bookings, update statuses (Scheduled, Performed, Completed), and schedule dates.
           </p>
-        </div>
-
-        {/* Top-Right Quick Filter Controls */}
-        <div className="flex flex-wrap items-center gap-2.5">
-          {/* Service Dropdown */}
-          <select
-            value={selectedService}
-            onChange={(e) => setSelectedService(e.target.value)}
-            className="bg-white border border-gray-200 text-gray-800 text-xs font-bold rounded-xl px-3 py-2 outline-none hover:border-gray-300 focus:border-emerald-600 shadow-2xs cursor-pointer"
-          >
-            {data.services.map((service) => (
-              <option key={service} value={service}>
-                {service === "All" ? "All Services" : service}
-              </option>
-            ))}
-          </select>
-
-          {/* Status Dropdown */}
-          {activeTab === "active" && (
-            <select
-              value={selectedStatus}
-              onChange={(e) => setSelectedStatus(e.target.value)}
-              className="bg-white border border-gray-200 text-gray-800 text-xs font-bold rounded-xl px-3 py-2 outline-none hover:border-gray-300 focus:border-emerald-600 shadow-2xs cursor-pointer"
-            >
-              {data.statuses
-                .filter((st) => st.toLowerCase() !== "completed")
-                .map((st) => (
-                  <option key={st} value={st}>
-                    {st === "All" ? "All Active Statuses" : st.toUpperCase()}
-                  </option>
-                ))}
-            </select>
-          )}
-
-          {/* Search Box */}
-          <div className="relative">
-            <MagnifyingGlassIcon className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              placeholder="Search devotee, ID, phone..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 pr-3 py-2 bg-white border border-gray-200 rounded-xl text-xs font-medium text-gray-800 placeholder-gray-400 outline-none hover:border-gray-300 focus:border-emerald-600 w-52 shadow-2xs"
-            />
-          </div>
         </div>
       </div>
 
       {/* KPI Overview Metrics Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2.5">
         {/* Total Bookings */}
         <button
           type="button"
@@ -634,20 +591,20 @@ export default function AdminOrdersPage() {
             setActiveTab("active");
             setSelectedStatus("All");
           }}
-          className={`p-3.5 rounded-2xl border text-left transition-all duration-150 flex flex-col justify-between cursor-pointer ${activeTab === "active" && (selectedStatus === "All" || !selectedStatus)
-            ? "bg-blue-50/60 border-blue-400 shadow-sm ring-2 ring-blue-400/40"
+          className={`p-3 rounded-2xl border text-left transition-all duration-150 flex flex-col justify-between cursor-pointer ${activeTab === "active" && (selectedStatus === "All" || !selectedStatus)
+            ? "bg-blue-50/70 border-blue-400 shadow-sm ring-2 ring-blue-400/40"
             : "bg-white border-gray-200 hover:border-gray-300 hover:shadow-2xs shadow-2xs"
             }`}
         >
           <div className="flex items-center justify-between text-gray-500 mb-1 w-full">
             <span className="text-[11px] font-bold text-gray-700">Total Bookings</span>
-            <div className="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
-              <CalendarDaysIcon className="w-4 h-4" />
+            <div className="w-6 h-6 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+              <CalendarDaysIcon className="w-3.5 h-3.5" />
             </div>
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-xl font-black text-gray-900">{data.stats?.total ?? data.totalOrders}</span>
-            <span className="text-[10px] font-extrabold text-emerald-600 bg-emerald-50 px-1 py-0.2 rounded">All time</span>
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-lg sm:text-xl font-black text-gray-900">{data.stats?.total ?? data.totalOrders}</span>
+            <span className="text-[9px] font-extrabold text-emerald-600 bg-emerald-50 px-1 py-0.2 rounded">All</span>
           </div>
         </button>
 
@@ -658,20 +615,20 @@ export default function AdminOrdersPage() {
             setActiveTab("active");
             setSelectedStatus("scheduled");
           }}
-          className={`p-3.5 rounded-2xl border text-left transition-all duration-150 flex flex-col justify-between cursor-pointer ${activeTab === "active" && selectedStatus.toLowerCase() === "scheduled"
+          className={`p-3 rounded-2xl border text-left transition-all duration-150 flex flex-col justify-between cursor-pointer ${activeTab === "active" && selectedStatus.toLowerCase() === "scheduled"
             ? "bg-amber-50/70 border-amber-500 shadow-sm ring-2 ring-amber-400/50"
             : "bg-white border-gray-200 hover:border-amber-300 hover:shadow-2xs shadow-2xs"
             }`}
         >
           <div className="flex items-center justify-between text-gray-500 mb-1 w-full">
             <span className="text-[11px] font-bold text-gray-700">Scheduled</span>
-            <div className="w-7 h-7 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
-              <ClockIcon className="w-4 h-4" />
+            <div className="w-6 h-6 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+              <ClockIcon className="w-3.5 h-3.5" />
             </div>
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-xl font-black text-amber-700">{data.stats?.scheduled ?? 0}</span>
-            <span className="text-[10px] font-semibold text-gray-400">Rituals</span>
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-lg sm:text-xl font-black text-amber-700">{data.stats?.scheduled ?? 0}</span>
+            <span className="text-[9px] font-semibold text-gray-400">Rituals</span>
           </div>
         </button>
 
@@ -682,20 +639,44 @@ export default function AdminOrdersPage() {
             setActiveTab("active");
             setSelectedStatus("confirmed");
           }}
-          className={`p-3.5 rounded-2xl border text-left transition-all duration-150 flex flex-col justify-between cursor-pointer ${activeTab === "active" && selectedStatus.toLowerCase() === "confirmed"
+          className={`p-3 rounded-2xl border text-left transition-all duration-150 flex flex-col justify-between cursor-pointer ${activeTab === "active" && selectedStatus.toLowerCase() === "confirmed"
             ? "bg-sky-50/70 border-sky-500 shadow-sm ring-2 ring-sky-400/50"
             : "bg-white border-gray-200 hover:border-sky-300 hover:shadow-2xs shadow-2xs"
             }`}
         >
           <div className="flex items-center justify-between text-gray-500 mb-1 w-full">
             <span className="text-[11px] font-bold text-gray-700">Confirmed</span>
-            <div className="w-7 h-7 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center shrink-0">
-              <CheckCircleIcon className="w-4 h-4" />
+            <div className="w-6 h-6 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center shrink-0">
+              <CheckCircleIcon className="w-3.5 h-3.5" />
             </div>
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-xl font-black text-sky-700">{data.stats?.confirmed ?? 0}</span>
-            <span className="text-[10px] font-semibold text-gray-400">Ready</span>
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-lg sm:text-xl font-black text-sky-700">{data.stats?.confirmed ?? 0}</span>
+            <span className="text-[9px] font-semibold text-gray-400">Ready</span>
+          </div>
+        </button>
+
+        {/* Performed */}
+        <button
+          type="button"
+          onClick={() => {
+            setActiveTab("active");
+            setSelectedStatus("performed");
+          }}
+          className={`p-3 rounded-2xl border text-left transition-all duration-150 flex flex-col justify-between cursor-pointer ${activeTab === "active" && selectedStatus.toLowerCase() === "performed"
+            ? "bg-indigo-50/70 border-indigo-500 shadow-sm ring-2 ring-indigo-400/50"
+            : "bg-white border-gray-200 hover:border-indigo-300 hover:shadow-2xs shadow-2xs"
+            }`}
+        >
+          <div className="flex items-center justify-between text-gray-500 mb-1 w-full">
+            <span className="text-[11px] font-bold text-gray-700">Performed</span>
+            <div className="w-6 h-6 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+              <SparklesIcon className="w-3.5 h-3.5" />
+            </div>
+          </div>
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-lg sm:text-xl font-black text-indigo-700">{data.stats?.performed ?? 0}</span>
+            <span className="text-[9px] font-semibold text-gray-400">Done</span>
           </div>
         </button>
 
@@ -706,20 +687,20 @@ export default function AdminOrdersPage() {
             setActiveTab("active");
             setSelectedStatus("cancelled");
           }}
-          className={`p-3.5 rounded-2xl border text-left transition-all duration-150 flex flex-col justify-between cursor-pointer ${activeTab === "active" && selectedStatus.toLowerCase() === "cancelled"
+          className={`p-3 rounded-2xl border text-left transition-all duration-150 flex flex-col justify-between cursor-pointer ${activeTab === "active" && selectedStatus.toLowerCase() === "cancelled"
             ? "bg-rose-50/70 border-rose-500 shadow-sm ring-2 ring-rose-400/50"
             : "bg-white border-gray-200 hover:border-rose-300 hover:shadow-2xs shadow-2xs"
             }`}
         >
           <div className="flex items-center justify-between text-gray-500 mb-1 w-full">
             <span className="text-[11px] font-bold text-gray-700">Cancelled</span>
-            <div className="w-7 h-7 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
-              <XMarkIcon className="w-4 h-4" />
+            <div className="w-6 h-6 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
+              <XMarkIcon className="w-3.5 h-3.5" />
             </div>
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-xl font-black text-rose-700">{data.stats?.cancelled ?? 0}</span>
-            <span className="text-[10px] font-semibold text-gray-400">Voided</span>
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-lg sm:text-xl font-black text-rose-700">{data.stats?.cancelled ?? 0}</span>
+            <span className="text-[9px] font-semibold text-gray-400">Voided</span>
           </div>
         </button>
 
@@ -730,20 +711,20 @@ export default function AdminOrdersPage() {
             setActiveTab("active");
             setSelectedStatus("refunded");
           }}
-          className={`p-3.5 rounded-2xl border text-left transition-all duration-150 flex flex-col justify-between cursor-pointer ${activeTab === "active" && selectedStatus.toLowerCase() === "refunded"
+          className={`p-3 rounded-2xl border text-left transition-all duration-150 flex flex-col justify-between cursor-pointer ${activeTab === "active" && selectedStatus.toLowerCase() === "refunded"
             ? "bg-purple-50/70 border-purple-500 shadow-sm ring-2 ring-purple-400/50"
             : "bg-white border-gray-200 hover:border-purple-300 hover:shadow-2xs shadow-2xs"
             }`}
         >
           <div className="flex items-center justify-between text-gray-500 mb-1 w-full">
             <span className="text-[11px] font-bold text-gray-700">Refunded</span>
-            <div className="w-7 h-7 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
-              <ArrowPathIcon className="w-4 h-4" />
+            <div className="w-6 h-6 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
+              <ArrowPathIcon className="w-3.5 h-3.5" />
             </div>
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-xl font-black text-purple-700">{data.stats?.refunded ?? 0}</span>
-            <span className="text-[10px] font-semibold text-gray-400">Reversed</span>
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-lg sm:text-xl font-black text-purple-700">{data.stats?.refunded ?? 0}</span>
+            <span className="text-[9px] font-semibold text-gray-400">Reversed</span>
           </div>
         </button>
 
@@ -754,105 +735,149 @@ export default function AdminOrdersPage() {
             setActiveTab("completed");
             setSelectedStatus("All");
           }}
-          className={`p-3.5 rounded-2xl border text-left transition-all duration-150 flex flex-col justify-between cursor-pointer ${activeTab === "completed"
+          className={`p-3 rounded-2xl border text-left transition-all duration-150 flex flex-col justify-between cursor-pointer ${activeTab === "completed"
             ? "bg-emerald-50/70 border-emerald-500 shadow-sm ring-2 ring-emerald-400/50"
             : "bg-white border-gray-200 hover:border-emerald-300 hover:shadow-2xs shadow-2xs"
             }`}
         >
           <div className="flex items-center justify-between text-gray-500 mb-1 w-full">
             <span className="text-[11px] font-bold text-gray-700">Completed</span>
-            <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-              <CheckIcon className="w-4 h-4 stroke-[3]" />
+            <div className="w-6 h-6 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+              <CheckIcon className="w-3.5 h-3.5 stroke-[3]" />
             </div>
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-xl font-black text-emerald-700">{data.stats?.completed ?? 0}</span>
-            <span className="text-[10px] font-semibold text-gray-400">Delivered</span>
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-lg sm:text-xl font-black text-emerald-700">{data.stats?.completed ?? 0}</span>
+            <span className="text-[9px] font-semibold text-gray-400">Delivered</span>
           </div>
         </button>
       </div>
 
-      {/* Tabs & Date Range Filter Toolbar */}
-      <div className="bg-white rounded-2xl border border-gray-200 p-3 shadow-2xs flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
-        {/* Active vs Completed Tabs */}
-        <div className="flex items-center gap-1.5 bg-gray-100/80 p-1 rounded-xl">
-          <button
-            type="button"
-            onClick={() => setActiveTab("active")}
-            className={`px-4 py-2 rounded-lg text-xs font-extrabold transition-all cursor-pointer flex items-center gap-2 ${activeTab === "active"
-              ? "bg-white text-gray-900 shadow-xs"
-              : "text-gray-600 hover:text-gray-900"
-              }`}
-          >
-            <span>Active Bookings</span>
-            <span
-              className={`px-2 py-0.2 rounded-full text-[10px] font-bold ${activeTab === "active" ? "bg-emerald-100 text-emerald-800" : "bg-gray-200 text-gray-700"
+      {/* Unified Filter & Action Toolbar */}
+      <div className="bg-white rounded-2xl border border-gray-200 p-3 shadow-2xs flex flex-col gap-3">
+        <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
+          {/* Left: Active vs Completed Tabs */}
+          <div className="flex items-center gap-1.5 bg-gray-100/80 p-1 rounded-xl shrink-0">
+            <button
+              type="button"
+              onClick={() => setActiveTab("active")}
+              className={`px-4 py-2 rounded-lg text-xs font-extrabold transition-all cursor-pointer flex items-center gap-2 ${activeTab === "active"
+                ? "bg-white text-gray-900 shadow-xs"
+                : "text-gray-600 hover:text-gray-900"
                 }`}
             >
-              {(data.stats?.total || 0) - (data.stats?.completed || 0)}
-            </span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab("completed")}
-            className={`px-4 py-2 rounded-lg text-xs font-extrabold transition-all cursor-pointer flex items-center gap-2 ${activeTab === "completed"
-              ? "bg-white text-emerald-800 shadow-xs"
-              : "text-gray-600 hover:text-gray-900"
-              }`}
-          >
-            <CheckIcon className="w-3.5 h-3.5 stroke-[3] text-emerald-600" />
-            <span>Completed Rituals</span>
-            <span
-              className={`px-2 py-0.2 rounded-full text-[10px] font-bold ${activeTab === "completed" ? "bg-emerald-600 text-white" : "bg-gray-200 text-gray-700"
-                }`}
-            >
-              {data.stats?.completed || 0}
-            </span>
-          </button>
-        </div>
-
-        {/* Date Range Filter: Between 2 Dates */}
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="flex items-center gap-1.5 bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-xl text-xs font-medium text-gray-700">
-            <CalendarDaysIcon className="w-4 h-4 text-emerald-600 shrink-0" />
-            <span className="text-[11px] font-bold text-gray-500 mr-1">Between:</span>
-            <input
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              className="bg-transparent text-gray-900 text-xs font-bold outline-none cursor-pointer"
-              title="Start Date"
-            />
-            <span className="text-gray-400 font-bold px-1">→</span>
-            <input
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              className="bg-transparent text-gray-900 text-xs font-bold outline-none cursor-pointer"
-              title="End Date"
-            />
-            {(startDate || endDate) && (
-              <button
-                type="button"
-                onClick={() => {
-                  setStartDate("");
-                  setEndDate("");
-                }}
-                className="text-gray-400 hover:text-gray-700 text-xs font-bold ml-1.5 cursor-pointer"
-                title="Clear date filter"
+              <span>Active Bookings</span>
+              <span
+                className={`px-2 py-0.2 rounded-full text-[10px] font-bold ${activeTab === "active" ? "bg-emerald-100 text-emerald-800" : "bg-gray-200 text-gray-700"
+                  }`}
               >
-                ✕
-              </button>
-            )}
+                {(data.stats?.total || 0) - (data.stats?.completed || 0)}
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab("completed")}
+              className={`px-4 py-2 rounded-lg text-xs font-extrabold transition-all cursor-pointer flex items-center gap-2 ${activeTab === "completed"
+                ? "bg-white text-emerald-800 shadow-xs"
+                : "text-gray-600 hover:text-gray-900"
+                }`}
+            >
+              <CheckIcon className="w-3.5 h-3.5 stroke-[3] text-emerald-600" />
+              <span>Completed Rituals</span>
+              <span
+                className={`px-2 py-0.2 rounded-full text-[10px] font-bold ${activeTab === "completed" ? "bg-emerald-600 text-white" : "bg-gray-200 text-gray-700"
+                  }`}
+              >
+                {data.stats?.completed || 0}
+              </span>
+            </button>
           </div>
 
-          {/* Quick Date Range Clear or Indicator */}
-          {(startDate || endDate) && (
-            <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">
-              Filtered: {data.totalOrders} {data.totalOrders === 1 ? "Order" : "Orders"}
-            </span>
-          )}
+          {/* Right: Search, Service, Status, Date Filters */}
+          <div className="flex flex-wrap items-center gap-2.5">
+            {/* Search Box */}
+            <div className="relative flex-1 sm:flex-initial">
+              <MagnifyingGlassIcon className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                placeholder="Search devotee, ID, phone..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full sm:w-56 pl-9 pr-3 py-2 bg-gray-50/70 border border-gray-200 rounded-xl text-xs font-medium text-gray-800 placeholder-gray-400 outline-none hover:border-gray-300 focus:border-emerald-600 focus:bg-white transition-all shadow-2xs"
+              />
+            </div>
+
+            {/* Service Dropdown */}
+            <select
+              value={selectedService}
+              onChange={(e) => setSelectedService(e.target.value)}
+              className="bg-gray-50/70 border border-gray-200 text-gray-800 text-xs font-bold rounded-xl px-3 py-2 outline-none hover:border-gray-300 focus:border-emerald-600 focus:bg-white shadow-2xs cursor-pointer transition-all"
+            >
+              {data.services.map((service) => (
+                <option key={service} value={service}>
+                  {service === "All" ? "All Services" : service}
+                </option>
+              ))}
+            </select>
+
+            {/* Status Dropdown (Active only) */}
+            {activeTab === "active" && (
+              <select
+                value={selectedStatus}
+                onChange={(e) => setSelectedStatus(e.target.value)}
+                className="bg-gray-50/70 border border-gray-200 text-gray-800 text-xs font-bold rounded-xl px-3 py-2 outline-none hover:border-gray-300 focus:border-emerald-600 focus:bg-white shadow-2xs cursor-pointer transition-all"
+              >
+                {data.statuses
+                  .filter((st) => st.toLowerCase() !== "completed")
+                  .map((st) => (
+                    <option key={st} value={st}>
+                      {st === "All" ? "All Active Statuses" : st.toUpperCase()}
+                    </option>
+                  ))}
+              </select>
+            )}
+
+            {/* Date Range Filter: Between 2 Dates */}
+            <div className="flex items-center gap-1.5 bg-gray-50/70 border border-gray-200 px-3 py-1.5 rounded-xl text-xs font-medium text-gray-700">
+              <CalendarDaysIcon className="w-4 h-4 text-emerald-600 shrink-0" />
+              <span className="text-[11px] font-bold text-gray-500 mr-1 hidden sm:inline">Between:</span>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="bg-transparent text-gray-900 text-xs font-bold outline-none cursor-pointer"
+                title="Start Date"
+              />
+              <span className="text-gray-400 font-bold px-1">→</span>
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="bg-transparent text-gray-900 text-xs font-bold outline-none cursor-pointer"
+                title="End Date"
+              />
+              {(startDate || endDate) && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStartDate("");
+                    setEndDate("");
+                  }}
+                  className="text-gray-400 hover:text-gray-700 text-xs font-bold ml-1.5 cursor-pointer"
+                  title="Clear date filter"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+
+            {(startDate || endDate) && (
+              <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">
+                Filtered: {data.totalOrders} {data.totalOrders === 1 ? "Order" : "Orders"}
+              </span>
+            )}
+          </div>
         </div>
       </div>
 

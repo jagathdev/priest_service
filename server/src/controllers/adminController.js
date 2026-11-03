@@ -136,7 +136,33 @@ export const getAdminOrders = async (req, res) => {
     }
 
     // Base query for counts / stats (paid orders)
-    const baseStatsQuery = { paymentStatus: { $nin: ["pending", "failed"] } };
+    // If a specific service or date range is selected, calculate stats scoped to that filter
+    const baseStatsConditions = [{ paymentStatus: { $nin: ["pending", "failed"] } }];
+    if (service && service !== "All") {
+      baseStatsConditions.push({ $or: [{ itemName: service }, { pooja: service }] });
+    }
+    if (startDate || endDate) {
+      const dateFilter = {};
+      if (startDate) {
+        const start = new Date(startDate);
+        start.setHours(0, 0, 0, 0);
+        dateFilter.$gte = start;
+      }
+      if (endDate) {
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+        dateFilter.$lte = end;
+      }
+      baseStatsConditions.push({
+        $or: [
+          { createdAt: dateFilter },
+          { bookingDate: dateFilter },
+        ],
+      });
+    }
+    const baseStatsQuery = baseStatsConditions.length === 1
+      ? baseStatsConditions[0]
+      : { $and: baseStatsConditions };
 
     const [
       totalOrders,
@@ -147,6 +173,7 @@ export const getAdminOrders = async (req, res) => {
       totalCount,
       scheduledCount,
       confirmedCount,
+      performedCount,
       completedCount,
       cancelledCount,
       refundedCount,
@@ -163,6 +190,7 @@ export const getAdminOrders = async (req, res) => {
       Order.countDocuments(baseStatsQuery),
       Order.countDocuments({ ...baseStatsQuery, orderStatus: "scheduled" }),
       Order.countDocuments({ ...baseStatsQuery, orderStatus: { $in: ["confirmed", "created"] } }),
+      Order.countDocuments({ ...baseStatsQuery, orderStatus: "performed" }),
       Order.countDocuments({ ...baseStatsQuery, orderStatus: "completed" }),
       Order.countDocuments({ ...baseStatsQuery, orderStatus: "cancelled" }),
       Order.countDocuments({ ...baseStatsQuery, orderStatus: { $in: ["refunded", "refund"] } }),
@@ -202,6 +230,7 @@ export const getAdminOrders = async (req, res) => {
         total: totalCount,
         scheduled: scheduledCount,
         confirmed: confirmedCount,
+        performed: performedCount,
         completed: completedCount,
         cancelled: cancelledCount,
         refunded: refundedCount,
