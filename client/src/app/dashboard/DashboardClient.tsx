@@ -17,7 +17,7 @@ import {
   Clock,
 } from "lucide-react";
 
-import HeroSection, { get1024BannerImage } from "@/components/home/HeroSection";
+import HeroSection from "@/components/home/HeroSection";
 import PujaFilterModal, {
   FilterState,
   defaultFilters,
@@ -275,21 +275,7 @@ export default function DashboardClient({
       if (h.details?.gallery) addImage(h.details.gallery, h.title);
     }
 
-    // 3. Fallback to default galleryImages if no dynamic images uploaded yet
-    if (list.length === 0) {
-      return defaultGalleryImages;
-    }
-
-    // If dynamic images are fewer than 6, supplement with defaults so marquee looks lush
-    if (list.length < 6) {
-      for (const defImg of defaultGalleryImages) {
-        if (!seenUrls.has(defImg.src)) {
-          seenUrls.add(defImg.src);
-          list.push(defImg);
-        }
-      }
-    }
-
+    // 3. Only return dynamic images uploaded from Pujas/Homas (no static fallbacks)
     return list.filter((item) => !failedImages[item.src]);
   }, [allPujas, allHomas, failedImages]);
 
@@ -802,47 +788,6 @@ export default function DashboardClient({
   );
 }
 
-// --- Helper Data & Components ---
-
-const defaultGalleryImages = [
-  {
-    src: "/Service%20images/shreem.jpg",
-    alt: "Sacred Vedic Ritual",
-    aspect: "w-[190px] sm:w-[220px] md:w-[250px] h-[300px] sm:h-[350px] md:h-[380px]", // Tall
-  },
-  {
-    src: "/Service%20images/maha_homam.jpeg",
-    alt: "Maha Homam Ritual",
-    aspect: "w-[240px] sm:w-[280px] md:w-[320px] h-[210px] sm:h-[240px] md:h-[260px]", // Wide landscape
-  },
-  {
-    src: "/Service%20images/lord_perumal.jpeg",
-    alt: "Lord Perumal Puja",
-    aspect: "w-[200px] sm:w-[230px] md:w-[260px] h-[340px] sm:h-[390px] md:h-[420px]", // Very Tall
-  },
-  {
-    src: "/Service%20images/g3.jpg",
-    alt: "Puja Ceremony",
-    aspect: "w-[250px] sm:w-[290px] md:w-[330px] h-[190px] sm:h-[220px] md:h-[240px]", // Landscape
-  },
-  {
-    src: "/Service%20images/group_shreem.jpeg",
-    alt: "Group Puja Ritual",
-    aspect: "w-[230px] sm:w-[270px] md:w-[300px] h-[240px] sm:h-[280px] md:h-[300px]", // Medium balanced
-  },
-  {
-    src: "/Service%20images/golu.jpeg",
-    alt: "Vedic Chanting and Puja",
-    aspect: "w-[190px] sm:w-[220px] md:w-[250px] h-[300px] sm:h-[350px] md:h-[380px]", // Tall
-  },
-  {
-    src: "/Service%20images/g2.jpg",
-    alt: "Sacred Vedic Homa Ritual",
-    aspect: "w-[240px] sm:w-[280px] md:w-[320px] h-[210px] sm:h-[240px] md:h-[260px]", // Landscape
-  },
-];
-
-
 interface PujaCardProps {
   id: string;
   imageSrc: string | { src: string };
@@ -889,7 +834,6 @@ function PujaCard({
       return encodeURI(srcStr);
     }
   })();
-  const img1024 = get1024BannerImage(rawImg);
 
   // Determine main venue title and secondary location text matching detail page
   const mainVenue = templeVenue || location || "Sacred Temple Venue";
@@ -900,17 +844,14 @@ function PujaCard({
       <Link href={cardUrl} className="flex flex-col flex-1 cursor-pointer">
         {/* Top Banner Image Container with Subtle Space */}
         <div className="relative w-full aspect-[4/3] min-h-[190px] xl:min-h-0 xl:aspect-auto xl:h-[235px] rounded-xl min-[375px]:rounded-2xl overflow-hidden mb-2 sm:mb-2.5 bg-stone-100 shrink-0">
-          <picture className="absolute inset-0 w-full h-full block">
-            <source
-              media="(min-width: 1024px) and (max-width: 1279px)"
-              srcSet={img1024}
-            />
-            <img
-              src={rawImg}
-              alt={title}
-              className="w-full h-full object-cover object-center"
-            />
-          </picture>
+          <Image
+            src={rawImg}
+            alt={title}
+            fill
+            unoptimized
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
+            className="w-full h-full object-cover object-center"
+          />
         </div>
 
         {/* Card Body Container */}

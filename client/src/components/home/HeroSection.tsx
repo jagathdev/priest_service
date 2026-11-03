@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import PujaCountdownCard from "@/components/common/PujaCountdownCard";
 import {
   ChevronLeft,
@@ -381,8 +382,6 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
           <div className="relative w-full aspect-[4/3] min-h-[250px] sm:min-h-[360px] sm:aspect-auto sm:h-[390px] md:h-[440px] lg:h-[370px] xl:h-[500px] rounded-2xl min-[375px]:rounded-3xl overflow-hidden shadow-2xl border border-stone-200/80 bg-stone-100 shrink-0 group/carousel">
             {bannerSlides.map((slide, idx) => {
               const isActive = idx === currentSafeSlideIndex;
-              const img1024 = get1024BannerImage(slide.image);
-              const useSource = !img1024.startsWith("data:");
               return (
                 <div
                   key={`${slide.id || "slide"}-${idx}`}
@@ -393,19 +392,14 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
                     className="w-full h-full block relative cursor-pointer"
                   >
                     {/* Full-bleed Banner Image with 1024 Specific Media Query */}
-                    <picture className="absolute inset-0 w-full h-full block">
-                      {useSource && (
-                        <source
-                          media="(min-width: 1024px) and (max-width: 1279px)"
-                          srcSet={img1024}
-                        />
-                      )}
-                      <img
-                        src={slide.image}
-                        alt={slide.title}
-                        className="w-full h-full object-cover object-center"
-                      />
-                    </picture>
+                    <Image
+                      src={slide.image}
+                      alt={slide.title}
+                      fill
+                      unoptimized
+                      priority={idx === 0}
+                      className="w-full h-full object-cover object-center"
+                    />
                   </Link>
                 </div>
               );

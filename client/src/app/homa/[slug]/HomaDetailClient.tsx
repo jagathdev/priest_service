@@ -536,11 +536,6 @@ export default function HomaDetailClient({
 
     if (hasAdditional) {
       addUrl(addImgs);
-    } else {
-      // 3. Fallback to gallery images if no additionalImages provided
-      addUrl(homa.gallery);
-      addUrl((homa as any).galleryUrl);
-      addUrl((homa as any).details?.gallery);
     }
 
     // 4. Details sub-object main image

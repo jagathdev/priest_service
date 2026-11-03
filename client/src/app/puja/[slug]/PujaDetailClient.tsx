@@ -537,11 +537,6 @@ export default function PujaDetailClient({
 
     if (hasAdditional) {
       addUrl(addImgs);
-    } else {
-      // 3. Gallery images from DB if no additionalImages provided
-      addUrl(puja.gallery);
-      addUrl((puja as any).galleryUrl);
-      addUrl((puja as any).details?.gallery);
     }
 
     // 4. Details sub-object main image from DB
