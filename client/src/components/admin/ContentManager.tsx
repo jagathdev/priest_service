@@ -202,6 +202,17 @@ export default function ContentManager({
     options?: { overwrite?: boolean; onSuccess?: (url: string) => void }
   ): Promise<string | null> => {
     if (!file) return null;
+
+    // Client-side 3 MB limit check
+    const MAX_FILE_SIZE = 3 * 1024 * 1024; // 3MB
+    if (file.size > MAX_FILE_SIZE) {
+      setUploadErrors((prev) => ({
+        ...prev,
+        [key]: "Max 3 MB image only allowed to upload. Please choose an image smaller than 3 MB.",
+      }));
+      return null;
+    }
+
     // 1. Get concise item initials (e.g., "Ganapati Homam" -> "gh", "Durga Puja" -> "dp", or first 3-4 chars)
     const words = (formData.title || formData.name || "item")
       .trim()
@@ -281,9 +292,13 @@ export default function ContentManager({
         }
         return data.url;
       } else {
+        const errorMsg =
+          res.status === 413 || data.code === "LIMIT_FILE_SIZE"
+            ? "Max 3 MB image only allowed to upload. Please upload an image under 3 MB."
+            : data.message || `Upload failed with status ${res.status}`;
         setUploadErrors((prev) => ({
           ...prev,
-          [key]: data.message || `Upload failed with status ${res.status}`,
+          [key]: errorMsg,
         }));
         return null;
       }
@@ -1781,7 +1796,7 @@ export default function ContentManager({
                           <>Drag and drop or <span className="text-primary underline">browse file</span></>
                         )}
                       </p>
-                      <p className="text-[11px] text-slate-400 mt-1">PNG, JPG, or WEBP images (auto short-named)</p>
+                      <p className="text-[11px] text-slate-400 mt-1">PNG, JPG, or WEBP (Max 3 MB - auto short-named)</p>
                     </label>
                   </div>
                 )}

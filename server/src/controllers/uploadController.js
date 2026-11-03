@@ -23,7 +23,7 @@ export const uploadImage = async (req, res) => {
     }
 
     const filename = req.file.filename;
-    const url = `/images/${filename}`;
+    const url = `/api/images/${filename}`;
 
     // Upsert in MongoDB Media collection to avoid duplicate records on overwrite
     const mediaDoc = await Media.findOneAndUpdate(

@@ -88,8 +88,9 @@ app.get('/health', (req, res) => {
     res.status(200).json({ status: 'ok', timestamp: new Date() });
 });
 
-// Serve uploaded images statically
+// Serve uploaded images statically (both /api/images and /images for backward compatibility)
 app.use('/api/images', express.static(path.resolve(__dirname, '../public/images')));
+app.use('/images', express.static(path.resolve(__dirname, '../public/images')));
 
 // Routes
 app.use("/api/admin", adminRoutes);

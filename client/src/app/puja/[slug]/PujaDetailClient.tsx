@@ -1555,7 +1555,7 @@ export default function PujaDetailClient({
                   className="w-full bg-[#14395C] hover:bg-[#0f2d4a] text-white font-extrabold text-xs sm:text-sm py-3 px-4 rounded-full transition-colors flex items-center justify-center gap-2 shadow-sm"
                 >
                   <i className="fa-brands fa-whatsapp text-lg text-[#25D366]"></i>
-                  <span>WhatsApp</span>
+                  <span>Get Free Puja Guidance</span>
                 </a>
               </div>
             </div>

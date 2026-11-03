@@ -3,16 +3,16 @@
 import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import PujaCountdownCard from "@/components/common/PujaCountdownCard";
-import { 
-  ChevronLeft, 
-  ChevronRight, 
-  Loader2, 
-  Sparkles, 
-  Sun, 
-  Video, 
-  ShieldCheck, 
-  Landmark, 
-  Scroll 
+import {
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
+  Sparkles,
+  Sun,
+  Video,
+  ShieldCheck,
+  Landmark,
+  Scroll
 } from "lucide-react";
 
 interface BannerSlide {

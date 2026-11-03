@@ -58,12 +58,19 @@ const fileFilter = (_req, file, cb) => {
 const upload = multer({
   storage,
   fileFilter,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+  limits: { fileSize: 3 * 1024 * 1024 }, // 3MB limit
 });
 
 const uploadMiddleware = (req, res, next) => {
   upload.single("image")(req, res, (err) => {
     if (err) {
+      if (err.code === "LIMIT_FILE_SIZE") {
+        return res.status(400).json({
+          success: false,
+          code: "LIMIT_FILE_SIZE",
+          message: "Max 3 MB image only allowed to upload. Please upload an image under 3 MB.",
+        });
+      }
       if (err.code === "FILE_ALREADY_EXISTS" || err.message === "FILE_ALREADY_EXISTS") {
         return res.status(409).json({
           success: false,
