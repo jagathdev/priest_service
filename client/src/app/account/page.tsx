@@ -1647,7 +1647,7 @@ function AccountPageContent() {
                           className="group bg-white border border-gray-150 rounded-2xl p-5 shadow-sm hover:shadow-md transition block"
                         >
                           <div className="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center mb-4 transition-transform group-hover:scale-105">
-                            <i className="fa-brands fa-whatsapp text-2xl text-[#25D366]"></i>
+                            <i className="fa-brands fa-whatsapp text-2xl text-white"></i>
                           </div>
                           <h4 className="text-[14px] font-bold text-gray-900 mb-1">WhatsApp Support</h4>
                           <p className="text-[11px] text-gray-500 mb-4">Reply within minutes</p>
