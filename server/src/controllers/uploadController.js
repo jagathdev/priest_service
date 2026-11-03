@@ -36,7 +36,7 @@ export const uploadImage = async (req, res) => {
         size: req.file.size,
         uploadedBy: "admin",
       },
-      { upsert: true, new: true, setDefaultsOnInsert: true }
+      { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }
     );
 
     return res.status(200).json({

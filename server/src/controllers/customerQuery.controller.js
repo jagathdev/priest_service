@@ -252,7 +252,7 @@ export const updateAdminCustomerQuery = async (req, res) => {
             updateData.adminReply = adminReply;
         }
 
-        const updated = await CustomerQuery.findByIdAndUpdate(id, updateData, { new: true });
+        const updated = await CustomerQuery.findByIdAndUpdate(id, updateData, { returnDocument: 'after' });
         if (!updated) {
             return res.status(404).json({ success: false, message: 'Query not found' });
         }
