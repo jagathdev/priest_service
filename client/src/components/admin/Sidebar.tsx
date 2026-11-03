@@ -15,19 +15,21 @@ import {
   TagIcon,
   UserGroupIcon,
   UserPlusIcon,
+  ChatBubbleBottomCenterTextIcon,
 } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 const menuItems = [
   { name: "Dashboard", href: "/admin", icon: HomeIcon },
+  { name: "Users", href: "/admin/users", icon: UserGroupIcon },
   { name: "Home Banners", href: "/admin/home-banners", icon: PhotoIcon },
   { name: "Pujas", href: "/admin/pujas", icon: SparklesIcon },
   { name: "Homas", href: "/admin/homas", icon: FireIcon },
   { name: "Orders & Bookings", href: "/admin/orders", icon: ShoppingBagIcon },
   { name: "Pre-Orders / Interest", href: "/admin/pre-orders", icon: UserPlusIcon },
   { name: "Promo Codes", href: "/admin/promo-codes", icon: TagIcon },
-  { name: "Users", href: "/admin/users", icon: UserGroupIcon },
+  { name: "Customer Queries", href: "/admin/customer-queries", icon: ChatBubbleBottomCenterTextIcon },
   // { name: "Payments & Revenue", href: "/admin/payments", icon: CreditCardIcon },
 ];
 
@@ -40,7 +42,7 @@ export default function Sidebar() {
     document.cookie = "adminToken=; path=/; max-age=0; SameSite=Lax";
     try {
       localStorage.removeItem("adminToken");
-    } catch {}
+    } catch { }
     router.push("/admin/login");
   };
 

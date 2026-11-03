@@ -22,6 +22,12 @@ import {
   permanentDeleteAdminUser,
   bulkPermanentDeleteUsers
 } from "../controllers/adminController.js";
+import {
+  getAdminCustomerQueries,
+  updateAdminCustomerQuery,
+  deleteAdminCustomerQuery,
+  bulkDeleteAdminCustomerQueries
+} from "../controllers/customerQuery.controller.js";
 import { requireAuth, requireAdmin } from "../middlewares/auth.js";
 import { loginLimiter } from "../middlewares/rateLimiters.js";
 
@@ -42,6 +48,12 @@ router.get("/payments", getAdminPayments);
 router.get("/pre-orders", getAdminPreOrders);
 router.post("/pre-orders/bulk-delete", bulkDeleteAdminPreOrders);
 router.delete("/pre-orders/:id", deleteAdminPreOrder);
+
+// Customer Queries / Help Requests
+router.get("/customer-queries", getAdminCustomerQueries);
+router.put("/customer-queries/:id", updateAdminCustomerQuery);
+router.delete("/customer-queries/:id", deleteAdminCustomerQuery);
+router.post("/customer-queries/bulk-delete", bulkDeleteAdminCustomerQueries);
 
 // User routes & bulk/trash operations
 router.get("/users", getAdminUsers);
