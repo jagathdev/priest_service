@@ -226,9 +226,9 @@ export default function DashboardClient({
       .slice(0, 6);
   }, [allPujas, filters, hasActiveFilters, dynamicFilterGroups]);
 
-  // Dynamically extract gallery images uploaded to any Puja or Homa
+  // Dynamically extract and interleave (shuffle) gallery images across all Pujas and Homas
   const dynamicGalleryImages = React.useMemo(() => {
-    const list: { src: string; alt: string; aspect: string }[] = [];
+    const serviceBuckets: { src: string; alt: string }[][] = [];
     const seenUrls = new Set<string>();
 
     const aspectPresets = [
@@ -239,44 +239,64 @@ export default function DashboardClient({
       "w-[230px] sm:w-[270px] md:w-[300px] h-[240px] sm:h-[280px] md:h-[300px]", // Medium balanced
     ];
 
-    const addImage = (rawUrl: any, title: string) => {
-      if (!rawUrl) return;
-      if (typeof rawUrl === "string") {
-        const parts = rawUrl.split(/[\n,]+/);
-        for (const p of parts) {
-          const trimmed = p.trim();
-          if (trimmed) {
-            const formatted = getSafeImageUrl(trimmed);
-            if (formatted && !seenUrls.has(formatted)) {
-              seenUrls.add(formatted);
-              const aspect = aspectPresets[list.length % aspectPresets.length];
-              list.push({ src: formatted, alt: title || "Sacred Ritual", aspect });
+    const extractServiceImages = (service: any): { src: string; alt: string }[] => {
+      const items: { src: string; alt: string }[] = [];
+      const addUrl = (raw: any) => {
+        if (!raw) return;
+        if (typeof raw === "string") {
+          const parts = raw.split(/[\n,]+/);
+          for (const p of parts) {
+            const trimmed = p.trim();
+            if (trimmed) {
+              const formatted = getSafeImageUrl(trimmed);
+              if (formatted && !seenUrls.has(formatted)) {
+                seenUrls.add(formatted);
+                items.push({ src: formatted, alt: service.title || "Sacred Ritual" });
+              }
             }
           }
+        } else if (Array.isArray(raw)) {
+          for (const it of raw) addUrl(it);
         }
-      } else if (Array.isArray(rawUrl)) {
-        for (const item of rawUrl) {
-          addImage(item, title);
-        }
-      }
+      };
+
+      addUrl(service.gallery);
+      addUrl(service.galleryUrl);
+      if (service.details?.gallery) addUrl(service.details.gallery);
+      return items;
     };
 
-    // 1. Gather all gallery images from Pujas
+    // Collect individual image buckets per Puja
     for (const p of allPujas) {
-      addImage(p.gallery, p.title);
-      addImage(p.galleryUrl, p.title);
-      if (p.details?.gallery) addImage(p.details.gallery, p.title);
+      const imgs = extractServiceImages(p);
+      if (imgs.length > 0) serviceBuckets.push(imgs);
     }
 
-    // 2. Gather all gallery images from Homas
+    // Collect individual image buckets per Homa
     for (const h of allHomas) {
-      addImage(h.gallery, h.title);
-      addImage(h.galleryUrl, h.title);
-      if (h.details?.gallery) addImage(h.details.gallery, h.title);
+      const imgs = extractServiceImages(h);
+      if (imgs.length > 0) serviceBuckets.push(imgs);
     }
 
-    // 3. Only return dynamic images uploaded from Pujas/Homas (no static fallbacks)
-    return list.filter((item) => !failedImages[item.src]);
+    // Round-robin / shuffle across services: take 1st image of each, then 2nd of each, etc.
+    // This guarantees no consecutive images from the same puja/ritual (e.g. Shani, then Rameshwaram, then Navagraha)
+    const shuffled: { src: string; alt: string; aspect: string }[] = [];
+    let hasMore = true;
+    let round = 0;
+    while (hasMore) {
+      hasMore = false;
+      for (const bucket of serviceBuckets) {
+        if (round < bucket.length) {
+          const item = bucket[round];
+          const aspect = aspectPresets[shuffled.length % aspectPresets.length];
+          shuffled.push({ ...item, aspect });
+          hasMore = true;
+        }
+      }
+      round++;
+    }
+
+    return shuffled.filter((item) => !failedImages[item.src]);
   }, [allPujas, allHomas, failedImages]);
 
   return (
