@@ -19,6 +19,7 @@ interface ShareModalProps {
 
 export default function ShareModal({ isOpen, onClose, data }: ShareModalProps) {
   const [copied, setCopied] = useState(false);
+  const [instagramNotice, setInstagramNotice] = useState(false);
 
   if (!isOpen) return null;
 
@@ -39,15 +40,55 @@ export default function ShareModal({ isOpen, onClose, data }: ShareModalProps) {
   const shareText = `I came across the ${pujaTitle}${venuePart}${descPart}\n\nThis puja brings peace of mind, spiritual joy and divine blessings. Don't miss this opportunity!`;
   const encodedShareText = encodeURIComponent(shareText);
 
-  const handleShare = (platform: "whatsapp" | "instagram" | "facebook" | "twitter" | "telegram") => {
+  const copyToClipboard = async (text: string) => {
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        return true;
+      }
+      const textarea = document.createElement("textarea");
+      textarea.value = text;
+      textarea.style.position = "fixed";
+      textarea.style.left = "-9999px";
+      document.body.appendChild(textarea);
+      textarea.focus();
+      textarea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textarea);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+  const handleShare = async (platform: "whatsapp" | "instagram" | "facebook" | "twitter" | "telegram") => {
+    if (platform === "instagram") {
+      // 1. Copy the full WhatsApp-style message (title, description, and post link) to clipboard
+      await copyToClipboard(whatsappMessage);
+      setInstagramNotice(true);
+      setTimeout(() => setInstagramNotice(false), 4000);
+
+      // 2. Open Instagram Direct Chat List
+      const isMobile = typeof navigator !== "undefined" && /mobile|iphone|ipad|android/i.test(navigator.userAgent);
+      if (isMobile) {
+        // Launch Instagram app directly into Direct Messages / Chat list
+        window.location.href = "instagram://direct-inbox";
+        setTimeout(() => {
+          // Fallback to web direct inbox if app is not installed
+          window.open("https://www.instagram.com/direct/inbox/", "_blank");
+        }, 1200);
+      } else {
+        // Desktop browser: open Instagram Direct Chat list directly
+        window.open("https://www.instagram.com/direct/inbox/", "_blank");
+      }
+      return;
+    }
+
     let targetUrl = "";
 
     switch (platform) {
       case "whatsapp":
         targetUrl = `https://wa.me/?text=${encodedWhatsappText}`;
-        break;
-      case "instagram":
-        targetUrl = `https://www.instagram.com/share?url=${encodedUrl}`;
         break;
       case "facebook":
         targetUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
@@ -66,22 +107,9 @@ export default function ShareModal({ isOpen, onClose, data }: ShareModalProps) {
   };
 
   const handleCopyLink = async () => {
-    try {
-      if (navigator.clipboard) {
-        await navigator.clipboard.writeText(currentUrl);
-      } else {
-        const textarea = document.createElement("textarea");
-        textarea.value = currentUrl;
-        document.body.appendChild(textarea);
-        textarea.select();
-        document.execCommand("copy");
-        document.body.removeChild(textarea);
-      }
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (e) {
-      console.error("Failed to copy link", e);
-    }
+    await copyToClipboard(currentUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
@@ -104,8 +132,16 @@ export default function ShareModal({ isOpen, onClose, data }: ShareModalProps) {
 
         {/* Modal Header */}
         <h3 className="text-xl font-bold font-serif text-stone-900 mb-6">
-          Share Pooja
+          Share Puja
         </h3>
+
+        {/* Instagram Notice Toast */}
+        {instagramNotice && (
+          <div className="mb-4 p-3 rounded-xl bg-pink-50 border border-pink-200 text-pink-800 text-xs font-semibold flex items-center gap-2 animate-in fade-in">
+            <Check className="w-4 h-4 text-pink-600 shrink-0" />
+            <span>Post details & link copied! Opening Instagram Chat list... Paste to send.</span>
+          </div>
+        )}
 
         {/* Share Buttons Grid */}
         <div className="grid grid-cols-2 gap-3.5">
