@@ -165,6 +165,13 @@ export default function AdminHomasPage() {
       placeholder: "Show live countdown timer on page",
       section: "Schedule & Muhurat",
     },
+    {
+      name: "devoteeCount",
+      label: "Devotee Bookings Count (Displayed Beside Timer)",
+      type: "number",
+      placeholder: "e.g. 150",
+      section: "Schedule & Muhurat",
+    },
 
     // ── 4. Temple & Location ──
     {

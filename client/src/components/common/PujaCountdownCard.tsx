@@ -1,6 +1,11 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useSyncExternalStore } from "react";
+
+const emptySubscribe = () => () => { };
+function useIsClient() {
+  return useSyncExternalStore(emptySubscribe, () => true, () => false);
+}
 import { MapPin, Calendar } from "lucide-react";
 
 interface PujaCountdownCardProps {
@@ -142,9 +147,8 @@ export default function PujaCountdownCard({
   devoteesCount = 150,
   className = "",
 }: PujaCountdownCardProps) {
-  const [timeLeft, setTimeLeft] = useState<TimeLeft>(() =>
-    calculateTimeLeft(eventDateTime, dateText)
-  );
+  const isClient = useIsClient();
+  const [timeLeft, setTimeLeft] = useState<TimeLeft>(() => calculateTimeLeft(eventDateTime, dateText));
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -154,7 +158,7 @@ export default function PujaCountdownCard({
     return () => clearInterval(interval);
   }, [eventDateTime, dateText]);
 
-  const canShowTimer = showTimer !== false && timeLeft.hasTarget;
+  const canShowTimer = isClient && showTimer !== false && timeLeft.hasTarget;
 
   const formattedDate = useMemo(() => formatDayDateMonth(dateText), [dateText]);
 

@@ -959,6 +959,7 @@ export default function HomaDetailClient({
                 occasionText={homa.subtitle || (homa as any).occasion || (homa as any).dateOccasion || homa.badge || (homa as any).tithis || "Special Vedic Homa"}
                 eventDateTime={homa.eventDateTime}
                 showTimer={homa.showTimer}
+                devoteesCount={(homa as any).devoteeCount || 150}
                 title="Reserve your sankalp"
                 badgeLabel="MUHURAT ENDS IN"
                 className="mb-3 lg:mb-3.5"

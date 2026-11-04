@@ -970,6 +970,7 @@ export default function PujaDetailClient({
                 occasionText={puja.subtitle || (puja as any).occasion || (puja as any).dateOccasion || puja.badge || (puja as any).tithis || "Mahalaya Amavasya"}
                 eventDateTime={puja.eventDateTime}
                 showTimer={puja.showTimer}
+                devoteesCount={(puja as any).devoteeCount || 150}
                 title="Reserve your sankalp"
                 badgeLabel="MUHURAT ENDS IN"
                 className="mb-3 lg:mb-3.5"

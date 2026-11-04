@@ -78,6 +78,7 @@ const pujaSchema = new mongoose.Schema(
     time: { type: String, default: "" },
     eventDateTime: { type: String, default: "" },
     showTimer: { type: Boolean, default: true },
+    devoteeCount: { type: Number, default: 150 },
 
     // Pricing (Selling Price & List Price)
     priceINR: { type: Number, default: 0 },
