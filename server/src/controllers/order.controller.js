@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import Pooja from "../models/Pooja.js";
 import Puja from "../models/pujaModel.js";
 import Homa from "../models/homaModel.js";
 import { computeServerPrice } from "../services/pricing.service.js";

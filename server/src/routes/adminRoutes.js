@@ -28,6 +28,10 @@ import {
   deleteAdminCustomerQuery,
   bulkDeleteAdminCustomerQueries
 } from "../controllers/customerQuery.controller.js";
+import {
+  getDispatchDevotees,
+  exportDispatchExcel,
+} from "../controllers/serviceDispatch.controller.js";
 import { requireAuth, requireAdmin } from "../middlewares/auth.js";
 import { loginLimiter } from "../middlewares/rateLimiters.js";
 
@@ -54,6 +58,10 @@ router.get("/customer-queries", getAdminCustomerQueries);
 router.put("/customer-queries/:id", updateAdminCustomerQuery);
 router.delete("/customer-queries/:id", deleteAdminCustomerQuery);
 router.post("/customer-queries/bulk-delete", bulkDeleteAdminCustomerQueries);
+
+// Service Team Dispatch & Priest Excel Export
+router.get("/service-dispatch", getDispatchDevotees);
+router.get("/service-dispatch/export", exportDispatchExcel);
 
 // User routes & bulk/trash operations
 router.get("/users", getAdminUsers);

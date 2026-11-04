@@ -6,7 +6,7 @@ import Navbar from "@/components/layout/Navbar";
 import Link from "next/link";
 import { getPriceComparison } from "@/lib/pricing";
 import PriceTag from "@/components/ui/PriceTag";
-import { useRouter } from "next/navigation";
+// import { useRouter } from "next/navigation";
 import {
   ArrowRight,
   Search,
@@ -74,7 +74,7 @@ export default function HomaClient({ initialHomas }: { initialHomas?: Homa[] }) 
   const [selectedType, setSelectedType] = useState("All Homas");
   const [selectedDeities, setSelectedDeities] = useState<string[]>([]);
   const [selectedDoshas, setSelectedDoshas] = useState<string[]>([]);
-  const router = useRouter();
+  // const router = useRouter();
 
   const toggleDeity = (deity: string) => {
     setSelectedDeities((prev) =>

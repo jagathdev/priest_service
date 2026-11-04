@@ -1,6 +1,5 @@
 import Puja from "../models/pujaModel.js";
 import Homa from "../models/homaModel.js";
-import Pooja from "../models/Pooja.js";
 import { validatePromoCode } from "./promoCode.service.js";
 import { normalizeServiceType } from "../utils/serviceType.js";
 
@@ -88,13 +87,12 @@ export const computeServerPrice = async ({ serviceId, serviceType, packageId, pa
     if (normalizedType === "HOMA") {
         service = await Homa.findById(serviceId).lean();
     } else {
-        service = await Puja.findById(serviceId).lean() || await Pooja.findById(serviceId).lean();
+        service = await Puja.findById(serviceId).lean();
     }
 
     if (!service && serviceId) {
         service = await Puja.findById(serviceId).lean() ||
-            await Homa.findById(serviceId).lean() ||
-            await Pooja.findById(serviceId).lean();
+            await Homa.findById(serviceId).lean();
     }
 
     if (!service) {
