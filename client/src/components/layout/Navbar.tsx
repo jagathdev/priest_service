@@ -295,7 +295,7 @@ export default function Navbar() {
               className="sm:hidden flex items-center justify-center p-1 text-white hover:opacity-90 active:scale-95 transition-all shrink-0"
               aria-label="WhatsApp Support"
             >
-              <i className="fa-brands fa-whatsapp text-2xl text-white"></i>
+              <i className="fa-brands fa-whatsapp text-2xl text-[#00B05F]"></i>
             </a>
 
             <AccountPanel

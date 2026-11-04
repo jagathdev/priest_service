@@ -72,25 +72,43 @@ export default function DashboardClient({
   const [galleryLightboxIdx, setGalleryLightboxIdx] = useState(0);
   const [failedImages, setFailedImages] = useState<Record<string, boolean>>({});
 
-  // Puja Gallery Draggable / Nav Scroll
+  // Puja Gallery Draggable / Nav Scroll / Touch Swipe
   const galleryScrollRef = useRef<HTMLDivElement | null>(null);
   const [isGalleryDragging, setIsGalleryDragging] = useState(false);
   const galleryStartXRef = useRef<number>(0);
   const galleryScrollLeftRef = useRef<number>(0);
   const galleryMovedRef = useRef<boolean>(false);
+  const scrollAccumulatorRef = useRef<number>(0);
+  const isInteractingRef = useRef<boolean>(false);
+  const resumeTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Always forward auto-scroll animation loop (NEVER STOPS - runs continuously forward)
+  // Helper to temporarily pause continuous auto-scroll during user interaction
+  const pauseAutoScrollTemporarily = (durationMs = 3500) => {
+    isInteractingRef.current = true;
+    if (resumeTimerRef.current) {
+      clearTimeout(resumeTimerRef.current);
+    }
+    resumeTimerRef.current = setTimeout(() => {
+      isInteractingRef.current = false;
+    }, durationMs);
+  };
+
+  // Forward auto-scroll animation loop (pauses smoothly when user swipes or clicks nav buttons)
   useEffect(() => {
     let animId: number;
-    const speed = 0.9; // Smooth forward scroll speed in pixels per frame
+    const speed = 0.85;
 
     const step = () => {
       const container = galleryScrollRef.current;
-      if (container) {
-        container.scrollLeft += speed;
-        // Keep baseline drag reference in sync so dragging doesn't jump
+      if (container && !isInteractingRef.current) {
+        scrollAccumulatorRef.current += speed;
+        if (scrollAccumulatorRef.current >= 1) {
+          const pxToScroll = Math.floor(scrollAccumulatorRef.current);
+          container.scrollLeft += pxToScroll;
+          scrollAccumulatorRef.current -= pxToScroll;
+        }
         if (galleryScrollLeftRef.current !== undefined) {
-          galleryScrollLeftRef.current += speed;
+          galleryScrollLeftRef.current = container.scrollLeft;
         }
 
         const maxScroll = container.scrollWidth - container.clientWidth;
@@ -105,11 +123,16 @@ export default function DashboardClient({
     };
 
     animId = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(animId);
+    return () => {
+      cancelAnimationFrame(animId);
+      if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
+    };
   }, []);
 
+  // Mouse Drag Handlers (Desktop)
   const handleGalleryMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!galleryScrollRef.current) return;
+    pauseAutoScrollTemporarily(10000);
     setIsGalleryDragging(true);
     galleryMovedRef.current = false;
     galleryStartXRef.current = e.pageX;
@@ -125,8 +148,6 @@ export default function DashboardClient({
     }
     const container = galleryScrollRef.current;
     container.scrollLeft = galleryScrollLeftRef.current - diff;
-    galleryStartXRef.current = e.pageX;
-    galleryScrollLeftRef.current = container.scrollLeft;
 
     const maxScroll = container.scrollWidth - container.clientWidth;
     if (maxScroll > 0) {
@@ -141,16 +162,75 @@ export default function DashboardClient({
   };
 
   const handleGalleryMouseUpOrLeave = () => {
+    if (isGalleryDragging) {
+      setIsGalleryDragging(false);
+      pauseAutoScrollTemporarily(3000);
+    }
+  };
+
+  // Touch Swipe Handlers (Mobile & Tablet)
+  const handleGalleryTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (!galleryScrollRef.current) return;
+    pauseAutoScrollTemporarily(10000);
+    setIsGalleryDragging(true);
+    galleryMovedRef.current = false;
+    galleryStartXRef.current = e.touches[0].clientX;
+    galleryScrollLeftRef.current = galleryScrollRef.current.scrollLeft;
+  };
+
+  const handleGalleryTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (!galleryScrollRef.current) return;
+    const currentX = e.touches[0].clientX;
+    const diff = (currentX - galleryStartXRef.current) * 1.3;
+    if (Math.abs(diff) > 5) {
+      galleryMovedRef.current = true;
+    }
+    const container = galleryScrollRef.current;
+    container.scrollLeft = galleryScrollLeftRef.current - diff;
+
+    const maxScroll = container.scrollWidth - container.clientWidth;
+    if (maxScroll > 0) {
+      if (container.scrollLeft <= 0) {
+        container.scrollLeft += maxScroll / 2;
+        galleryScrollLeftRef.current += maxScroll / 2;
+      } else if (container.scrollLeft >= maxScroll) {
+        container.scrollLeft -= maxScroll / 2;
+        galleryScrollLeftRef.current -= maxScroll / 2;
+      }
+    }
+  };
+
+  const handleGalleryTouchEnd = () => {
     setIsGalleryDragging(false);
+    pauseAutoScrollTemporarily(3500);
   };
 
   const scrollGallery = (direction: "left" | "right") => {
     if (!galleryScrollRef.current) return;
-    const scrollAmount = 350;
-    galleryScrollRef.current.scrollBy({
-      left: direction === "left" ? -scrollAmount : scrollAmount,
-      behavior: "smooth",
-    });
+    pauseAutoScrollTemporarily(4000);
+    const container = galleryScrollRef.current;
+    const scrollAmount = typeof window !== "undefined" && window.innerWidth < 640 ? 240 : 350;
+    const singleSetWidth = container.scrollWidth / 3;
+
+    if (direction === "right") {
+      // If we are nearing the end of the second set, seamlessly wrap back by 1 set width
+      if (singleSetWidth > 0 && container.scrollLeft >= singleSetWidth * 2 - scrollAmount) {
+        container.scrollLeft -= singleSetWidth;
+      }
+      container.scrollBy({
+        left: scrollAmount,
+        behavior: "smooth",
+      });
+    } else {
+      // If scrolling left and near the beginning, seamlessly wrap forward by 1 set width
+      if (singleSetWidth > 0 && container.scrollLeft <= singleSetWidth) {
+        container.scrollLeft += singleSetWidth;
+      }
+      container.scrollBy({
+        left: -scrollAmount,
+        behavior: "smooth",
+      });
+    }
   };
 
   useEffect(() => {
@@ -591,19 +671,25 @@ export default function DashboardClient({
           <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 text-white" strokeWidth={2.5} />
         </button>
 
-        {/* Draggable Row Container anchored at Bottom of Font */}
+        {/* Draggable & Touch Swipeable Row Container */}
         <div
           ref={galleryScrollRef}
           onMouseDown={handleGalleryMouseDown}
           onMouseMove={handleGalleryMouseMove}
           onMouseUp={handleGalleryMouseUpOrLeave}
           onMouseLeave={handleGalleryMouseUpOrLeave}
-          className={`relative z-10 w-full pt-12 min-[375px]:pt-14 sm:pt-20 md:pt-24 pb-2 px-4 sm:px-8 overflow-x-auto overflow-y-hidden select-none no-scrollbar ${isGalleryDragging ? "cursor-grabbing" : "cursor-grab"
+          onTouchStart={handleGalleryTouchStart}
+          onTouchMove={handleGalleryTouchMove}
+          onTouchEnd={handleGalleryTouchEnd}
+          className={`relative z-10 w-full pt-12 min-[375px]:pt-14 sm:pt-20 md:pt-24 pb-2 px-4 sm:px-8 overflow-x-auto overflow-y-hidden select-none no-scrollbar touch-pan-x ${isGalleryDragging ? "cursor-grabbing" : "cursor-grab"
             }`}
-          style={{ scrollBehavior: isGalleryDragging ? "auto" : "smooth" }}
+          style={{
+            scrollBehavior: "auto",
+            WebkitOverflowScrolling: "touch",
+          }}
         >
           <div className="flex gap-4 sm:gap-6 items-end w-max pb-2">
-            {[...dynamicGalleryImages, ...dynamicGalleryImages].map((img, idx) => (
+            {[...dynamicGalleryImages, ...dynamicGalleryImages, ...dynamicGalleryImages].map((img, idx) => (
               <div
                 key={idx}
                 onClick={() => {

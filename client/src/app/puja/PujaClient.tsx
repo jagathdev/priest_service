@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
 import { SparklesIcon } from "@heroicons/react/24/outline";
 import {
@@ -15,7 +16,7 @@ import {
   Share2,
   Clock
 } from "lucide-react";
-import { useRouter } from "next/navigation";
+// import { useRouter } from "next/navigation";
 import WishlistButton from "@/components/common/WishlistButton";
 import { formatStartingPrice, getPriceComparison } from "@/lib/pricing";
 import PriceTag from "@/components/ui/PriceTag";
@@ -319,7 +320,7 @@ export default function PujaClient({ initialPujas }: { initialPujas?: Puja[] }) 
   const [searchQuery, setSearchQuery] = useState("");
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [shareData, setShareData] = useState<ShareData>({});
-  const router = useRouter();
+  // const router = useRouter();
 
   const openFilterModal = (tabLabel?: string) => {
     setFilterModalInitialTab(tabLabel || "");
@@ -571,10 +572,12 @@ export default function PujaClient({ initialPujas }: { initialPujas?: Puja[] }) 
                 return (
                   <div
                     key={puja._id}
-                    onClick={() => router.push(`/puja/${puja.slug || slugify(puja.title)}`)}
-                    className="bg-white rounded-2xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.12),0_2px_6px_-1px_rgba(0,0,0,0.08)] border border-gray-200/90 flex flex-col overflow-hidden group hover:shadow-[0_14px_30px_-6px_rgba(0,0,0,0.18),0_10px_12px_-6px_rgba(0,0,0,0.1)] hover:-translate-y-1 transition-all duration-300 relative cursor-pointer"
+                    className="bg-white rounded-2xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.12),0_2px_6px_-1px_rgba(0,0,0,0.08)] border border-gray-200/90 flex flex-col overflow-hidden group hover:shadow-[0_14px_30px_-6px_rgba(0,0,0,0.18),0_10px_12px_-6px_rgba(0,0,0,0.1)] hover:-translate-y-1 transition-all duration-300 relative"
                   >
-                    <div className="flex flex-col flex-1">
+                    <Link
+                      href={`/puja/${puja.slug || slugify(puja.title)}`}
+                      className="flex flex-col flex-1 cursor-pointer"
+                    >
                       <div className="relative w-full aspect-[4/3] min-h-[220px] sm:min-h-0 sm:aspect-auto sm:h-[275px] shrink-0 overflow-hidden">
                         <Image
                           src={getPujaImageUrl(puja.imageUrl)}
@@ -664,7 +667,7 @@ export default function PujaClient({ initialPujas }: { initialPujas?: Puja[] }) 
                           </div>
                         </div>
                       </div>
-                    </div>
+                    </Link>
 
                     {/* Floating Actions Overlay */}
                     <div className="absolute top-4 right-4 flex flex-col gap-2 z-10" onClick={(e) => e.stopPropagation()}>
