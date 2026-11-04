@@ -1,4 +1,5 @@
 "use client";
+import { formatDayDateMonth } from "@/lib/dateFormatter";
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -623,7 +624,7 @@ export default function PujaClient({ initialPujas }: { initialPujas?: Puja[] }) 
                             <Calendar className="w-5 h-5 text-[#d95a2b] shrink-0 mt-0.5" />
                             <div className="flex flex-col min-w-0">
                               <span className="font-bold text-gray-900 leading-snug">
-                                {puja.date}
+                                {formatDayDateMonth(puja.date) || puja.date}
                               </span>
                               {puja.subtitle && (
                                 <span className="text-gray-400 font-normal text-[11px] leading-tight truncate">

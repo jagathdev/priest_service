@@ -1,4 +1,5 @@
 "use client";
+import { formatDayDateMonth } from "@/lib/dateFormatter";
 
 import React, { useState, useMemo } from "react";
 import Image from "next/image";
@@ -438,7 +439,7 @@ export default function HomaClient({ initialHomas }: { initialHomas?: Homa[] }) 
                             {/* Info Box 1: Date & Frequency */}
                             <div className="bg-[#f8f9fa] border border-gray-100 rounded-xl px-3.5 py-2.5 mb-2 flex items-center gap-3 text-xs text-gray-700">
                               <Calendar className="w-4 h-4 text-amber-600 shrink-0" />
-                              <span className="font-medium truncate">{homa.date}</span>
+                              <span className="font-medium truncate">{formatDayDateMonth(homa.date) || homa.date}</span>
                             </div>
 
                             {/* Info Box 2: Temple Location */}

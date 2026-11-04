@@ -1,4 +1,5 @@
 "use client";
+import { formatDayDateMonth } from "@/lib/dateFormatter";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -1009,7 +1010,7 @@ function PujaCard({
               </div>
               <div className="flex flex-col min-w-0">
                 <span className="font-bold text-stone-900 leading-snug">
-                  {date}
+                  {formatDayDateMonth(date) || date}
                 </span>
                 {dateOccasion && (
                   <span className="text-stone-400 font-normal text-[11px] sm:text-xs leading-tight truncate">
