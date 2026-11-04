@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { MapPin, Calendar } from "lucide-react";
 
 interface PujaCountdownCardProps {
@@ -13,6 +13,7 @@ interface PujaCountdownCardProps {
   showTimer?: boolean;
   title?: string;
   badgeLabel?: string;
+  devoteesCount?: number | string;
   className?: string;
 }
 
@@ -32,33 +33,32 @@ const parseTargetTime = (targetStr?: string): number => {
   const trimmed = targetStr.trim();
   if (!trimmed) return NaN;
 
-  // 1. Direct JS Date parse (e.g. 2026-11-15T10:30, 2026-11-15, ISO string)
+  // 1. Direct JS Date parse
   let t = new Date(trimmed).getTime();
   if (!isNaN(t)) return t;
 
-  // 2. Format DD-MM-YYYY or DD/MM/YYYY anywhere in the string (with optional time)
-  // e.g. "08-11-2026", "Sunday, 08-11-2026", "08-11-2026 18:30"
+  // 2. Format DD-MM-YYYY or DD/MM/YYYY
   const ddmmyyyy = trimmed.match(/(\d{1,2})[-/](\d{1,2})[-/](\d{4})(?:[T\s](\d{1,2}):(\d{2})(?::(\d{2}))?)?/);
   if (ddmmyyyy) {
-    const day = ddmmyyyy[1].padStart(2, '0');
-    const month = ddmmyyyy[2].padStart(2, '0');
+    const day = ddmmyyyy[1].padStart(2, "0");
+    const month = ddmmyyyy[2].padStart(2, "0");
     const year = ddmmyyyy[3];
-    const hour = ddmmyyyy[4] ? ddmmyyyy[4].padStart(2, '0') : '23';
-    const min = ddmmyyyy[5] || '59';
-    const sec = ddmmyyyy[6] || '59';
+    const hour = ddmmyyyy[4] ? ddmmyyyy[4].padStart(2, "0") : "23";
+    const min = ddmmyyyy[5] || "59";
+    const sec = ddmmyyyy[6] || "59";
     t = new Date(`${year}-${month}-${day}T${hour}:${min}:${sec}`).getTime();
     if (!isNaN(t)) return t;
   }
 
-  // 3. Format YYYY-MM-DD anywhere in the string
+  // 3. Format YYYY-MM-DD
   const yyyymmdd = trimmed.match(/(\d{4})[-/](\d{1,2})[-/](\d{1,2})(?:[T\s](\d{1,2}):(\d{2})(?::(\d{2}))?)?/);
   if (yyyymmdd) {
     const year = yyyymmdd[1];
-    const month = yyyymmdd[2].padStart(2, '0');
-    const day = yyyymmdd[3].padStart(2, '0');
-    const hour = yyyymmdd[4] ? yyyymmdd[4].padStart(2, '0') : '23';
-    const min = yyyymmdd[5] || '59';
-    const sec = yyyymmdd[6] || '59';
+    const month = yyyymmdd[2].padStart(2, "0");
+    const day = yyyymmdd[3].padStart(2, "0");
+    const hour = yyyymmdd[4] ? yyyymmdd[4].padStart(2, "0") : "23";
+    const min = yyyymmdd[5] || "59";
+    const sec = yyyymmdd[6] || "59";
     t = new Date(`${year}-${month}-${day}T${hour}:${min}:${sec}`).getTime();
     if (!isNaN(t)) return t;
   }
@@ -69,12 +69,10 @@ const parseTargetTime = (targetStr?: string): number => {
 const calculateTimeLeft = (eventDateTime?: string, dateText?: string): TimeLeft => {
   let targetTime = parseTargetTime(eventDateTime);
 
-  // If eventDateTime is missing or invalid, try parsing dateText
   if (isNaN(targetTime) && dateText) {
     targetTime = parseTargetTime(dateText);
   }
 
-  // If no valid target date is provided from DB, do NOT show fake countdown
   if (isNaN(targetTime)) {
     return { days: 0, hours: 0, minutes: 0, seconds: 0, isEnded: true, hasTarget: false };
   }
@@ -94,15 +92,54 @@ const calculateTimeLeft = (eventDateTime?: string, dateText?: string): TimeLeft 
   return { days, hours, minutes, seconds, isEnded: false, hasTarget: true };
 };
 
+/**
+ * Formats date into: "Day, Date FullMonth [at Time]"
+ * Example: "Sunday, 8 November at 07:15 PM to 9:15 PM"
+ */
+function formatDayDateMonth(rawDate?: string): string {
+  if (!rawDate || typeof rawDate !== "string") return "";
+  const trimmed = rawDate.trim();
+  if (!trimmed) return "";
+
+  // Extract any time portion like "at 07:15 PM to 9:15 PM"
+  const timeMatch = trimmed.match(/\s+at\s+([0-9:]+\s*[APMapm]+(?:\s*to\s*[0-9:]+\s*[APMapm]+)?)/i);
+  const timeSuffix = timeMatch ? ` at ${timeMatch[1]}` : "";
+  const dateOnly = trimmed.replace(/\s+at\s+[0-9:]+\s*[APMapm]+(?:\s*to\s*[0-9:]+\s*[APMapm]+)?/i, "").trim();
+
+  // Try parsing DD-MM-YYYY or DD/MM/YYYY
+  const ddmmyyyy = dateOnly.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/);
+  let d: Date | null = null;
+
+  if (ddmmyyyy) {
+    d = new Date(parseInt(ddmmyyyy[3], 10), parseInt(ddmmyyyy[2], 10) - 1, parseInt(ddmmyyyy[1], 10));
+  } else {
+    const parsed = new Date(dateOnly);
+    if (!isNaN(parsed.getTime())) {
+      d = parsed;
+    }
+  }
+
+  if (d && !isNaN(d.getTime())) {
+    const weekday = d.toLocaleDateString("en-US", { weekday: "long" });
+    const day = d.getDate();
+    const month = d.toLocaleDateString("en-US", { month: "long" });
+    return `${weekday}, ${day} ${month}${timeSuffix}`;
+  }
+
+  // Fallback to raw input if already formatted
+  return trimmed;
+}
+
 export default function PujaCountdownCard({
   templeVenue = "Kamrup Teerth Kshetra",
   location = "Guwahati, Assam",
-  dateText = "Saturday, 10 October",
-  occasionText = "Mahalaya Amavasya",
+  dateText = "Sunday, 8 November",
+  occasionText = "Sacred Ancestral Offering",
   eventDateTime,
   showTimer = true,
-  title = "Reserve your sankalp",
-  badgeLabel = "MUHURAT ENDS IN",
+  // title = "Reserve your sankalp",
+  // badgeLabel = "Muhurat ends in",
+  devoteesCount = 150,
   className = "",
 }: PujaCountdownCardProps) {
   const [timeLeft, setTimeLeft] = useState<TimeLeft>(() =>
@@ -117,24 +154,25 @@ export default function PujaCountdownCard({
     return () => clearInterval(interval);
   }, [eventDateTime, dateText]);
 
-  // Show timer strip if admin has enabled showTimer (not false) and a valid target date was provided by backend
   const canShowTimer = showTimer !== false && timeLeft.hasTarget;
+
+  const formattedDate = useMemo(() => formatDayDateMonth(dateText), [dateText]);
 
   return (
     <div className={`w-full font-sans ${className}`}>
       {/* ── 1. Top Card Box (Temple & Date Details) ── */}
-      <div className="bg-white border border-stone-200/90 rounded-2xl p-3.5 sm:p-4 shadow-sm w-full space-y-3">
+      <div className="bg-white border border-stone-200/90 rounded-2xl p-2.5 sm:p-3.5 shadow-2xs w-full space-y-2 lg:space-y-2.5">
         {/* Row 1: Temple & Location */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5 sm:gap-3">
           <div className="text-stone-700 shrink-0">
-            <MapPin className="w-5 h-5 sm:w-6 sm:h-6" strokeWidth={1.8} />
+            <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-stone-700" strokeWidth={1.8} />
           </div>
           <div className="flex flex-wrap items-baseline gap-x-2 truncate">
-            <span className="font-bold text-stone-900 text-sm sm:text-base leading-tight">
+            <span className="font-bold text-stone-900 text-xs sm:text-sm lg:text-[14px] leading-tight">
               {templeVenue}
             </span>
             {location && (
-              <span className="text-stone-400 font-normal text-xs sm:text-sm truncate">
+              <span className="text-stone-400 font-normal text-[11px] sm:text-xs truncate">
                 {location}
               </span>
             )}
@@ -142,19 +180,20 @@ export default function PujaCountdownCard({
         </div>
 
         {/* Horizontal Divider */}
-        <div className="w-full h-[1px] bg-stone-200/80" />
+        <div className="w-full h-[1px] bg-stone-150" />
 
-        {/* Row 2: Date & Occasion */}
-        <div className="flex items-center gap-3">
+        {/* Row 2: Date & Occasion with Day Date Month Full format */}
+        <div className="flex items-center gap-2.5 sm:gap-3">
           <div className="text-stone-700 shrink-0">
-            <Calendar className="w-5 h-5 sm:w-6 sm:h-6" strokeWidth={1.8} />
+            <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-stone-700" strokeWidth={1.8} />
           </div>
-          <div className="flex flex-wrap items-baseline gap-x-2 truncate">
-            <span className="font-bold text-stone-900 text-sm sm:text-base leading-tight">
-              {dateText}
+          <div className="flex flex-wrap items-baseline gap-x-1.5 truncate">
+            <span className="font-bold text-stone-900 text-xs sm:text-sm lg:text-[14px] leading-tight">
+              {formattedDate || dateText}
             </span>
             {occasionText && (
-              <span className="text-stone-400 font-normal text-xs sm:text-sm truncate">
+              <span className="text-stone-400 font-normal text-[11px] sm:text-xs truncate">
+                <span className="text-stone-300 font-light mx-1">|</span>
                 {occasionText}
               </span>
             )}
@@ -162,65 +201,43 @@ export default function PujaCountdownCard({
         </div>
       </div>
 
-      {/* ── 2. Bottom Countdown Strip (Only shown if admin enables and data is provided) ── */}
+      {/* ── 2. Countdown & Devotee Booking Strip (Matching Reference Image) ── */}
       {canShowTimer && (
-        <div className="mt-4 pt-3 flex flex-col sm:flex-row items-center justify-between gap-4 w-full">
-          {/* Left Column: Muhurat Ends In & Reserve title */}
-          <div className="text-center sm:text-left">
-            <span className="text-[10px] sm:text-xs font-bold text-stone-500 tracking-[0.15em] uppercase block mb-0.5">
-              {badgeLabel}
+        <div className="mt-2.5 lg:mt-3 flex items-center justify-between gap-3 w-full">
+          {/* Left: Timer Box with days / hrs / mins / secs */}
+          <div className="flex flex-col items-center">
+            <div className="bg-[#FAF5F2] border border-[#F0E4D8] rounded-xl px-3 sm:px-3.5 py-1.5 shadow-2xs">
+              {/* Digits with colons */}
+              <div className="flex items-center justify-center gap-1 sm:gap-1.5 text-[#8B2516] font-mono font-bold text-base sm:text-lg lg:text-xl leading-none">
+                <span>{padZero(timeLeft.days)}</span>
+                <span className="text-[#8B2516]/60 text-xs sm:text-sm">:</span>
+                <span>{padZero(timeLeft.hours)}</span>
+                <span className="text-[#8B2516]/60 text-xs sm:text-sm">:</span>
+                <span>{padZero(timeLeft.minutes)}</span>
+                <span className="text-[#8B2516]/60 text-xs sm:text-sm">:</span>
+                <span>{padZero(timeLeft.seconds)}</span>
+              </div>
+              {/* Labels */}
+              <div className="flex items-center justify-between text-[8px] sm:text-[9px] font-medium text-[#8B2516]/75 uppercase tracking-wider mt-1 px-0.5">
+                <span>days</span>
+                <span>hrs</span>
+                <span>mins</span>
+                <span>secs</span>
+              </div>
+            </div>
+            {/* Muhurat ends in label below box */}
+            <span className="text-[10px] sm:text-[11px] font-semibold text-[#8B2516] mt-1 text-center">
+              Muhurat ends in
             </span>
-            <h3 className="font-sans font-extrabold text-stone-900 text-lg sm:text-xl leading-tight">
-              {title}
-            </h3>
           </div>
 
-          {/* Right Column: Live Countdown Boxes */}
-          <div className="flex items-center justify-center gap-1.5 sm:gap-1.5 shrink-0">
-            {/* Days */}
-            <div className="bg-[#F1F5F9] border border-slate-200 rounded-xl sm:rounded-lg px-3 sm:px-2.5 py-1.5 sm:py-1.5 text-center min-w-[56px] sm:min-w-[52px] shadow-2xs">
-              <span className="font-extrabold text-[#00B05F] text-lg sm:text-base lg:text-lg leading-none block">
-                {padZero(timeLeft.days)}
-              </span>
-              <span className="text-[9px] sm:text-[8.5px] font-bold text-stone-500 tracking-wider uppercase block mt-1 sm:mt-0.5">
-                DAYS
-              </span>
+          {/* Right: Devotees Booking Count */}
+          <div className="flex-1 pl-2 text-left">
+            <div className="font-extrabold text-[#8B2516] text-xs sm:text-sm lg:text-[15px] leading-tight">
+              {devoteesCount}+ Devotees
             </div>
-
-            <span className="text-stone-800 font-black text-base sm:text-base self-center pb-0.5">:</span>
-
-            {/* Hours */}
-            <div className="bg-[#F1F5F9] border border-slate-200 rounded-xl sm:rounded-lg px-3 sm:px-2.5 py-1.5 sm:py-1.5 text-center min-w-[56px] sm:min-w-[52px] shadow-2xs">
-              <span className="font-extrabold text-[#00B05F] text-lg sm:text-base lg:text-lg leading-none block">
-                {padZero(timeLeft.hours)}
-              </span>
-              <span className="text-[9px] sm:text-[8.5px] font-bold text-stone-500 tracking-wider uppercase block mt-1 sm:mt-0.5">
-                HOURS
-              </span>
-            </div>
-
-            <span className="text-stone-800 font-black text-base sm:text-base self-center pb-0.5">:</span>
-
-            {/* Minutes */}
-            <div className="bg-[#F1F5F9] border border-slate-200 rounded-xl sm:rounded-lg px-3 sm:px-2.5 py-1.5 sm:py-1.5 text-center min-w-[56px] sm:min-w-[52px] shadow-2xs">
-              <span className="font-extrabold text-[#00B05F] text-lg sm:text-base lg:text-lg leading-none block">
-                {padZero(timeLeft.minutes)}
-              </span>
-              <span className="text-[9px] sm:text-[8.5px] font-bold text-stone-500 tracking-wider uppercase block mt-1 sm:mt-0.5">
-                MIN
-              </span>
-            </div>
-
-            <span className="text-stone-800 font-black text-base sm:text-base self-center pb-0.5">:</span>
-
-            {/* Seconds */}
-            <div className="bg-[#F1F5F9] border border-slate-200 rounded-xl sm:rounded-lg px-3 sm:px-2.5 py-1.5 sm:py-1.5 text-center min-w-[56px] sm:min-w-[52px] shadow-2xs">
-              <span className="font-extrabold text-[#00B05F] text-lg sm:text-base lg:text-lg leading-none block">
-                {padZero(timeLeft.seconds)}
-              </span>
-              <span className="text-[9px] sm:text-[8.5px] font-bold text-stone-500 tracking-wider uppercase block mt-1 sm:mt-0.5">
-                SEC
-              </span>
+            <div className="text-[11px] sm:text-xs text-stone-500 font-medium leading-tight mt-0.5">
+              bookings done till now
             </div>
           </div>
         </div>

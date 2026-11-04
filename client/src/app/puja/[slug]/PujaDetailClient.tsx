@@ -798,9 +798,9 @@ export default function PujaDetailClient({
       <Navbar />
 
       {/* ── 1. Top Hero Section ── */}
-      <section data-reveal className="bg-[#ffffff] border-b border-[#f0e4d0] py-8 sm:py-12">
+      <section data-reveal className="bg-[#ffffff] border-b border-[#f0e4d0] py-4 sm:py-6 lg:py-4 xl:py-6">
         <div className="max-w-[1350px] mx-auto px-4 sm:px-6 lg:px-10">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
 
             {/* Left 6 Cols: Main Banner Image (Slightly Increased Width) */}
             <div className="lg:col-span-6 flex flex-col relative">
@@ -833,7 +833,7 @@ export default function PujaDetailClient({
                   heroTouchStartY.current = null;
                   heroTouchEndY.current = null;
                 }}
-                className="relative w-full aspect-[4/3] min-h-[260px] sm:min-h-0 sm:aspect-[4/3] sm:h-auto md:max-h-[460px] lg:max-h-[440px] xl:max-h-[480px] rounded-xl overflow-hidden border border-stone-200/90 shadow-md group touch-pan-y bg-stone-900"
+                className="relative w-full aspect-[4/3] min-h-[240px] sm:min-h-0 sm:aspect-[4/3] sm:h-auto md:max-h-[380px] lg:max-h-[360px] xl:max-h-[400px] rounded-xl overflow-hidden border border-stone-200/90 shadow-md group touch-pan-y bg-stone-900"
               >
                 <Image
                   src={bannerImages[activeBannerIndex] || (puja ? getPujaImageUrl(puja.imageUrl) : "/images/Ganesh-Chaturthi-Mahapuja.jpg")}
@@ -946,19 +946,19 @@ export default function PujaDetailClient({
             {/* Right 6 Cols: Details & CTA */}
             <div className="lg:col-span-6 flex flex-col lg:pl-[10px]">
               {/* Filigree Subtag */}
-              <div className="flex items-center justify-center lg:justify-start gap-2 mb-2 w-full max-w-full overflow-hidden">
+              <div className="flex items-center justify-center lg:justify-start gap-2 mb-1 lg:mb-1.5 w-full max-w-full overflow-hidden">
                 <span className="text-[#F47820] font-serif font-extrabold text-xs sm:text-[13px] tracking-wider uppercase flex items-center justify-center text-center gap-1.5 flex-wrap">
                   <span className="text-center">{badgeText}</span>
                 </span>
               </div>
 
               {/* Title */}
-              <h1 className="font-serif font-bold text-[#1f1a17] text-2xl sm:text-3xl lg:text-4xl leading-snug mb-3 text-center lg:text-left">
+              <h1 className="font-serif font-bold text-[#1f1a17] text-xl sm:text-2xl lg:text-3xl leading-tight mb-1.5 lg:mb-2 text-center lg:text-left">
                 {puja.title}
               </h1>
 
               {/* Subtitle / Description */}
-              <p className="text-stone-600 text-sm sm:text-base font-medium leading-relaxed mb-6 text-center lg:text-left">
+              <p className="text-stone-600 text-xs sm:text-sm font-medium leading-snug mb-3 lg:mb-3 text-center lg:text-left line-clamp-2">
                 {descriptionText}
               </p>
 
@@ -972,11 +972,11 @@ export default function PujaDetailClient({
                 showTimer={puja.showTimer}
                 title="Reserve your sankalp"
                 badgeLabel="MUHURAT ENDS IN"
-                className="mb-5"
+                className="mb-3 lg:mb-3.5"
               />
 
               {/* Package Selection Cards Grid */}
-              <div className="mb-5">
+              <div className="mb-3 lg:mb-3.5">
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
                   {packagesList.map((pkg, idx) => {
                     const isSelected = selectedPackage?.id === pkg.id;
@@ -989,7 +989,7 @@ export default function PujaDetailClient({
                       <div
                         key={pkg.id}
                         onClick={() => setSelectedPackageId(pkg.id)}
-                        className={`relative border-2 rounded-2xl p-3.5 sm:p-2.5 lg:p-3 cursor-pointer transition-all flex flex-row items-center justify-start min-h-[96px] sm:min-h-[80px] lg:min-h-[85px] hover:shadow-xs ${isSelected
+                        className={`relative border-2 rounded-2xl p-3.5 sm:p-2.5 lg:p-3 cursor-pointer transition-all flex flex-row items-center justify-start min-h-[80px] sm:min-h-[72px] lg:min-h-[74px] hover:shadow-xs ${isSelected
                           ? "border-[#00B05F] bg-[#F1F5F9] shadow-xs"
                           : "border-stone-200 hover:border-stone-300 bg-white"
                           }`}
@@ -1031,7 +1031,7 @@ export default function PujaDetailClient({
                         )}
 
                         {/* Avatar Image on the Left */}
-                        <div className="relative w-14 h-14 sm:w-12 sm:h-12 lg:w-13 lg:h-13 rounded-full overflow-hidden shrink-0 border border-stone-200/90 bg-white shadow-2xs mr-3.5 sm:mr-2.5 lg:mr-3">
+                        <div className="relative w-11 h-11 sm:w-10 sm:h-10 lg:w-11 lg:h-11 rounded-full overflow-hidden shrink-0 border border-stone-200/90 bg-white shadow-2xs mr-3.5 sm:mr-2.5 lg:mr-3">
                           <Image
                             src={pkgAvatar || "/images/Ganesh-Chaturthi-Mahapuja.jpg"}
                             alt={`${pkg.name || "Package"} - ${puja?.title || "Puja"}`}
@@ -1076,7 +1076,7 @@ export default function PujaDetailClient({
               <button
                 ref={heroCtaRef}
                 onClick={handleAddPujaToCart}
-                className="w-full bg-[#00B05F] hover:bg-[#008F4C] active:scale-[0.98] text-white font-extrabold text-lg sm:text-2xl py-3.5 sm:py-4.5 px-6 sm:px-8 rounded-full shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-3 sm:gap-4 mb-4 tracking-wide group"
+                className="w-full bg-[#00B05F] hover:bg-[#008F4C] active:scale-[0.98] text-white font-extrabold text-base sm:text-lg lg:text-xl py-3 sm:py-3.5 lg:py-3 px-6 sm:px-8 rounded-full shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2.5 sm:gap-3 mb-2 tracking-wide group"
               >
                 {/* <span className="tabular-nums font-black">₹{priceVal.toLocaleString("en-IN")}</span> */}
                 {/* <span className="opacity-40 font-light select-none">|</span> */}
