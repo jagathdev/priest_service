@@ -151,7 +151,7 @@ export const getUserOrders = async (req, res) => {
 
         const [pujasBatch, poojasBatch, homasBatch] = await Promise.all([
             missingServiceIds.length > 0 ? Puja.find({ _id: { $in: missingServiceIds } }).lean() : [],
-            missingServiceIds.length > 0 ? Pooja.find({ _id: { $in: missingServiceIds } }).lean() : [],
+            missingServiceIds.length > 0 ? Puja.find({ _id: { $in: missingServiceIds } }).lean() : [],
             missingServiceIds.length > 0 ? Homa.find({ _id: { $in: missingServiceIds } }).lean() : [],
         ]);
 
@@ -174,8 +174,8 @@ export const getUserOrders = async (req, res) => {
                     if (!service && (order.itemName || order.pooja)) {
                         const nameToSearch = escapeRegex(order.itemName || order.pooja);
                         service = await Puja.findOne({ title: { $regex: new RegExp(nameToSearch, "i") } }).lean() ||
-                                  await Pooja.findOne({ name: { $regex: new RegExp(nameToSearch, "i") } }).lean() ||
-                                  await Homa.findOne({ title: { $regex: new RegExp(nameToSearch, "i") } }).lean();
+                            await Puja.findOne({ name: { $regex: new RegExp(nameToSearch, "i") } }).lean() ||
+                            await Homa.findOne({ title: { $regex: new RegExp(nameToSearch, "i") } }).lean();
                     }
 
                     if (service) {

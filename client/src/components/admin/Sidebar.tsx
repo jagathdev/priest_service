@@ -71,7 +71,7 @@ export default function Sidebar() {
       <div className={`fixed inset-y-0 left-0 z-50 flex h-full w-64 flex-col border-r border-gray-200 bg-white transform transition-transform duration-300 ease-in-out md:static md:translate-x-0 ${isOpen ? "translate-x-0" : "-translate-x-full"}`}>
         <div className="relative">
           <Link
-            href="/admin/profile"
+            href="/admin"
             onClick={() => setIsOpen(false)}
             className="flex flex-col items-center justify-center border-b border-gray-100 bg-success hover:bg-[#058a51] transition-colors py-6"
           >

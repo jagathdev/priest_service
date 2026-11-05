@@ -1,8 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo } from "react";
-import Image from "next/image";
-import Link from "next/link";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
   UploadCloud,
@@ -18,8 +16,6 @@ import {
   FileImage,
   HardDrive,
   Layers,
-  ArrowUpDown,
-  Sparkles,
 } from "lucide-react";
 
 interface MediaItem {
@@ -34,7 +30,7 @@ interface MediaItem {
 
 export default function MediaManagerPage() {
   const router = useRouter();
-  const [authorized, setAuthorized] = useState(false);
+  const [_authorized, setAuthorized] = useState(false);
   const [mediaList, setMediaList] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -73,7 +69,7 @@ export default function MediaManagerPage() {
   const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8564";
 
   // Fetch all media
-  const fetchMedia = async () => {
+  const fetchMedia = useCallback(async () => {
     try {
       setLoading(true);
       const res = await fetch(`${API_BASE}/api/upload`);
@@ -86,15 +82,15 @@ export default function MediaManagerPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [API_BASE]);
 
   useEffect(() => {
     // Check if user is logged in as admin
     const hasAdminToken =
       typeof document !== "undefined" &&
       (document.cookie.includes("adminToken=") ||
-       localStorage.getItem("adminToken") ||
-       localStorage.getItem("token"));
+        localStorage.getItem("adminToken") ||
+        localStorage.getItem("token"));
 
     if (!hasAdminToken) {
       router.replace("/admin/login");
@@ -102,7 +98,7 @@ export default function MediaManagerPage() {
       setAuthorized(true);
       fetchMedia();
     }
-  }, [router]);
+  }, [router, fetchMedia]);
 
   // Filter & Search
   const filteredMedia = useMemo(() => {
@@ -450,6 +446,7 @@ export default function MediaManagerPage() {
                 >
                   {/* Thumbnail Container */}
                   <div className="relative aspect-[4/3] w-full bg-slate-100 overflow-hidden border-b border-slate-100">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={fullUrl}
                       alt={item.originalName || item.filename}
@@ -492,11 +489,10 @@ export default function MediaManagerPage() {
                     <button
                       type="button"
                       onClick={() => handleCopyLink(item.url)}
-                      className={`w-full flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
-                        isCopied
+                      className={`w-full flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${isCopied
                           ? "bg-emerald-50 border-emerald-300 text-[#00B05F]"
                           : "bg-slate-50 border-slate-200/80 hover:bg-slate-100 text-slate-700"
-                      }`}
+                        }`}
                     >
                       <span className="truncate max-w-[160px] text-[11px] font-mono text-slate-500">
                         {item.url}
@@ -578,11 +574,10 @@ export default function MediaManagerPage() {
               {/* File Dropzone */}
               <div
                 onClick={() => fileInputRef.current?.click()}
-                className={`border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition-all ${
-                  previewUrl
+                className={`border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition-all ${previewUrl
                     ? "border-emerald-400 bg-emerald-50/20"
                     : "border-slate-300 hover:border-[#00B05F] bg-slate-50/50 hover:bg-slate-50"
-                }`}
+                  }`}
               >
                 <input
                   ref={fileInputRef}
@@ -594,6 +589,7 @@ export default function MediaManagerPage() {
 
                 {previewUrl ? (
                   <div className="flex flex-col items-center">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={previewUrl}
                       alt="Upload Preview"

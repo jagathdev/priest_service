@@ -7,14 +7,11 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   ArrowDownTrayIcon,
-  FunnelIcon,
   SparklesIcon,
   XMarkIcon,
   CheckCircleIcon,
   ExclamationCircleIcon,
-  TagIcon,
   PhoneIcon,
-  UserGroupIcon,
 } from "@heroicons/react/24/outline";
 
 // WhatsApp SVG Icon

@@ -103,10 +103,11 @@ export const validatePromoCode = async ({
     }
 
     const normalizedServiceType = normalizeServiceType(serviceType);
+    const promoService = normalizeServiceType(promo.applicableServices);
 
     if (
         promo.applicableServices !== "ALL" &&
-        promo.applicableServices !== normalizedServiceType
+        promoService !== normalizedServiceType
     ) {
         const error = new Error(
             `This promo code is not valid for ${normalizedServiceType === "HOMA" ? "Homas" : "Pujas"}`
