@@ -19,6 +19,16 @@ import {
   ArrowPathIcon,
 } from "@heroicons/react/24/outline";
 
+export const getAdminBaseApiUrl = (): string => {
+  if (typeof window !== "undefined") {
+    const host = window.location.hostname;
+    if (host === "localhost" || host === "127.0.0.1") {
+      return process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8564";
+    }
+  }
+  return process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
+};
+
 /** Puja card date stored as DD-MM-YYYY; native date input uses YYYY-MM-DD */
 function ddmmyyyyToIso(value: string): string {
   const m = String(value).trim().match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
@@ -255,7 +265,7 @@ export default function ContentManager({
     setUploadErrors((prev) => ({ ...prev, [key]: null }));
 
     try {
-      let expressBase = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
+      let expressBase = getAdminBaseApiUrl();
       if (!expressBase.endsWith("/api")) {
         expressBase += "/api";
       }
@@ -319,7 +329,7 @@ export default function ContentManager({
     const filename = url.split("/").pop();
     if (filename && !url.startsWith("data:")) {
       try {
-        let expressBase = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
+        let expressBase = getAdminBaseApiUrl();
         if (!expressBase.endsWith("/api")) {
           expressBase += "/api";
         }
@@ -476,7 +486,7 @@ export default function ContentManager({
   }, []);
 
   const getEndpoint = useCallback((itemType: string, id?: string | null): string => {
-    let expressBase = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
+    let expressBase = getAdminBaseApiUrl();
     if (!expressBase.endsWith('/api')) {
       expressBase += '/api';
     }
@@ -755,7 +765,7 @@ export default function ContentManager({
 
     setSubmitting(true);
     try {
-      let expressBase = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
+      let expressBase = getAdminBaseApiUrl();
       if (!expressBase.endsWith('/api')) {
         expressBase += '/api';
       }
@@ -2317,7 +2327,7 @@ export default function ContentManager({
                 onClick={async () => {
                   const nextStatus = viewingReview.approved ? false : true;
                   const payload = { ...viewingReview, approved: nextStatus }; delete payload._id;
-                  const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com"}/api/admin/content?type=${type}&id=${viewingReview._id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+                  const res = await fetch(`${getAdminBaseApiUrl()}/api/admin/content?type=${type}&id=${viewingReview._id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
                   if (res.ok) { fetchItems(); setViewingReview({ ...viewingReview, approved: nextStatus }); }
                 }}
                 className={`rounded-md border px-4 py-1.5 text-sm font-semibold ${viewingReview.approved ? "border-red-300 text-red-600 hover:bg-red-50" : "border-green-400 text-green-700 hover:bg-green-50"
