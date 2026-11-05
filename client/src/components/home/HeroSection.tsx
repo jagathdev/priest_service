@@ -392,7 +392,7 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
               })}
             </div>
 
-            {/* Left Navigation Arrow (Centered half-in, half-out on the left edge of image) */}
+            {/* Left Navigation Arrow (Centered half-in, half-out on the left edge of image) - Hidden on mobile (< sm) */}
             {totalSlides > 1 && (
               <button
                 type="button"
@@ -402,13 +402,13 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
                   prevSlide();
                 }}
                 aria-label="Previous slide"
-                className="absolute -left-4 sm:-left-5 lg:-left-5 xl:-left-5 top-1/2 -translate-y-1/2 z-40 flex h-9 w-9 sm:h-10 sm:w-10 xl:h-11 xl:w-11 items-center justify-center rounded-full bg-white/95 hover:bg-white text-stone-800 border border-stone-200/90 shadow-xl transition-all duration-200 active:scale-95 cursor-pointer hover:scale-110 backdrop-blur-sm"
+                className="absolute -left-4 sm:-left-5 lg:-left-5 xl:-left-5 top-1/2 -translate-y-1/2 z-40 hidden sm:flex h-9 w-9 sm:h-10 sm:w-10 xl:h-11 xl:w-11 items-center justify-center rounded-full bg-white/95 hover:bg-white text-stone-800 border border-stone-200/90 shadow-xl transition-all duration-200 active:scale-95 cursor-pointer hover:scale-110 backdrop-blur-sm"
               >
                 <ChevronLeft className="w-5 h-5 xl:w-6 xl:h-6 text-stone-800" strokeWidth={2.5} />
               </button>
             )}
 
-            {/* Right Navigation Arrow (Centered half-in, half-out on the right edge of image) */}
+            {/* Right Navigation Arrow (Centered half-in, half-out on the right edge of image) - Hidden on mobile (< sm) */}
             {totalSlides > 1 && (
               <button
                 type="button"
@@ -418,7 +418,7 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
                   nextSlide();
                 }}
                 aria-label="Next slide"
-                className="absolute -right-4 sm:-right-5 lg:-right-5 xl:-right-5 top-1/2 -translate-y-1/2 z-40 flex h-9 w-9 sm:h-10 sm:w-10 xl:h-11 xl:w-11 items-center justify-center rounded-full bg-white/95 hover:bg-white text-stone-800 border border-stone-200/90 shadow-xl transition-all duration-200 active:scale-95 cursor-pointer hover:scale-110 backdrop-blur-sm"
+                className="absolute -right-4 sm:-right-5 lg:-right-5 xl:-right-5 top-1/2 -translate-y-1/2 z-40 hidden sm:flex h-9 w-9 sm:h-10 sm:w-10 xl:h-11 xl:w-11 items-center justify-center rounded-full bg-white/95 hover:bg-white text-stone-800 border border-stone-200/90 shadow-xl transition-all duration-200 active:scale-95 cursor-pointer hover:scale-110 backdrop-blur-sm"
               >
                 <ChevronRight className="w-5 h-5 xl:w-6 xl:h-6 text-stone-800" strokeWidth={2.5} />
               </button>

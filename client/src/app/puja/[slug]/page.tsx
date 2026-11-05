@@ -1,3 +1,6 @@
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 import { Metadata } from 'next';
 import { getPujaBySlug } from '@/lib/pujas';
 import PujaDetailClient from './PujaDetailClient';

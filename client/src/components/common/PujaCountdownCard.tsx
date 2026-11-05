@@ -111,16 +111,22 @@ function formatDayDateMonth(rawDate?: string): string {
   const timeSuffix = timeMatch ? ` at ${timeMatch[1]}` : "";
   const dateOnly = trimmed.replace(/\s+at\s+[0-9:]+\s*[APMapm]+(?:\s*to\s*[0-9:]+\s*[APMapm]+)?/i, "").trim();
 
-  // Try parsing DD-MM-YYYY or DD/MM/YYYY
-  const ddmmyyyy = dateOnly.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/);
   let d: Date | null = null;
 
+  // 1. Match DD-MM-YYYY or DD/MM/YYYY
+  const ddmmyyyy = dateOnly.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/);
   if (ddmmyyyy) {
     d = new Date(parseInt(ddmmyyyy[3], 10), parseInt(ddmmyyyy[2], 10) - 1, parseInt(ddmmyyyy[1], 10));
   } else {
-    const parsed = new Date(dateOnly);
-    if (!isNaN(parsed.getTime())) {
-      d = parsed;
+    // 2. Match YYYY-MM-DD
+    const yyyymmdd = dateOnly.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/);
+    if (yyyymmdd) {
+      d = new Date(parseInt(yyyymmdd[1], 10), parseInt(yyyymmdd[2], 10) - 1, parseInt(yyyymmdd[3], 10));
+    } else {
+      const parsed = new Date(dateOnly);
+      if (!isNaN(parsed.getTime())) {
+        d = parsed;
+      }
     }
   }
 
@@ -131,7 +137,6 @@ function formatDayDateMonth(rawDate?: string): string {
     return `${weekday}, ${day} ${month}${timeSuffix}`;
   }
 
-  // Fallback to raw input if already formatted
   return trimmed;
 }
 
