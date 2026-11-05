@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import PujaCountdownCard from "@/components/common/PujaCountdownCard";
 import {
   ChevronLeft,
   ChevronRight,
@@ -244,19 +243,19 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
       </div>
 
       <div
-        className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-5 lg:gap-7 xl:gap-9 group"
+        className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-6 lg:gap-8 xl:gap-10 group"
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={handleTouchEnd}
       >
 
-        {/* ── Left Content (Text & CTA) ── 40% width on xl+, 45% on lg ── */}
-        <div className="order-2 lg:order-1 w-full lg:w-[45%] xl:w-[40%] text-center lg:text-left flex flex-col justify-start items-center lg:items-start h-auto min-h-0 pt-0.5 pb-1 shrink-0 relative z-10">
+        {/* ── Left Content (Text & CTA) ── 44% width on xl+, 45% on lg ── */}
+        <div className="order-2 lg:order-1 w-full lg:w-[45%] xl:w-[44%] text-center lg:text-left flex flex-col justify-center items-center lg:items-start pt-1 pb-1 shrink-0 relative z-10">
 
           {/* Top Block: Always starts at fixed top position */}
           <div className="flex flex-col items-center lg:items-start text-center lg:text-left w-full">
             {/* Top Sub-header Badge with Custom Vector Lotus SVG (Desktop lg+ only) */}
-            <div className="hidden lg:flex items-center justify-start gap-2 mb-1.5 lg:mb-2 xl:mb-2.5">
+            <div className="hidden lg:flex items-center justify-start gap-2.5 mb-2.5 xl:mb-3">
               <Sparkles className="w-4 h-4 text-accent shrink-0" />
               <span className="text-[#881337] font-bold text-xs xl:text-sm tracking-[0.15em] uppercase">
                 {current.badge}
@@ -264,42 +263,27 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
             </div>
 
             {/* Main Title */}
-            <h1 className="text-2xl sm:text-3xl lg:text-[34px] xl:text-[40px] font-serif font-bold text-[#1f1a17] leading-[1.18] tracking-tight mb-2 lg:mb-2.5 xl:mb-3 transition-all duration-300 max-w-[620px]">
+            <h1 className="text-3xl sm:text-4xl lg:text-[38px] xl:text-[44px] font-serif font-bold text-[#1f1a17] leading-[1.18] tracking-tight mb-3 sm:mb-3.5 transition-all duration-300 max-w-[620px]">
               {current.title}
             </h1>
 
             {/* Subtitle / Description */}
-            <p className="text-stone-600 text-xs sm:text-sm lg:text-[13.5px] xl:text-[15px] leading-relaxed max-w-[500px] mx-auto lg:mx-0 font-normal">
+            <p className="text-stone-600 text-sm sm:text-base lg:text-[15px] xl:text-[16px] leading-relaxed max-w-[540px] mx-auto lg:mx-0 font-normal">
               {current.subtitle}
             </p>
-
-            {/* Dynamic Countdown & Temple Details fetched from Dashboard */}
-            {(current.eventDateTime || current.templeVenue) && (
-              <div className="w-full mt-3 max-w-[580px]">
-                <PujaCountdownCard
-                  templeVenue={current.templeVenue || "Kamrup Teerth Kshetra"}
-                  location={current.location || "Guwahati, Assam"}
-                  dateText={current.eventDateText || "Saturday, 10 October"}
-                  occasionText={current.badge || "Mahalaya Amavasya"}
-                  eventDateTime={current.eventDateTime}
-                  title="Reserve your sankalp"
-                  badgeLabel="MUHURAT ENDS IN"
-                />
-              </div>
-            )}
           </div>
 
           {/* Bottom Block: CTA Button & Social Proof Banner */}
-          <div className="mt-3 sm:mt-4 lg:mt-3 xl:mt-4 flex flex-col items-center lg:items-start text-center lg:text-left w-full">
+          <div className="mt-5 sm:mt-6 lg:mt-6 xl:mt-7 flex flex-col items-center lg:items-start text-center lg:text-left w-full">
             {/* CTA Button */}
-            <div className="mb-2.5 sm:mb-3 lg:mb-3.5 w-full flex justify-center lg:justify-start">
+            <div className="mb-3.5 sm:mb-4 lg:mb-4 w-full flex justify-center lg:justify-start">
               <Link
                 href={current.ctaLink}
-                className="inline-flex items-center justify-between gap-4 sm:gap-5 bg-[#00B05F] hover:bg-[#008F4C] active:scale-95 text-white font-extrabold text-sm sm:text-base px-6 sm:px-7 py-2.5 sm:py-3 rounded-full shadow-lg shadow-[#008F4C]/25 transition-all duration-200 group w-auto min-w-[210px] sm:min-w-[230px]"
+                className="inline-flex items-center justify-between gap-5 bg-[#00B05F] hover:bg-[#008F4C] active:scale-95 text-white font-extrabold text-base sm:text-lg px-7 sm:px-8 py-3 sm:py-3.5 rounded-full shadow-lg shadow-[#008F4C]/25 transition-all duration-200 group w-auto min-w-[240px] sm:min-w-[260px]"
               >
                 <span className="tracking-normal font-sans font-bold">{current.ctaText || "Book My Puja"} </span>
-                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white text-[#0f3456] flex items-center justify-center shadow-xs shrink-0 group-hover:translate-x-0.5 transition-transform">
-                  <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#0f3456]" strokeWidth={3} />
+                <div className="w-8 h-8 rounded-full bg-white text-[#0f3456] flex items-center justify-center shadow-xs shrink-0 group-hover:translate-x-0.5 transition-transform">
+                  <ChevronRight className="w-4 h-4 text-[#0f3456]" strokeWidth={3} />
                 </div>
               </Link>
             </div>
@@ -307,136 +291,139 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
             {/* ── MOBILE ONLY (< sm / < 640px): Tagline + 3-Stat Horizontal Row ── */}
             <div className="flex sm:hidden flex-col items-center w-full max-w-[500px] mx-auto">
               {/* Tagline */}
-              <div className="flex items-center justify-center gap-1.5 mb-2 text-stone-600">
-                <Sun className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                <p className="text-[11px] font-semibold text-stone-700 tracking-tight">
+              <div className="flex items-center justify-center gap-1.5 mb-2.5 text-stone-600">
+                <Sun className="w-4 h-4 text-amber-500 shrink-0" />
+                <p className="text-xs font-semibold text-stone-700 tracking-tight">
                   One of India&apos;s most loved devotional platforms
                 </p>
               </div>
 
               {/* 3-Stat Trust Card */}
-              <div className="border border-stone-200/90 bg-white/95 backdrop-blur-sm rounded-xl py-2 px-2.5 shadow-sm flex items-center justify-between w-full">
+              <div className="border border-stone-200/90 bg-white/95 backdrop-blur-sm rounded-xl py-2.5 px-3 shadow-sm flex items-center justify-between w-full">
                 <div className="flex-1 text-center px-1">
-                  <p className="text-[#00B05F] font-black text-sm leading-none">10M+</p>
-                  <p className="text-[9px] text-stone-500 font-medium mt-0.5 leading-tight">Pujas performed</p>
+                  <p className="text-[#00B05F] font-black text-base leading-none">10M+</p>
+                  <p className="text-[9px] text-stone-500 font-medium mt-1 leading-tight">Pujas performed</p>
                 </div>
 
-                <div className="w-[1px] h-6 bg-stone-200 shrink-0" />
+                <div className="w-[1px] h-7 bg-stone-200 shrink-0" />
 
                 <div className="flex-1 text-center px-1">
-                  <p className="text-[#00B05F] font-black text-sm leading-none">180+</p>
-                  <p className="text-[9px] text-stone-500 font-medium mt-0.5 leading-tight">Scholars & priests</p>
+                  <p className="text-[#00B05F] font-black text-base leading-none">180+</p>
+                  <p className="text-[9px] text-stone-500 font-medium mt-1 leading-tight">Scholars & priests</p>
                 </div>
 
-                <div className="w-[1px] h-6 bg-stone-200 shrink-0" />
+                <div className="w-[1px] h-7 bg-stone-200 shrink-0" />
 
                 <div className="flex-1 text-center px-1">
-                  <p className="text-[#00B05F] font-black text-sm leading-none">25+</p>
-                  <p className="text-[9px] text-stone-500 font-medium mt-0.5 leading-tight">Years of expertise</p>
+                  <p className="text-[#00B05F] font-black text-base leading-none">25+</p>
+                  <p className="text-[9px] text-stone-500 font-medium mt-1 leading-tight">Years of expertise</p>
                 </div>
               </div>
             </div>
 
             {/* ── TABLET & LAPTOP (sm+ / >= 640px): Standard Trust Bar ── */}
-            <div className="hidden sm:flex border border-stone-200/90 bg-white/95 backdrop-blur-sm rounded-xl py-1.5 px-2 lg:px-2.5 xl:px-3 shadow-sm items-center justify-between gap-1.5 lg:gap-2 xl:gap-2.5 w-full max-w-full">
+            <div className="hidden sm:flex border border-stone-200/90 bg-white/95 backdrop-blur-sm rounded-xl py-2 px-2.5 lg:px-3 xl:px-3.5 shadow-sm items-center justify-between gap-2 lg:gap-2.5 xl:gap-3 w-full max-w-full">
               {/* Sun Icon Section */}
               <div className="flex items-center gap-1.5 shrink-0">
-                <Sun className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-amber-500 shrink-0" />
-                <p className="text-[9px] sm:text-[9.5px] xl:text-[10.5px] text-stone-900 font-bold leading-tight text-left">
+                <Sun className="w-4 h-4 sm:w-5 sm:h-5 text-amber-500 shrink-0" />
+                <p className="text-[9.5px] sm:text-[10px] xl:text-[11px] text-stone-900 font-bold leading-tight text-left">
                   One of India&apos;s most<br />loved devotional<br />platforms
                 </p>
               </div>
 
-              <div className="w-[1px] h-5 sm:h-6 bg-stone-200 shrink-0" />
+              <div className="w-[1px] h-6 sm:h-7 bg-stone-200 shrink-0" />
 
               {/* Devotees Count */}
               <div className="flex-1 text-center px-0.5 sm:px-1 shrink-0">
-                <p className="text-[#0f3456] font-black text-xs sm:text-sm lg:text-[15px] xl:text-base leading-none">10M+</p>
-                <p className="text-[7.5px] sm:text-[8px] xl:text-[9px] text-stone-500 font-medium mt-0.5 whitespace-nowrap">Pujas performed</p>
+                <p className="text-[#0f3456] font-black text-xs sm:text-sm lg:text-base xl:text-lg leading-none">10M+</p>
+                <p className="text-[8px] sm:text-[8.5px] xl:text-[9.5px] text-stone-500 font-medium mt-0.5 whitespace-nowrap">Pujas performed</p>
               </div>
 
-              <div className="w-[1px] h-5 sm:h-6 bg-stone-200 shrink-0" />
+              <div className="w-[1px] h-6 sm:h-7 bg-stone-200 shrink-0" />
 
               {/* Scholars and priests */}
               <div className="flex-1 text-center px-0.5 sm:px-1 shrink-0">
-                <p className="text-[#0f3456] font-black text-xs sm:text-sm lg:text-[15px] xl:text-base leading-none">180+</p>
-                <p className="text-[7.5px] sm:text-[8px] xl:text-[9px] text-stone-500 font-medium mt-0.5 whitespace-nowrap">Scholars & priests</p>
+                <p className="text-[#0f3456] font-black text-xs sm:text-sm lg:text-base xl:text-lg leading-none">180+</p>
+                <p className="text-[8px] sm:text-[8.5px] xl:text-[9.5px] text-stone-500 font-medium mt-0.5 whitespace-nowrap">Scholars & priests</p>
               </div>
 
-              <div className="w-[1px] h-5 sm:h-6 bg-stone-200 shrink-0" />
+              <div className="w-[1px] h-6 sm:h-7 bg-stone-200 shrink-0" />
 
               {/* 25+ years of Vedic expertise */}
               <div className="flex-1 text-center px-0.5 sm:px-1 shrink-0">
-                <p className="text-[#0f3456] font-black text-xs sm:text-sm lg:text-[15px] xl:text-base leading-none">25+</p>
-                <p className="text-[7.5px] sm:text-[8px] xl:text-[9px] text-stone-500 font-medium mt-0.5 whitespace-nowrap">Years of expertise</p>
+                <p className="text-[#0f3456] font-black text-xs sm:text-sm lg:text-base xl:text-lg leading-none">25+</p>
+                <p className="text-[8px] sm:text-[8.5px] xl:text-[9.5px] text-stone-500 font-medium mt-0.5 whitespace-nowrap">Years of expertise</p>
               </div>
             </div>
           </div>
 
         </div>
 
-        {/* ── Right Content (Hero Banner Card) ── 60% on xl+, 55% on lg ── */}
-        <div className="order-1 lg:order-2 w-full lg:w-[55%] xl:w-[60%] shrink-0 flex flex-col items-center relative z-20 px-3 sm:px-5 xl:px-6">
+        {/* ── Right Content (Hero Banner Card) ── 55% on lg+ ── */}
+        <div className="order-1 lg:order-2 w-full lg:w-[55%] xl:w-[54%] shrink-0 flex flex-col items-center relative z-20 px-4 sm:px-6">
 
-          {/* Smooth Fade Carousel Viewport */}
-          <div className="relative w-full aspect-[4/3] min-h-[240px] sm:aspect-auto sm:h-[350px] md:h-[390px] lg:h-[340px] xl:h-[415px] rounded-2xl min-[375px]:rounded-3xl overflow-hidden shadow-2xl border border-stone-200/80 bg-stone-100 shrink-0 group/carousel">
-            {bannerSlides.map((slide, idx) => {
-              const isActive = idx === currentSafeSlideIndex;
-              return (
-                <div
-                  key={`${slide.id || "slide"}-${idx}`}
-                  className={`absolute inset-0 w-full h-full transition-opacity duration-700 ease-in-out ${isActive ? "opacity-100 z-10 pointer-events-auto" : "opacity-0 z-0 pointer-events-none"}`}
-                >
-                  <Link
-                    href={slide.ctaLink}
-                    className="w-full h-full block relative cursor-pointer"
+          {/* Carousel Viewport Container with Overlapping Navigation Arrows */}
+          <div className="relative w-full">
+            {/* Smooth Fade Carousel Viewport */}
+            <div className="relative w-full aspect-[4/3] min-h-[240px] sm:aspect-auto sm:h-[350px] md:h-[390px] lg:h-[340px] xl:h-[415px] rounded-2xl min-[375px]:rounded-3xl overflow-hidden shadow-2xl border border-stone-200/80 bg-stone-100 group/carousel">
+              {bannerSlides.map((slide, idx) => {
+                const isActive = idx === currentSafeSlideIndex;
+                return (
+                  <div
+                    key={`${slide.id || "slide"}-${idx}`}
+                    className={`absolute inset-0 w-full h-full transition-opacity duration-700 ease-in-out ${isActive ? "opacity-100 z-10 pointer-events-auto" : "opacity-0 z-0 pointer-events-none"}`}
                   >
-                    {/* Full-bleed Banner Image with 1024 Specific Media Query */}
-                    <Image
-                      src={slide.image}
-                      alt={slide.title}
-                      fill
-                      unoptimized
-                      priority={idx === 0}
-                      className="w-full h-full object-cover object-center"
-                    />
-                  </Link>
-                </div>
-              );
-            })}
+                    <Link
+                      href={slide.ctaLink}
+                      className="w-full h-full block relative cursor-pointer"
+                    >
+                      {/* Full-bleed Banner Image with 1024 Specific Media Query */}
+                      <Image
+                        src={slide.image}
+                        alt={slide.title}
+                        fill
+                        unoptimized
+                        priority={idx === 0}
+                        className="w-full h-full object-cover object-center"
+                      />
+                    </Link>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Left Navigation Arrow (Centered half-in, half-out on the left edge of image) */}
+            {totalSlides > 1 && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  prevSlide();
+                }}
+                aria-label="Previous slide"
+                className="absolute -left-4 sm:-left-5 lg:-left-5 xl:-left-5 top-1/2 -translate-y-1/2 z-40 flex h-9 w-9 sm:h-10 sm:w-10 xl:h-11 xl:w-11 items-center justify-center rounded-full bg-white/95 hover:bg-white text-stone-800 border border-stone-200/90 shadow-xl transition-all duration-200 active:scale-95 cursor-pointer hover:scale-110 backdrop-blur-sm"
+              >
+                <ChevronLeft className="w-5 h-5 xl:w-6 xl:h-6 text-stone-800" strokeWidth={2.5} />
+              </button>
+            )}
+
+            {/* Right Navigation Arrow (Centered half-in, half-out on the right edge of image) */}
+            {totalSlides > 1 && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  nextSlide();
+                }}
+                aria-label="Next slide"
+                className="absolute -right-4 sm:-right-5 lg:-right-5 xl:-right-5 top-1/2 -translate-y-1/2 z-40 flex h-9 w-9 sm:h-10 sm:w-10 xl:h-11 xl:w-11 items-center justify-center rounded-full bg-white/95 hover:bg-white text-stone-800 border border-stone-200/90 shadow-xl transition-all duration-200 active:scale-95 cursor-pointer hover:scale-110 backdrop-blur-sm"
+              >
+                <ChevronRight className="w-5 h-5 xl:w-6 xl:h-6 text-stone-800" strokeWidth={2.5} />
+              </button>
+            )}
           </div>
-
-          {/* Left Navigation Arrow (Outside Image Card - Tablet & Laptop/Desktop) */}
-          {totalSlides > 1 && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                prevSlide();
-              }}
-              aria-label="Previous slide"
-              className="absolute left-0 sm:left-1 md:left-1.5 lg:left-1 top-[calc(50%-18px)] -translate-y-1/2 z-40 hidden sm:flex h-9 w-9 xl:h-11 xl:w-11 items-center justify-center rounded-full bg-white/95 hover:bg-white text-stone-800 border border-stone-200/90 shadow-xl transition-all duration-200 active:scale-95 cursor-pointer hover:scale-110 backdrop-blur-sm"
-            >
-              <ChevronLeft className="w-5 h-5 xl:w-6 xl:h-6 text-stone-800" strokeWidth={2.5} />
-            </button>
-          )}
-
-          {/* Right Navigation Arrow (Outside Image Card - Tablet & Laptop/Desktop) */}
-          {totalSlides > 1 && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                nextSlide();
-              }}
-              aria-label="Next slide"
-              className="absolute right-0 sm:right-1 md:right-1.5 lg:right-1 top-[calc(50%-18px)] -translate-y-1/2 z-40 hidden sm:flex h-9 w-9 xl:h-11 xl:w-11 items-center justify-center rounded-full bg-white/95 hover:bg-white text-stone-800 border border-stone-200/90 shadow-xl transition-all duration-200 active:scale-95 cursor-pointer hover:scale-110 backdrop-blur-sm"
-            >
-              <ChevronRight className="w-5 h-5 xl:w-6 xl:h-6 text-stone-800" strokeWidth={2.5} />
-            </button>
-          )}
 
           {/* Slider Dots Navigation inside Hero - Centered directly below the image */}
           <div className="flex items-center justify-center gap-2 mt-2.5 sm:mt-3">
