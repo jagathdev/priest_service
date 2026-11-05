@@ -96,10 +96,37 @@ export const deleteImage = async (req, res) => {
 
 /**
  * Get All Uploaded Images (Media Library)
- * Returns all uploaded images stored in MongoDB
+ * Returns all uploaded images stored in MongoDB, synchronized with files on disk
  */
 export const getAllMedia = async (_req, res) => {
   try {
+    // Scan uploadDir to ensure any physical file has a Media record
+    if (fs.existsSync(uploadDir)) {
+      const diskFiles = fs.readdirSync(uploadDir);
+      for (const file of diskFiles) {
+        const filePath = path.join(uploadDir, file);
+        const stats = fs.statSync(filePath);
+        if (stats.isFile()) {
+          const ext = path.extname(file).toLowerCase();
+          if ([".jpg", ".jpeg", ".png", ".webp"].includes(ext)) {
+            const mime = ext === ".png" ? "image/png" : ext === ".webp" ? "image/webp" : "image/jpeg";
+            await Media.findOneAndUpdate(
+              { filename: file },
+              {
+                filename: file,
+                originalName: file,
+                url: `/api/images/${file}`,
+                mimeType: mime,
+                size: stats.size,
+                uploadedBy: "admin",
+              },
+              { upsert: true, setDefaultsOnInsert: true }
+            );
+          }
+        }
+      }
+    }
+
     const mediaList = await Media.find().sort({ createdAt: -1 });
     return res.status(200).json({
       success: true,
@@ -111,6 +138,119 @@ export const getAllMedia = async (_req, res) => {
     return res.status(500).json({
       success: false,
       message: error.message || "Failed to fetch media library.",
+    });
+  }
+};
+
+/**
+ * Edit / Rename Image Controller
+ * Renames physical file on disk and updates MongoDB record
+ */
+export const editImage = async (req, res) => {
+  try {
+    const oldFilename = path.basename(req.params.filename);
+    const { newName } = req.body;
+
+    if (!newName || typeof newName !== "string" || !newName.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "New image name is required.",
+      });
+    }
+
+    const ext = path.extname(oldFilename).toLowerCase();
+    let sanitizedBase = newName
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9-_]/g, "-")
+      .replace(/-+/g, "-")
+      .replace(/^-|-$/g, "");
+
+    if (!sanitizedBase) sanitizedBase = "image";
+    const targetFilename = `${sanitizedBase}${ext}`;
+
+    if (oldFilename === targetFilename) {
+      const existing = await Media.findOne({ filename: oldFilename });
+      return res.status(200).json({
+        success: true,
+        message: "No changes needed (same filename).",
+        data: existing,
+      });
+    }
+
+    const oldFilePath = path.join(uploadDir, oldFilename);
+    const newFilePath = path.join(uploadDir, targetFilename);
+
+    if (fs.existsSync(newFilePath)) {
+      return res.status(409).json({
+        success: false,
+        message: `An image with the name "${targetFilename}" already exists.`,
+      });
+    }
+
+    // Rename file on disk if it exists
+    if (fs.existsSync(oldFilePath)) {
+      fs.renameSync(oldFilePath, newFilePath);
+    }
+
+    // Update in MongoDB
+    const updatedMedia = await Media.findOneAndUpdate(
+      { filename: oldFilename },
+      {
+        filename: targetFilename,
+        originalName: `${sanitizedBase}${ext}`,
+        url: `/api/images/${targetFilename}`,
+      },
+      { returnDocument: "after" }
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: `Image successfully renamed to "${targetFilename}".`,
+      data: updatedMedia,
+    });
+  } catch (error) {
+    console.error("Edit image controller error:", error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Failed to edit image.",
+    });
+  }
+};
+
+/**
+ * Delete All Uploaded Images
+ * Wipes all files from server/public/images and clears Media collection
+ */
+export const deleteAllMedia = async (_req, res) => {
+  try {
+    let deletedFilesCount = 0;
+
+    // Delete physical files
+    if (fs.existsSync(uploadDir)) {
+      const files = fs.readdirSync(uploadDir);
+      for (const file of files) {
+        const filePath = path.join(uploadDir, file);
+        if (fs.statSync(filePath).isFile()) {
+          fs.unlinkSync(filePath);
+          deletedFilesCount++;
+        }
+      }
+    }
+
+    // Delete DB records
+    const deleteResult = await Media.deleteMany({});
+
+    return res.status(200).json({
+      success: true,
+      message: `All images deleted successfully (${deletedFilesCount} files removed from storage, ${deleteResult.deletedCount} database records removed).`,
+      count: deletedFilesCount,
+    });
+  } catch (error) {
+    console.error("Delete all media error:", error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Failed to delete all images.",
     });
   }
 };

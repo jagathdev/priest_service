@@ -2,7 +2,7 @@ import express from "express";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
-import { uploadDir, uploadImage, deleteImage, getAllMedia } from "../controllers/uploadController.js";
+import { uploadDir, uploadImage, deleteImage, getAllMedia, editImage, deleteAllMedia } from "../controllers/uploadController.js";
 
 // Multer storage engine
 const storage = multer.diskStorage({
@@ -93,6 +93,8 @@ const router = express.Router();
 // Routes mapped to controllers
 router.get("/", getAllMedia);
 router.post("/", uploadMiddleware, uploadImage);
+router.put("/:filename", editImage);
+router.delete("/all", deleteAllMedia);
 router.delete("/:filename", deleteImage);
 
 export default router;
