@@ -615,32 +615,53 @@ export default function PujaClient({ initialPujas }: { initialPujas?: Puja[] }) 
                           {puja.description}
                         </p>
 
-                        <div className="border border-gray-150 rounded-xl p-3.5 space-y-2.5 mb-5 bg-gray-50/70">
-                          <div className="flex items-center gap-2.5 text-[13px] font-medium text-gray-700">
-                            <MapPin className="w-5 h-5 text-[#d95a2b] shrink-0" />
-                            <span className="line-clamp-1">{puja.location}</span>
-                          </div>
-                          <div className="flex items-start gap-2.5 text-[13px] font-medium text-gray-700">
-                            <Calendar className="w-5 h-5 text-[#d95a2b] shrink-0 mt-0.5" />
-                            <div className="flex flex-col min-w-0">
-                              <span className="font-bold text-gray-900 leading-snug">
+                        {/* Location & Date Details Box: Vedic Gold & Amber Temple Card */}
+                        <div className="bg-gradient-to-b from-[#FFFDF9] to-[#FFF9F0] border border-[#ECD9C3] rounded-2xl p-2.5 sm:p-3 shadow-xs space-y-1.5 mt-auto mb-4">
+                          {/* Row 1: Puja Date & Occasion (Full Width) */}
+                          <div className="flex items-center gap-2.5 bg-white/95 border border-[#E8D5B5] rounded-xl px-2.5 py-1.5 shadow-2xs min-w-0 transition-all hover:border-[#D99B52]">
+                            <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-[#E65100]/15 via-[#F97316]/10 to-amber-100/60 border border-[#F0CA9E] flex items-center justify-center shrink-0 shadow-2xs text-[#C2410C]">
+                              <Calendar className="w-3.5 h-3.5 text-[#C2410C]" strokeWidth={2.2} />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <span className="block text-xs sm:text-[12.5px] font-extrabold text-[#0B1E36] leading-tight">
                                 {formatDayDateMonth(puja.date) || puja.date}
                               </span>
                               {puja.subtitle && (
-                                <span className="text-gray-400 font-normal text-[11px] leading-tight truncate">
+                                <span className="block text-[10px] sm:text-[10.5px] text-stone-600 font-medium leading-normal mt-0.5 truncate pb-0.5">
                                   {puja.subtitle}
                                 </span>
                               )}
                             </div>
                           </div>
+
+                          {/* Row 2: Puja Time (Full Width, stacked below Date) */}
                           {puja.time && (
-                            <div className="flex items-center gap-2.5 text-[13px] font-medium text-gray-700">
-                              <Clock className="w-5 h-5 text-[#d95a2b] shrink-0" />
-                              <span className="font-bold text-gray-900 leading-snug">
-                                {puja.time}
-                              </span>
+                            <div className="flex items-center gap-2.5 bg-gradient-to-br from-[#FFF9EE] via-[#FFF3E0] to-[#FFF9EE] border border-[#F0CA9E] rounded-xl px-2.5 py-1.5 shadow-2xs min-w-0 transition-all hover:border-[#D99B52]">
+                              <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-[#C2410C] to-[#E65100] flex items-center justify-center shrink-0 shadow-xs text-white">
+                                <Clock className="w-3.5 h-3.5 text-amber-200" strokeWidth={2.2} />
+                              </div>
+                              <div className="min-w-0 flex-1 flex items-baseline justify-between gap-2">
+                                <span className="block text-xs sm:text-[12.5px] font-extrabold text-[#0B1E36] leading-tight">
+                                  {puja.time}
+                                </span>
+                              </div>
                             </div>
                           )}
+
+                          {/* Horizontal Divider */}
+                          <div className="w-full h-[1px] bg-[#ECD9C3]/70" />
+
+                          {/* Row 3: Temple Venue & Location Full Width */}
+                          <div className="flex items-center gap-2 bg-white/90 border border-[#EADBCC]/80 rounded-xl px-2.5 py-1.5 shadow-2xs">
+                            <div className="w-5 h-5 rounded-md bg-gradient-to-br from-[#E65100]/10 to-[#F97316]/15 text-[#C2410C] flex items-center justify-center shrink-0 border border-[#F5D8B3]">
+                              <MapPin className="w-3 h-3" strokeWidth={2.2} />
+                            </div>
+                            <div className="flex items-baseline gap-1.5 truncate">
+                              <span className="font-extrabold text-[#0B1E36] text-[11.5px] sm:text-xs truncate leading-tight">
+                                {puja.location || "Sacred Temple Venue"}
+                              </span>
+                            </div>
+                          </div>
                         </div>
 
                         <div className="flex items-center justify-between mt-auto pt-2 border-t border-gray-100">

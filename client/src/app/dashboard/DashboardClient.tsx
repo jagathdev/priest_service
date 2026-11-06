@@ -978,61 +978,62 @@ function PujaCard({
           </h3>
 
           {/* Subtitle / Description */}
-          <p className="text-stone-600 text-xs sm:text-sm font-medium leading-relaxed mb-4 line-clamp-2">
+          <p className="text-stone-600 text-xs sm:text-sm font-medium leading-relaxed mb-3 line-clamp-2">
             {subtitle}
           </p>
 
-          {/* Location & Date Details Box with Vector SVG Icons */}
-          <div className="bg-stone-50 border border-stone-200/90 rounded-2xl p-3 sm:p-3.5 mb-4 space-y-2.5 text-xs sm:text-[13px] text-stone-800 mt-auto">
-            {/* Temple & Location (Row 1) */}
-            <div className="flex items-center gap-2.5">
-              <div className="text-stone-700 shrink-0">
-                <MapPin className="w-4 h-4 text-stone-700" strokeWidth={2} />
+          {/* Location & Date Details Box: Vedic Gold & Amber Temple Card */}
+          <div className="bg-gradient-to-b from-[#FFFDF9] to-[#FFF9F0] border border-[#ECD9C3] rounded-2xl p-2.5 sm:p-3 shadow-xs space-y-1.5 mt-auto mb-3.5">
+            {/* Row 1: Puja Date & Occasion (Full Width) */}
+            <div className="flex items-center gap-2.5 bg-white/95 border border-[#E8D5B5] rounded-xl px-2.5 py-1.5 shadow-2xs min-w-0 transition-all hover:border-[#D99B52]">
+              <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-[#E65100]/15 via-[#F97316]/10 to-amber-100/60 border border-[#F0CA9E] flex items-center justify-center shrink-0 shadow-2xs text-[#C2410C]">
+                <Calendar className="w-3.5 h-3.5 text-[#C2410C]" strokeWidth={2.2} />
               </div>
-              <div className="flex flex-wrap items-baseline gap-x-2 truncate">
-                <span className="font-bold text-stone-900 leading-snug truncate">
-                  {mainVenue}
-                </span>
-                {subLocation && (
-                  <span className="text-stone-400 font-normal text-[11px] sm:text-xs truncate">
-                    {subLocation}
-                  </span>
-                )}
-              </div>
-            </div>
-
-            <div className="w-full h-[1px] bg-stone-200/70" />
-
-            {/* Date & Occasion (Row 2) */}
-            <div className="flex items-start gap-2.5">
-              <div className="text-stone-700 shrink-0 mt-0.5">
-                <Calendar className="w-4 h-4 text-stone-700" strokeWidth={2} />
-              </div>
-              <div className="flex flex-col min-w-0">
-                <span className="font-bold text-stone-900 leading-snug">
+              <div className="min-w-0 flex-1">
+                <span className="block text-xs sm:text-[12.5px] font-extrabold text-[#0B1E36] leading-tight">
                   {formatDayDateMonth(date) || date}
                 </span>
                 {dateOccasion && (
-                  <span className="text-stone-400 font-normal text-[11px] sm:text-xs leading-tight truncate">
+                  <span className="block text-[10px] sm:text-[10.5px] text-stone-600 font-medium leading-normal mt-0.5 truncate pb-0.5">
                     {dateOccasion}
                   </span>
                 )}
               </div>
             </div>
 
+            {/* Row 2: Puja Time (Full Width, stacked below Date) */}
             {time && (
-              <>
-                <div className="w-full h-[1px] bg-stone-200/70" />
-                <div className="flex items-center gap-2.5">
-                  <div className="text-stone-700 shrink-0">
-                    <Clock className="w-4 h-4 text-stone-700" strokeWidth={2} />
-                  </div>
-                  <span className="font-bold text-stone-900 leading-snug text-xs sm:text-sm">
+              <div className="flex items-center gap-2.5 bg-gradient-to-br from-[#FFF9EE] via-[#FFF3E0] to-[#FFF9EE] border border-[#F0CA9E] rounded-xl px-2.5 py-1.5 shadow-2xs min-w-0 transition-all hover:border-[#D99B52]">
+                <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-[#C2410C] to-[#E65100] flex items-center justify-center shrink-0 shadow-xs text-white">
+                  <Clock className="w-3.5 h-3.5 text-amber-200" strokeWidth={2.2} />
+                </div>
+                <div className="min-w-0 flex-1 flex items-baseline justify-between gap-2">
+                  <span className="block text-xs sm:text-[12.5px] font-extrabold text-[#0B1E36] leading-tight">
                     {time}
                   </span>
                 </div>
-              </>
+              </div>
             )}
+
+            {/* Horizontal Divider */}
+            <div className="w-full h-[1px] bg-[#ECD9C3]/70" />
+
+            {/* Row 3: Temple Venue & Location Full Width */}
+            <div className="flex items-center gap-2 bg-white/90 border border-[#EADBCC]/80 rounded-xl px-2.5 py-1.5 shadow-2xs">
+              <div className="w-5 h-5 rounded-md bg-gradient-to-br from-[#E65100]/10 to-[#F97316]/15 text-[#C2410C] flex items-center justify-center shrink-0 border border-[#F5D8B3]">
+                <MapPin className="w-3 h-3" strokeWidth={2.2} />
+              </div>
+              <div className="flex items-baseline gap-1.5 truncate">
+                <span className="font-extrabold text-[#0B1E36] text-[11.5px] sm:text-xs truncate leading-tight">
+                  {mainVenue}
+                </span>
+                {subLocation && (
+                  <span className="text-stone-600 font-medium text-[10.5px] sm:text-[11px] truncate">
+                    • {subLocation}
+                  </span>
+                )}
+              </div>
+            </div>
           </div>
 
           {/* Bottom Footer Row: Price + Participate Button */}

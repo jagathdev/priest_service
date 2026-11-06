@@ -17,6 +17,7 @@ import {
   MapPin,
   ChevronRight,
   Share2,
+  Clock,
 } from "lucide-react";
 import Footer from "@/components/layout/Footer";
 import WishlistButton from "@/components/common/WishlistButton";
@@ -32,6 +33,7 @@ interface Homa {
   buttonText?: string;
   location?: string;
   date?: string;
+  time?: string;
   slug?: string;
   deity?: string;
   dosha?: string;
@@ -436,16 +438,53 @@ export default function HomaClient({ initialHomas }: { initialHomas?: Homa[] }) 
                               {homa.description}
                             </p>
 
-                            {/* Info Box 1: Date & Frequency */}
-                            <div className="bg-[#f8f9fa] border border-gray-100 rounded-xl px-3.5 py-2.5 mb-2 flex items-center gap-3 text-xs text-gray-700">
-                              <Calendar className="w-4 h-4 text-amber-600 shrink-0" />
-                              <span className="font-medium truncate">{formatDayDateMonth(homa.date) || homa.date}</span>
-                            </div>
+                            {/* Location & Date Details Box: Vedic Gold & Amber Temple Card */}
+                            <div className="bg-gradient-to-b from-[#FFFDF9] to-[#FFF9F0] border border-[#ECD9C3] rounded-2xl p-2.5 sm:p-3 shadow-xs space-y-1.5 mt-auto mb-4">
+                              {/* Row 1: Puja Date & Occasion (Full Width) */}
+                              <div className="flex items-center gap-2.5 bg-white/95 border border-[#E8D5B5] rounded-xl px-2.5 py-1.5 shadow-2xs min-w-0 transition-all hover:border-[#D99B52]">
+                                <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-[#E65100]/15 via-[#F97316]/10 to-amber-100/60 border border-[#F0CA9E] flex items-center justify-center shrink-0 shadow-2xs text-[#C2410C]">
+                                  <Calendar className="w-3.5 h-3.5 text-[#C2410C]" strokeWidth={2.2} />
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <span className="block text-xs sm:text-[12.5px] font-extrabold text-[#0B1E36] leading-tight">
+                                    {formatDayDateMonth(homa.date) || homa.date}
+                                  </span>
+                                  {homa.subtitle && (
+                                    <span className="block text-[10px] sm:text-[10.5px] text-stone-600 font-medium leading-normal mt-0.5 truncate pb-0.5">
+                                      {homa.subtitle}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
 
-                            {/* Info Box 2: Temple Location */}
-                            <div className="bg-[#f8f9fa] border border-gray-100 rounded-xl px-3.5 py-2.5 mb-4 flex items-center gap-3 text-xs text-gray-700">
-                              <MapPin className="w-4 h-4 text-red-500 shrink-0" />
-                              <span className="font-medium truncate">{homa.location}</span>
+                              {/* Row 2: Puja Time (Full Width, stacked below Date) */}
+                              {homa.time && (
+                                <div className="flex items-center gap-2.5 bg-gradient-to-br from-[#FFF9EE] via-[#FFF3E0] to-[#FFF9EE] border border-[#F0CA9E] rounded-xl px-2.5 py-1.5 shadow-2xs min-w-0 transition-all hover:border-[#D99B52]">
+                                  <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-[#C2410C] to-[#E65100] flex items-center justify-center shrink-0 shadow-xs text-white">
+                                    <Clock className="w-3.5 h-3.5 text-amber-200" strokeWidth={2.2} />
+                                  </div>
+                                  <div className="min-w-0 flex-1 flex items-baseline justify-between gap-2">
+                                    <span className="block text-xs sm:text-[12.5px] font-extrabold text-[#0B1E36] leading-tight">
+                                      {homa.time}
+                                    </span>
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Horizontal Divider */}
+                              <div className="w-full h-[1px] bg-[#ECD9C3]/70" />
+
+                              {/* Row 3: Temple Venue & Location Full Width */}
+                              <div className="flex items-center gap-2 bg-white/90 border border-[#EADBCC]/80 rounded-xl px-2.5 py-1.5 shadow-2xs">
+                                <div className="w-5 h-5 rounded-md bg-gradient-to-br from-[#E65100]/10 to-[#F97316]/15 text-[#C2410C] flex items-center justify-center shrink-0 border border-[#F5D8B3]">
+                                  <MapPin className="w-3 h-3" strokeWidth={2.2} />
+                                </div>
+                                <div className="flex items-baseline gap-1.5 truncate">
+                                  <span className="font-extrabold text-[#0B1E36] text-[11.5px] sm:text-xs truncate leading-tight">
+                                    {homa.location || "Sacred Temple Venue"}
+                                  </span>
+                                </div>
+                              </div>
                             </div>
 
                             {/* ── Card Footer ── */}

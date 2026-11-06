@@ -218,9 +218,6 @@ export default function PujaCountdownCard({
                 <span className="block text-[12.5px] sm:text-[13.5px] font-extrabold text-[#0B1E36] tracking-tight leading-tight truncate">
                   {formattedTime}
                 </span>
-                <span className="block text-[10.5px] sm:text-[11.5px] text-amber-800 font-semibold leading-normal truncate pb-0.5">
-                  Auspicious Muhurat Window
-                </span>
               </div>
             </div>
           )}
