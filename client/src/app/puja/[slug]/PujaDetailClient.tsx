@@ -165,6 +165,9 @@ export default function PujaDetailClient({
   const [galleryLightboxOpen, setGalleryLightboxOpen] = useState(false);
   const [lightboxImageIdx, setLightboxImageIdx] = useState(0);
   const [failedGalleryImages, setFailedGalleryImages] = useState<Record<string, boolean>>({});
+  const [isDescExpanded, setIsDescExpanded] = useState(false);
+  const [_isDescClamped, setIsDescClamped] = useState(false);
+  const descRef = useRef<HTMLParagraphElement | null>(null);
   const heroCtaRef = useRef<HTMLButtonElement | null>(null);
   const tabsContainerRef = useRef<HTMLDivElement | null>(null);
 
@@ -180,6 +183,21 @@ export default function PujaDetailClient({
   const galleryTouchStartY = useRef<number | null>(null);
   const galleryTouchEndY = useRef<number | null>(null);
 
+  // Check if description text actually exceeds 3 lines in the rendered DOM
+  useEffect(() => {
+    if (loading || !puja) return;
+    const el = descRef.current;
+    if (!el) return;
+    const checkClamp = () => {
+      if (!isDescExpanded) {
+        setIsDescClamped(el.scrollHeight > el.clientHeight + 2);
+      }
+    };
+    checkClamp();
+    window.addEventListener("resize", checkClamp, { passive: true });
+    return () => window.removeEventListener("resize", checkClamp);
+  }, [loading, puja, isDescExpanded]);
+
   useEffect(() => {
     if (tabsContainerRef.current) {
       const activeEl = tabsContainerRef.current.querySelector(`[data-tab-id="${activeTab}"]`) as HTMLElement;
@@ -191,7 +209,6 @@ export default function PujaDetailClient({
     }
   }, [activeTab]);
 
-  // Scroll handler to show bottom sticky bar ONLY after user has scrolled into the below sections
   useEffect(() => {
     const handleScroll = () => {
       // If user is near the top (in hero), NEVER show the sticky bar
@@ -278,6 +295,17 @@ export default function PujaDetailClient({
   }, [slug, initialPuja]);
 
   // Handle Tab Scroll Listener (Accurate getBoundingClientRect viewport detection for iOS & Desktop)
+  useEffect(() => {
+    if (tabsContainerRef.current) {
+      const activeEl = tabsContainerRef.current.querySelector(`[data-tab-id="${activeTab}"]`) as HTMLElement;
+      if (activeEl) {
+        const container = tabsContainerRef.current;
+        const left = activeEl.offsetLeft - (container.offsetWidth / 2) + (activeEl.offsetWidth / 2);
+        container.scrollTo({ left: Math.max(0, left), behavior: "smooth" });
+      }
+    }
+  }, [activeTab]);
+
   useEffect(() => {
     const handleScroll = () => {
       const sections = ["about", "benefits", "process", "temple", "receive", "faqs", "gallery"];
@@ -684,6 +712,8 @@ export default function PujaDetailClient({
     puja.details?.heroSubtitle ||
     "A special sacred ritual for devotees seeking courage, prosperity, and fulfillment of noble wishes.";
 
+
+
   const templeVenueText =
     puja.templeVenue ||
     puja.details?.templeName ||
@@ -947,7 +977,7 @@ export default function PujaDetailClient({
             <div className="lg:col-span-6 flex flex-col lg:pl-[10px]">
               {/* Filigree Subtag */}
               <div className="flex items-center justify-center lg:justify-start gap-2 mb-1 lg:mb-1.5 w-full max-w-full overflow-hidden">
-                <span className="text-[#F47820] font-serif font-extrabold text-xs sm:text-[13px] tracking-wider uppercase flex items-center justify-center text-center gap-1.5 flex-wrap">
+                <span className="text-[#E65100] hover:text-[#C2410C] font-serif font-extrabold text-xs sm:text-[13px] tracking-wider uppercase flex items-center justify-center text-center gap-1.5 flex-wrap">
                   <span className="text-center">{badgeText}</span>
                 </span>
               </div>
@@ -957,10 +987,23 @@ export default function PujaDetailClient({
                 {puja.title}
               </h1>
 
-              {/* Subtitle / Description */}
-              <p className="text-stone-600 text-xs sm:text-sm font-medium leading-snug mb-3 lg:mb-3 text-center lg:text-left line-clamp-2">
-                {descriptionText}
-              </p>
+              {/* Subtitle / Description with Read More / Read Less option */}
+              <div className="mb-2.5 text-center lg:text-left">
+                <p className="text-stone-600 text-xs sm:text-[13px] font-medium leading-relaxed transition-all inline">
+                  {descriptionText && descriptionText.length > 180 && !isDescExpanded
+                    ? `${descriptionText.slice(0, 180).trim()}...`
+                    : descriptionText}
+                </p>
+                {descriptionText && descriptionText.length > 180 && (
+                  <button
+                    type="button"
+                    onClick={() => setIsDescExpanded((prev) => !prev)}
+                    className="ml-1.5 text-xs sm:text-[13px] font-bold text-[#E65100] hover:text-[#C2410C] hover:underline cursor-pointer inline-flex items-center gap-0.5 whitespace-nowrap"
+                  >
+                    {isDescExpanded ? "Read Less" : "Read More"}
+                  </button>
+                )}
+              </div>
 
               {/* Dynamic Countdown & Temple Card fetched from Dashboard */}
               <PujaCountdownCard

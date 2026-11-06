@@ -169,6 +169,9 @@ export default function HomaDetailClient({
   const [galleryLightboxOpen, setGalleryLightboxOpen] = useState(false);
   const [lightboxImageIdx, setLightboxImageIdx] = useState(0);
   const [failedGalleryImages, setFailedGalleryImages] = useState<Record<string, boolean>>({});
+  const [isDescExpanded, setIsDescExpanded] = useState(false);
+  const [_isDescClamped, setIsDescClamped] = useState(false);
+  const descRef = useRef<HTMLParagraphElement | null>(null);
   const heroCtaRef = useRef<HTMLButtonElement | null>(null);
   const tabsContainerRef = useRef<HTMLDivElement | null>(null);
 
@@ -177,6 +180,21 @@ export default function HomaDetailClient({
   const heroTouchEndX = useRef<number | null>(null);
   const heroTouchStartY = useRef<number | null>(null);
   const heroTouchEndY = useRef<number | null>(null);
+
+  // Check if description text actually exceeds 3 lines in the rendered DOM
+  useEffect(() => {
+    if (loading || !homa) return;
+    const el = descRef.current;
+    if (!el) return;
+    const checkClamp = () => {
+      if (!isDescExpanded) {
+        setIsDescClamped(el.scrollHeight > el.clientHeight + 2);
+      }
+    };
+    checkClamp();
+    window.addEventListener("resize", checkClamp, { passive: true });
+    return () => window.removeEventListener("resize", checkClamp);
+  }, [loading, homa, isDescExpanded]);
 
   useEffect(() => {
     if (tabsContainerRef.current) {
@@ -189,7 +207,7 @@ export default function HomaDetailClient({
     }
   }, [activeTab]);
 
-  // Scroll handler to show bottom sticky bar ONLY after user has scrolled into the below sections
+
   useEffect(() => {
     const handleScroll = () => {
       // If user is near the top (in hero), NEVER show the sticky bar
@@ -644,6 +662,8 @@ export default function HomaDetailClient({
     homa.details?.heroSubtitle ||
     "A sacred fire lab for peace, prosperity, health, and divine protection.";
 
+
+
   const templeLocationText =
     homa.templeLocation ||
     homa.location ||
@@ -946,10 +966,23 @@ export default function HomaDetailClient({
                 {homa.title}
               </h1>
 
-              {/* Subtitle / Description */}
-              <p className="text-stone-600 text-xs sm:text-sm font-medium leading-snug mb-3 lg:mb-3 text-center lg:text-left line-clamp-2">
-                {descriptionText}
-              </p>
+              {/* Subtitle / Description with Read More / Read Less option */}
+              <div className="mb-2.5 text-center lg:text-left">
+                <p className="text-stone-600 text-xs sm:text-[13px] font-medium leading-relaxed transition-all inline">
+                  {descriptionText && descriptionText.length > 180 && !isDescExpanded
+                    ? `${descriptionText.slice(0, 180).trim()}...`
+                    : descriptionText}
+                </p>
+                {descriptionText && descriptionText.length > 180 && (
+                  <button
+                    type="button"
+                    onClick={() => setIsDescExpanded((prev) => !prev)}
+                    className="ml-1.5 text-xs sm:text-[13px] font-bold text-[#E65100] hover:text-[#C2410C] hover:underline cursor-pointer inline-flex items-center gap-0.5 whitespace-nowrap"
+                  >
+                    {isDescExpanded ? "Read Less" : "Read More"}
+                  </button>
+                )}
+              </div>
 
               {/* Dynamic Countdown & Temple Card fetched from Dashboard */}
               <PujaCountdownCard
