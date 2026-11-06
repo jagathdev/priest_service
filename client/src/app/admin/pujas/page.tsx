@@ -139,9 +139,8 @@ export default function AdminPujasPage() {
     },
     {
       name: "time",
-      label: "Puja Time (e.g. 06:00 PM / 10:30 AM)",
-      type: "text",
-      placeholder: "e.g. 06:00 PM or 10:30 AM",
+      label: "Puja Time (Start & End Time)",
+      type: "time-range",
       section: "Schedule & Muhurat",
     },
     {

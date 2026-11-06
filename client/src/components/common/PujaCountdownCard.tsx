@@ -35,8 +35,11 @@ const padZero = (n: number) => String(Math.max(0, n)).padStart(2, "0");
 
 const parseTargetTime = (targetStr?: string): number => {
   if (!targetStr || typeof targetStr !== "string") return NaN;
-  const trimmed = targetStr.trim();
+  let trimmed = targetStr.trim();
   if (!trimmed) return NaN;
+
+  // Normalize en-dash (\u2013), em-dash (\u2014), minus sign (\u2212) to standard hyphen (-)
+  trimmed = trimmed.replace(/[\u2010\u2011\u2012\u2013\u2014\u2015\u2212]/g, "-");
 
   // 1. Direct JS Date parse
   let t = new Date(trimmed).getTime();
@@ -98,18 +101,19 @@ const calculateTimeLeft = (eventDateTime?: string, dateText?: string): TimeLeft 
 };
 
 /**
- * Formats date into: "Day, Date FullMonth [at Time]"
- * Example: "Sunday, 8 November at 07:15 PM to 9:15 PM"
+ * Formats date into: "Day, Date FullMonth" (without time)
+ * Example: "Saturday, 7 November"
  */
 function formatDayDateMonth(rawDate?: string): string {
   if (!rawDate || typeof rawDate !== "string") return "";
-  const trimmed = rawDate.trim();
+  let trimmed = rawDate.trim();
   if (!trimmed) return "";
 
-  // Extract any time portion like "at 07:15 PM to 9:15 PM"
-  const timeMatch = trimmed.match(/\s+at\s+([0-9:]+\s*[APMapm]+(?:\s*to\s*[0-9:]+\s*[APMapm]+)?)/i);
-  const timeSuffix = timeMatch ? ` at ${timeMatch[1]}` : "";
-  const dateOnly = trimmed.replace(/\s+at\s+[0-9:]+\s*[APMapm]+(?:\s*to\s*[0-9:]+\s*[APMapm]+)?/i, "").trim();
+  // Normalize Unicode dashes (en-dash \u2013, em-dash \u2014, minus \u2212) to standard hyphen (-)
+  trimmed = trimmed.replace(/[\u2010\u2011\u2012\u2013\u2014\u2015\u2212]/g, "-");
+
+  // Extract date portion only (strips any "at ..." suffix)
+  const dateOnly = trimmed.replace(/\s+at\s+[0-9:]+(?:\s*[APMapm]+)?(?:\s*to\s*[0-9:]+)?(?:\s*[APMapm]+)?/i, "").trim();
 
   let d: Date | null = null;
 
@@ -134,16 +138,32 @@ function formatDayDateMonth(rawDate?: string): string {
     const weekday = d.toLocaleDateString("en-US", { weekday: "long" });
     const day = d.getDate();
     const month = d.toLocaleDateString("en-US", { month: "long" });
-    return `${weekday}, ${day} ${month}${timeSuffix}`;
+    return `${weekday}, ${day} ${month}`;
   }
 
-  return trimmed;
+  return dateOnly || trimmed;
+}
+
+/** Extracts time range string from explicit timeText prop or "at ..." in dateText */
+function extractTimeRange(dateText?: string, timeText?: string): string {
+  if (timeText && timeText.trim()) {
+    const clean = timeText.trim().replace(/\s+to\s+/i, " \u2013 ");
+    return clean;
+  }
+  if (!dateText) return "";
+  const match = dateText.match(/\s+at\s+([0-9:]+(?:\s*[APMapm]+)?(?:\s*to\s*[0-9:]+)?(?:\s*[APMapm]+)?)/i);
+  if (match) {
+    const clean = match[1].trim().replace(/\s+to\s+/i, " \u2013 ");
+    return clean;
+  }
+  return "";
 }
 
 export default function PujaCountdownCard({
   templeVenue = "Kamrup Teerth Kshetra",
   location = "Guwahati, Assam",
   dateText = "Sunday, 8 November",
+  timeText,
   occasionText = "Sacred Ancestral Offering",
   eventDateTime,
   showTimer = true,
@@ -166,86 +186,147 @@ export default function PujaCountdownCard({
   const canShowTimer = isClient && showTimer !== false && timeLeft.hasTarget;
 
   const formattedDate = useMemo(() => formatDayDateMonth(dateText), [dateText]);
+  const formattedTime = useMemo(() => extractTimeRange(dateText, timeText), [dateText, timeText]);
 
   return (
     <div className={`w-full font-sans ${className}`}>
-      {/* ── 1. Top Card Box (Temple & Date Details) ── */}
-      <div className="bg-white border border-stone-200/90 rounded-2xl p-2.5 sm:p-3.5 shadow-2xs w-full space-y-2 lg:space-y-2.5">
-        {/* Row 1: Temple & Location */}
-        <div className="flex items-center gap-2.5 sm:gap-3">
-          <div className="text-stone-700 shrink-0">
-            <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-stone-700" strokeWidth={1.8} />
-          </div>
-          <div className="flex flex-wrap items-baseline gap-x-2 truncate">
-            <span className="font-bold text-stone-900 text-xs sm:text-sm lg:text-[14px] leading-tight">
-              {templeVenue}
+      {/* ── 1. Top Card: Date, Time & Temple Venue (Stacked Cards with Centered Top Icons) ── */}
+      <div className="bg-white border border-[#F3E7D7] rounded-2xl p-2 sm:p-2.5 shadow-2xs w-full space-y-1.5">
+        {/* Row 1: Date & Time Side-by-Side */}
+        <div className={`grid ${formattedTime ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1"} gap-1.5 sm:gap-2`}>
+          {/* Card 1: Puja Date */}
+          <div className="relative overflow-visible bg-[#FFFDF9] border border-[#F5D8B3] rounded-xl px-2.5 sm:px-3 py-1.5 text-center shadow-2xs flex flex-col items-center justify-center min-h-[50px] sm:min-h-[52px]">
+            {/* Calendar Icon Badge Centered on Top Border */}
+            <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-[#FFFDF9] px-1 rounded-full flex items-center justify-center">
+              <Calendar className="w-3.5 h-3.5 text-[#E65100]" strokeWidth={2.2} />
+            </div>
+            <span className="text-[9.5px] sm:text-[10px] font-serif font-bold text-[#D96B27] tracking-wide leading-none mt-0.5">
+              Puja Date
             </span>
-            {location && (
-              <span className="text-stone-400 font-normal text-[11px] sm:text-xs truncate">
-                {location}
-              </span>
-            )}
-          </div>
-        </div>
-
-        {/* Horizontal Divider */}
-        <div className="w-full h-[1px] bg-stone-150" />
-
-        {/* Row 2: Date & Occasion with Day Date Month Full format */}
-        <div className="flex items-center gap-2.5 sm:gap-3">
-          <div className="text-stone-700 shrink-0">
-            <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-stone-700" strokeWidth={1.8} />
-          </div>
-          <div className="flex flex-wrap items-baseline gap-x-1.5 truncate">
-            <span className="font-bold text-stone-900 text-xs sm:text-sm lg:text-[14px] leading-tight">
+            <span className="text-xs sm:text-[12.5px] font-extrabold text-[#0B1E36] tracking-tight leading-tight mt-0.5 line-clamp-1">
               {formattedDate || dateText}
             </span>
             {occasionText && (
-              <span className="text-stone-400 font-normal text-[11px] sm:text-xs truncate">
-                <span className="text-stone-300 font-light mx-1">|</span>
+              <span className="text-[9.5px] sm:text-[10px] text-stone-500 font-medium leading-none mt-0.5 line-clamp-1">
                 {occasionText}
               </span>
             )}
           </div>
+
+          {/* Card 2: Puja Time */}
+          {formattedTime && (
+            <div className="relative overflow-visible bg-[#FFFDF9] border border-[#F5D8B3] rounded-xl px-2.5 sm:px-3 py-1.5 text-center shadow-2xs flex flex-col items-center justify-center min-h-[50px] sm:min-h-[52px]">
+              {/* Sun/Muhurat Icon Badge Centered on Top Border */}
+              <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-[#FFFDF9] px-1 rounded-full flex items-center justify-center">
+                <svg
+                  className="w-3.5 h-3.5 text-[#E65100]"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M12 2v2" />
+                  <path d="m4.93 4.93 1.41 1.41" />
+                  <path d="M2 12h2" />
+                  <path d="m19.07 4.93-1.41 1.41" />
+                  <path d="M22 12h-2" />
+                  <path d="M4 18h16" />
+                  <path d="M7 21h10" />
+                  <path d="M12 8a4 4 0 0 0-4 4h8a4 4 0 0 0-4-4z" fill="#F97316" stroke="none" />
+                </svg>
+              </div>
+              <span className="text-[9.5px] sm:text-[10px] font-serif font-bold text-[#D96B27] tracking-wide leading-none mt-0.5">
+                Puja Time
+              </span>
+              <span className="text-xs sm:text-[12.5px] font-extrabold text-[#0B1E36] tracking-tight leading-tight mt-0.5 line-clamp-1">
+                {formattedTime}
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Row 2: Temple Venue & Location Full Width */}
+        <div className="pt-0.5">
+          <div className="relative overflow-visible bg-[#FFFDF9] border border-[#F5D8B3] rounded-xl px-2.5 sm:px-3 py-1.5 text-center shadow-2xs flex flex-col items-center justify-center min-h-[48px] sm:min-h-[50px]">
+            {/* Location Pin Icon Badge Centered on Top Border */}
+            <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-[#FFFDF9] px-1 rounded-full flex items-center justify-center">
+              <MapPin className="w-3.5 h-3.5 text-[#E65100]" strokeWidth={2.2} />
+            </div>
+            <span className="text-[9.5px] sm:text-[10px] font-serif font-bold text-[#D96B27] tracking-wide leading-none mt-0.5">
+              Temple Venue & Location
+            </span>
+            <div className="flex flex-wrap items-baseline justify-center gap-x-1.5 mt-0.5 leading-tight">
+              <span className="text-xs sm:text-[12.5px] font-extrabold text-[#0B1E36] tracking-tight">
+                {templeVenue}
+              </span>
+              {location && location !== templeVenue && (
+                <span className="text-[10px] sm:text-[11px] text-stone-500 font-medium">
+                  • {location}
+                </span>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* ── 2. Countdown & Devotee Booking Strip (Matching Reference Image) ── */}
+      {/* ── 2. Full-Width Countdown & Devotee Booking Banner ── */}
       {canShowTimer && (
-        <div className="mt-2.5 lg:mt-3 flex items-center justify-between gap-3 w-full">
-          {/* Left: Timer Box with days / hrs / mins / secs */}
-          <div className="flex flex-col items-center">
-            <div className="bg-[#FAF5F2] border border-[#F0E4D8] rounded-xl px-3 sm:px-3.5 py-1.5 shadow-2xs">
-              {/* Digits with colons */}
-              <div className="flex items-center justify-center gap-1 sm:gap-1.5 text-[#8B2516] font-mono font-bold text-base sm:text-lg lg:text-xl leading-none">
-                <span>{padZero(timeLeft.days)}</span>
-                <span className="text-[#8B2516]/60 text-xs sm:text-sm">:</span>
-                <span>{padZero(timeLeft.hours)}</span>
-                <span className="text-[#8B2516]/60 text-xs sm:text-sm">:</span>
-                <span>{padZero(timeLeft.minutes)}</span>
-                <span className="text-[#8B2516]/60 text-xs sm:text-sm">:</span>
-                <span>{padZero(timeLeft.seconds)}</span>
-              </div>
-              {/* Labels */}
-              <div className="flex items-center justify-between text-[8px] sm:text-[9px] font-medium text-[#8B2516]/75 uppercase tracking-wider mt-1 px-0.5">
-                <span>days</span>
-                <span>hrs</span>
-                <span>mins</span>
-                <span>secs</span>
+        <div className="mt-2 w-full rounded-2xl bg-[#FFFDF9] border border-[#F3E7D7] p-2 sm:p-2.5 shadow-2xs flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-3">
+          {/* Top on Mobile / Left on Desktop: Flame Icon + Countdown Timer */}
+          <div className="flex items-center justify-center sm:justify-start gap-2 sm:gap-2.5 w-full sm:w-auto">
+            {/* Sacred Flame / Diya Icon Box */}
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-br from-[#E65100] to-[#C2410C] text-white flex items-center justify-center shadow-xs shrink-0">
+              <svg
+                className="w-4 h-4 text-amber-200 fill-amber-300/30"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" />
+              </svg>
+            </div>
+
+            {/* Countdown Digits */}
+            <div className="flex flex-col">
+              <span className="text-[9.5px] sm:text-[10px] font-bold text-[#8B2516] uppercase tracking-wider leading-none">
+                MUHURAT ENDS IN
+              </span>
+              <div className="flex items-center gap-1 sm:gap-1.5 text-[#8B2516] font-mono font-extrabold text-sm sm:text-base leading-tight mt-1">
+                <span className="bg-white border border-[#EADBCC] rounded-md px-1.5 py-0.5 shadow-2xs">
+                  {padZero(timeLeft.days)}
+                  <span className="text-[8px] font-sans font-medium text-stone-500 ml-0.5">d</span>
+                </span>
+                <span className="text-[#8B2516]/60 font-bold">:</span>
+                <span className="bg-white border border-[#EADBCC] rounded-md px-1.5 py-0.5 shadow-2xs">
+                  {padZero(timeLeft.hours)}
+                  <span className="text-[8px] font-sans font-medium text-stone-500 ml-0.5">h</span>
+                </span>
+                <span className="text-[#8B2516]/60 font-bold">:</span>
+                <span className="bg-white border border-[#EADBCC] rounded-md px-1.5 py-0.5 shadow-2xs">
+                  {padZero(timeLeft.minutes)}
+                  <span className="text-[8px] font-sans font-medium text-stone-500 ml-0.5">m</span>
+                </span>
+                <span className="text-[#8B2516]/60 font-bold">:</span>
+                <span className="bg-white border border-[#EADBCC] rounded-md px-1.5 py-0.5 shadow-2xs">
+                  {padZero(timeLeft.seconds)}
+                  <span className="text-[8px] font-sans font-medium text-stone-500 ml-0.5">s</span>
+                </span>
               </div>
             </div>
-            {/* Muhurat ends in label below box */}
-            <span className="text-[10px] sm:text-[11px] font-semibold text-[#8B2516] mt-1 text-center">
-              Muhurat ends in
-            </span>
           </div>
 
-          {/* Right: Devotees Booking Count */}
-          <div className="flex-1 pl-2 text-left">
-            <div className="font-extrabold text-[#8B2516] text-xs sm:text-sm lg:text-[15px] leading-tight">
-              {devoteesCount}+ Devotees
+          {/* Bottom on Mobile (centered with subtle top divider) / Right on Desktop (border-l) */}
+          <div className="w-full sm:w-auto text-center sm:text-right border-t sm:border-t-0 sm:border-l border-[#F0DDC8] pt-1.5 sm:pt-0 sm:pl-3 shrink-0">
+            <div className="font-black text-[#8B2516] text-xs sm:text-sm lg:text-[14px] leading-tight flex items-center justify-center sm:justify-end gap-1">
+              <span>{devoteesCount}+</span>
+              <span className="text-stone-800 font-extrabold">Devotees</span>
             </div>
-            <div className="text-[11px] sm:text-xs text-stone-500 font-medium leading-tight mt-0.5">
+            <div className="text-[9.5px] sm:text-[10px] text-stone-500 font-medium leading-none mt-0.5">
               bookings done till now
             </div>
           </div>

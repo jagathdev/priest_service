@@ -139,9 +139,8 @@ export default function AdminHomasPage() {
     },
     {
       name: "time",
-      label: "Homa Time (e.g. 06:00 PM / 10:30 AM)",
-      type: "text",
-      placeholder: "e.g. 06:00 PM or 10:30 AM",
+      label: "Homa Time (Start & End Time)",
+      type: "time-range",
       section: "Schedule & Muhurat",
     },
     {

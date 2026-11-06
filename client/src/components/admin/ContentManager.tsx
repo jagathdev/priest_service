@@ -45,6 +45,64 @@ function isoToDdmmyyyy(iso: string): string {
   return `${d}-${mo}-${y}`;
 }
 
+/** Converts "HH:MM" 24-hr time into "HH:MM AM/PM" */
+function format12Hour(time24: string): string {
+  if (!time24) return "";
+  const [hStr, mStr] = time24.split(":");
+  let h = parseInt(hStr, 10);
+  const m = mStr || "00";
+  const period = h >= 12 ? "PM" : "AM";
+  h = h % 12;
+  if (h === 0) h = 12;
+  return `${String(h).padStart(2, "0")}:${m} ${period}`;
+}
+
+/** Parses "08:00 AM" or "08:00" into "08:00" 24-hr format */
+function parse12HourTo24(time12: string): string {
+  if (!time12) return "";
+  const match = time12.match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/i);
+  if (!match) return "";
+  let h = parseInt(match[1], 10);
+  const m = match[2];
+  const period = (match[3] || "").toUpperCase();
+  if (period === "PM" && h < 12) h += 12;
+  if (period === "AM" && h === 12) h = 0;
+  return `${String(h).padStart(2, "0")}:${m}`;
+}
+
+/** Parses existing time string (e.g. "08:00 to 09:00 AM" or "07:15 PM to 09:15 PM") into { start24, end24 } */
+function splitTimeRangeTo24(raw: string): { start24: string; end24: string } {
+  if (!raw) return { start24: "", end24: "" };
+  const parts = raw.split(/\s+to\s+/i);
+  if (parts.length === 2) {
+    let startStr = parts[0].trim();
+    const endStr = parts[1].trim();
+    if (!/AM|PM/i.test(startStr) && /AM|PM/i.test(endStr)) {
+      const pMatch = endStr.match(/AM|PM/i);
+      if (pMatch) startStr = `${startStr} ${pMatch[0]}`;
+    }
+    return {
+      start24: parse12HourTo24(startStr),
+      end24: parse12HourTo24(endStr),
+    };
+  }
+  return {
+    start24: parse12HourTo24(raw),
+    end24: "",
+  };
+}
+
+/** Combines 24-hr start and end into "HH:MM AM to HH:MM PM" */
+function buildTimeRangeFrom24(start24: string, end24: string): string {
+  if (start24 && end24) {
+    return `${format12Hour(start24)} to ${format12Hour(end24)}`;
+  }
+  if (start24) {
+    return format12Hour(start24);
+  }
+  return "";
+}
+
 function getSectionIcon(section: string): string {
   switch (section) {
     case "Basic & Header Info":
@@ -123,6 +181,7 @@ interface Field {
   | "array-object"
   | "reference-array"
   | "section-order"
+  | "time-range"
   | "select";
   required?: boolean;
   placeholder?: string;
@@ -970,6 +1029,72 @@ export default function ContentManager({
             }}
             className="block w-full rounded-xl border border-slate-200 bg-slate-50/70 px-3.5 py-2.5 text-sm text-gray-900 focus:bg-white focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/10 shadow-2xs transition-all"
           />
+        ) : field.type === "time-range" ? (
+          (() => {
+            const rawVal = String(formData[field.name] || "");
+            const { start24, end24 } = splitTimeRangeTo24(rawVal);
+
+            return (
+              <div className="space-y-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 mb-1">
+                      Start Time
+                    </label>
+                    <input
+                      type="time"
+                      value={start24}
+                      onChange={(e) => {
+                        const newStart = e.target.value;
+                        const combined = buildTimeRangeFrom24(newStart, end24);
+                        setFormData((prev: Record<string, unknown>) => ({
+                          ...prev,
+                          [field.name]: combined,
+                        }));
+                      }}
+                      className="block w-full rounded-xl border border-slate-200 bg-slate-50/70 px-3.5 py-2.5 text-sm text-gray-900 focus:bg-white focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/10 shadow-2xs transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 mb-1">
+                      End Time
+                    </label>
+                    <input
+                      type="time"
+                      value={end24}
+                      onChange={(e) => {
+                        const newEnd = e.target.value;
+                        const combined = buildTimeRangeFrom24(start24, newEnd);
+                        setFormData((prev: Record<string, unknown>) => ({
+                          ...prev,
+                          [field.name]: combined,
+                        }));
+                      }}
+                      className="block w-full rounded-xl border border-slate-200 bg-slate-50/70 px-3.5 py-2.5 text-sm text-gray-900 focus:bg-white focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/10 shadow-2xs transition-all"
+                    />
+                  </div>
+                </div>
+                {rawVal && (
+                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-indigo-50/70 border border-indigo-100 text-xs text-indigo-700">
+                    <span className="font-semibold">Selected:</span>
+                    <span>{rawVal}</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFormData((prev: Record<string, unknown>) => ({
+                          ...prev,
+                          [field.name]: "",
+                        }));
+                      }}
+                      className="ml-auto text-indigo-500 hover:text-red-600 font-bold"
+                    >
+                      Clear
+                    </button>
+                  </div>
+                )}
+              </div>
+            );
+          })()
         ) : field.type === "datetime-local" ? (
           <input
             type="datetime-local"

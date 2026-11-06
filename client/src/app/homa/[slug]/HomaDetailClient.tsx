@@ -814,7 +814,7 @@ export default function HomaDetailClient({
                   heroTouchStartY.current = null;
                   heroTouchEndY.current = null;
                 }}
-                className="relative w-full aspect-[4/3] min-h-[240px] sm:aspect-auto sm:h-[350px] md:h-[390px] lg:h-[340px] xl:h-[415px] rounded-2xl min-[375px]:rounded-3xl overflow-hidden border border-stone-200/90 shadow-md group touch-pan-y bg-stone-100"
+                className="relative w-full aspect-[4/3] min-h-[220px] sm:aspect-auto sm:h-[320px] md:h-[350px] lg:h-[310px] xl:h-[360px] rounded-2xl min-[375px]:rounded-3xl overflow-hidden border border-stone-200/90 shadow-md group touch-pan-y bg-stone-100"
               >
                 <Image
                   src={bannerImages[activeBannerIndex] || (homa ? getHomaImageUrl(homa.imageUrl) : "/images/Ganesh-Chaturthi-Mahapuja.jpg")}
@@ -934,20 +934,21 @@ export default function HomaDetailClient({
 
             {/* Right 6 Cols: Details & CTA */}
             <div className="lg:col-span-6 flex flex-col lg:pl-[10px]">
-              {/* Filigree Subtag */}
-              <div className="flex items-center justify-center lg:justify-start gap-2 mb-1 lg:mb-1.5 w-full max-w-full overflow-hidden">
-                <span className="text-[#F47820] font-serif font-extrabold text-xs sm:text-[13px] tracking-wider uppercase flex items-center justify-center text-center gap-1.5 flex-wrap">
-                  <span className="text-center">{badgeText}</span>
+              {/* Tagline / Subtag */}
+              <div className="flex items-center justify-center lg:justify-start gap-2 mb-1 w-full">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-amber-500/10 border border-amber-300/60 text-[#D96B27] font-semibold text-[10.5px] sm:text-xs tracking-wider uppercase shadow-2xs">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#E65100] animate-pulse" />
+                  {badgeText}
                 </span>
               </div>
 
               {/* Title */}
-              <h1 className="font-serif font-bold text-[#1f1a17] text-xl sm:text-2xl lg:text-3xl leading-tight mb-1.5 lg:mb-2 text-center lg:text-left">
+              <h1 className="font-serif font-extrabold text-[#0F172A] text-xl sm:text-2xl lg:text-[27px] xl:text-[29px] tracking-tight leading-snug mb-1 text-center lg:text-left">
                 {homa.title}
               </h1>
 
               {/* Subtitle / Description */}
-              <p className="text-stone-600 text-xs sm:text-sm font-medium leading-snug mb-3 lg:mb-3 text-center lg:text-left line-clamp-2">
+              <p className="text-stone-600 text-[11.5px] sm:text-[12.5px] lg:text-xs xl:text-[13px] font-medium leading-relaxed mb-2.5 text-center lg:text-left line-clamp-2">
                 {descriptionText}
               </p>
 
@@ -956,18 +957,19 @@ export default function HomaDetailClient({
                 templeVenue={templeVenueText || "Sacred Temple Yagashala"}
                 location={homa.location || homa.templeLocation || "India"}
                 dateText={`${homa.date || "Saturday, 10 October"}${homa.time ? " at " + homa.time : ""}`}
+                timeText={homa.time}
                 occasionText={homa.subtitle || (homa as any).occasion || (homa as any).dateOccasion || homa.badge || (homa as any).tithis || "Special Vedic Homa"}
                 eventDateTime={homa.eventDateTime}
                 showTimer={homa.showTimer}
                 devoteesCount={(homa as any).devoteeCount || 150}
                 title="Reserve your sankalp"
                 badgeLabel="MUHURAT ENDS IN"
-                className="mb-3 lg:mb-3.5"
+                className="mb-2.5"
               />
 
               {/* Package Selection Cards Grid */}
               {packagesList.length > 0 && (
-                <div className="mb-3 lg:mb-3.5">
+                <div className="mb-2.5">
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
                     {packagesList.map((pkg, idx) => {
                       const isSelected = selectedPackage?.id === pkg.id;
