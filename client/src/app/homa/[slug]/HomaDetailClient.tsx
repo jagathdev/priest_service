@@ -814,7 +814,7 @@ export default function HomaDetailClient({
                   heroTouchStartY.current = null;
                   heroTouchEndY.current = null;
                 }}
-                className="relative w-full aspect-[4/3] min-h-[240px] sm:min-h-0 sm:aspect-[4/3] sm:h-auto md:max-h-[380px] lg:max-h-[360px] xl:max-h-[400px] rounded-3xl overflow-hidden border border-stone-200/90 shadow-md group touch-pan-y bg-stone-900"
+                className="relative w-full aspect-[4/3] min-h-[240px] sm:aspect-auto sm:h-[350px] md:h-[390px] lg:h-[340px] xl:h-[415px] rounded-2xl min-[375px]:rounded-3xl overflow-hidden border border-stone-200/90 shadow-md group touch-pan-y bg-stone-100"
               >
                 <Image
                   src={bannerImages[activeBannerIndex] || (homa ? getHomaImageUrl(homa.imageUrl) : "/images/Ganesh-Chaturthi-Mahapuja.jpg")}
@@ -823,7 +823,7 @@ export default function HomaDetailClient({
                   priority
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, (max-width: 1280px) 50vw, 650px"
                   unoptimized
-                  className="w-full h-full object-cover sm:object-contain lg:object-cover object-center transition-all duration-300 cursor-pointer"
+                  className="w-full h-full object-cover object-center transition-all duration-300 cursor-pointer"
                   onClick={handleAddHomaToCart}
                 />
               </div>
@@ -985,34 +985,34 @@ export default function HomaDetailClient({
                             : "border-stone-200 hover:border-stone-300 bg-white"
                             }`}
                         >
-                        {/* Bookmark Ribbon on Mobile & Large Desktop / Sleek Corner Pill on Tablet (1024px lg:max-xl) */}
-                        {discountBadge && (
-                          <>
-                            {/* Tablet / 1024px Screen Style: Elegant Floating Top-Right Corner Pill */}
-                            <div className="hidden lg:flex xl:hidden absolute -top-2.5 right-1 z-20 pointer-events-none items-center shadow-xs">
-                              <span className="bg-gradient-to-r from-rose-600 to-rose-700 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full border border-white shadow-xs tracking-wider flex items-center gap-0.5 leading-none">
-                                <span>{discountBadge.replace(/off/i, "").trim()}</span>
-                                <span className="text-[7px] text-amber-300">OFF</span>
-                              </span>
-                            </div>
+                          {/* Bookmark Ribbon on Mobile & Large Desktop / Sleek Corner Pill on Tablet (1024px lg:max-xl) */}
+                          {discountBadge && (
+                            <>
+                              {/* Tablet / 1024px Screen Style: Elegant Floating Top-Right Corner Pill */}
+                              <div className="hidden lg:flex xl:hidden absolute -top-2.5 right-1 z-20 pointer-events-none items-center shadow-xs">
+                                <span className="bg-gradient-to-r from-rose-600 to-rose-700 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full border border-white shadow-xs tracking-wider flex items-center gap-0.5 leading-none">
+                                  <span>{discountBadge.replace(/off/i, "").trim()}</span>
+                                  <span className="text-[7px] text-amber-300">OFF</span>
+                                </span>
+                              </div>
 
-                            {/* Mobile, sm, and xl+ Screens: Classic Ribbon Bookmark */}
-                            <div className="flex lg:hidden xl:flex absolute -top-2.5 right-1.5 sm:right-2 z-20 pointer-events-none">
-                              <div className="relative bg-gradient-to-b from-rose-600 via-rose-700 to-rose-800 text-white px-1.5 sm:px-2 pt-1 pb-1.5 rounded-t-md shadow-md flex flex-col items-center leading-none min-w-[34px] sm:min-w-[38px] border-t border-rose-400/30">
-                                <span className="text-[10px] sm:text-[11px] font-black tracking-tight text-white drop-shadow-xs">
-                                  {discountBadge.replace(/off/i, "").trim()}
-                                </span>
-                                <span className="text-[8px] sm:text-[8.5px] font-black text-amber-300 tracking-wider uppercase mt-0.5">
-                                  OFF
-                                </span>
-                                {/* Bottom ribbon notch cutout */}
-                                <div className="absolute -bottom-1 left-0 right-0 flex justify-center">
-                                  <div className="w-0 h-0 border-l-[17px] sm:border-l-[19px] border-l-rose-800 border-r-[17px] sm:border-r-[19px] border-r-rose-800 border-b-[4px] border-b-transparent" />
+                              {/* Mobile, sm, and xl+ Screens: Classic Ribbon Bookmark */}
+                              <div className="flex lg:hidden xl:flex absolute -top-2.5 right-1.5 sm:right-2 z-20 pointer-events-none">
+                                <div className="relative bg-gradient-to-b from-rose-600 via-rose-700 to-rose-800 text-white px-1.5 sm:px-2 pt-1 pb-1.5 rounded-t-md shadow-md flex flex-col items-center leading-none min-w-[34px] sm:min-w-[38px] border-t border-rose-400/30">
+                                  <span className="text-[10px] sm:text-[11px] font-black tracking-tight text-white drop-shadow-xs">
+                                    {discountBadge.replace(/off/i, "").trim()}
+                                  </span>
+                                  <span className="text-[8px] sm:text-[8.5px] font-black text-amber-300 tracking-wider uppercase mt-0.5">
+                                    OFF
+                                  </span>
+                                  {/* Bottom ribbon notch cutout */}
+                                  <div className="absolute -bottom-1 left-0 right-0 flex justify-center">
+                                    <div className="w-0 h-0 border-l-[17px] sm:border-l-[19px] border-l-rose-800 border-r-[17px] sm:border-r-[19px] border-r-rose-800 border-b-[4px] border-b-transparent" />
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                          </>
-                        )}
+                            </>
+                          )}
 
                           {/* Recommended Badge on Couple Package (idx === 1) */}
                           {idx === 1 && (

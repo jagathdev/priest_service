@@ -833,7 +833,7 @@ export default function PujaDetailClient({
                   heroTouchStartY.current = null;
                   heroTouchEndY.current = null;
                 }}
-                className="relative w-full aspect-[4/3] min-h-[240px] sm:min-h-0 sm:aspect-[4/3] sm:h-auto md:max-h-[380px] lg:max-h-[360px] xl:max-h-[400px] rounded-xl overflow-hidden border border-stone-200/90 shadow-md group touch-pan-y bg-stone-900"
+                className="relative w-full aspect-[4/3] min-h-[240px] sm:aspect-auto sm:h-[350px] md:h-[390px] lg:h-[340px] xl:h-[415px] rounded-2xl min-[375px]:rounded-3xl overflow-hidden border border-stone-200/90 shadow-md group touch-pan-y bg-stone-100"
               >
                 <Image
                   src={bannerImages[activeBannerIndex] || (puja ? getPujaImageUrl(puja.imageUrl) : "/images/Ganesh-Chaturthi-Mahapuja.jpg")}
@@ -842,7 +842,7 @@ export default function PujaDetailClient({
                   priority
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, (max-width: 1280px) 50vw, 650px"
                   unoptimized
-                  className="w-full h-full object-cover sm:object-contain lg:object-cover object-center transition-all duration-300 cursor-pointer"
+                  className="w-full h-full object-cover object-center transition-all duration-300 cursor-pointer"
                   onClick={handleAddPujaToCart}
                 />
               </div>
