@@ -19,7 +19,7 @@ import {
   ShieldCheckIcon,
   VideoCameraIcon,
   XMarkIcon,
-
+  EnvelopeIcon,
 } from "@heroicons/react/24/outline";
 
 const STATUS_CONFIG: Record<
@@ -91,6 +91,7 @@ export default function AdminOrderDetailPage({ params }: { params: Promise<{ id:
   const [scheduledDate, setScheduledDate] = useState<string>("");
   const [videoLink, setVideoLink] = useState<string>("");
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isResendingEmail, setIsResendingEmail] = useState(false);
   const [toastMsg, setToastMsg] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
   const showToast = (message: string, type: "success" | "error" = "success") => {
@@ -177,6 +178,35 @@ export default function AdminOrderDetailPage({ params }: { params: Promise<{ id:
       showToast(err.message || "Failed to update order", "error");
     } finally {
       setIsUpdating(false);
+    }
+  };
+
+  const handleResendNotificationEmail = async () => {
+    if (!order?._id) return;
+    setIsResendingEmail(true);
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
+      const token = getAdminToken();
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+
+      const res = await fetch(`${baseUrl}/api/admin/orders/${order._id}/resend-email`, {
+        method: "POST",
+        headers,
+        credentials: "include",
+      });
+
+      const resData = await res.json();
+      if (res.ok && resData.success) {
+        showToast(resData.message || "Email notification dispatched successfully!");
+      } else {
+        showToast(resData.message || "Failed to dispatch email", "error");
+      }
+    } catch (err: any) {
+      console.error("Resend email error:", err);
+      showToast(err.message || "Failed to trigger email", "error");
+    } finally {
+      setIsResendingEmail(false);
     }
   };
 
@@ -270,8 +300,18 @@ export default function AdminOrderDetailPage({ params }: { params: Promise<{ id:
           </p>
         </div>
 
-        {/* Action Buttons: Share & Print */}
+        {/* Action Buttons: Share, Resend Email & Print */}
         <div className="flex items-center gap-2.5">
+          <button
+            type="button"
+            onClick={handleResendNotificationEmail}
+            disabled={isResendingEmail}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 text-xs font-bold shadow-2xs transition active:scale-95 disabled:opacity-50 cursor-pointer"
+            title="Resend confirmation email to configured recipient team"
+          >
+            <EnvelopeIcon className="w-4 h-4 text-purple-600" />
+            <span>{isResendingEmail ? "Sending..." : "Resend Email"}</span>
+          </button>
           <button
             type="button"
             onClick={() => {
@@ -334,11 +374,18 @@ export default function AdminOrderDetailPage({ params }: { params: Promise<{ id:
           </span>
         </div>
 
-        {/* Card 3: Payment Status */}
+        {/* Card 3: Payment Status & Method */}
         <div className="bg-white rounded-2xl border border-gray-150 p-4 shadow-xs">
-          <div className="flex items-center gap-2 text-gray-400 mb-2">
-            <CreditCardIcon className="w-4 h-4 text-emerald-500" />
-            <span className="text-[11px] font-semibold text-gray-500">Payment Status</span>
+          <div className="flex items-center justify-between text-gray-400 mb-2">
+            <div className="flex items-center gap-1.5">
+              <CreditCardIcon className="w-4 h-4 text-emerald-500" />
+              <span className="text-[11px] font-semibold text-gray-500">Payment Status</span>
+            </div>
+            {order.paymentDetails?.paymentMethod && (
+              <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
+                {order.paymentDetails.paymentMethod}
+              </span>
+            )}
           </div>
           <span className="font-bold text-emerald-700 text-xs sm:text-sm block capitalize">
             {isPaid ? "Paid" : (order.paymentStatus || "Pending")}
@@ -346,6 +393,14 @@ export default function AdminOrderDetailPage({ params }: { params: Promise<{ id:
           <span className="text-[11px] font-extrabold text-gray-800 block mt-0.5">
             ₹ {totalAmount.toLocaleString("en-IN")}
           </span>
+          {order.paymentDetails?.transactionId && (
+            <span
+              className="text-[9.5px] font-mono text-gray-400 block truncate mt-1 pt-1 border-t border-gray-100"
+              title={order.paymentDetails.transactionId}
+            >
+              Txn: {order.paymentDetails.transactionId}
+            </span>
+          )}
         </div>
 
         {/* Card 4: Booking Type */}
@@ -495,15 +550,31 @@ export default function AdminOrderDetailPage({ params }: { params: Promise<{ id:
               <span className="text-gray-500">Special Request</span>
               <span className="text-gray-700 italic truncate max-w-[180px]">{order.wish || "–"}</span>
             </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-500">Payment Method</span>
+              <span className="font-bold text-gray-900">
+                {order.paymentDetails?.paymentMethod || "Razorpay"}
+              </span>
+            </div>
+            {order.paymentDetails?.transactionId && (
+              <div className="flex justify-between items-center gap-2">
+                <span className="text-gray-500 shrink-0">Transaction ID</span>
+                <span className="font-mono text-[11px] font-bold text-emerald-700 truncate max-w-[170px]" title={order.paymentDetails.transactionId}>
+                  {order.paymentDetails.transactionId}
+                </span>
+              </div>
+            )}
+            {order.razorpayOrderId && (
+              <div className="flex justify-between items-center gap-2">
+                <span className="text-gray-500 shrink-0">Razorpay Order ID</span>
+                <span className="font-mono text-[11px] font-semibold text-gray-700 truncate max-w-[170px]" title={order.razorpayOrderId}>
+                  {order.razorpayOrderId}
+                </span>
+              </div>
+            )}
             <div className="flex justify-between">
               <span className="text-gray-500">Booking Source</span>
               <span className="font-bold text-gray-800">Website</span>
-            </div>
-            <div className="flex justify-between items-start gap-2">
-              <span className="text-gray-500 shrink-0">Order Notes</span>
-              <span className="text-[11px] text-gray-600 text-right">
-                Please perform on the specified date and send prasad details.
-              </span>
             </div>
           </div>
         </div>
@@ -640,9 +711,23 @@ export default function AdminOrderDetailPage({ params }: { params: Promise<{ id:
             </div>
           </div>
 
-          <div className="p-4 sm:px-6 bg-gray-50/70 border-t border-gray-150 flex items-center justify-between text-sm font-extrabold text-gray-900">
-            <span>Total Amount</span>
-            <span className="text-emerald-700 text-base">₹ {totalAmount.toLocaleString("en-IN")}</span>
+          <div className="p-4 sm:px-6 bg-gray-50/70 border-t border-gray-150 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-sm font-extrabold text-gray-900">
+            <div>
+              <span>Total Amount</span>
+              <span className="text-emerald-700 text-base ml-2">₹ {totalAmount.toLocaleString("en-IN")}</span>
+            </div>
+            {order.paymentDetails?.transactionId && (
+              <div className="flex items-center gap-1.5 text-[11px] font-normal text-gray-500 font-mono">
+                <span className="font-semibold text-gray-600">Payment:</span>
+                <span className="px-1.5 py-0.5 rounded bg-emerald-100/70 text-emerald-800 font-bold">
+                  {order.paymentDetails.paymentMethod || "Razorpay"}
+                </span>
+                <span className="text-gray-400">•</span>
+                <span className="truncate max-w-[200px]" title={order.paymentDetails.transactionId}>
+                  Txn ID: {order.paymentDetails.transactionId}
+                </span>
+              </div>
+            )}
           </div>
         </div>
 

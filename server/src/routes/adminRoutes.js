@@ -32,6 +32,14 @@ import {
   getDispatchDevotees,
   exportDispatchExcel,
 } from "../controllers/serviceDispatch.controller.js";
+import {
+  getRecipients,
+  addRecipient,
+  updateRecipient,
+  deleteRecipient,
+  triggerTestMail,
+  resendOrderEmail,
+} from "../controllers/notification.controller.js";
 import { requireAuth, requireAdmin } from "../middlewares/auth.js";
 import { loginLimiter } from "../middlewares/rateLimiters.js";
 
@@ -46,7 +54,15 @@ router.get("/orders/:id", getAdminOrderById);
 router.post("/orders/bulk-schedule", bulkScheduleOrders);
 router.post("/orders/bulk-status", bulkUpdateOrdersStatus);
 router.put("/orders/:id", updateAdminOrder);
+router.post("/orders/:orderId/resend-email", resendOrderEmail);
 router.get("/payments", getAdminPayments);
+
+// Email Notification Settings & Multi-Recipients
+router.get("/notifications/recipients", getRecipients);
+router.post("/notifications/recipients", addRecipient);
+router.put("/notifications/recipients/:id", updateRecipient);
+router.delete("/notifications/recipients/:id", deleteRecipient);
+router.post("/notifications/test-mail", triggerTestMail);
 
 // Pre-Orders / Incomplete Booking Leads
 router.get("/pre-orders", getAdminPreOrders);

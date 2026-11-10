@@ -3,6 +3,7 @@ import Order from "../models/Order.js";
 import Payment from "../models/Payment.js";
 import { toPaise } from "../utils/currency.js";
 import { sendOrderConfirmation } from "./whatsapp.service.js";
+import { sendOrderConfirmationEmail } from "./email.service.js";
 import { recordPromoUsage } from "../controllers/promoCode.controller.js";
 
 /**
@@ -116,6 +117,16 @@ export const markOrderPaid = async ({ payment }) => {
         console.log(`[orderPayment] WhatsApp confirmation dispatched for order: ${updatedOrder._id}`);
     } catch (waError) {
         console.error(`[orderPayment] Failed to dispatch WhatsApp confirmation for order ${updatedOrder._id}:`, waError.message);
+    }
+
+    // Trigger Multi-Recipient Order Confirmation Email Notification
+    try {
+        sendOrderConfirmationEmail(updatedOrder).catch((err) =>
+            console.error(`[orderPayment] Background email dispatch error for order ${updatedOrder._id}:`, err.message)
+        );
+        console.log(`[orderPayment] Email notification task initiated for order: ${updatedOrder._id}`);
+    } catch (emailErr) {
+        console.error(`[orderPayment] Failed to initiate email notification for order ${updatedOrder._id}:`, emailErr.message);
     }
 
     // Delete pre-order lead data once payment is completed (only incomplete orders remain)

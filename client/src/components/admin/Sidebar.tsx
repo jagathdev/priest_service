@@ -17,6 +17,7 @@ import {
   UserPlusIcon,
   ChatBubbleBottomCenterTextIcon,
   ArrowDownTrayIcon,
+  EnvelopeIcon,
 } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -32,6 +33,7 @@ const menuItems = [
   { name: "Pre-Orders / Interest", href: "/admin/pre-orders", icon: UserPlusIcon },
   { name: "Promo Codes", href: "/admin/promo-codes", icon: TagIcon },
   { name: "Service Dispatch", href: "/admin/service-dispatch", icon: ArrowDownTrayIcon },
+  { name: "Email Alerts", href: "/admin/notifications", icon: EnvelopeIcon },
   { name: "Customer Queries", href: "/admin/customer-queries", icon: ChatBubbleBottomCenterTextIcon },
   // { name: "Payments & Revenue", href: "/admin/payments", icon: CreditCardIcon },
 ];
