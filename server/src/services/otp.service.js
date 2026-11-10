@@ -2,7 +2,7 @@ import crypto from "crypto";
 import axios from "axios";
 import Otp from "../models/otp.js";
 
-const OTP_EXPIRY_TIME = 5 * 60 * 1000; // 5 minutes
+const OTP_EXPIRY_TIME = 2 * 60 * 1000; // 2 minutes
 const RESEND_COOLDOWN = 60 * 1000; // 60 seconds
 
 export const generateOTP = () => {

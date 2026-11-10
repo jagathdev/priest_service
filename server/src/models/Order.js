@@ -146,6 +146,21 @@ const orderSchema = new mongoose.Schema(
         scheduledDate: { type: Date, default: null },
         performedDate: { type: Date, default: null },
         videoLink: { type: String, default: "" },
+        feedback: {
+            rating: { type: Number, default: null },
+            ratingLabel: { type: String, default: "" },
+            review: { type: String, default: "" },
+            submittedAt: { type: Date, default: null },
+        },
+        feedbacks: [
+            {
+                feedbackId: { type: mongoose.Schema.Types.ObjectId, ref: "Feedback" },
+                rating: { type: Number, required: true },
+                ratingLabel: { type: String, default: "" },
+                review: { type: String, default: "" },
+                submittedAt: { type: Date, default: Date.now },
+            },
+        ],
         // Marketing & Attribution Tracking
         utmSource: { type: String, default: "Direct", trim: true, index: true },
         utmMedium: { type: String, default: "", trim: true },

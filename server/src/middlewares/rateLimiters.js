@@ -1,7 +1,7 @@
 import rateLimit from 'express-rate-limit';
 
 export const globalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
+  windowMs: 5 * 60 * 1000, // 5 minutes
   max: 300,
   message: { success: false, message: 'Too many requests from this IP, please try again after 15 minutes' },
   standardHeaders: true,
@@ -14,9 +14,9 @@ export const globalLimiter = rateLimit({
 });
 
 export const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5,
-  message: { success: false, message: 'Too many login attempts from this IP, please try again after 15 minutes' },
+  windowMs: 5 * 60 * 1000, // 5 minutes
+  max: 10,
+  message: { success: false, message: 'Too many login attempts from this IP, please try again after 5 minutes' },
   standardHeaders: true,
   legacyHeaders: false,
 });
@@ -32,16 +32,16 @@ const extractMobileKey = (req) => {
 
 // ── Separate OTP Send Limiters ──
 export const otpSendLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 20, // Generous IP limit to prevent blocking shared office/mobile NAT IPs
-  message: { success: false, message: 'Too many OTP requests from this network. Please try again after 15 minutes.' },
+  windowMs: 5 * 60 * 1000, // 5 minutes
+  max: 60, // IP limit to prevent blocking shared office/mobile NAT IPs
+  message: { success: false, message: 'Too many OTP requests from this network. Please try again after 5 minutes.' },
   standardHeaders: true,
   legacyHeaders: false,
 });
 
 export const otpSendPerMobileLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // Max 5 OTP sends per specific mobile number in 15 mins
+  windowMs: 5 * 60 * 1000, // 5 minutes
+  max: 10, // Only triggers if user generates above 20-25 OTPs
   keyGenerator: extractMobileKey,
   message: { success: false, message: 'Too many OTP requests for this mobile number. Please wait a few minutes before trying again.' },
   standardHeaders: true,
@@ -50,8 +50,8 @@ export const otpSendPerMobileLimiter = rateLimit({
 
 // ── Separate OTP Verification Limiters ──
 export const otpVerifyLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 40,
+  windowMs: 5 * 60 * 1000, // 15 minutes
+  max: 60,
   message: { success: false, message: 'Too many verification attempts from this network. Please wait a few minutes.' },
   standardHeaders: true,
   legacyHeaders: false,
@@ -59,7 +59,7 @@ export const otpVerifyLimiter = rateLimit({
 
 export const otpVerifyPerMobileLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // Max 10 verification attempts per specific mobile number
+  max: 30, // Max 30 verification attempts per specific mobile number
   keyGenerator: extractMobileKey,
   message: { success: false, message: 'Too many verification attempts for this mobile number. Please request a new OTP.' },
   standardHeaders: true,

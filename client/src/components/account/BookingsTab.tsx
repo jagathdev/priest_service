@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useUser } from "@/contexts/UserContext";
 import { request } from "@/lib/api-client";
 import { ArrowLeft, Home, Calendar, Check, User, X, ClipboardList, Loader2, Bookmark, PackageOpen, Landmark, Flame, Play } from "lucide-react";
+import PujaFeedbackCard from "@/components/account/PujaFeedbackCard";
 
 const formatBookingId = (order: any) => {
   if (order?.orderNumber) {
@@ -710,6 +711,30 @@ export default function BookingsTab() {
                 })()}
 
               </div>
+            );
+          })()}
+
+          {/* Rate & Review Card (Visible for Completed / Video Delivered Orders) */}
+          {(() => {
+            const isCompleted = selectedOrder.orderStatus === 'completed' || selectedOrder.videoLink;
+            if (!isCompleted) return null;
+            return (
+              <PujaFeedbackCard
+                order={selectedOrder}
+                onSubmitted={(feedbackData) => {
+                  setSelectedOrder((prev: any) => ({
+                    ...prev,
+                    feedback: feedbackData,
+                  }));
+                  setOrders((prev) =>
+                    prev.map((o) =>
+                      (o._id === selectedOrder._id || o.id === selectedOrder.id)
+                        ? { ...o, feedback: feedbackData }
+                        : o
+                    )
+                  );
+                }}
+              />
             );
           })()}
         </div>

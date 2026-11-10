@@ -216,6 +216,8 @@ export default function Navbar() {
 
   const handleLogout = async () => {
     document.cookie = "userLogin=false; path=/; max-age=0;";
+    localStorage.removeItem("token");
+    localStorage.removeItem("mockUser");
     setUser(null);
     window.location.href = "/";
   };

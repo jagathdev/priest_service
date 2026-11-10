@@ -1,6 +1,7 @@
 import express from "express";
 import rateLimit from "express-rate-limit";
 import { previewOrder, getUserOrders, getOrderStatus } from "../controllers/order.controller.js";
+import { submitOrderFeedback, getOrderFeedback, deleteOrderFeedback } from "../controllers/feedback.controller.js";
 import { requireAuth, requireUserOrAdmin } from "../middlewares/auth.js";
 import { validateRequest } from "../middlewares/validate.js";
 import { validatePreviewOrder } from "../validators/public.schemas.js";
@@ -18,5 +19,8 @@ const statusLimiter = rateLimit({
 router.get("/status", statusLimiter, getOrderStatus);
 router.post("/preview", validateRequest(validatePreviewOrder), previewOrder);
 router.get("/user/:userId", requireAuth, requireUserOrAdmin, getUserOrders);
+router.post("/:orderId/feedback", submitOrderFeedback);
+router.get("/:orderId/feedback", getOrderFeedback);
+router.delete("/:orderId/feedback/:feedbackId", deleteOrderFeedback);
 
 export default router;
