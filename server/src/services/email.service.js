@@ -3,31 +3,18 @@ import NotificationRecipient from "../models/NotificationRecipient.js";
 
 /**
  * Creates and returns the nodemailer transporter using environment variables.
- * Seamlessly supports Brevo (Sendinblue), Gmail, Zoho, AWS SES, or custom SMTP.
+ * Uses standard SMTP Host, Port, User and Password.
  */
 export const getTransporter = () => {
-  // If SMTP_USER is set to Brevo (or BREVO_API_KEY is provided), default to Brevo's relay
-  const isBrevo =
-    (process.env.SMTP_USER && process.env.SMTP_USER.includes("brevo")) ||
-    Boolean(process.env.BREVO_API_KEY);
-
-  const defaultHost = isBrevo ? "smtp-relay.brevo.com" : "smtp.gmail.com";
-  const host = process.env.SMTP_HOST || defaultHost;
-  const port = parseInt(process.env.SMTP_PORT || (isBrevo ? "587" : "465"), 10);
+  const host = process.env.SMTP_HOST || "smtp.pepipost.com";
+  const port = parseInt(process.env.SMTP_PORT || "587", 10);
   const secure = port === 465 || process.env.SMTP_SECURE === "true";
 
-  // Username: can be SMTP_USER, or Brevo user/login
   const user = process.env.SMTP_USER || process.env.EMAIL_USER;
-
-  // Password / Key: SMTP_PASS, BREVO_API_KEY, or SMTP_PASSWORD
-  const pass =
-    process.env.SMTP_PASS ||
-    process.env.BREVO_API_KEY ||
-    process.env.SMTP_PASSWORD ||
-    process.env.EMAIL_PASSWORD;
+  const pass = process.env.SMTP_PASS || process.env.SMTP_PASSWORD || process.env.EMAIL_PASSWORD;
 
   if (!user || !pass) {
-    console.warn("[email.service] Warning: SMTP_USER or SMTP_PASS/BREVO_API_KEY not set. Emails may fail to send.");
+    console.warn("[email.service] Warning: SMTP_USER or SMTP_PASS not set. Emails may fail to send.");
   }
 
   return nodemailer.createTransport({
@@ -45,58 +32,16 @@ export const getTransporter = () => {
 };
 
 /**
- * Checks if the email credentials are configured and connects successfully.
- * Checks Brevo REST API first if BREVO_API_KEY is present, then falls back to SMTP.
+ * Checks if the SMTP credentials are configured and connects successfully.
  */
 export const verifySmtpConnection = async () => {
-  const brevoKey = process.env.BREVO_API_KEY;
-  if (brevoKey && brevoKey.startsWith("xkeysib-")) {
-    try {
-      const res = await fetch("https://api.brevo.com/v3/account", {
-        headers: { "api-key": brevoKey },
-      });
-      const data = await res.json();
-      if (res.ok && data.email) {
-        return {
-          connected: true,
-          mode: "brevo_api",
-          user: data.email,
-          host: "api.brevo.com",
-          message: `Brevo API Authenticated`,
-        };
-      }
-      if (data.message && data.message.includes("authorised_ips")) {
-        return {
-          connected: false,
-          mode: "brevo_api",
-          message: `Brevo IP Whitelist Required: Please authorize IP at https://app.brevo.com/security/authorised_ips or disable IP restriction in Brevo security settings.`,
-        };
-      }
-      return {
-        connected: false,
-        mode: "brevo_api",
-        message: data.message || "Brevo API authentication failed",
-      };
-    } catch (e) {
-      return {
-        connected: false,
-        mode: "brevo_api",
-        message: `Brevo API connection error: ${e.message}`,
-      };
-    }
-  }
-
   const user = process.env.SMTP_USER || process.env.EMAIL_USER;
-  const pass =
-    process.env.SMTP_PASS ||
-    process.env.BREVO_API_KEY ||
-    process.env.SMTP_PASSWORD ||
-    process.env.EMAIL_PASSWORD;
+  const pass = process.env.SMTP_PASS || process.env.SMTP_PASSWORD || process.env.EMAIL_PASSWORD;
 
   if (!user || !pass) {
     return {
       connected: false,
-      message: "SMTP credentials not configured. Please set BREVO_API_KEY or SMTP_USER and SMTP_PASS in server .env",
+      message: "SMTP credentials not configured. Please set SMTP_USER and SMTP_PASS in server .env",
     };
   }
 
@@ -106,7 +51,7 @@ export const verifySmtpConnection = async () => {
     return {
       connected: true,
       user,
-      host: process.env.SMTP_HOST || "smtp-relay.brevo.com",
+      host: process.env.SMTP_HOST || "smtp.pepipost.com",
       message: "SMTP Server is ready and authenticated successfully.",
     };
   } catch (error) {
@@ -115,93 +60,6 @@ export const verifySmtpConnection = async () => {
       message: error.message || "Failed to connect to SMTP server",
     };
   }
-};
-
-/**
- * Fetches the verified sender from Brevo or falls back to configured email.
- */
-let cachedBrevoSender = null;
-export const getBrevoSender = async () => {
-  if (cachedBrevoSender) return cachedBrevoSender;
-  const apiKey = process.env.BREVO_API_KEY;
-  if (!apiKey) {
-    return {
-      email: process.env.EMAIL_FROM || "jagathratchagan@astroved.com",
-      name: "Priest Services Order Alert",
-    };
-  }
-
-  try {
-    const res = await fetch("https://api.brevo.com/v3/senders", {
-      headers: { "api-key": apiKey },
-    });
-    const data = await res.json();
-    if (data.senders && data.senders.length > 0) {
-      // Find an active sender
-      const activeSender = data.senders.find((s) => s.active) || data.senders[0];
-      cachedBrevoSender = {
-        email: activeSender.email,
-        name: activeSender.name || "Priest Services Order Alert",
-      };
-      return cachedBrevoSender;
-    }
-  } catch (err) {
-    console.warn("[email.service] Failed to fetch Brevo senders:", err.message);
-  }
-
-  return {
-    email: process.env.EMAIL_FROM || "jagathratchagan@astroved.com",
-    name: "Priest Services",
-  };
-};
-
-/**
- * Sends an email using Brevo REST API v3 (https://api.brevo.com/v3/smtp/email)
- */
-export const sendViaBrevoApi = async ({ to, subject, html, senderName, senderEmail }) => {
-  const apiKey = process.env.BREVO_API_KEY;
-  if (!apiKey) {
-    throw new Error("BREVO_API_KEY is not configured in server environment");
-  }
-
-  // Auto-resolve verified sender from Brevo account
-  const verifiedSender = await getBrevoSender();
-  const fromEmail = senderEmail || process.env.EMAIL_FROM || verifiedSender.email;
-  const fromName = senderName || verifiedSender.name || "Priest Services Order Alert";
-
-  const recipients = Array.isArray(to)
-    ? to.map((e) => (typeof e === "string" ? { email: e.trim() } : e))
-    : [{ email: to }];
-
-  const payload = {
-    sender: {
-      name: fromName,
-      email: fromEmail,
-    },
-    to: recipients,
-    subject,
-    htmlContent: html,
-  };
-
-  const response = await fetch("https://api.brevo.com/v3/smtp/email", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "api-key": apiKey,
-      accept: "application/json",
-    },
-    body: JSON.stringify(payload),
-  });
-
-  const resJson = await response.json();
-
-  if (!response.ok) {
-    const errMsg = resJson.message || `Brevo API HTTP Error ${response.status}`;
-    console.error("[email.service] Brevo API Error:", resJson);
-    throw new Error(errMsg);
-  }
-
-  return resJson;
 };
 
 /**
@@ -441,27 +299,6 @@ export const sendOrderConfirmationEmail = async (order) => {
 
     console.log(`[email.service] Sending order confirmation email for ${orderNumber} to: ${emailList.join(", ")}`);
 
-    // If BREVO_API_KEY is present, send directly via Brevo REST API v3
-    if (process.env.BREVO_API_KEY && process.env.BREVO_API_KEY.startsWith("xkeysib-")) {
-      try {
-        const apiRes = await sendViaBrevoApi({
-          to: emailList,
-          subject,
-          html,
-        });
-        console.log(`[email.service] Brevo API order confirmation sent successfully:`, apiRes);
-        return {
-          success: true,
-          total: emailList.length,
-          successful: emailList.length,
-          failed: 0,
-          provider: "brevo_api",
-        };
-      } catch (brevoErr) {
-        console.error(`[email.service] Brevo API failed (${brevoErr.message}), falling back to SMTP...`);
-      }
-    }
-
     // Send in parallel to all recipients via SMTP
     const results = await Promise.allSettled(
       emailList.map((toEmail) =>
@@ -543,26 +380,6 @@ export const sendTestEmail = async (targetEmail = null) => {
 
   const html = generateOrderEmailHtml(mockOrder);
   const testSubject = `[TEST EMAIL] Priest Services Order Notification System is Working! 🔔`;
-
-  // If BREVO_API_KEY is present, send via Brevo REST API v3
-  if (process.env.BREVO_API_KEY && process.env.BREVO_API_KEY.startsWith("xkeysib-")) {
-    try {
-      const apiRes = await sendViaBrevoApi({
-        to: recipients,
-        subject: testSubject,
-        html,
-      });
-      return {
-        success: true,
-        sentTo: recipients,
-        provider: "brevo_api",
-        messageId: apiRes?.messageId,
-        timestamp: now.toISOString(),
-      };
-    } catch (brevoErr) {
-      console.warn(`[email.service] Test mail Brevo API error (${brevoErr.message}), falling back to SMTP...`);
-    }
-  }
 
   const results = await Promise.allSettled(
     recipients.map((toEmail) =>

@@ -40,14 +40,21 @@ export const metadata: Metadata = {
     url: "https://www.priestservices.astroved.com/",
     title: "Priest Services | Sacred Pujas & Rituals by AstroVed",
     description: "Book authentic Vedic pujas, homas, and ritual services online. Expert priests for your spiritual and religious needs.",
-    images: ["https://www.astroved.com/images/assets/priest-services-og-image.jpg"],
-    siteName: "AstroVed",
+    images: [
+      {
+        url: "https://www.priestservices.astroved.com/images/navagraga_puja.png",
+        width: 1200,
+        height: 630,
+        alt: "Priest Services by AstroVed",
+      },
+    ],
+    siteName: "Priest Services",
   },
   twitter: {
     card: "summary_large_image",
     title: "Priest Services | Sacred Pujas & Rituals by AstroVed",
     description: "Book authentic Vedic pujas, homas, and ritual services online. Expert priests for your spiritual and religious needs.",
-    images: ["https://www.astroved.com/images/assets/priest-services-og-image.jpg"],
+    images: ["https://www.priestservices.astroved.com/images/navagraga_puja.png"],
   },
 };
 

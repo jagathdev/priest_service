@@ -35,14 +35,45 @@ export async function generateMetadata(
     ? puja.metaKeywords.split(',').map((k: string) => k.trim())
     : ['puja', 'seva', puja?.title || formattedSlugTitle, 'AstroVed', 'rituals'];
 
+  const rawImageUrl =
+    puja?.imageUrl ||
+    (puja as any)?.details?.heroImage ||
+    (puja as any)?.image ||
+    "https://www.priestservices.astroved.com/images/navagraga_puja.png";
+
+  const absoluteImageUrl = rawImageUrl.startsWith("http")
+    ? rawImageUrl
+    : `https://www.priestservices.astroved.com${rawImageUrl.startsWith("/") ? "" : "/"}${rawImageUrl}`;
+
+  const canonicalUrl = `https://www.priestservices.astroved.com/puja/${slug}`;
+
   return {
     title,
     description,
     keywords,
+    alternates: {
+      canonical: canonicalUrl,
+    },
     openGraph: {
+      type: 'website',
+      url: canonicalUrl,
       title,
       description,
-      images: puja?.imageUrl ? [{ url: puja.imageUrl }] : [],
+      siteName: 'Priest Services | AstroVed',
+      images: [
+        {
+          url: absoluteImageUrl,
+          width: 1200,
+          height: 630,
+          alt: title,
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [absoluteImageUrl],
     },
   };
 }
