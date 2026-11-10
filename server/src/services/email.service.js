@@ -217,7 +217,6 @@ export const generateOrderEmailHtml = (order) => {
   const transactionId = order.paymentDetails?.transactionId;
   const paymentMethod = order.paymentDetails?.paymentMethod;
   const promo = order.promo || null;
-  const discountAmount = order.discountAmount ? Number(order.discountAmount).toLocaleString("en-IN") : null;
   const wish = order.wish || null;
 
   // Format booking date & time
@@ -352,8 +351,8 @@ export const generateOrderEmailHtml = (order) => {
                 </tr>
                 ${promo ? `
                 <tr>
-                  <td style="padding: 6px 0; color: #78716c;">Promo Code Applied:</td>
-                  <td style="padding: 6px 0; font-weight: 700; color: #c2410c;">${promo}${discountAmount ? ` (Saved ₹${discountAmount})` : ""}</td>
+                  <td style="padding: 6px 0; color: #78716c;">Promo :</td>
+                  <td style="padding: 6px 0; font-weight: 700; color: #c2410c;">${promo}}</td>
                 </tr>` : ""}
               </table>
             </td>

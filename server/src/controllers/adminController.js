@@ -60,6 +60,7 @@ export const getAdminOrders = async (req, res) => {
       status = "All",
       tab = "active", // "active" | "completed" | "all"
       search = "",
+      source = "All",
       paymentStatus,
       startDate,
       endDate,
@@ -71,11 +72,12 @@ export const getAdminOrders = async (req, res) => {
     const query = {};
     const andConditions = [];
 
-    // Filter unpaid orders: default hides unpaid (pending/failed), admin can supply paymentStatus filter
+    // Filter unpaid / draft orders: default hides unpaid (pending/failed) and draft "created" orders
     if (paymentStatus && paymentStatus !== "All") {
       query.paymentStatus = paymentStatus;
     } else if (!paymentStatus) {
       query.paymentStatus = { $nin: ["pending", "failed"] };
+      query.orderStatus = { $ne: "created" };
     }
 
     // Tab-based filtering
@@ -89,6 +91,24 @@ export const getAdminOrders = async (req, res) => {
     // Status filter (if explicitly passed and not "All")
     if (status && status !== "All") {
       query.orderStatus = new RegExp(`^${escapeRegex(status)}$`, "i");
+    }
+
+    // UTM Source filter
+    if (source && source !== "All") {
+      if (source === "Direct") {
+        andConditions.push({
+          $or: [
+            { utmSource: "Direct" },
+            { utmSource: "" },
+            { utmSource: { $exists: false } },
+            { utmSource: null },
+          ],
+        });
+      } else {
+        andConditions.push({
+          utmSource: new RegExp(escapeRegex(source), "i"),
+        });
+      }
     }
 
     // Service filter
@@ -189,7 +209,7 @@ export const getAdminOrders = async (req, res) => {
       Order.distinct("orderStatus"),
       Order.countDocuments(baseStatsQuery),
       Order.countDocuments({ ...baseStatsQuery, orderStatus: "scheduled" }),
-      Order.countDocuments({ ...baseStatsQuery, orderStatus: { $in: ["confirmed", "created"] } }),
+      Order.countDocuments({ ...baseStatsQuery, orderStatus: "confirmed" }),
       Order.countDocuments({ ...baseStatsQuery, orderStatus: "performed" }),
       Order.countDocuments({ ...baseStatsQuery, orderStatus: "completed" }),
       Order.countDocuments({ ...baseStatsQuery, orderStatus: "cancelled" }),
@@ -225,7 +245,9 @@ export const getAdminOrders = async (req, res) => {
           )
         ),
       ],
-      statuses: ["All", ...new Set(statusesRaw.filter(Boolean))],
+      statuses: ["All", ...new Set(statusesRaw.filter((s) => Boolean(s) && s !== "created"))],
+      sources: ["All", "Google", "Facebook", "Instagram", "WhatsApp", "YouTube", "Direct"],
+      sources: ["All", "Google", "Facebook", "Instagram", "WhatsApp", "YouTube", "Direct"],
       stats: {
         total: totalCount,
         scheduled: scheduledCount,
@@ -348,7 +370,11 @@ export const getAdminStats = async (req, res) => {
   try {
     const pujaCount = await Puja.countDocuments({ status: "active" });
     const homaCount = await Homa.countDocuments({ status: "active" });
-    const ordersCount = await Order.countDocuments({});
+    const confirmedOrderFilter = {
+      orderStatus: { $ne: "created" },
+      paymentStatus: { $nin: ["failed"] },
+    };
+    const ordersCount = await Order.countDocuments(confirmedOrderFilter);
 
     // OTP Statistics: Query ONLY from the 'otps' collection directly
     const startOfToday = new Date();
@@ -365,10 +391,24 @@ export const getAdminStats = async (req, res) => {
     ]);
     const revenue = revenueResult[0]?.total || 0;
 
-    const recentBookings = await Order.find({})
+    const recentBookingsRaw = await Order.find({
+      orderStatus: { $ne: "created" },
+    })
       .sort({ createdAt: -1 })
       .limit(10)
-      .populate("pooja", "title name imageUrl");
+      .lean();
+
+    const recentBookings = recentBookingsRaw.map((b) => ({
+      ...b,
+      serviceName:
+        b.itemName ||
+        (typeof b.pooja === "string" ? b.pooja : b.pooja?.title || b.pooja?.name) ||
+        "Sacred Ritual",
+      devoteeName:
+        b.customerName ||
+        b.participants?.[0]?.name ||
+        "Devotee",
+    }));
 
     return res.status(200).json({
       success: true,

@@ -6,6 +6,8 @@ import GlobalChrome from "@/components/layout/GlobalChrome";
 import { Providers } from "./Providers";
 import { cookies } from "next/headers";
 import Script from "next/script";
+import { Suspense } from "react";
+import UtmTracker from "@/components/UtmTracker";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -242,6 +244,9 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         />
 
         <Providers serverUser={serverUser}>
+          <Suspense fallback={null}>
+            <UtmTracker />
+          </Suspense>
           <div className="flex-1">
             {children}
           </div>

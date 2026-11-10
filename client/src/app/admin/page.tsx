@@ -8,6 +8,7 @@ import {
   DevicePhoneMobileIcon,
   CheckCircleIcon,
   ClockIcon,
+  CalendarDaysIcon,
 } from "@heroicons/react/24/outline";
 
 export default async function AdminDashboard() {
@@ -126,7 +127,7 @@ export default async function AdminDashboard() {
         </Link>
 
         {/* Total Revenue Card */}
-        <Link href="/admin/payments" className="bg-white rounded-2xl border border-gray-200 p-6 shadow-xs hover:shadow-md transition group">
+        <Link href="/admin/orders" className="bg-white rounded-2xl border border-gray-200 p-6 shadow-xs hover:shadow-md transition group">
           <div className="flex items-center justify-between">
             <dt className="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Revenue</dt>
             <div className="w-9 h-9 rounded-xl bg-green-50 text-success flex items-center justify-center">
@@ -134,7 +135,7 @@ export default async function AdminDashboard() {
             </div>
           </div>
           <dd className="text-3xl font-black text-success mt-3">₹{stats.revenue.toLocaleString()}</dd>
-          <span className="text-xs font-bold text-success mt-2 inline-block group-hover:underline">Revenue Details →</span>
+          <span className="text-xs font-bold text-success mt-2 inline-block group-htext-green-700rline">View Bookings →</span>
         </Link>
       </div>
 
@@ -219,6 +220,7 @@ export default async function AdminDashboard() {
                 <th className="px-4 py-3">Devotee Name</th>
                 <th className="px-4 py-3">Service Ritual</th>
                 <th className="px-4 py-3">Type</th>
+                <th className="px-4 py-3 whitespace-nowrap">Booked At (Date &amp; Time)</th>
                 <th className="px-4 py-3">Amount</th>
                 <th className="px-4 py-3">Status</th>
               </tr>
@@ -226,35 +228,93 @@ export default async function AdminDashboard() {
             <tbody className="divide-y divide-gray-100 font-medium">
               {recentBookings.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-4 py-6 text-center text-gray-500 text-xs">
+                  <td colSpan={6} className="px-4 py-6 text-center text-gray-500 text-xs">
                     No recent devotee bookings found.
                   </td>
                 </tr>
               ) : (
-                recentBookings.map((booking: any, idx: number) => (
-                  <tr key={booking._id || idx} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 font-bold text-gray-900">
-                      {booking.participants?.[0]?.name || booking.name || "Devotee"}
-                    </td>
-                    <td className="px-4 py-3 text-gray-800">
-                      {booking.pooja?.title || booking.pooja?.name || booking.serviceName || "Puja Ritual"}
-                    </td>
-                    <td className="px-4 py-3 font-bold text-success uppercase text-[10px]">
-                      {booking.type || "Puja"}
-                    </td>
-                    <td className="px-4 py-3 font-extrabold text-gray-900">
-                      ₹{booking.pricing?.total || booking.amount || 0}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${(booking.paymentStatus || booking.orderStatus) === "paid" || (booking.paymentStatus || booking.orderStatus) === "completed"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-blue-100 text-blue-700"
-                        }`}>
-                        {booking.orderStatus || booking.paymentStatus || "Confirmed"}
-                      </span>
-                    </td>
-                  </tr>
-                ))
+                recentBookings.map((booking: any, idx: number) => {
+                  const serviceTitle =
+                    booking.serviceName ||
+                    booking.itemName ||
+                    (typeof booking.pooja === "string" ? booking.pooja : booking.pooja?.title || booking.pooja?.name) ||
+                    "Sacred Ritual";
+                  const rawType = (booking.serviceType || booking.type || "Puja").toUpperCase();
+                  const rawStatus = (booking.orderStatus || booking.paymentStatus || "confirmed").toLowerCase();
+
+                  let badgeClass = "bg-blue-100 text-blue-700";
+                  if (rawStatus === "scheduled") badgeClass = "bg-amber-100 text-amber-700";
+                  else if (rawStatus === "performed") badgeClass = "bg-indigo-100 text-indigo-700";
+                  else if (rawStatus === "completed" || rawStatus === "paid") badgeClass = "bg-green-100 text-green-700";
+                  else if (rawStatus === "confirmed") badgeClass = "bg-emerald-100 text-emerald-700";
+
+                  // Format Booking Date & Time
+                  const dateSource = booking.createdAt || booking.bookingDate;
+                  let formattedDate = "-";
+                  let formattedTime = "";
+                  if (dateSource) {
+                    try {
+                      const d = new Date(dateSource);
+                      if (!isNaN(d.getTime())) {
+                        formattedDate = d.toLocaleDateString("en-IN", {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                        });
+                        formattedTime = d.toLocaleTimeString("en-IN", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          hour12: true,
+                        });
+                      }
+                    } catch {
+                      formattedDate = "-";
+                    }
+                  }
+
+                  return (
+                    <tr key={booking._id || idx} className="hover:bg-gray-50/80 transition-colors">
+                      <td className="px-4 py-3.5 font-bold text-gray-900">
+                        {booking.customerName || booking.participants?.[0]?.name || booking.name || "Devotee"}
+                      </td>
+                      <td className="px-4 py-3.5">
+                        <span className="font-bold text-gray-900 block max-w-[280px] truncate" title={serviceTitle}>
+                          {serviceTitle}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3.5">
+                        <span
+                          className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-extrabold tracking-wide uppercase ${rawType.includes("HOMA")
+                            ? "bg-purple-100 text-purple-700 border border-purple-200"
+                            : "bg-emerald-100 text-emerald-700 border border-emerald-200"
+                            }`}
+                        >
+                          {rawType.includes("HOMA") ? "HOMA" : "PUJA"}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3.5 whitespace-nowrap text-gray-600">
+                        <div className="font-semibold text-gray-900 flex items-center gap-1.5">
+                          <CalendarDaysIcon className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                          <span>{formattedDate}</span>
+                        </div>
+                        {formattedTime && (
+                          <div className="text-[11px] text-gray-400 flex items-center gap-1.5 mt-0.5">
+                            <ClockIcon className="w-3 h-3 text-gray-400 shrink-0" />
+                            <span>{formattedTime}</span>
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-4 py-3.5 font-extrabold text-gray-900 whitespace-nowrap">
+                        ₹{(booking.pricing?.total || booking.amount || 0).toLocaleString("en-IN")}
+                      </td>
+                      <td className="px-4 py-3.5 whitespace-nowrap">
+                        <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full uppercase ${badgeClass}`}>
+                          {booking.orderStatus || booking.paymentStatus || "Confirmed"}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>

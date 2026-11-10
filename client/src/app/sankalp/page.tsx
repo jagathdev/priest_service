@@ -14,6 +14,7 @@ import { apiClient, getAuthToken } from "@/services/api";
 import { getStartingPriceINR } from "@/lib/pricing";
 import PriceTag from "@/components/ui/PriceTag";
 import { ArrowLeft, CreditCard, QrCode, Calendar, Lock, Check } from "lucide-react";
+import { getStoredUtmDetails } from "@/lib/utmTracker";
 
 interface RazorpayResponse {
   razorpay_order_id: string;
@@ -48,6 +49,7 @@ function SankalpContent() {
   const queryAmount = searchParams?.get("amount") || "";
   const queryTitle = searchParams?.get("title") || "";
   const itemType = searchParams?.get("type") || "puja";
+  const queryPromo = searchParams?.get("promo") || "";
 
   const [pujaData, setPujaData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -381,6 +383,12 @@ function SankalpContent() {
         imageUrl: o.imageUrl || o.image || ""
       }));
 
+      const storedAttribution = getStoredUtmDetails();
+      // 1. promoCode is strictly the discount coupon applied in checkout
+      const discountCouponCode = appliedPromo?.promoCode || "";
+      // 2. promo is the marketing query parameter (?promo=...)
+      const trackingPromoParam = queryPromo || storedAttribution.promo || "";
+
       const orderDetailsPayload = {
         pooja: itemName,
         serviceId: pujaData?._id || pujaData?.id,
@@ -400,7 +408,7 @@ function SankalpContent() {
         gotra: formData.participants[0]?.dontKnowGotra ? "" : (formData.participants[0]?.gotra.trim() || formData.gotra.trim()),
         doesNotKnowGotra: formData.participants[0]?.dontKnowGotra || formData.dontKnowGotra,
         wish: formData.wish,
-        promoCode: appliedPromo?.promoCode || "",
+        promoCode: discountCouponCode,
         promoCodeId: appliedPromo?.promoId || null,
         packageId: selectedPackage?.id || pkgId,
         offerings: offeringsPayload,
@@ -412,7 +420,9 @@ function SankalpContent() {
           extraParticipantAmount: extraParticipantFee,
           offeringsAmount: offeringsTotal,
           total: paidAmount
-        }
+        },
+        ...storedAttribution,
+        promo: trackingPromoParam,
       };
 
       setLoadingMsg("Creating order securely...");

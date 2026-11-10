@@ -92,6 +92,12 @@ export const getAdminPreOrders = async (req, res) => {
       doesNotKnowGotra: Boolean(l.doesNotKnowGotra),
       wish: l.wish || "",
       offerings: l.offerings || [],
+      utmSource: l.utmSource || "Direct",
+      utmMedium: l.utmMedium || "",
+      utmCampaign: l.utmCampaign || "",
+      utmSource: l.utmSource || "Direct",
+      utmMedium: l.utmMedium || "",
+      utmCampaign: l.utmCampaign || "",
       createdAt: l.createdAt,
     }));
 

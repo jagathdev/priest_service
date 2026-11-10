@@ -126,6 +126,9 @@ interface OrderData {
   pricing?: {
     total?: number;
   };
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
 }
 
 interface StatsData {
@@ -148,6 +151,7 @@ export default function AdminOrdersPage() {
     limit: number;
     services: string[];
     statuses: string[];
+    sources?: string[];
     stats?: StatsData;
   }>({
     orders: [],
@@ -156,12 +160,14 @@ export default function AdminOrdersPage() {
     limit: 10,
     services: ["All"],
     statuses: ["All"],
+    sources: ["All", "Google", "Facebook", "Instagram", "WhatsApp", "YouTube", "Direct"],
   });
 
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedService, setSelectedService] = useState("All");
   const [selectedStatus, setSelectedStatus] = useState("All");
+  const [selectedSource, setSelectedSource] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
 
   // Date range filter between 2 dates
@@ -238,6 +244,7 @@ export default function AdminOrdersPage() {
       page: number,
       service: string,
       status: string,
+      source: string,
       query: string,
       tab: "active" | "completed",
       sDate: string,
@@ -253,6 +260,7 @@ export default function AdminOrdersPage() {
         });
         if (service !== "All") params.append("service", service);
         if (status !== "All") params.append("status", status);
+        if (source !== "All") params.append("source", source);
         if (query.trim()) params.append("search", query.trim());
         if (sDate) params.append("startDate", sDate);
         if (eDate) params.append("endDate", eDate);
@@ -272,6 +280,7 @@ export default function AdminOrdersPage() {
               limit: result.limit || 10,
               services: result.services || ["All"],
               statuses: result.statuses || ["All"],
+              sources: result.sources || ["All", "Google", "Facebook", "Instagram", "WhatsApp", "YouTube", "Direct"],
               stats: result.stats,
             });
           }
@@ -287,15 +296,15 @@ export default function AdminOrdersPage() {
 
   useEffect(() => {
     const handler = setTimeout(() => {
-      fetchOrders(currentPage, selectedService, selectedStatus, searchQuery, activeTab, startDate, endDate);
+      fetchOrders(currentPage, selectedService, selectedStatus, selectedSource, searchQuery, activeTab, startDate, endDate);
     }, 300);
     return () => clearTimeout(handler);
-  }, [currentPage, selectedService, selectedStatus, searchQuery, activeTab, startDate, endDate, fetchOrders]);
+  }, [currentPage, selectedService, selectedStatus, selectedSource, searchQuery, activeTab, startDate, endDate, fetchOrders]);
 
   useEffect(() => {
     setCurrentPage(1);
     setSelectedOrderIds([]);
-  }, [selectedService, selectedStatus, searchQuery, activeTab, startDate, endDate]);
+  }, [selectedService, selectedStatus, selectedSource, searchQuery, activeTab, startDate, endDate]);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -325,7 +334,7 @@ export default function AdminOrdersPage() {
   const isAllSelected = data.orders.length > 0 && selectedOrderIds.length === data.orders.length;
 
   // Intercept status changes to ask for date or video link when needed
-  
+
   const requestBulkStatusChange = (newStatus: string) => {
     if (selectedOrderIds.length === 0 && selectedService === "All") {
       showToast("Please select orders or choose a specific service to bulk update", "error");
@@ -419,13 +428,13 @@ export default function AdminOrdersPage() {
             ? "Puja completed! Moved to 'Completed Rituals' tab"
             : `Order status updated to ${newStatus}`
         );
-        fetchOrders(currentPage, selectedService, selectedStatus, searchQuery, activeTab, startDate, endDate);
+        fetchOrders(currentPage, selectedService, selectedStatus, selectedSource, searchQuery, activeTab, startDate, endDate);
       } else {
-        fetchOrders(currentPage, selectedService, selectedStatus, searchQuery, activeTab, startDate, endDate);
+        fetchOrders(currentPage, selectedService, selectedStatus, selectedSource, searchQuery, activeTab, startDate, endDate);
       }
     } catch (err) {
       console.error("Failed to update order status:", err);
-      fetchOrders(currentPage, selectedService, selectedStatus, searchQuery, activeTab, startDate, endDate);
+      fetchOrders(currentPage, selectedService, selectedStatus, selectedSource, searchQuery, activeTab, startDate, endDate);
     }
   };
 
@@ -474,7 +483,7 @@ export default function AdminOrdersPage() {
       if (res.ok) {
         showToast("Order status & details updated successfully!");
         setEditingOrder(null);
-        fetchOrders(currentPage, selectedService, selectedStatus, searchQuery, activeTab, startDate, endDate);
+        fetchOrders(currentPage, selectedService, selectedStatus, selectedSource, searchQuery, activeTab, startDate, endDate);
       } else {
         const data = await res.json().catch(() => ({}));
         showToast(data.message || "Failed to save order updates", "error");
@@ -519,7 +528,7 @@ export default function AdminOrdersPage() {
       if (res.ok && resData.success) {
         showToast(resData.message || `Status updated to ${newStatus}`);
         setSelectedOrderIds([]);
-        fetchOrders(currentPage, selectedService, selectedStatus, searchQuery, activeTab, startDate, endDate);
+        fetchOrders(currentPage, selectedService, selectedStatus, selectedSource, searchQuery, activeTab, startDate, endDate);
       } else {
         showToast(resData.message || "Failed to bulk update status", "error");
       }
@@ -821,6 +830,21 @@ export default function AdminOrdersPage() {
               ))}
             </select>
 
+            {/* Source / Campaign Dropdown */}
+            <select
+              value={selectedSource}
+              onChange={(e) => setSelectedSource(e.target.value)}
+              className="bg-gray-50/70 border border-gray-200 text-gray-800 text-xs font-bold rounded-xl px-3 py-2 outline-none hover:border-gray-300 focus:border-emerald-600 focus:bg-white shadow-2xs cursor-pointer transition-all"
+            >
+              <option value="All">All Sources</option>
+              <option value="Google">Google / Ads</option>
+              <option value="Facebook">Facebook</option>
+              <option value="Instagram">Instagram</option>
+              <option value="WhatsApp">WhatsApp</option>
+              <option value="YouTube">YouTube</option>
+              <option value="Direct">Direct</option>
+            </select>
+
             {/* Status Dropdown (Active only) */}
             {activeTab === "active" && (
               <select
@@ -955,7 +979,7 @@ export default function AdminOrdersPage() {
           <table className="w-full text-left border-collapse text-xs">
             <thead>
               <tr className="border-b border-gray-200 bg-gray-50/70 text-[11px] font-bold text-gray-500 uppercase tracking-wider">
-                <th className="pl-6 pr-2 py-3.5 w-12 text-center">
+                <th className="pl-4 pr-1 py-3.5 w-10 text-center">
                   <input
                     type="checkbox"
                     checked={isAllSelected}
@@ -963,19 +987,21 @@ export default function AdminOrdersPage() {
                     className="w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
                   />
                 </th>
-                <th className="px-4 py-3.5">ORDER ID</th>
-                <th className="px-4 py-3.5">SERVICE</th>
-                <th className="px-4 py-3.5">DEVOTEE DETAILS</th>
-                <th className="px-4 py-3.5">BOOKED AT (DATE &amp; TIME)</th>
-                <th className="px-4 py-3.5">AMOUNT</th>
-                <th className="px-4 py-3.5">STATUS</th>
-                <th className="px-4 py-3.5 text-right pr-6">ACTIONS</th>
+                <th className="px-2.5 py-3.5 w-10 text-center">#</th>
+                <th className="px-3 py-3.5">ORDER ID</th>
+                <th className="px-3 py-3.5">SERVICE</th>
+                <th className="px-3 py-3.5">DEVOTEE DETAILS</th>
+                <th className="px-3 py-3.5">SOURCE / CAMPAIGN</th>
+                <th className="px-3 py-3.5">BOOKED AT</th>
+                <th className="px-3 py-3.5">AMOUNT</th>
+                <th className="px-3 py-3.5">STATUS</th>
+                <th className="px-3 py-3.5 text-right pr-4">ACTIONS</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 bg-white">
               {loading ? (
                 <tr>
-                  <td colSpan={8} className="px-4 py-16 text-center text-gray-500">
+                  <td colSpan={10} className="px-4 py-16 text-center text-gray-500">
                     <div className="flex flex-col items-center justify-center gap-2">
                       <div className="w-7 h-7 border-3 border-emerald-600 border-t-transparent rounded-full animate-spin" />
                       <span className="font-semibold text-xs text-gray-600">Loading {activeTab} bookings...</span>
@@ -984,7 +1010,7 @@ export default function AdminOrdersPage() {
                 </tr>
               ) : data.orders.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-4 py-16 text-center text-gray-500">
+                  <td colSpan={10} className="px-4 py-16 text-center text-gray-500">
                     <div className="flex flex-col items-center justify-center">
                       <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 mb-2">
                         <CalendarDaysIcon className="w-6 h-6" />
@@ -999,11 +1025,12 @@ export default function AdminOrdersPage() {
                   </td>
                 </tr>
               ) : (
-                data.orders.map((ord) => {
+                data.orders.map((ord, idx) => {
                   const serviceName = ord.serviceName || "Sacred Ritual";
                   const devoteeName = ord.devoteeName || "Devotee";
                   const isChecked = selectedOrderIds.includes(ord._id);
                   const bookingTimeInfo = formatBookingTimestamp(ord.createdAt || ord.bookingDate);
+                  const serialNum = (currentPage - 1) * (data.limit || 10) + (idx + 1);
 
                   return (
                     <tr
@@ -1011,7 +1038,7 @@ export default function AdminOrdersPage() {
                       className={`hover:bg-gray-50/80 transition ${isChecked ? "bg-emerald-50/40" : ""}`}
                     >
                       {/* Checkbox */}
-                      <td className="pl-6 pr-2 py-3.5 text-center">
+                      <td className="pl-4 pr-1 py-3 text-center">
                         <input
                           type="checkbox"
                           checked={isChecked}
@@ -1020,8 +1047,13 @@ export default function AdminOrdersPage() {
                         />
                       </td>
 
+                      {/* Serial Number S.No */}
+                      <td className="px-2.5 py-3 text-center text-xs font-bold text-gray-400">
+                        {serialNum}
+                      </td>
+
                       {/* 1. Order ID */}
-                      <td className="px-4 py-3.5 font-mono font-bold text-gray-900">
+                      <td className="px-3 py-3 font-mono font-bold text-gray-900 text-xs">
                         <Link
                           href={`/admin/orders/${ord._id}`}
                           className="text-emerald-700 hover:text-emerald-900 hover:underline flex items-center gap-1"
@@ -1031,9 +1063,9 @@ export default function AdminOrdersPage() {
                       </td>
 
                       {/* 2. Service Column */}
-                      <td className="px-4 py-3.5">
-                        <Link href={`/admin/orders/${ord._id}`} className="group block max-w-[200px]">
-                          <span className="font-bold text-gray-900 block group-hover:text-emerald-700 transition-colors truncate">
+                      <td className="px-3 py-3">
+                        <Link href={`/admin/orders/${ord._id}`} className="group block">
+                          <span className="font-bold text-gray-900 block group-hover:text-emerald-700 transition-colors leading-snug">
                             {serviceName}
                           </span>
                           <span className="text-[10px] uppercase font-bold text-emerald-600 block mt-0.5">
@@ -1043,8 +1075,8 @@ export default function AdminOrdersPage() {
                       </td>
 
                       {/* 3. Devotee Details */}
-                      <td className="px-4 py-3.5">
-                        <span className="font-bold text-gray-900 block">{devoteeName}</span>
+                      <td className="px-3 py-3">
+                        <span className="font-bold text-gray-900 block leading-tight">{devoteeName}</span>
                         {(() => {
                           const mob = ord.mobileNumber || "";
                           const wa = ord.whatsappNumber || "";
@@ -1065,11 +1097,11 @@ export default function AdminOrdersPage() {
                             : "";
 
                           return (
-                            <div className="text-xs space-y-0.5 mt-0.5">
+                            <div className="text-[11px] space-y-0.5 mt-0.5">
                               {fmtMob && <div className="text-gray-600 font-medium">{fmtMob}</div>}
                               {!isSame && fmtWa && (
-                                <div className="flex items-center gap-1 text-[11px] text-emerald-700 font-bold">
-                                  <span className="text-[9px] bg-emerald-50 px-1 py-0.2 rounded border border-emerald-200">
+                                <div className="flex items-center gap-1 text-[10px] text-emerald-700 font-bold">
+                                  <span className="text-[8.5px] bg-emerald-50 px-1 py-0.2 rounded border border-emerald-200">
                                     WA
                                   </span>
                                   <span>{fmtWa}</span>
@@ -1078,20 +1110,50 @@ export default function AdminOrdersPage() {
                             </div>
                           );
                         })()}
-                        <span className="text-[11px] text-gray-400 block mt-0.5">
+                        <span className="text-[10.5px] text-gray-400 block mt-0.5">
                           Gotra: {ord.gotra || "Not Provided"}
                         </span>
                       </td>
 
-                      {/* 4. Booked At (Timestamp: Date + Time) */}
-                      <td className="px-4 py-3.5">
+                      {/* 4. Marketing Source / Full Campaign Name */}
+                      <td className="px-3 py-3">
+                        {(() => {
+                          const src = ord.utmSource || "Direct";
+                          const lower = src.toLowerCase();
+                          let badgeStyle = "bg-gray-100 text-gray-700 border-gray-200";
+                          if (lower.includes("google")) badgeStyle = "bg-blue-50 text-blue-700 border-blue-200";
+                          else if (lower.includes("facebook") || lower.includes("fb")) badgeStyle = "bg-indigo-50 text-indigo-700 border-indigo-200";
+                          else if (lower.includes("instagram")) badgeStyle = "bg-pink-50 text-pink-700 border-pink-200";
+                          else if (lower.includes("whatsapp")) badgeStyle = "bg-emerald-50 text-emerald-700 border-emerald-200";
+                          else if (lower.includes("youtube")) badgeStyle = "bg-red-50 text-red-700 border-red-200";
+
+                          return (
+                            <div className="space-y-1">
+                              <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10.5px] font-bold border ${badgeStyle}`}>
+                                {src}
+                              </span>
+                              {ord.utmCampaign && (
+                                <div
+                                  className="text-[11px] font-semibold text-gray-800 break-words leading-tight"
+                                  title={ord.utmCampaign}
+                                >
+                                  {ord.utmCampaign}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })()}
+                      </td>
+
+                      {/* 5. Booked At (Timestamp: Date + Time) */}
+                      <td className="px-3 py-3">
                         {typeof bookingTimeInfo === "object" ? (
                           <div className="space-y-0.5">
-                            <div className="font-bold text-gray-900 flex items-center gap-1">
+                            <div className="font-bold text-gray-900 flex items-center gap-1 text-[11px]">
                               <CalendarDaysIcon className="w-3.5 h-3.5 text-gray-400 shrink-0" />
                               <span>{bookingTimeInfo.datePart}</span>
                             </div>
-                            <div className="text-[11px] font-semibold text-gray-500 flex items-center gap-1">
+                            <div className="text-[10.5px] font-semibold text-gray-500 flex items-center gap-1">
                               <ClockIcon className="w-3 h-3 text-gray-400 shrink-0" />
                               <span>{bookingTimeInfo.timePart}</span>
                             </div>
@@ -1101,29 +1163,29 @@ export default function AdminOrdersPage() {
                         )}
                       </td>
 
-                      {/* 5. Amount */}
-                      <td className="px-4 py-3.5 font-extrabold text-gray-900">
+                      {/* 6. Amount */}
+                      <td className="px-3 py-3 font-extrabold text-gray-900 text-xs">
                         ₹{ord.pricing?.total || 0}
                       </td>
 
-                      {/* 6. Status Display (Read-Only Pill; Editable via Edit Action) */}
-                      <td className="px-4 py-3.5">
+                      {/* 7. Status Display (Read-Only Pill; Editable via Edit Action) */}
+                      <td className="px-3 py-3">
                         {(() => {
                           const norm = (ord.orderStatus || "created").toLowerCase();
                           const conf = STATUS_CONFIG[norm] || STATUS_CONFIG.created;
                           return (
                             <span
-                              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${conf.bg} ${conf.text} ${conf.border}`}
+                              className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${conf.bg} ${conf.text} ${conf.border}`}
                             >
-                              <span className={`w-2 h-2 rounded-full ${conf.dot}`} />
+                              <span className={`w-1.5 h-1.5 rounded-full ${conf.dot}`} />
                               <span>{conf.label}</span>
                             </span>
                           );
                         })()}
                       </td>
 
-                      {/* 7. Quick Actions (View, Edit Modal) */}
-                      <td className="px-4 py-3.5 text-right pr-6">
+                      {/* 8. Quick Actions (View, Edit Modal) */}
+                      <td className="px-3 py-3 text-right pr-4">
                         <div className="flex items-center justify-end gap-1.5">
                           <Link
                             href={`/admin/orders/${ord._id}`}

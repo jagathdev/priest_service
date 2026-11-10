@@ -362,3 +362,62 @@ iframe#prime,
   flex-shrink: 0;
 }
 
+/* =========================================================================
+   Print Optimization for Admin Order Details & Invoices
+   ========================================================================= */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 10mm 12mm;
+  }
+
+  /* Force html, body, and all wrappers to allow full natural page height and printing */
+  html,
+  body {
+    height: auto !important;
+    min-height: 100% !important;
+    overflow: visible !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-size: 11pt !important;
+  }
+
+  /* Break out of flex/h-screen overflow constraints in AdminLayout */
+  div[class*="h-screen"],
+  div[class*="overflow-hidden"],
+  main[class*="overflow-y-auto"],
+  div[class*="overflow-y-auto"] {
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    position: static !important;
+    display: block !important;
+  }
+
+  /* Hide admin navigation sidebar, back buttons, and interactive control bars */
+  aside,
+  nav,
+  header,
+  footer,
+  .print\\:hidden,
+  [data-print-hide="true"] {
+    display: none !important;
+  }
+
+  /* Prevent awkward page cut-offs across elements */
+  .bg-white,
+  table,
+  tr,
+  .rounded-2xl {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* Remove heavy shadows and force clean print borders */
+  * {
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+}
+
+

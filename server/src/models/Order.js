@@ -146,6 +146,15 @@ const orderSchema = new mongoose.Schema(
         scheduledDate: { type: Date, default: null },
         performedDate: { type: Date, default: null },
         videoLink: { type: String, default: "" },
+        // Marketing & Attribution Tracking
+        utmSource: { type: String, default: "Direct", trim: true, index: true },
+        utmMedium: { type: String, default: "", trim: true },
+        utmCampaign: { type: String, default: "", trim: true },
+        utmTerm: { type: String, default: "", trim: true },
+        utmContent: { type: String, default: "", trim: true },
+        referrer: { type: String, default: "", trim: true },
+        landingPage: { type: String, default: "", trim: true },
+        promo: { type: String, default: "", trim: true }, // Tracking query param (e.g. ?promo=instagram_bio)
     },
     {
         timestamps: true,

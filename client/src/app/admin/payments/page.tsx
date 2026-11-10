@@ -18,7 +18,7 @@ export default async function AdminPaymentsPage() {
     : {};
 
   try {
-    const res = await fetch(`${baseUrl}/api/admin/payments`, {
+    const res = await fetch(`${baseUrl}/api/admin/orders`, {
       cache: "no-store",
       headers,
     });

@@ -14,13 +14,13 @@ import {
   ClockIcon,
   ArrowPathIcon,
   PrinterIcon,
-  ShareIcon,
   CheckIcon,
   ShieldCheckIcon,
   VideoCameraIcon,
   XMarkIcon,
   EnvelopeIcon,
 } from "@heroicons/react/24/outline";
+import { ShareIcon } from "lucide-react";
 
 const STATUS_CONFIG: Record<
   string,
@@ -270,7 +270,7 @@ export default function AdminOrderDetailPage({ params }: { params: Promise<{ id:
   const displayScheduledDate = scheduledDate || order.scheduledDate;
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-5 max-w-[1550px] mx-auto min-h-screen">
+    <div className="space-y-5 max-w-[1550px] mx-auto min-h-screen">
       {/* Toast Notification */}
       {toastMsg && (
         <div
@@ -289,19 +289,19 @@ export default function AdminOrderDetailPage({ params }: { params: Promise<{ id:
         <div>
           <button
             onClick={() => router.back()}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs font-bold text-gray-600 hover:bg-gray-50 shadow-2xs mb-2 transition"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs font-bold text-gray-600 hover:bg-gray-50 shadow-2xs mb-2 transition print:hidden"
           >
             <ArrowLeftIcon className="w-3.5 h-3.5" />
             Back
           </button>
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Order Details</h1>
-          <p className="text-xs text-gray-500 mt-0.5">
+          <p className="text-xs text-gray-500 mt-0.5 print:hidden">
             View complete order information and share with the service team.
           </p>
         </div>
 
-        {/* Action Buttons: Share, Resend Email & Print */}
-        <div className="flex items-center gap-2.5">
+        {/* Action Buttons: Resend Email & Print */}
+        <div className="flex items-center gap-2.5 print:hidden">
           <button
             type="button"
             onClick={handleResendNotificationEmail}
@@ -311,25 +311,6 @@ export default function AdminOrderDetailPage({ params }: { params: Promise<{ id:
           >
             <EnvelopeIcon className="w-4 h-4 text-purple-600" />
             <span>{isResendingEmail ? "Sending..." : "Resend Email"}</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              if (navigator.share) {
-                navigator.share({
-                  title: `Order ${order.orderNumber}`,
-                  text: `Order details for ${devoteeName} - ${serviceName}`,
-                  url: window.location.href,
-                }).catch(() => { });
-              } else {
-                navigator.clipboard.writeText(window.location.href);
-                showToast("Order link copied to clipboard!");
-              }
-            }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#00B05F] text-white hover:bg-[#008F4C] text-xs font-bold shadow-sm transition active:scale-95"
-          >
-            <ShareIcon className="w-4 h-4" />
-            Share with Service Team
           </button>
           <button
             type="button"
@@ -540,16 +521,6 @@ export default function AdminOrderDetailPage({ params }: { params: Promise<{ id:
             <span>Important Details</span>
           </div>
           <div className="space-y-2.5 text-xs">
-            <div className="flex justify-between">
-              <span className="text-gray-500">Gotra (All Participants)</span>
-              <span className="font-bold text-gray-900">
-                {order.doesNotKnowGotra ? "Does not know Gotra" : (order.gotra || "Not Provided")}
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-500">Special Request</span>
-              <span className="text-gray-700 italic truncate max-w-[180px]">{order.wish || "–"}</span>
-            </div>
             <div className="flex justify-between items-center">
               <span className="text-gray-500">Payment Method</span>
               <span className="font-bold text-gray-900">
@@ -572,10 +543,52 @@ export default function AdminOrderDetailPage({ params }: { params: Promise<{ id:
                 </span>
               </div>
             )}
-            <div className="flex justify-between">
-              <span className="text-gray-500">Booking Source</span>
-              <span className="font-bold text-gray-800">Website</span>
+            {order.promoCode && (
+              <div className="flex justify-between items-center">
+                <span className="text-gray-500">Discount Coupon</span>
+                <span className="font-bold text-orange-700 bg-orange-50 px-2 py-0.5 rounded text-[11px] border border-orange-200">
+                  {order.promoCode}
+                </span>
+              </div>
+            )}
+            {(order.promo || (order as any).promo) && (
+              <div className="flex justify-between items-center">
+                <span className="text-gray-500">Marketing Promo Param</span>
+                <span className="font-mono font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded text-[11px] border border-purple-200">
+                  {order.promo || (order as any).promo}
+                </span>
+              </div>
+            )}
+            <div className="flex justify-between items-center">
+              <span className="text-gray-500">Traffic / UTM Source</span>
+              <span className="font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded text-[11px] border border-emerald-200">
+                {order.utmSource || "Direct"}
+              </span>
             </div>
+            {order.utmCampaign && (
+              <div className="flex justify-between items-center">
+                <span className="text-gray-500">UTM Campaign</span>
+                <span className="font-semibold text-gray-800 text-[11px] truncate max-w-[170px]" title={order.utmCampaign}>
+                  {order.utmCampaign}
+                </span>
+              </div>
+            )}
+            {order.utmMedium && (
+              <div className="flex justify-between items-center">
+                <span className="text-gray-500">UTM Medium</span>
+                <span className="font-semibold text-gray-700 text-[11px]">
+                  {order.utmMedium}
+                </span>
+              </div>
+            )}
+            {order.referrer && (
+              <div className="flex justify-between items-center gap-2">
+                <span className="text-gray-500 shrink-0">Referrer</span>
+                <span className="text-gray-600 text-[10px] truncate max-w-[170px]" title={order.referrer}>
+                  {order.referrer}
+                </span>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -633,6 +646,34 @@ export default function AdminOrderDetailPage({ params }: { params: Promise<{ id:
               )}
             </tbody>
           </table>
+        </div>
+      </div>
+
+      {/* Sankalpam Prayer Wish Card (Displayed cleanly below Participants & Gotra) */}
+      <div className="bg-white rounded-2xl border border-amber-200/80 bg-gradient-to-r from-amber-50/40 via-white to-white p-4 sm:p-5 shadow-xs">
+        <div className="flex items-start gap-3">
+          <div className="w-8 h-8 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0 mt-0.5">
+            <SparklesIcon className="w-4 h-4" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between gap-2 mb-1">
+              <h4 className="text-xs sm:text-sm font-bold text-gray-900 tracking-tight">
+                Sankalpam Prayer Wish / Special Request
+              </h4>
+              <span className="text-[10px] font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded-full">
+                Priest Chanting Note
+              </span>
+            </div>
+            <p className="text-xs sm:text-[13px] text-gray-800 leading-relaxed italic bg-white/80 p-3 rounded-xl border border-amber-100">
+              {order.wish && order.wish.trim() ? (
+                <span>&ldquo;{order.wish.trim()}&rdquo;</span>
+              ) : (
+                <span className="text-gray-400 not-italic">
+                  No special Sankalpam wish provided by devotee. (Universal prayers for health, peace, and prosperity will be recited).
+                </span>
+              )}
+            </p>
+          </div>
         </div>
       </div>
 
@@ -922,7 +963,7 @@ export default function AdminOrderDetailPage({ params }: { params: Promise<{ id:
       </div>
 
       {/* Row 5: Admin Controls (Status, Puja Scheduled Date, Puja Video / Photos Link) */}
-      <div className="bg-white rounded-2xl border border-gray-150 p-5 sm:p-6 shadow-xs">
+      <div className="bg-white rounded-2xl border border-gray-150 p-5 sm:p-6 shadow-xs print:hidden">
         <h3 className="text-sm font-bold text-gray-900 mb-4 pb-3 border-b border-gray-100 flex items-center gap-2">
           <SparklesIcon className="w-4 h-4 text-emerald-600" />
           Admin Controls &amp; Video Delivery Link

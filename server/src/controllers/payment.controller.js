@@ -25,196 +25,220 @@ export const createPaymentOrder = async (req, res) => {
 
         const {
             pooja,
+            serviceId,
+            serviceType,
+            customer,
+            customerName,
+            itemName,
+            mobileNumber,
+            whatsappNumber,
+            participants,
+            gotra,
+            doesNotKnowGotra,
+            wish,
+            promoCode, // Discount coupon code (e.g. DISCOUNT50)
+            promo, // Tracking query parameter (e.g. ?promo=navratri_campaign)
+            packageId,
+            offerings,
+            utmSource,
+            utmMedium,
+            utmCampaign,
+            utmTerm,
+            utmContent,
+            referrer,
+            landingPage,
+        } = orderDetails;
+
+        if (!whatsappNumber || !String(whatsappNumber).trim()) {
+            return res.status(400).json({
+                success: false,
+                message: "WhatsApp number is required",
+            });
+        }
+
+        const authenticatedUserId = req.user?.role === "admin" && customer
+            ? customer
+            : (req.user?.id || customer);
+
+        if (!authenticatedUserId) {
+            return res.status(400).json({
+                success: false,
+                message: "Customer ID is required",
+            });
+        }
+
+        const cleanParticipants = (participants || [])
+            .map((p) => ({ name: typeof p === "string" ? p.trim() : (p?.name || "").trim() }))
+            .filter((p) => p.name.length > 0);
+
+        if (cleanParticipants.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: "At least one participant with a valid name is required",
+            });
+        }
+
+        // Validate booking date if provided
+        let parsedBookingDate = new Date();
+        if (orderDetails.bookingDate) {
+            const candidate = new Date(orderDetails.bookingDate);
+            if (!isNaN(candidate.getTime())) {
+                parsedBookingDate = candidate;
+            }
+        }
+
+        // Recompute price on server
+        let pricingCalculation;
+        try {
+            pricingCalculation = await computeServerPrice({
                 serviceId,
                 serviceType,
-                customer,
-                customerName,
-                itemName,
-                mobileNumber,
-                whatsappNumber,
-                participants,
-                gotra,
-                doesNotKnowGotra,
-                wish,
-                promoCode,
                 packageId,
+                participantsCount: cleanParticipants.length,
                 offerings,
-            } = orderDetails;
+                promoCode,
+                userId: authenticatedUserId,
+            });
+        } catch (priceErr) {
+            return res.status(priceErr.statusCode || 400).json({
+                success: false,
+                message: priceErr.message || "Failed to calculate order pricing",
+            });
+        }
 
-            if (!whatsappNumber || !String(whatsappNumber).trim()) {
+        const clientTotal = orderDetails.pricing?.total;
+        if (clientTotal !== undefined && clientTotal !== null) {
+            const clientVal = Number(clientTotal);
+            if (Math.abs(clientVal - pricingCalculation.finalAmount) > 0.01) {
                 return res.status(400).json({
                     success: false,
-                    message: "WhatsApp number is required",
+                    message: `Price mismatch: Client requested ₹${clientVal}, but server verified amount is ₹${pricingCalculation.finalAmount}.`,
                 });
             }
+        }
 
-            const authenticatedUserId = req.user?.role === "admin" && customer
-                ? customer
-                : (req.user?.id || customer);
-
-            if (!authenticatedUserId) {
-                return res.status(400).json({
-                    success: false,
-                    message: "Customer ID is required",
-                });
-            }
-
-            const cleanParticipants = (participants || [])
-                .map((p) => ({ name: typeof p === "string" ? p.trim() : (p?.name || "").trim() }))
-                .filter((p) => p.name.length > 0);
-
-            if (cleanParticipants.length === 0) {
-                return res.status(400).json({
-                    success: false,
-                    message: "At least one participant with a valid name is required",
-                });
-            }
-
-            // Validate booking date if provided
-            let parsedBookingDate = new Date();
-            if (orderDetails.bookingDate) {
-                const candidate = new Date(orderDetails.bookingDate);
-                if (!isNaN(candidate.getTime())) {
-                    parsedBookingDate = candidate;
-                }
-            }
-
-            // Recompute price on server
-            let pricingCalculation;
-            try {
-                pricingCalculation = await computeServerPrice({
-                    serviceId,
-                    serviceType,
-                    packageId,
-                    participantsCount: cleanParticipants.length,
-                    offerings,
-                    promoCode,
-                    userId: authenticatedUserId,
-                });
-            } catch (priceErr) {
-                return res.status(priceErr.statusCode || 400).json({
-                    success: false,
-                    message: priceErr.message || "Failed to calculate order pricing",
-                });
-            }
-
-            const clientTotal = orderDetails.pricing?.total;
-            if (clientTotal !== undefined && clientTotal !== null) {
-                const clientVal = Number(clientTotal);
-                if (Math.abs(clientVal - pricingCalculation.finalAmount) > 0.01) {
-                    return res.status(400).json({
-                        success: false,
-                        message: `Price mismatch: Client requested ₹${clientVal}, but server verified amount is ₹${pricingCalculation.finalAmount}.`,
-                    });
-                }
-            }
-
-            // Create Razorpay Order
-            let razorpayOrder;
-            try {
-                razorpayOrder = await createRazorpayOrder({
-                    amount: pricingCalculation.finalAmount,
-                    receipt: orderReceipt,
-                    notes: {
-                        uniqueId: customUniqueId,
-                    },
-                });
-            } catch (rzpErr) {
-                console.error("Razorpay order creation error:", rzpErr.message);
-                return res.status(502).json({
-                    success: false,
-                    message: "Payment gateway error creating order. Please try again.",
-                });
-            }
-
-            // Create pending Order in Mongo
-            let createdOrder;
-            try {
-                createdOrder = await Order.create({
-                    pooja: pooja || itemName || "Sacred Ritual",
-                    serviceId: serviceId || null,
-                    serviceType: pricingCalculation.serviceType || serviceType || "POOJA",
-                    customer: authenticatedUserId,
-                    customerName: customerName || "Devotee",
-                    itemName: itemName || pooja || "Sacred Ritual",
-                    mobileNumber: mobileNumber || "",
-                    whatsappNumber: String(whatsappNumber).trim(),
-                    participants: cleanParticipants,
-                    gotra: doesNotKnowGotra ? "" : (gotra || ""),
-                    doesNotKnowGotra: Boolean(doesNotKnowGotra),
-                    wish: wish || "",
-                    bookingDate: parsedBookingDate,
-                    razorpayOrderId: razorpayOrder.id,
+        // Create Razorpay Order
+        let razorpayOrder;
+        try {
+            razorpayOrder = await createRazorpayOrder({
+                amount: pricingCalculation.finalAmount,
+                receipt: orderReceipt,
+                notes: {
                     uniqueId: customUniqueId,
-                    promoCode: promoCode || "",
-                    promoCodeId: pricingCalculation.promoCodeId,
-                    offerings: pricingCalculation.validatedOfferings,
-                    originalAmount: pricingCalculation.originalAmount,
-                    discountAmount: pricingCalculation.discountAmount,
-                    pricing: {
-                        basePrice: pricingCalculation.basePrice,
-                        extraParticipantCount: pricingCalculation.extraParticipantCount,
-                        extraParticipantAmount: pricingCalculation.extraParticipantFee,
-                        offeringsAmount: pricingCalculation.offeringsTotal,
-                        convenienceFee: 0,
-                        panditFee: 0,
-                        recordingFee: 0,
-                        total: pricingCalculation.finalAmount,
-                        currency: "INR",
-                    },
-                    paymentStatus: "pending",
-                    orderStatus: "created",
-                });
-            } catch (valErr) {
-                console.error("Order creation validation error:", valErr.message);
-                return res.status(400).json({
-                    success: false,
-                    message: valErr.message || "Invalid order details",
-                });
-            }
-
-            // Save lead in pre_order_leads collection for admin pre-orders monitoring
-            try {
-                await PreOrderLead.create({
-                    user: authenticatedUserId,
-                    userName: customerName || "Devotee",
-                    mobileNumber: mobileNumber || "",
-                    whatsappNumber: String(whatsappNumber).trim(),
-                    email: req.user?.email || "",
-                    serviceType: pricingCalculation.serviceType || serviceType || "Puja",
-                    serviceId: serviceId || null,
-                    serviceName: itemName || pooja || "Sacred Ritual",
-                    packageName: orderDetails.packageName || (pricingCalculation.package ? pricingCalculation.package.name : "") || "Standard Package",
-                    packageId: String(packageId || ""),
-                    packagePrice: pricingCalculation.basePrice || 0,
-                    totalAmount: pricingCalculation.finalAmount || 0,
-                    preferredDate: parsedBookingDate ? parsedBookingDate.toISOString().split("T")[0] : "",
-                    participants: cleanParticipants,
-                    gotra: doesNotKnowGotra ? "" : (gotra || ""),
-                    doesNotKnowGotra: Boolean(doesNotKnowGotra),
-                    wish: wish || "",
-                    offerings: pricingCalculation.validatedOfferings || [],
-                    razorpayOrderId: razorpayOrder.id,
-                    uniqueId: customUniqueId,
-                    promoCode: promoCode || ""
-                });
-            } catch (leadErr) {
-                console.warn("[payment.controller] Failed to save pre-order lead:", leadErr.message);
-            }
-
-            return res.status(200).json({
-                success: true,
-                message: "Payment order created successfully",
-                data: {
-                    orderId: razorpayOrder.id,
-                    amount: razorpayOrder.amount,
-                    currency: razorpayOrder.currency,
-                    notes: razorpayOrder.notes,
-                    keyId: process.env.RAZORPAY_KEY_ID,
-                    dbOrderId: createdOrder._id,
-                    orderNumber: createdOrder.orderNumber,
                 },
             });
+        } catch (rzpErr) {
+            console.error("Razorpay order creation error:", rzpErr.message);
+            return res.status(502).json({
+                success: false,
+                message: "Payment gateway error creating order. Please try again.",
+            });
+        }
+
+        // Create pending Order in Mongo
+        let createdOrder;
+        try {
+            createdOrder = await Order.create({
+                pooja: pooja || itemName || "Sacred Ritual",
+                serviceId: serviceId || null,
+                serviceType: pricingCalculation.serviceType || serviceType || "POOJA",
+                customer: authenticatedUserId,
+                customerName: customerName || "Devotee",
+                itemName: itemName || pooja || "Sacred Ritual",
+                mobileNumber: mobileNumber || "",
+                whatsappNumber: String(whatsappNumber).trim(),
+                participants: cleanParticipants,
+                gotra: doesNotKnowGotra ? "" : (gotra || ""),
+                doesNotKnowGotra: Boolean(doesNotKnowGotra),
+                wish: wish || "",
+                bookingDate: parsedBookingDate,
+                razorpayOrderId: razorpayOrder.id,
+                uniqueId: customUniqueId,
+                promoCode: promoCode || "",
+                promoCodeId: pricingCalculation.promoCodeId,
+                promo: promo || "",
+                offerings: pricingCalculation.validatedOfferings,
+                originalAmount: pricingCalculation.originalAmount,
+                discountAmount: pricingCalculation.discountAmount,
+                utmSource: utmSource || "Direct",
+                utmMedium: utmMedium || "",
+                utmCampaign: utmCampaign || "",
+                utmTerm: utmTerm || "",
+                utmContent: utmContent || "",
+                referrer: referrer || "",
+                landingPage: landingPage || "",
+                pricing: {
+                    basePrice: pricingCalculation.basePrice,
+                    extraParticipantCount: pricingCalculation.extraParticipantCount,
+                    extraParticipantAmount: pricingCalculation.extraParticipantFee,
+                    offeringsAmount: pricingCalculation.offeringsTotal,
+                    convenienceFee: 0,
+                    panditFee: 0,
+                    recordingFee: 0,
+                    total: pricingCalculation.finalAmount,
+                    currency: "INR",
+                },
+                paymentStatus: "pending",
+                orderStatus: "created",
+            });
+        } catch (valErr) {
+            console.error("Order creation validation error:", valErr.message);
+            return res.status(400).json({
+                success: false,
+                message: valErr.message || "Invalid order details",
+            });
+        }
+
+        // Save lead in pre_order_leads collection for admin pre-orders monitoring
+        try {
+            await PreOrderLead.create({
+                user: authenticatedUserId,
+                userName: customerName || "Devotee",
+                mobileNumber: mobileNumber || "",
+                whatsappNumber: String(whatsappNumber).trim(),
+                email: req.user?.email || "",
+                serviceType: pricingCalculation.serviceType || serviceType || "Puja",
+                serviceId: serviceId || null,
+                serviceName: itemName || pooja || "Sacred Ritual",
+                packageName: orderDetails.packageName || (pricingCalculation.package ? pricingCalculation.package.name : "") || "Standard Package",
+                packageId: String(packageId || ""),
+                packagePrice: pricingCalculation.basePrice || 0,
+                totalAmount: pricingCalculation.finalAmount || 0,
+                preferredDate: parsedBookingDate ? parsedBookingDate.toISOString().split("T")[0] : "",
+                participants: cleanParticipants,
+                gotra: doesNotKnowGotra ? "" : (gotra || ""),
+                doesNotKnowGotra: Boolean(doesNotKnowGotra),
+                wish: wish || "",
+                offerings: pricingCalculation.validatedOfferings || [],
+                razorpayOrderId: razorpayOrder.id,
+                uniqueId: customUniqueId,
+                promoCode: promoCode || "",
+                promo: promo || "",
+                utmSource: utmSource || "Direct",
+                utmMedium: utmMedium || "",
+                utmCampaign: utmCampaign || "",
+                utmTerm: utmTerm || "",
+                utmContent: utmContent || "",
+                referrer: referrer || "",
+                landingPage: landingPage || "",
+            });
+        } catch (leadErr) {
+            console.warn("[payment.controller] Failed to save pre-order lead:", leadErr.message);
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Payment order created successfully",
+            data: {
+                orderId: razorpayOrder.id,
+                amount: razorpayOrder.amount,
+                currency: razorpayOrder.currency,
+                notes: razorpayOrder.notes,
+                keyId: process.env.RAZORPAY_KEY_ID,
+                dbOrderId: createdOrder._id,
+                orderNumber: createdOrder.orderNumber,
+            },
+        });
     } catch (error) {
         console.error("Create Payment Order Error:", error);
         return res.status(500).json({
@@ -375,4 +399,4 @@ export const verifyPayment = async (req, res) => {
             message: "Payment verification failed",
         });
     }
-};
+};

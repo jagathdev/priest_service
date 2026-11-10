@@ -812,9 +812,9 @@ export default function AdminUsersPage() {
                 <th className="py-3.5 px-2 w-10 text-center">#</th>
                 <th className="py-3.5 px-4">User Name</th>
                 <th className="py-3.5 px-4">Email</th>
-                <th className="py-3.5 px-4">Mobile Number</th>
+                <th className="py-3.5 px-4 whitespace-nowrap min-w-[140px]">Mobile Number</th>
                 <th className="py-3.5 px-4">Total Amount Spent</th>
-                <th className="py-3.5 px-4">Status</th>
+                {/* <th className="py-3.5 px-4">Status</th> */}
                 <th className="py-3.5 px-4">
                   {activeTab === "trash" ? "Deleted On (Date & Time)" : "Joined On (Date & Time)"}
                 </th>
@@ -893,8 +893,8 @@ export default function AdminUsersPage() {
                       </td>
 
                       {/* Mobile & WhatsApp */}
-                      <td className="py-4 px-4">
-                        <div className="font-semibold text-gray-800">
+                      <td className="py-4 px-4 whitespace-nowrap min-w-[140px]">
+                        <div className="font-semibold text-gray-800 whitespace-nowrap">
                           {u.mobileNumber && u.mobileNumber !== "N/A"
                             ? (u.mobileNumber.startsWith("+")
                               ? u.mobileNumber
@@ -910,9 +910,9 @@ export default function AdminUsersPage() {
 
                           if (!isSame && wa) {
                             return (
-                              <div className="flex items-center gap-1 text-[11px] text-emerald-700 font-semibold mt-0.5">
-                                <span className="text-[9px] bg-emerald-50 px-1 py-0.2 rounded border border-emerald-200 font-bold">WA</span>
-                                <span>{wa.startsWith("+") ? wa : (wa.startsWith("91") && wa.length === 12 ? `+${wa}` : `+91 ${wa}`)}</span>
+                              <div className="flex items-center gap-1 text-[11px] text-emerald-700 font-semibold mt-0.5 whitespace-nowrap">
+                                <span className="text-[9px] bg-emerald-50 px-1 py-0.2 rounded border border-emerald-200 font-bold shrink-0">WA</span>
+                                <span className="whitespace-nowrap">{wa.startsWith("+") ? wa : (wa.startsWith("91") && wa.length === 12 ? `+${wa}` : `+91 ${wa}`)}</span>
                               </div>
                             );
                           }
@@ -926,7 +926,7 @@ export default function AdminUsersPage() {
                       </td>
 
                       {/* Status */}
-                      <td className="py-4 px-4">
+                      {/* <td className="py-4 px-4">
                         <span
                           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold ${u.status === "Active"
                             ? "bg-emerald-50 text-emerald-700"
@@ -935,7 +935,7 @@ export default function AdminUsersPage() {
                         >
                           {u.status}
                         </span>
-                      </td>
+                      </td> */}
 
                       {/* Joined or Deleted Date & Time */}
                       <td className="py-4 px-4 text-gray-500 font-medium">

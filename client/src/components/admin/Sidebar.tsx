@@ -35,7 +35,7 @@ const menuItems = [
   { name: "Service Dispatch", href: "/admin/service-dispatch", icon: ArrowDownTrayIcon },
   { name: "Email Alerts", href: "/admin/notifications", icon: EnvelopeIcon },
   { name: "Customer Queries", href: "/admin/customer-queries", icon: ChatBubbleBottomCenterTextIcon },
-  // { name: "Payments & Revenue", href: "/admin/payments", icon: CreditCardIcon },
+
 ];
 
 export default function Sidebar() {
