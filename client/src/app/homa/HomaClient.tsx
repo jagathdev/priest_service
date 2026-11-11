@@ -403,14 +403,14 @@ export default function HomaClient({ initialHomas }: { initialHomas?: Homa[] }) 
                           className="flex flex-col flex-1 cursor-pointer"
                         >
                           {/* ── Top Image Container ── */}
-                          <div className="relative h-[210px] w-full overflow-hidden bg-gray-100 shrink-0">
+                          <div className="relative w-full aspect-[3/2] overflow-hidden bg-gray-100 shrink-0">
                             <Image
                               src={getHomaImageUrl(homa.imageUrl)}
                               alt={homa.title}
                               fill
                               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                               unoptimized
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                              className="w-full h-full object-cover object-left group-hover:scale-105 transition-transform duration-500"
                             />
 
                             {/* Top Left Maroon Badge Pill */}

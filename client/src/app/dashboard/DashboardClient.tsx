@@ -950,14 +950,14 @@ function PujaCard({
     <div className="bg-white rounded-2xl min-[375px]:rounded-3xl border border-stone-200/90 p-2 min-[375px]:p-2.5 sm:p-3 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.12),0_2px_6px_-1px_rgba(0,0,0,0.08)] hover:shadow-[0_12px_28px_-6px_rgba(0,0,0,0.18),0_8px_10px_-6px_rgba(0,0,0,0.1)] transition-all duration-300 flex flex-col group text-left relative h-full">
       <Link href={cardUrl} className="flex flex-col flex-1 cursor-pointer">
         {/* Top Banner Image Container with Subtle Space */}
-        <div className="relative w-full aspect-[4/3] min-h-[190px] xl:min-h-0 xl:aspect-auto xl:h-[235px] rounded-xl min-[375px]:rounded-2xl overflow-hidden mb-2 sm:mb-2.5 bg-stone-100 shrink-0">
+        <div className="relative w-full aspect-[3/2] xl:h-[235px] rounded-xl min-[375px]:rounded-2xl overflow-hidden mb-2 sm:mb-2.5 bg-stone-100 shrink-0">
           <Image
             src={rawImg}
             alt={title}
             fill
             unoptimized
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
-            className="w-full h-full object-cover object-center"
+            className="w-full h-full object-cover object-left"
           />
         </div>
 

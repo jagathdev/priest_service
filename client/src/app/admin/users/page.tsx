@@ -28,6 +28,8 @@ interface DevoteeUser {
   totalAmountSpent: number;
   status: "Active" | "Inactive";
   isVerified: boolean;
+  utmSource?: string;
+  utmCampaign?: string;
   createdAt: string;
   deletedAt?: string | null;
   isDeleted?: boolean;
@@ -813,6 +815,7 @@ export default function AdminUsersPage() {
                 <th className="py-3.5 px-4">User Name</th>
                 <th className="py-3.5 px-4">Email</th>
                 <th className="py-3.5 px-4 whitespace-nowrap min-w-[140px]">Mobile Number</th>
+                <th className="py-3.5 px-4 whitespace-nowrap">Source / Campaign</th>
                 <th className="py-3.5 px-4">Total Amount Spent</th>
                 {/* <th className="py-3.5 px-4">Status</th> */}
                 <th className="py-3.5 px-4">
@@ -824,7 +827,7 @@ export default function AdminUsersPage() {
             <tbody className="divide-y divide-gray-100 text-xs font-medium text-gray-700">
               {loading ? (
                 <tr>
-                  <td colSpan={9} className="py-12 text-center text-gray-400">
+                  <td colSpan={10} className="py-12 text-center text-gray-400">
                     <div className="inline-flex items-center gap-2">
                       <div className="w-4 h-4 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
                       <span>Loading registered users...</span>
@@ -833,13 +836,13 @@ export default function AdminUsersPage() {
                 </tr>
               ) : error ? (
                 <tr>
-                  <td colSpan={9} className="py-12 text-center text-red-500">
+                  <td colSpan={10} className="py-12 text-center text-red-500">
                     {error}
                   </td>
                 </tr>
               ) : users.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="py-12 text-center text-gray-400">
+                  <td colSpan={10} className="py-12 text-center text-gray-400">
                     {activeTab === "trash"
                       ? "Trash is empty. No deleted users found."
                       : "No users found matching the criteria."}
@@ -917,6 +920,33 @@ export default function AdminUsersPage() {
                             );
                           }
                           return null;
+                        })()}
+                      </td>
+
+                      {/* Source / Campaign */}
+                      <td className="py-4 px-4 whitespace-nowrap">
+                        {(() => {
+                          const src = u.utmSource || "Direct";
+                          const lower = src.toLowerCase();
+                          let badgeStyle = "bg-gray-100 text-gray-700 border-gray-200";
+                          if (lower.includes("google")) badgeStyle = "bg-blue-50 text-blue-700 border-blue-200";
+                          else if (lower.includes("facebook") || lower.includes("fb")) badgeStyle = "bg-indigo-50 text-indigo-700 border-indigo-200";
+                          else if (lower.includes("instagram")) badgeStyle = "bg-pink-50 text-pink-700 border-pink-200";
+                          else if (lower.includes("whatsapp")) badgeStyle = "bg-emerald-50 text-emerald-700 border-emerald-200";
+                          else if (lower.includes("youtube")) badgeStyle = "bg-red-50 text-red-700 border-red-200";
+
+                          return (
+                            <div className="space-y-0.5">
+                              <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10.5px] font-bold border ${badgeStyle}`}>
+                                {src}
+                              </span>
+                              {u.utmCampaign && (
+                                <div className="text-[10px] font-semibold text-gray-600 max-w-[120px] truncate" title={u.utmCampaign}>
+                                  {u.utmCampaign}
+                                </div>
+                              )}
+                            </div>
+                          );
                         })()}
                       </td>
 

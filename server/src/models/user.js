@@ -128,7 +128,22 @@ const userSchema = new mongoose.Schema(
             type: Date,
             default: null,
         },
-        
+        utmSource: {
+            type: String,
+            default: "Direct",
+            trim: true,
+            index: true,
+        },
+        utmMedium: {
+            type: String,
+            default: "",
+            trim: true,
+        },
+        utmCampaign: {
+            type: String,
+            default: "",
+            trim: true,
+        },
     },
     {
         timestamps: true,

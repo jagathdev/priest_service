@@ -5,6 +5,7 @@ import Link from "next/link";
 import { X, ChevronDown, ArrowRight } from "lucide-react";
 import { authService } from "@/services/auth.service";
 import { useUser } from "@/contexts/UserContext";
+import { getStoredUtmDetails } from "@/lib/utmTracker";
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -130,11 +131,15 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
     setLoading(true);
 
     try {
+      const utm = getStoredUtmDetails();
       const verifyRes = await authService.verifyOtpLegacy({
         method: "whatsapp",
         country: { isoCode: "IN", dialCode: "+91", name: "India" } as any,
         number: mobileNumber.replace(/\D/g, ""),
         otp: cleanOtp,
+        utmSource: utm?.utmSource || "Direct",
+        utmMedium: utm?.utmMedium || "",
+        utmCampaign: utm?.utmCampaign || "",
       } as any);
 
       if (verifyRes.data && verifyRes.data.user) {

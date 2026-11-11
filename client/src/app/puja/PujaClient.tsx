@@ -579,14 +579,14 @@ export default function PujaClient({ initialPujas }: { initialPujas?: Puja[] }) 
                       href={`/puja/${puja.slug || slugify(puja.title)}`}
                       className="flex flex-col flex-1 cursor-pointer"
                     >
-                      <div className="relative w-full aspect-[4/3] min-h-[220px] sm:min-h-0 sm:aspect-auto sm:h-[275px] shrink-0 overflow-hidden">
+                      <div className="relative w-full aspect-[3/2] shrink-0 overflow-hidden">
                         <Image
                           src={getPujaImageUrl(puja.imageUrl)}
                           alt={puja.title}
                           fill
                           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                           unoptimized
-                          className="w-full h-full object-cover transition-transform duration-700"
+                          className="w-full h-full object-cover object-left transition-transform duration-700"
                         />
                         {puja.badge && (
                           <div className="absolute top-4 left-0 bg-[#d92b2b] text-white text-[12px] font-extrabold px-3.5 py-1.5 shadow-md rounded-r-lg uppercase tracking-wider">
@@ -595,7 +595,7 @@ export default function PujaClient({ initialPujas }: { initialPujas?: Puja[] }) 
                         )}
                       </div>
 
-                      <div className="p-6 flex flex-col flex-1 text-left">
+                      <div className="p-4 sm:p-5 lg:p-6 flex flex-col flex-1 text-left">
                         {(puja.shortTitle || puja.subtitle) && (
                           <div className="flex items-center justify-center gap-2 mb-2 w-full text-center">
                             <div className="w-8 h-[1px] bg-accent/40" />
@@ -664,8 +664,8 @@ export default function PujaClient({ initialPujas }: { initialPujas?: Puja[] }) 
                           </div>
                         </div>
 
-                        <div className="flex items-center justify-between mt-auto pt-2 border-t border-gray-100">
-                          <div>
+                        <div className="flex items-center justify-between gap-2.5 mt-auto pt-3 border-t border-gray-100">
+                          <div className="shrink-0 min-w-0">
                             {/* Price display */}
                             {(() => {
                               const pInfo = getPriceComparison(puja);
@@ -673,19 +673,19 @@ export default function PujaClient({ initialPujas }: { initialPujas?: Puja[] }) 
                                 <PriceTag
                                   sellingPrice={pInfo.sellingPrice ?? formatStartingPrice(puja)}
                                   listPrice={pInfo.listPrice}
-                                  sellingPriceClassName="text-[20px] sm:text-[22px] font-black text-gray-900"
-                                  listPriceClassName="text-sm font-bold text-stone-400 line-through decoration-red-500 decoration-1.5 ml-1"
-                                  className="flex items-baseline gap-1.5 flex-wrap"
+                                  sellingPriceClassName="text-[19px] sm:text-[22px] font-black text-gray-900"
+                                  listPriceClassName="text-xs sm:text-sm font-bold text-stone-400 line-through decoration-red-500 decoration-1.5 ml-1"
+                                  className="flex items-baseline gap-1 flex-wrap"
                                 />
                               );
                             })()}
-                            <div className="text-[11px] text-gray-500 font-bold uppercase tracking-wider">Per Booking</div>
+                            <div className="text-[10px] sm:text-[11px] text-gray-500 font-bold uppercase tracking-wider">Per Booking</div>
                           </div>
                           <div
-                            className="bg-[#00B05F] text-white text-[14px] font-bold px-7 py-3 min-w-[130px] justify-center rounded-full hover:bg-[#008F4C] transition-all duration-200 flex items-center gap-2 shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-95"
+                            className="bg-[#00B05F] text-white text-xs sm:text-sm font-extrabold px-4 sm:px-5 py-2.5 sm:py-3 rounded-full hover:bg-[#008F4C] transition-all duration-200 flex items-center justify-center gap-1.5 shrink-0 whitespace-nowrap shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-95"
                           >
                             <span>{puja.buttonText || "Book Now"}</span>
-                            <ChevronRight className="w-4 h-4" strokeWidth={3} />
+                            <ChevronRight className="w-4 h-4 shrink-0" strokeWidth={2.8} />
                           </div>
                         </div>
                       </div>

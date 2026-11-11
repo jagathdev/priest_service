@@ -103,9 +103,13 @@ export const authService = {
   },
 
   verifyOtpLegacy(payload: VerifyOtpPayload) {
+    const raw = payload as any;
     const backendPayload = {
-      mobileNumber: payload.number || (payload as unknown as Record<string, string>).mobileNumber,
-      otp: payload.otp
+      mobileNumber: payload.number || raw.mobileNumber,
+      otp: payload.otp,
+      utmSource: raw.utmSource || "Direct",
+      utmMedium: raw.utmMedium || "",
+      utmCampaign: raw.utmCampaign || "",
     };
     return apiClient('/api/otp/verifyOtp', {
       method: 'POST',

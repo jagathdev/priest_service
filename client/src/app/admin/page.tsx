@@ -220,6 +220,7 @@ export default async function AdminDashboard() {
                 <th className="px-4 py-3">Devotee Name</th>
                 <th className="px-4 py-3">Service Ritual</th>
                 <th className="px-4 py-3">Type</th>
+                <th className="px-4 py-3 whitespace-nowrap">Source / Campaign</th>
                 <th className="px-4 py-3 whitespace-nowrap">Booked At (Date &amp; Time)</th>
                 <th className="px-4 py-3">Amount</th>
                 <th className="px-4 py-3">Status</th>
@@ -228,7 +229,7 @@ export default async function AdminDashboard() {
             <tbody className="divide-y divide-gray-100 font-medium">
               {recentBookings.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-6 text-center text-gray-500 text-xs">
+                  <td colSpan={7} className="px-4 py-6 text-center text-gray-500 text-xs">
                     No recent devotee bookings found.
                   </td>
                 </tr>
@@ -250,27 +251,37 @@ export default async function AdminDashboard() {
 
                   // Format Booking Date & Time
                   const dateSource = booking.createdAt || booking.bookingDate;
-                  let formattedDate = "-";
-                  let formattedTime = "";
+                  let bookingTimeInfo: { datePart: string; timePart: string } | null = null;
                   if (dateSource) {
                     try {
                       const d = new Date(dateSource);
                       if (!isNaN(d.getTime())) {
-                        formattedDate = d.toLocaleDateString("en-IN", {
-                          day: "2-digit",
-                          month: "short",
-                          year: "numeric",
-                        });
-                        formattedTime = d.toLocaleTimeString("en-IN", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                          hour12: true,
-                        });
+                        bookingTimeInfo = {
+                          datePart: d.toLocaleDateString("en-IN", {
+                            day: "2-digit",
+                            month: "short",
+                            year: "numeric",
+                          }),
+                          timePart: d.toLocaleTimeString("en-IN", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            hour12: true,
+                          }),
+                        };
                       }
                     } catch {
-                      formattedDate = "-";
+                      bookingTimeInfo = null;
                     }
                   }
+
+                  const src = booking.utmSource || "Direct";
+                  const lowerSrc = src.toLowerCase();
+                  let sourceBadgeStyle = "bg-gray-100 text-gray-700 border-gray-200";
+                  if (lowerSrc.includes("google")) sourceBadgeStyle = "bg-blue-50 text-blue-700 border-blue-200";
+                  else if (lowerSrc.includes("facebook") || lowerSrc.includes("fb")) sourceBadgeStyle = "bg-indigo-50 text-indigo-700 border-indigo-200";
+                  else if (lowerSrc.includes("instagram")) sourceBadgeStyle = "bg-pink-50 text-pink-700 border-pink-200";
+                  else if (lowerSrc.includes("whatsapp")) sourceBadgeStyle = "bg-emerald-50 text-emerald-700 border-emerald-200";
+                  else if (lowerSrc.includes("youtube")) sourceBadgeStyle = "bg-red-50 text-red-700 border-red-200";
 
                   return (
                     <tr key={booking._id || idx} className="hover:bg-gray-50/80 transition-colors">
@@ -292,18 +303,39 @@ export default async function AdminDashboard() {
                           {rawType.includes("HOMA") ? "HOMA" : "PUJA"}
                         </span>
                       </td>
-                      <td className="px-4 py-3.5 whitespace-nowrap text-gray-600">
-                        <div className="font-semibold text-gray-900 flex items-center gap-1.5">
-                          <CalendarDaysIcon className="w-3.5 h-3.5 text-gray-400 shrink-0" />
-                          <span>{formattedDate}</span>
+
+                      {/* Source / Campaign */}
+                      <td className="px-4 py-3.5 whitespace-nowrap">
+                        <div className="space-y-0.5">
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10.5px] font-bold border ${sourceBadgeStyle}`}>
+                            {src}
+                          </span>
+                          {booking.utmCampaign && (
+                            <div className="text-[10px] font-semibold text-gray-600 max-w-[140px] truncate" title={booking.utmCampaign}>
+                              {booking.utmCampaign}
+                            </div>
+                          )}
                         </div>
-                        {formattedTime && (
-                          <div className="text-[11px] text-gray-400 flex items-center gap-1.5 mt-0.5">
-                            <ClockIcon className="w-3 h-3 text-gray-400 shrink-0" />
-                            <span>{formattedTime}</span>
+                      </td>
+
+                      {/* Booked At (Timestamp: Date + Time) */}
+                      <td className="px-4 py-3.5 whitespace-nowrap">
+                        {bookingTimeInfo ? (
+                          <div className="space-y-0.5">
+                            <div className="font-bold text-gray-900 flex items-center gap-1 text-[11px]">
+                              <CalendarDaysIcon className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                              <span>{bookingTimeInfo.datePart}</span>
+                            </div>
+                            <div className="text-[10.5px] font-semibold text-gray-500 flex items-center gap-1">
+                              <ClockIcon className="w-3 h-3 text-gray-400 shrink-0" />
+                              <span>{bookingTimeInfo.timePart}</span>
+                            </div>
                           </div>
+                        ) : (
+                          <span className="text-gray-400">–</span>
                         )}
                       </td>
+
                       <td className="px-4 py-3.5 font-extrabold text-gray-900 whitespace-nowrap">
                         ₹{(booking.pricing?.total || booking.amount || 0).toLocaleString("en-IN")}
                       </td>

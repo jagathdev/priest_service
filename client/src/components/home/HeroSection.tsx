@@ -360,12 +360,12 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
         </div>
 
         {/* ── Right Content (Hero Banner Card) ── 55% on lg+ ── */}
-        <div className="order-1 lg:order-2 w-full lg:w-[55%] xl:w-[54%] shrink-0 flex flex-col items-center relative z-20 px-4 sm:px-6">
+        <div className="order-1 lg:order-2 w-full lg:w-[55%] xl:w-[54%] shrink-0 flex flex-col items-center relative z-20 px-0 sm:px-2 lg:px-0">
 
           {/* Carousel Viewport Container with Overlapping Navigation Arrows */}
           <div className="relative w-full">
             {/* Smooth Fade Carousel Viewport */}
-            <div className="relative w-full aspect-[4/3] min-h-[240px] sm:aspect-auto sm:h-[350px] md:h-[390px] lg:h-[340px] xl:h-[415px] rounded-2xl min-[375px]:rounded-3xl overflow-hidden shadow-2xl border border-stone-200/80 bg-stone-100 group/carousel">
+            <div className="relative w-full aspect-[3/2] sm:aspect-[3/2] sm:h-auto md:h-auto lg:h-[340px] xl:h-[415px] rounded-2xl min-[375px]:rounded-3xl overflow-hidden shadow-2xl border border-stone-200/80 bg-stone-100 group/carousel">
               {bannerSlides.map((slide, idx) => {
                 const isActive = idx === currentSafeSlideIndex;
                 return (
@@ -384,7 +384,7 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
                         fill
                         unoptimized
                         priority={idx === 0}
-                        className="w-full h-full object-cover object-center"
+                        className="w-full h-full object-cover object-left transition-all duration-300"
                       />
                     </Link>
                   </div>

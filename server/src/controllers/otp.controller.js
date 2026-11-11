@@ -55,6 +55,9 @@ export const verifyOtp = async (req, res) => {
         const {
             mobileNumber,
             otp,
+            utmSource,
+            utmMedium,
+            utmCampaign,
         } = req.body;
 
         // Check required fields
@@ -182,18 +185,34 @@ export const verifyOtp = async (req, res) => {
 
         if (!user) {
             user = await User.create({
-                mobileNumber: mobile,
-                name: "",
+                mobileNumber: standardMobile,
+                name: "Devotee",
                 email: "",
+                role: "user",
                 isVerified: true,
                 walletBalance: 0,
                 addresses: [],
+                utmSource: String(utmSource || "Direct").trim(),
+                utmMedium: String(utmMedium || "").trim(),
+                utmCampaign: String(utmCampaign || "").trim(),
             });
 
             isNewUser = true;
         } else {
-            // Existing user
+            // Existing user - ensure standard 91 format and verified status
+            user.mobileNumber = standardMobile;
             user.isVerified = true;
+            if (!user.name || user.name.trim() === "") {
+                user.name = "Devotee";
+            }
+            if (!user.role) {
+                user.role = "user";
+            }
+            if (utmSource && (!user.utmSource || user.utmSource === "Direct")) {
+                user.utmSource = String(utmSource).trim();
+                if (utmMedium) user.utmMedium = String(utmMedium).trim();
+                if (utmCampaign) user.utmCampaign = String(utmCampaign).trim();
+            }
 
             await user.save();
         }

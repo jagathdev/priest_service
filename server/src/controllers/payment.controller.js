@@ -226,6 +226,27 @@ export const createPaymentOrder = async (req, res) => {
             console.warn("[payment.controller] Failed to save pre-order lead:", leadErr.message);
         }
 
+        // Auto-sync devotee name, mobile, and UTM attribution back to User collection
+        if (authenticatedUserId) {
+            try {
+                const userUpdate = {};
+                if (customerName && customerName.trim() && customerName !== "Devotee") {
+                    userUpdate.name = customerName.trim();
+                }
+                if (stdWa) userUpdate.whatsappNumber = stdWa;
+                if (stdMobile) userUpdate.mobileNumber = stdMobile;
+                if (utmSource && utmSource !== "Direct") {
+                    userUpdate.utmSource = utmSource;
+                    if (utmCampaign) userUpdate.utmCampaign = utmCampaign;
+                }
+                if (Object.keys(userUpdate).length > 0) {
+                    await User.findByIdAndUpdate(authenticatedUserId, { $set: userUpdate });
+                }
+            } catch (syncErr) {
+                console.warn("[payment.controller] User profile auto-sync error:", syncErr.message);
+            }
+        }
+
         return res.status(200).json({
             success: true,
             message: "Payment order created successfully",

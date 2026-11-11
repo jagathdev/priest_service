@@ -408,6 +408,8 @@ export const getAdminStats = async (req, res) => {
         b.customerName ||
         b.participants?.[0]?.name ||
         "Devotee",
+      utmSource: b.utmSource || "Direct",
+      utmCampaign: b.utmCampaign || "",
     }));
 
     return res.status(200).json({
@@ -605,15 +607,40 @@ export const getAdminUsers = async (req, res) => {
       .select("-password")
       .lean();
 
+    // Fetch earliest Order UTM attribution for each user if not directly on User
+    const userIds = users.map((u) => u._id);
+    const orderSources = await Order.find({ customer: { $in: userIds } })
+      .sort({ createdAt: 1 })
+      .select("customer utmSource utmCampaign")
+      .lean();
+
+    const userSourceMap = new Map();
+    orderSources.forEach((ord) => {
+      if (ord.customer && !userSourceMap.has(String(ord.customer))) {
+        userSourceMap.set(String(ord.customer), {
+          utmSource: ord.utmSource || "Direct",
+          utmCampaign: ord.utmCampaign || ""
+        });
+      }
+    });
+
     const formattedUsers = users.map((u) => {
       const uId = String(u._id);
       const totalSpent = spendMap.get(uId) || 0;
+      const fallbackSource = userSourceMap.get(uId);
+      const resolvedSource = u.utmSource && u.utmSource !== "Direct"
+        ? u.utmSource
+        : (fallbackSource?.utmSource || u.utmSource || "Direct");
+      const resolvedCampaign = u.utmCampaign || fallbackSource?.utmCampaign || "";
+
       return {
         _id: u._id,
         name: u.name || "Devotee",
         email: u.email || "N/A",
         mobileNumber: u.mobileNumber || "N/A",
         whatsappNumber: u.whatsappNumber || "",
+        utmSource: resolvedSource,
+        utmCampaign: resolvedCampaign,
         totalAmountSpent: totalSpent,
         isVerified: u.isVerified !== false,
         status: u.isVerified !== false ? "Active" : "Inactive",
