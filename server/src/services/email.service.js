@@ -297,7 +297,7 @@ export const sendOrderConfirmationEmail = async (order) => {
     const subject = `🕉️ New Order Confirmed: ${serviceName} [${orderNumber}] - ₹${Number(order.pricing?.total || 0).toLocaleString("en-IN")}`;
     const html = generateOrderEmailHtml(order);
 
-    console.log(`[email.service] Sending order confirmation email for ${orderNumber} to: ${emailList.join(", ")}`);
+    // console.log(`[email.service] Sending order confirmation email for ${orderNumber} to: ${emailList.join(", ")}`);
 
     // Send in parallel to all recipients via SMTP
     const results = await Promise.allSettled(
@@ -314,7 +314,7 @@ export const sendOrderConfirmationEmail = async (order) => {
     const successful = results.filter((r) => r.status === "fulfilled").length;
     const failed = results.filter((r) => r.status === "rejected").length;
 
-    console.log(`[email.service] Order confirmation dispatch complete. Success: ${successful}, Failed: ${failed}`);
+    // console.log(`[email.service] Order confirmation dispatch complete. Success: ${successful}, Failed: ${failed}`);
 
     return {
       success: successful > 0,

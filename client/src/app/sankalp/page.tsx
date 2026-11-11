@@ -14,7 +14,7 @@ import { apiClient, getAuthToken } from "@/services/api";
 import { getStartingPriceINR } from "@/lib/pricing";
 import PriceTag from "@/components/ui/PriceTag";
 import { ArrowLeft, CreditCard, QrCode, Calendar, Lock, Check } from "lucide-react";
-import { getStoredUtmDetails } from "@/lib/utmTracker";
+import { getStoredUtmDetails, buildUtmQueryString } from "@/lib/utmTracker";
 
 interface RazorpayResponse {
   razorpay_order_id: string;
@@ -523,8 +523,9 @@ function SankalpContent() {
               })
             });
             const verifyData = await verifyRes.json();
+            const utmQuery = buildUtmQueryString();
             if (verifyData.success) {
-              router.push(`/payment/success?razorpayOrderId=${encodeURIComponent(targetOrderId)}`);
+              router.push(`/payment/success?razorpayOrderId=${encodeURIComponent(targetOrderId)}${utmQuery}`);
             } else {
               setError(verifyData?.message || "Payment was not successful. Please retry.");
               setIsProcessing(false);
@@ -533,7 +534,8 @@ function SankalpContent() {
             }
           } catch (err: any) {
             console.error("Payment verification caught error, redirecting to status page:", err);
-            router.push(`/payment/success?razorpayOrderId=${encodeURIComponent(targetOrderId)}`);
+            const utmQuery = buildUtmQueryString();
+            router.push(`/payment/success?razorpayOrderId=${encodeURIComponent(targetOrderId)}${utmQuery}`);
           }
         },
 

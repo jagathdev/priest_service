@@ -2126,6 +2126,12 @@ export default function ContentManager({
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
+                  <th className="px-3 py-3 text-center text-xs font-bold uppercase tracking-wider text-gray-500 w-12">
+                    #
+                  </th>
+                  <th className="px-3 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-500 w-16">
+                    Preview
+                  </th>
                   {reviewMode ? (
                     <>
                       <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">User Name</th>
@@ -2144,116 +2150,152 @@ export default function ContentManager({
               </thead>
               <tbody className="divide-y divide-gray-200 bg-white">
                 {loading ? (
-                  <tr><td colSpan={4} className="px-6 py-4 text-center text-sm text-gray-500">Loading...</td></tr>
+                  <tr><td colSpan={6} className="px-6 py-4 text-center text-sm text-gray-500">Loading...</td></tr>
                 ) : pagedItems.length === 0 ? (
-                  <tr><td colSpan={4} className="px-6 py-4 text-center text-sm text-gray-500">No items found.</td></tr>
+                  <tr><td colSpan={6} className="px-6 py-4 text-center text-sm text-gray-500">No items found.</td></tr>
                 ) : (
-                  pagedItems.map((item) => (
-                    <tr key={item._id}>
-                      {reviewMode ? (
-                        <>
-                          <td className="px-6 py-4 text-sm text-gray-900">
-                            <div className="flex items-center gap-2">
-                              <span className="font-medium">{item.name}</span>
+                  pagedItems.map((item, index) => {
+                    const rowNumber = (currentPage - 1) * PAGE_SIZE + index + 1;
+                    const previewImg =
+                      item.imageUrl ||
+                      item.image ||
+                      item.bannerImage ||
+                      (Array.isArray(item.additionalImages) && item.additionalImages[0]) ||
+                      (Array.isArray(item.gallery) && item.gallery[0]) ||
+                      item.templeImage ||
+                      null;
+
+                    return (
+                      <tr key={item._id}>
+                        {/* S.No */}
+                        <td className="px-3 py-4 text-center text-xs font-bold text-gray-400 w-12">
+                          {rowNumber}
+                        </td>
+
+                        {/* Image Preview */}
+                        <td className="px-3 py-4 text-left w-16">
+                          {previewImg ? (
+                            <div className="relative h-11 w-11 rounded-lg overflow-hidden border border-gray-200 bg-gray-50 shrink-0 shadow-2xs">
+                              <Image
+                                src={previewImg}
+                                alt={item.title || "Preview"}
+                                fill
+                                unoptimized
+                                className="object-cover"
+                              />
                             </div>
-                          </td>
-                          <td className="px-6 py-4 text-sm text-gray-700 max-w-[180px] truncate">{item.service || item.type || "—"}</td>
-                          <td className="px-6 py-4 text-sm text-gray-700">{item.rating ? `${'★'.repeat(Number(item.rating))} (${item.rating})` : "—"}</td>
-                        </>
-                      ) : (
-                        fields.slice(0, 3).map((field) => (
-                          <td key={field.name} className="whitespace-nowrap px-6 py-4 text-sm text-gray-900 max-w-[200px] truncate">
-                            {field.type === "url" && item[field.name] ? (
-                              <div className="flex items-center">
-                                <Image src={item[field.name]} alt="" width={32} height={32} unoptimized className="h-8 w-8 rounded object-cover mr-2" />
-                                <span className="truncate max-w-[150px]">{item[field.name]}</span>
-                              </div>
-                            ) : (
-                              <span className="truncate max-w-[200px] block" title={String(item[field.name] ?? "")}>{item[field.name]}</span>
-                            )}
-                          </td>
-                        ))
-                      )}
-                      <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium min-w-[200px]">
-                        <div className="flex items-center justify-end gap-3">
-                          {reviewMode ? (
-                            <>
-                              <button
-                                onClick={() => setViewingReview(item)}
-                                className="text-[#000000] hover:text-[#4647c4]"
-                                title="View review"
-                              >
-                                <EyeIcon className="h-5 w-5" />
-                              </button>
-                              <button
-                                onClick={async () => {
-                                  const nextStatus = item.approved ? false : true;
-                                  const payload = { ...item, approved: nextStatus };
-                                  delete payload._id;
-                                  const res = await fetch(`/api/admin/content?type=${type}&id=${item._id}`, {
-                                    method: "PUT",
-                                    headers: { "Content-Type": "application/json" },
-                                    body: JSON.stringify(payload),
-                                  });
-                                  if (res.ok) fetchItems();
-                                }}
-                                className={`rounded-md border px-2 py-1 text-xs font-semibold ${item.approved
-                                  ? "border-red-300 text-red-600 hover:bg-red-50"
-                                  : "border-green-400 text-green-700 hover:bg-green-50"
-                                  }`}
-                              >
-                                {item.approved ? "Unapprove" : "Approve"}
-                              </button>
-                              <button onClick={() => handleEdit(item)} className="text-[#000000] hover:text-[#4647c4]" aria-label="Edit review" title="Edit review">
-                                <PencilSquareIcon className="h-5 w-5" />
-                              </button>
-                              <button onClick={() => handleDelete(item._id)} className="text-red-600 hover:text-red-900" aria-label="Delete" title="Delete review">
-                                <TrashIcon className="h-5 w-5" />
-                              </button>
-                            </>
                           ) : (
-                            <>
-                              {(type === "puja" || type === "homa" || type === "home-banner" || type === "hero-banner" || type === "heroBanner") && (
-                                <>
-                                  <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${item.status === "inactive" || item.isActive === false ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"}`}>
-                                    {item.status === "inactive" || item.isActive === false ? "Inactive" : "Active"}
-                                  </span>
-                                  <button
-                                    onClick={async () => {
-                                      const isCurrentActive = item.isActive !== false && item.status !== "inactive";
-                                      const nextStatus = isCurrentActive ? false : true;
-                                      const payload = { ...item, isActive: nextStatus, status: isCurrentActive ? "inactive" : "active" }; delete payload._id;
-                                      const res = await fetch(getEndpoint(type, item._id), { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
-                                      if (res.ok) fetchItems();
-                                    }}
-                                    className="rounded-md border border-gray-300 px-2 py-1 text-xs text-gray-700 hover:bg-gray-50"
-                                  >
-                                    Mark {item.isActive !== false && item.status !== "inactive" ? "Inactive" : "Active"}
-                                  </button>
-                                  {(type === "puja" || type === "homa") && (
-                                    <a href={`/${type}/${item.slug || String(item.title || "").toLowerCase().replace(/[^a-z0-9\s-]/g, "").trim().replace(/\s+/g, "-")}`} target="_blank" rel="noreferrer" className="text-[#000000] hover:text-[#4647c4]" title={`View ${type}`}>
-                                      <EyeIcon className="h-5 w-5" />
-                                    </a>
-                                  )}
-                                </>
-                              )}
-                              {type === "chadhava" && (
-                                <a href={`/chadhava/${item.slug || String(item.title || "").toLowerCase().replace(/[^a-z0-9\s-]/g, "").trim().replace(/\s+/g, "-")}`} target="_blank" rel="noreferrer" className="text-[#000000] hover:text-[#4647c4]" title="View chadhava">
-                                  <EyeIcon className="h-5 w-5" />
-                                </a>
-                              )}
-                              <button onClick={() => handleEdit(item)} className="text-[#000000] hover:text-[#4647c4]" aria-label="Edit item">
-                                <PencilSquareIcon className="h-5 w-5" />
-                              </button>
-                              <button onClick={() => handleDelete(item._id)} className="text-red-600 hover:text-red-900" aria-label="Delete item">
-                                <TrashIcon className="h-5 w-5" />
-                              </button>
-                            </>
+                            <div className="h-11 w-11 rounded-lg border border-dashed border-gray-200 bg-gray-50 flex items-center justify-center text-[10px] font-bold text-gray-400 shrink-0">
+                              No Img
+                            </div>
                           )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))
+                        </td>
+
+                        {reviewMode ? (
+                          <>
+                            <td className="px-6 py-4 text-sm text-gray-900">
+                              <div className="flex items-center gap-2">
+                                <span className="font-medium">{item.name}</span>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 text-sm text-gray-700 max-w-[180px] truncate">{item.service || item.type || "—"}</td>
+                            <td className="px-6 py-4 text-sm text-gray-700">{item.rating ? `${'★'.repeat(Number(item.rating))} (${item.rating})` : "—"}</td>
+                          </>
+                        ) : (
+                          fields.slice(0, 3).map((field) => (
+                            <td key={field.name} className="whitespace-nowrap px-6 py-4 text-sm text-gray-900 max-w-[200px] truncate">
+                              {field.type === "url" && item[field.name] ? (
+                                <div className="flex items-center">
+                                  <Image src={item[field.name]} alt="" width={32} height={32} unoptimized className="h-8 w-8 rounded object-cover mr-2" />
+                                  <span className="truncate max-w-[150px]">{item[field.name]}</span>
+                                </div>
+                              ) : (
+                                <span className="truncate max-w-[200px] block" title={String(item[field.name] ?? "")}>{item[field.name]}</span>
+                              )}
+                            </td>
+                          ))
+                        )}
+                        <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium min-w-[200px]">
+                          <div className="flex items-center justify-end gap-3">
+                            {reviewMode ? (
+                              <>
+                                <button
+                                  onClick={() => setViewingReview(item)}
+                                  className="text-[#000000] hover:text-[#4647c4]"
+                                  title="View review"
+                                >
+                                  <EyeIcon className="h-5 w-5" />
+                                </button>
+                                <button
+                                  onClick={async () => {
+                                    const nextStatus = item.approved ? false : true;
+                                    const payload = { ...item, approved: nextStatus };
+                                    delete payload._id;
+                                    const res = await fetch(`/api/admin/content?type=${type}&id=${item._id}`, {
+                                      method: "PUT",
+                                      headers: { "Content-Type": "application/json" },
+                                      body: JSON.stringify(payload),
+                                    });
+                                    if (res.ok) fetchItems();
+                                  }}
+                                  className={`rounded-md border px-2 py-1 text-xs font-semibold ${item.approved
+                                    ? "border-red-300 text-red-600 hover:bg-red-50"
+                                    : "border-green-400 text-green-700 hover:bg-green-50"
+                                    }`}
+                                >
+                                  {item.approved ? "Unapprove" : "Approve"}
+                                </button>
+                                <button onClick={() => handleEdit(item)} className="text-[#000000] hover:text-[#4647c4]" aria-label="Edit review" title="Edit review">
+                                  <PencilSquareIcon className="h-5 w-5" />
+                                </button>
+                                <button onClick={() => handleDelete(item._id)} className="text-red-600 hover:text-red-900" aria-label="Delete" title="Delete review">
+                                  <TrashIcon className="h-5 w-5" />
+                                </button>
+                              </>
+                            ) : (
+                              <>
+                                {(type === "puja" || type === "homa" || type === "home-banner" || type === "hero-banner" || type === "heroBanner") && (
+                                  <>
+                                    <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${item.status === "inactive" || item.isActive === false ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"}`}>
+                                      {item.status === "inactive" || item.isActive === false ? "Inactive" : "Active"}
+                                    </span>
+                                    <button
+                                      onClick={async () => {
+                                        const isCurrentActive = item.isActive !== false && item.status !== "inactive";
+                                        const nextStatus = isCurrentActive ? false : true;
+                                        const payload = { ...item, isActive: nextStatus, status: isCurrentActive ? "inactive" : "active" }; delete payload._id;
+                                        const res = await fetch(getEndpoint(type, item._id), { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+                                        if (res.ok) fetchItems();
+                                      }}
+                                      className="rounded-md border border-gray-300 px-2 py-1 text-xs text-gray-700 hover:bg-gray-50"
+                                    >
+                                      Mark {item.isActive !== false && item.status !== "inactive" ? "Inactive" : "Active"}
+                                    </button>
+                                    {(type === "puja" || type === "homa") && (
+                                      <a href={`/${type}/${item.slug || String(item.title || "").toLowerCase().replace(/[^a-z0-9\s-]/g, "").trim().replace(/\s+/g, "-")}`} target="_blank" rel="noreferrer" className="text-[#000000] hover:text-[#4647c4]" title={`View ${type}`}>
+                                        <EyeIcon className="h-5 w-5" />
+                                      </a>
+                                    )}
+                                  </>
+                                )}
+                                {type === "chadhava" && (
+                                  <a href={`/chadhava/${item.slug || String(item.title || "").toLowerCase().replace(/[^a-z0-9\s-]/g, "").trim().replace(/\s+/g, "-")}`} target="_blank" rel="noreferrer" className="text-[#000000] hover:text-[#4647c4]" title="View chadhava">
+                                    <EyeIcon className="h-5 w-5" />
+                                  </a>
+                                )}
+                                <button onClick={() => handleEdit(item)} className="text-[#000000] hover:text-[#4647c4]" aria-label="Edit item">
+                                  <PencilSquareIcon className="h-5 w-5" />
+                                </button>
+                                <button onClick={() => handleDelete(item._id)} className="text-red-600 hover:text-red-900" aria-label="Delete item">
+                                  <TrashIcon className="h-5 w-5" />
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>

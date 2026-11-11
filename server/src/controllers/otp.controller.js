@@ -173,8 +173,17 @@ export const verifyOtp = async (req, res) => {
         // FIND USER
         // ==========================================
 
+        const standardMobile = mobile.startsWith("91") && mobile.length === 12
+            ? mobile
+            : (mobile.length === 10 ? `91${mobile}` : mobile);
+
         let user = await User.findOne({
-            mobileNumber: mobile,
+            $or: [
+                { mobileNumber: standardMobile },
+                { mobileNumber: mobile },
+                { mobileNumber: `+91${mobile}` },
+                { mobileNumber: `+${standardMobile}` },
+            ],
         });
 
         let isNewUser = false;
@@ -217,7 +226,7 @@ export const verifyOtp = async (req, res) => {
             await user.save();
         }
 
-                // ==========================================
+        // ==========================================
         // MARK OTP AS VERIFIED (Do NOT delete so history/counts persist in DB)
         // ==========================================
 

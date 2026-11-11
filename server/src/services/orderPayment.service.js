@@ -114,7 +114,7 @@ export const markOrderPaid = async ({ payment }) => {
             bookingDate: updatedOrder.bookingDate,
             amount: updatedOrder.pricing?.total,
         });
-        console.log(`[orderPayment] WhatsApp confirmation dispatched for order: ${updatedOrder._id}`);
+        // console.log(`[orderPayment] WhatsApp confirmation dispatched for order: ${updatedOrder._id}`);
     } catch (waError) {
         console.error(`[orderPayment] Failed to dispatch WhatsApp confirmation for order ${updatedOrder._id}:`, waError.message);
     }
@@ -124,7 +124,7 @@ export const markOrderPaid = async ({ payment }) => {
         sendOrderConfirmationEmail(updatedOrder).catch((err) =>
             console.error(`[orderPayment] Background email dispatch error for order ${updatedOrder._id}:`, err.message)
         );
-        console.log(`[orderPayment] Email notification task initiated for order: ${updatedOrder._id}`);
+        // console.log(`[orderPayment] Email notification task initiated for order: ${updatedOrder._id}`);
     } catch (emailErr) {
         console.error(`[orderPayment] Failed to initiate email notification for order ${updatedOrder._id}:`, emailErr.message);
     }
@@ -141,7 +141,7 @@ export const markOrderPaid = async ({ payment }) => {
                 }
             ]
         });
-        console.log(`[orderPayment] Cleaned up pre-order leads for completed order ${updatedOrder._id}`);
+        // console.log(`[orderPayment] Cleaned up pre-order leads for completed order ${updatedOrder._id}`);
     } catch (delLeadErr) {
         console.warn(`[orderPayment] Failed to delete pre-order leads:`, delLeadErr.message);
     }

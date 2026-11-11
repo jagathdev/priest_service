@@ -12,6 +12,7 @@ import {
   Calendar, 
 } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
+import { captureUtmFromUrl } from "@/lib/utmTracker";
 
 type StatusState = "loading" | "pending" | "paid" | "failed" | "timeout" | "not_found";
 
