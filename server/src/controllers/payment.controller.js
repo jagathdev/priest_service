@@ -1,6 +1,7 @@
 import PreOrderLead from "../models/PreOrderLead.js";
 import crypto from "crypto";
 import Order from "../models/Order.js";
+import User from "../models/user.js";
 import {
     createRazorpayOrder,
     verifyRazorpayPayment,
@@ -233,6 +234,14 @@ export const createPaymentOrder = async (req, res) => {
                 if (customerName && customerName.trim() && customerName !== "Devotee") {
                     userUpdate.name = customerName.trim();
                 }
+                const rawWa = whatsappNumber ? String(whatsappNumber).trim() : "";
+                const cleanWa = rawWa.replace(/\D/g, "");
+                const stdWa = cleanWa ? (cleanWa.startsWith("91") && cleanWa.length === 12 ? cleanWa : (cleanWa.length === 10 ? `91${cleanWa}` : cleanWa)) : "";
+
+                const rawMob = mobileNumber ? String(mobileNumber).trim() : "";
+                const cleanMob = rawMob.replace(/\D/g, "");
+                const stdMobile = cleanMob ? (cleanMob.startsWith("91") && cleanMob.length === 12 ? cleanMob : (cleanMob.length === 10 ? `91${cleanMob}` : cleanMob)) : "";
+
                 if (stdWa) userUpdate.whatsappNumber = stdWa;
                 if (stdMobile) userUpdate.mobileNumber = stdMobile;
                 if (utmSource && utmSource !== "Direct") {
