@@ -39,7 +39,7 @@ export async function generateMetadata(
     puja?.imageUrl ||
     (puja as any)?.details?.heroImage ||
     (puja as any)?.image ||
-    "https://www.priestservices.astroved.com/images/navagraga_puja.png";
+    "https://www.priestservices.astroved.com/api/images/shani-puja.png";
 
   const absoluteImageUrl = rawImageUrl.startsWith("http")
     ? rawImageUrl

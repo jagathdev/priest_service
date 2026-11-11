@@ -50,13 +50,13 @@ const safeEncodeUrl = (url: string): string => {
 export const get1024BannerImage = (img: string): string => {
   const lower = (img || "").toLowerCase();
   if (lower.includes("rameshwaram") || lower.includes("tarpanam")) {
-    return "/Service%20images/rameshwaram_puja.png";
+    return "https://priestservices.astroved.com/api/images/Rameshwaram-Tharpanam.png";
   }
   if (lower.includes("shani")) {
-    return "/Service%20images/shani_puja.png";
+    return "https://priestservices.astroved.com/api/images/shani_puja.png";
   }
   if (lower.includes("nava") || lower.includes("navagraha")) {
-    return "/Service%20images/nava_puja.png";
+    return "https://priestservices.astroved.com/api/images/navagraha_puja.png";
   }
   return safeEncodeUrl(img);
 };

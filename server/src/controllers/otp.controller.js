@@ -20,18 +20,20 @@ export const sendOtp = async (req, res) => {
             });
         }
 
-        const mobile = String(mobileNumber).trim();
+        // Extract clean digits
+        const rawDigits = String(mobileNumber).replace(/\D/g, "");
+        const clean10 = rawDigits.length === 12 && rawDigits.startsWith("91") ? rawDigits.slice(2) : rawDigits;
 
         // Validate Indian 10 digit mobile number
-        if (!/^\d{10}$/.test(mobile)) {
+        if (!/^\d{10}$/.test(clean10)) {
             return res.status(400).json({
                 success: false,
-                message: "Mobile number must be exactly 10 digits",
+                message: "Mobile number must be a valid 10-digit number",
             });
         }
 
         // Send OTP
-        const result = await sendOTP(mobile);
+        const result = await sendOTP(clean10);
 
         return res.status(200).json({
             success: true,
@@ -66,15 +68,15 @@ export const verifyOtp = async (req, res) => {
             });
         }
 
-        const mobile = String(mobileNumber).trim();
+        const rawDigits = String(mobileNumber).replace(/\D/g, "");
+        const clean10 = rawDigits.length === 12 && rawDigits.startsWith("91") ? rawDigits.slice(2) : rawDigits;
         const enteredOtp = String(otp).trim();
 
         // Validate mobile number
-        if (!/^\d{10}$/.test(mobile)) {
+        if (!/^\d{10}$/.test(clean10)) {
             return res.status(400).json({
                 success: false,
-                message:
-                    "Mobile number must be exactly 10 digits",
+                message: "Mobile number must be a valid 10-digit number",
             });
         }
 
@@ -86,12 +88,18 @@ export const verifyOtp = async (req, res) => {
             });
         }
 
+        // Standardized storage format with country code 91
+        const standardMobile = `91${clean10}`;
+
         // ==========================================
         // FIND OTP
         // ==========================================
 
         const otpRecord = await Otp.findOne({
-            mobileNumber: mobile,
+            $or: [
+                { mobileNumber: clean10 },
+                { mobileNumber: standardMobile }
+            ]
         });
 
         // OTP doesn't exist
@@ -167,24 +175,31 @@ export const verifyOtp = async (req, res) => {
         }
 
         // ==========================================
-        // FIND USER
+        // FIND USER (Support 91 prefix, 10-digit, or +91)
         // ==========================================
 
         let user = await User.findOne({
-            mobileNumber: mobile,
+            $or: [
+                { mobileNumber: standardMobile },
+                { mobileNumber: clean10 },
+                { mobileNumber: `+91${clean10}` },
+                { whatsappNumber: standardMobile },
+                { whatsappNumber: clean10 }
+            ]
         });
 
         let isNewUser = false;
 
         // ==========================================
-        // CREATE USER IF NOT EXISTS
+        // CREATE USER IF NOT EXISTS (Stored with 91 country code)
         // ==========================================
 
         if (!user) {
             user = await User.create({
-                mobileNumber: mobile,
-                name: "",
+                mobileNumber: standardMobile,
+                name: "Devotee",
                 email: "",
+                role: "user",
                 isVerified: true,
                 walletBalance: 0,
                 addresses: [],
@@ -192,8 +207,15 @@ export const verifyOtp = async (req, res) => {
 
             isNewUser = true;
         } else {
-            // Existing user
+            // Existing user - ensure standard 91 format and verified status
+            user.mobileNumber = standardMobile;
             user.isVerified = true;
+            if (!user.name || user.name.trim() === "") {
+                user.name = "Devotee";
+            }
+            if (!user.role) {
+                user.role = "user";
+            }
 
             await user.save();
         }

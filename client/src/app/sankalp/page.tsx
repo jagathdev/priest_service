@@ -314,14 +314,15 @@ function SankalpContent() {
     }
 
     const { is_user } = await checkAuthStatus();
-    if (!is_user && !user?.id && !user?._id) {
+    const token = getAuthToken();
+    const hasExistingAuth = is_user || Boolean(token) || Boolean(user?.id || user?._id);
+    if (!hasExistingAuth) {
       setShowLoginModal(true);
       return;
     }
 
     const uId = user?.id || user?._id;
-    const token = getAuthToken();
-    if (uId && token) {
+    if (token) {
       const nameToSave = formData.participants[0]?.name.trim() || user?.name || "Devotee";
       apiClient('/api/users/updateProfile', {
         method: "PUT",
@@ -1132,8 +1133,7 @@ function SankalpContent() {
         onClose={() => setShowLoginModal(false)}
         onSuccess={() => {
           setShowLoginModal(false);
-          setStep(2);
-          window.scrollTo({ top: 0, behavior: "smooth" });
+          handleProceedToStep2();
         }}
       />
 

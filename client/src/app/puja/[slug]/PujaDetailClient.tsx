@@ -508,6 +508,8 @@ export default function PujaDetailClient({
   const handleAddPujaToCart = async () => {
     try {
       const { is_user } = await checkAuthStatus();
+      const hasToken = typeof window !== "undefined" && Boolean(localStorage.getItem("token") || document.cookie.includes("token="));
+      const isAuthed = is_user || hasToken;
       const actualPujaId = puja?._id || (puja as any)?.id || slug;
       const totalAmount = priceVal;
 
@@ -515,7 +517,7 @@ export default function PujaDetailClient({
         slug || ""
       )}`;
 
-      if (!is_user) {
+      if (!isAuthed) {
         setPendingSankalpUrl(sankalpUrl);
         setShowLoginModal(true);
         return;

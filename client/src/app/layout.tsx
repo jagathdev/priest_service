@@ -42,7 +42,7 @@ export const metadata: Metadata = {
     description: "Book authentic Vedic pujas, homas, and ritual services online. Expert priests for your spiritual and religious needs.",
     images: [
       {
-        url: "https://www.priestservices.astroved.com/images/navagraga_puja.png",
+        url: "https://www.priestservices.astroved.com/api/images/shani-puja.png",
         width: 1200,
         height: 630,
         alt: "Priest Services by AstroVed",
@@ -54,7 +54,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Priest Services | Sacred Pujas & Rituals by AstroVed",
     description: "Book authentic Vedic pujas, homas, and ritual services online. Expert priests for your spiritual and religious needs.",
-    images: ["https://www.priestservices.astroved.com/images/navagraga_puja.png"],
+    images: ["https://www.priestservices.astroved.com/api/images/shani-puja.png"],
   },
 };
 

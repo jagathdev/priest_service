@@ -249,7 +249,7 @@ export default async function AdminDashboard() {
                   else if (rawStatus === "confirmed") badgeClass = "bg-emerald-100 text-emerald-700";
 
                   // Format Booking Date & Time
-                  const dateSource = booking.createdAt || booking.bookingDate;
+                  const dateSource = booking.bookingDate;
                   let formattedDate = "-";
                   let formattedTime = "";
                   if (dateSource) {

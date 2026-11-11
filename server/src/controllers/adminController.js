@@ -517,14 +517,39 @@ export const getAdminUsers = async (req, res) => {
 
     const isTrash = trash === "true" || trash === true;
     const query = {
-      role: "user",
+      role: { $ne: "admin" },
       isDeleted: isTrash ? true : { $ne: true }
     };
 
     if (search && search.trim()) {
-      const escaped = escapeRegex(search.trim());
+      const trimmedSearch = search.trim();
+      const escaped = escapeRegex(trimmedSearch);
       const regex = new RegExp(escaped, "i");
-      query.$or = [{ name: regex }, { email: regex }, { mobileNumber: regex }, { whatsappNumber: regex }];
+      
+      const orClauses = [
+        { name: regex },
+        { email: regex },
+        { mobileNumber: regex },
+        { whatsappNumber: regex }
+      ];
+
+      // Strip + and spaces for flexible phone searching
+      const digitsOnly = trimmedSearch.replace(/\D/g, "");
+      if (digitsOnly.length >= 3) {
+        orClauses.push({ mobileNumber: new RegExp(digitsOnly, "i") });
+        orClauses.push({ whatsappNumber: new RegExp(digitsOnly, "i") });
+
+        if (digitsOnly.length === 10) {
+          orClauses.push({ mobileNumber: new RegExp(`91${digitsOnly}`, "i") });
+          orClauses.push({ whatsappNumber: new RegExp(`91${digitsOnly}`, "i") });
+        } else if (digitsOnly.length === 12 && digitsOnly.startsWith("91")) {
+          const tenDigit = digitsOnly.slice(2);
+          orClauses.push({ mobileNumber: new RegExp(tenDigit, "i") });
+          orClauses.push({ whatsappNumber: new RegExp(tenDigit, "i") });
+        }
+      }
+
+      query.$or = orClauses;
     }
 
     if (status && status !== "All") {

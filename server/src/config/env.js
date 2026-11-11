@@ -7,7 +7,12 @@ const requiredEnvVars = [
   'OTP_URL',
   'CLIENT_URLS',
   'ADMIN_EMAIL',
-  'ADMIN_PASSWORD'
+  'ADMIN_PASSWORD',
+  'SMTP_HOST',
+  'SMTP_PORT',
+  'EMAIL_FROM',
+  'SMTP_USER',
+  'SMTP_PASS'
 ];
 
 export function validateEnv() {

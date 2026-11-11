@@ -139,7 +139,7 @@ export const getHomaImageUrl = (imageUrl?: string): string => {
 const DEFAULT_PACKAGE_AVATARS = [
   "/images/package_individual.webp",
   "/images/partner.webp",
-  "/images/package_family.webp",
+  "/images/package_family.png"
 ];
 
 export default function HomaDetailClient({
@@ -497,6 +497,8 @@ export default function HomaDetailClient({
   const handleAddHomaToCart = async () => {
     try {
       const { is_user } = await checkAuthStatus();
+      const hasToken = typeof window !== "undefined" && Boolean(localStorage.getItem("token") || document.cookie.includes("token="));
+      const isAuthed = is_user || hasToken;
       const actualHomaId = homa?._id || (homa as any)?.id || slug;
       const totalAmount = priceVal;
 
@@ -504,7 +506,7 @@ export default function HomaDetailClient({
         slug || ""
       )}`;
 
-      if (!is_user) {
+      if (!isAuthed) {
         setPendingSankalpUrl(sankalpUrl);
         setShowLoginModal(true);
         return;

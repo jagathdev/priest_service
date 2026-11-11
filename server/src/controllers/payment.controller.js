@@ -1,4 +1,5 @@
 import PreOrderLead from "../models/PreOrderLead.js";
+import User from "../models/user.js";
 import crypto from "crypto";
 import Order from "../models/Order.js";
 import {
@@ -135,6 +136,13 @@ export const createPaymentOrder = async (req, res) => {
             });
         }
 
+        // Standardize mobile and WhatsApp numbers with 91 country code
+        const rawMobile = String(mobileNumber || "").replace(/\D/g, "");
+        const stdMobile = rawMobile.length === 10 ? `91${rawMobile}` : (rawMobile.length === 12 && rawMobile.startsWith("91") ? rawMobile : (rawMobile || ""));
+
+        const rawWa = String(whatsappNumber || "").replace(/\D/g, "");
+        const stdWa = rawWa.length === 10 ? `91${rawWa}` : (rawWa.length === 12 && rawWa.startsWith("91") ? rawWa : (rawWa || ""));
+
         // Create pending Order in Mongo
         let createdOrder;
         try {
@@ -145,8 +153,8 @@ export const createPaymentOrder = async (req, res) => {
                 customer: authenticatedUserId,
                 customerName: customerName || "Devotee",
                 itemName: itemName || pooja || "Sacred Ritual",
-                mobileNumber: mobileNumber || "",
-                whatsappNumber: String(whatsappNumber).trim(),
+                mobileNumber: stdMobile,
+                whatsappNumber: stdWa,
                 participants: cleanParticipants,
                 gotra: doesNotKnowGotra ? "" : (gotra || ""),
                 doesNotKnowGotra: Boolean(doesNotKnowGotra),
@@ -194,8 +202,8 @@ export const createPaymentOrder = async (req, res) => {
             await PreOrderLead.create({
                 user: authenticatedUserId,
                 userName: customerName || "Devotee",
-                mobileNumber: mobileNumber || "",
-                whatsappNumber: String(whatsappNumber).trim(),
+                mobileNumber: stdMobile,
+                whatsappNumber: stdWa,
                 email: req.user?.email || "",
                 serviceType: pricingCalculation.serviceType || serviceType || "Puja",
                 serviceId: serviceId || null,
@@ -224,6 +232,27 @@ export const createPaymentOrder = async (req, res) => {
             });
         } catch (leadErr) {
             console.warn("[payment.controller] Failed to save pre-order lead:", leadErr.message);
+        }
+
+        // Auto-sync devotee name and mobile/whatsapp back to User collection so it shows immediately in Admin Users
+        if (authenticatedUserId) {
+            try {
+                const userUpdate = {};
+                if (customerName && customerName.trim() && customerName !== "Devotee") {
+                    userUpdate.name = customerName.trim();
+                }
+                if (stdWa) {
+                    userUpdate.whatsappNumber = stdWa;
+                }
+                if (stdMobile) {
+                    userUpdate.mobileNumber = stdMobile;
+                }
+                if (Object.keys(userUpdate).length > 0) {
+                    await User.findByIdAndUpdate(authenticatedUserId, { $set: userUpdate });
+                }
+            } catch (syncErr) {
+                console.warn("[payment.controller] User profile auto-sync error:", syncErr.message);
+            }
         }
 
         return res.status(200).json({

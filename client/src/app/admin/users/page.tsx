@@ -379,11 +379,13 @@ export default function AdminUsersPage() {
       day: "2-digit",
       month: "short",
       year: "numeric",
+      timeZone: "Asia/Kolkata",
     });
     const timePart = d.toLocaleTimeString("en-US", {
       hour: "2-digit",
       minute: "2-digit",
       hour12: true,
+      timeZone: "Asia/Kolkata",
     }).toLowerCase();
     return { datePart, timePart };
   };
@@ -895,11 +897,19 @@ export default function AdminUsersPage() {
                       {/* Mobile & WhatsApp */}
                       <td className="py-4 px-4 whitespace-nowrap min-w-[140px]">
                         <div className="font-semibold text-gray-800 whitespace-nowrap">
-                          {u.mobileNumber && u.mobileNumber !== "N/A"
-                            ? (u.mobileNumber.startsWith("+")
-                              ? u.mobileNumber
-                              : `+91 ${u.mobileNumber}`)
-                            : <span className="text-gray-400 italic">Not Provided</span>}
+                          {(() => {
+                            if (!u.mobileNumber || u.mobileNumber === "N/A") {
+                              return <span className="text-gray-400 italic">Not Provided</span>;
+                            }
+                            const clean = String(u.mobileNumber).replace(/\D/g, "");
+                            if (clean.length === 12 && clean.startsWith("91")) {
+                              return `+91 ${clean.slice(2)}`;
+                            }
+                            if (clean.length === 10) {
+                              return `+91 ${clean}`;
+                            }
+                            return u.mobileNumber.startsWith("+") ? u.mobileNumber : `+${u.mobileNumber}`;
+                          })()}
                         </div>
                         {(() => {
                           const mob = u.mobileNumber || "";

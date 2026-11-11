@@ -21,6 +21,7 @@ import {
   UserCircleIcon,
   HeartIcon,
 } from "@heroicons/react/24/outline";
+import { ClockIcon } from "lucide-react";
 
 interface ParticipantItem {
   name: string;
@@ -277,6 +278,7 @@ export default function AdminPreOrdersPage() {
       day: "2-digit",
       month: "short",
       year: "numeric",
+      timeZone: "Asia/Kolkata",
     });
   };
 
@@ -288,6 +290,7 @@ export default function AdminPreOrdersPage() {
       hour: "2-digit",
       minute: "2-digit",
       hour12: true,
+      timeZone: "Asia/Kolkata",
     });
   };
 
@@ -731,9 +734,18 @@ export default function AdminPreOrdersPage() {
                         </span>
                       </td>
 
-                      {/* Preferred Date */}
-                      <td className="py-4 px-4 font-semibold text-gray-800 whitespace-nowrap">
-                        {lead.preferredDate ? formatDate(lead.preferredDate) : formatDate(lead.createdAt)}
+                      {/* Preferred Date & Order Initiated Time */}
+                      <td className="py-4 px-4 whitespace-nowrap">
+                        <div className="font-semibold text-gray-900 text-xs flex items-center gap-1">
+                          <CalendarDaysIcon className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                          <span>{lead.preferredDate ? formatDate(lead.preferredDate) : formatDate(lead.createdAt)}</span>
+                        </div>
+                        {lead.createdAt && (
+                          <div className="text-[11px] font-medium text-gray-500 flex items-center gap-1 mt-0.5">
+                            <ClockIcon className="w-3 h-3 text-gray-400 shrink-0" />
+                            <span>{formatTime(lead.createdAt)}</span>
+                          </div>
+                        )}
                       </td>
 
                       {/* Additional Info */}
