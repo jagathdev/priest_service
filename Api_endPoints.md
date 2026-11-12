@@ -1790,19 +1790,30 @@ Sends an instant test email to the configured admin inbox to verify mail deliver
 ### 21.1 Get All Promo Codes
 - **Endpoint:** `GET /api/promos`
 - **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
+- **Description:** Returns all promo codes along with aggregate order counts, total generated revenue (₹), and total customer savings.
 - **Response (`200 OK`):**
 ```json
 {
   "success": true,
+  "count": 1,
   "data": [
     {
-      "_id": "60d5ecb8b392d700153f93c8",
-      "code": "FESTIVE100",
-      "discountType": "fixed",
-      "discountValue": 100,
-      "minOrderAmount": 500,
+      "_id": "67332a67a0f7e4521404e9a1",
+      "code": "PUJA10",
+      "description": "10% discount on all Puja bookings",
+      "discountType": "PERCENTAGE",
+      "discountValue": 10,
+      "maxDiscount": 500,
+      "minimumOrderAmount": 1000,
+      "startDate": "2026-11-12T00:00:00.000Z",
+      "endDate": "2026-11-30T23:59:59.000Z",
+      "usageLimit": null,
+      "usedCount": 3,
+      "ordersCount": 3,
+      "totalRevenue": 9300,
+      "totalDiscount": 300,
       "isActive": true,
-      "expiryDate": "2026-12-31T23:59:59.000Z"
+      "createdAt": "2026-11-12T06:00:00.000Z"
     }
   ]
 }
@@ -1810,19 +1821,72 @@ Sends an instant test email to the configured admin inbox to verify mail deliver
 
 ---
 
-### 21.2 Create Promo Code
+### 21.2 Get Promo Code Devotees & Order Usage Details
+- **Endpoint:** `GET /api/promos/:id/usage`
+- **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
+- **Description:** Returns detailed usage metrics and a list of all devotees who placed orders using this promo code, including customer name, mobile number, order ID, service name, discount amount, and timestamp.
+- **Response (`200 OK`):**
+```json
+{
+  "success": true,
+  "promo": {
+    "_id": "67332a67a0f7e4521404e9a1",
+    "code": "PUJA10",
+    "discountType": "PERCENTAGE",
+    "discountValue": 10,
+    "totalOrders": 1,
+    "totalRevenue": 3100,
+    "totalDiscountGiven": 100
+  },
+  "count": 1,
+  "data": [
+    {
+      "_id": "67332b50a0f7e4521404e9bc",
+      "discountAmount": 100,
+      "createdAt": "2026-11-12T06:17:40.000Z",
+      "user": {
+        "_id": "67319c50119c30e9d6512345",
+        "name": "Jagath",
+        "mobileNumber": "+91 9360270984",
+        "email": "jagath@gmail.com"
+      },
+      "order": {
+        "_id": "67332b50a0f7e4521404e9bb",
+        "orderNumber": "PS-2026-000015",
+        "customerName": "Jagath",
+        "mobileNumber": "+91 9360270984",
+        "totalAmount": 3100,
+        "discountAmount": 100,
+        "paymentStatus": "paid",
+        "orderStatus": "completed",
+        "itemName": "Navagraha Shanti Puja",
+        "createdAt": "2026-11-12T06:17:40.000Z"
+      }
+    }
+  ]
+}
+```
+
+---
+
+### 21.3 Create Promo Code
 - **Endpoint:** `POST /api/promos`
 - **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
 - **Request Payload:**
 ```json
 {
   "code": "DIWALI500",
-  "discountType": "fixed",
+  "description": "Diwali Special Offer",
+  "discountType": "FIXED",
   "discountValue": 500,
-  "minOrderAmount": 2000,
-  "maxDiscountAmount": 500,
-  "expiryDate": "2026-11-15T23:59:59.000Z",
-  "usageLimit": 100
+  "minimumOrderAmount": 2000,
+  "maxDiscount": 500,
+  "startDate": "2026-11-12T00:00:00.000Z",
+  "endDate": "2026-11-30T23:59:59.000Z",
+  "usageLimit": null,
+  "usageLimitPerUser": 1,
+  "applicableServices": "ALL",
+  "isActive": true
 }
 ```
 - **Response (`201 Created`):**
@@ -1835,7 +1899,7 @@ Sends an instant test email to the configured admin inbox to verify mail deliver
 
 ---
 
-### 21.3 Toggle Promo Code Active Status
+### 21.4 Toggle Promo Code Active Status
 - **Endpoint:** `PATCH /api/promos/:id/status`
 - **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
 - **Request Payload:**
@@ -1854,7 +1918,7 @@ Sends an instant test email to the configured admin inbox to verify mail deliver
 
 ---
 
-### 21.4 Delete Promo Code
+### 21.5 Delete Promo Code
 - **Endpoint:** `DELETE /api/promos/:id`
 - **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
 - **Response (`200 OK`):**
