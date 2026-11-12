@@ -494,11 +494,19 @@ ${message || "No additional message text provided."}
  */
 export const sendCustomerQueryAlertEmail = async (customerQuery) => {
   try {
-    // 1. Fetch all active recipients subscribed to CUSTOMER_QUERIES
-    const recipients = await NotificationRecipient.find({
+    // 1. Fetch active recipients explicitly subscribed to CUSTOMER_QUERIES
+    let recipients = await NotificationRecipient.find({
       isActive: true,
       alertTypes: { $in: ["CUSTOMER_QUERIES"] },
     }).lean();
+
+    // If none specifically configured for CUSTOMER_QUERIES, include active Admins as safe fallback
+    if (!recipients || recipients.length === 0) {
+      recipients = await NotificationRecipient.find({
+        isActive: true,
+        role: "Admin",
+      }).lean();
+    }
 
     let emailList = recipients.map((r) => r.email.trim()).filter(Boolean);
 
@@ -520,10 +528,15 @@ export const sendCustomerQueryAlertEmail = async (customerQuery) => {
       return { success: false, reason: "no_recipients" };
     }
 
+    // Deduplicate emails
+    emailList = [...new Set(emailList)];
+
     const transporter = getTransporter();
-    const fromAddress = process.env.EMAIL_FROM || process.env.SMTP_USER || "support@priestservices.astroved.com";
+    const fromAddress = process.env.EMAIL_FROM || process.env.SMTP_USER || "support@astroved.com";
     const subject = `💬 New Devotee Query: ${customerQuery.subject || "Customer Support"} - ${customerQuery.name || "Devotee"}`;
     const html = generateCustomerQueryEmailHtml(customerQuery);
+
+    console.log(`[email.service] 🚀 Sending Customer Query alert for devotee "${customerQuery.name || 'Devotee'}" to:`, emailList);
 
     const results = await Promise.allSettled(
       emailList.map((toEmail) =>
@@ -538,6 +551,8 @@ export const sendCustomerQueryAlertEmail = async (customerQuery) => {
 
     const successful = results.filter((r) => r.status === "fulfilled").length;
     const failed = results.filter((r) => r.status === "rejected").length;
+
+    console.log(`[email.service] Customer Query alert result: ${successful} succeeded, ${failed} failed`);
 
     return {
       success: successful > 0,

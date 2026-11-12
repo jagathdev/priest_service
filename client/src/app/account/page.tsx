@@ -249,30 +249,92 @@ function AccountPageContent() {
     bookingId: "",
     subject: "",
     message: "",
-    consent: false
+    consent: true,
   });
+  const [subjectDropdownOpen, setSubjectDropdownOpen] = useState(false);
+  const subjectOptions = [
+    { value: "Booking Issue", label: "Booking Issue", desc: "Problems with dates, priests, or booking details" },
+    { value: "Puja Video Query", label: "Puja Video Query", desc: "Live streaming links or video recording status" },
+    { value: "Refund/Cancellation", label: "Refund/Cancellation", desc: "Rescheduling, cancellation or refund requests" },
+    { value: "Other", label: "Other", desc: "General spiritual inquiries and custom pujas" },
+  ];
   const [isSubmittingHelp, setIsSubmittingHelp] = useState(false);
+  const [helpFeedbackModal, setHelpFeedbackModal] = useState<{
+    isOpen: boolean;
+    type: "success" | "error";
+    title: string;
+    message: string;
+  }>({
+    isOpen: false,
+    type: "success",
+    title: "",
+    message: "",
+  });
 
   const handleHelpSubmit = async () => {
-    if (!helpFormData.name || !helpFormData.mobileNumber || !helpFormData.subject || !helpFormData.message || !helpFormData.consent) {
-      alert("Please fill all required fields and accept the consent.");
+    if (!helpFormData.name.trim()) {
+      setHelpFeedbackModal({
+        isOpen: true,
+        type: "error",
+        title: "Name is required",
+        message: "Please enter your full name before submitting your request.",
+      });
       return;
     }
+    if (!helpFormData.mobileNumber.trim() || helpFormData.mobileNumber.replace(/\D/g, "").length < 10) {
+      setHelpFeedbackModal({
+        isOpen: true,
+        type: "error",
+        title: "Valid mobile number is required",
+        message: "Please enter a valid 10-digit mobile number so our support team can reach you.",
+      });
+      return;
+    }
+    if (!helpFormData.subject.trim()) {
+      setHelpFeedbackModal({
+        isOpen: true,
+        type: "error",
+        title: "Subject is required",
+        message: "Please select a subject category for your inquiry.",
+      });
+      return;
+    }
+    if (!helpFormData.message.trim()) {
+      setHelpFeedbackModal({
+        isOpen: true,
+        type: "error",
+        title: "Message is required",
+        message: "Please describe your query or question so we can assist you effectively.",
+      });
+      return;
+    }
+
     setIsSubmittingHelp(true);
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
+      const baseUrl =
+        process.env.NEXT_PUBLIC_API_BASE_URL ||
+        (typeof window !== "undefined" && window.location.origin.includes("localhost")
+          ? "http://localhost:8564"
+          : "https://priestservices.astroved.com");
 
       const res = await fetch(`${baseUrl}/api/customerQueries`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...helpFormData,
-          userId: user?.id || user?._id || undefined
+          consent: true,
+          userId: user?.id || user?._id || undefined,
         }),
       });
       const data = await res.json();
       if (data.success) {
-        alert("Your request has been submitted successfully!");
+        setHelpFeedbackModal({
+          isOpen: true,
+          type: "success",
+          title: "Request Submitted Successfully! 🙏",
+          message:
+            "Thank you! Your query has been logged and our support team has received an instant email notification. We will get back to you shortly.",
+        });
         setHelpFormData({
           name: "",
           mobileNumber: "",
@@ -280,14 +342,24 @@ function AccountPageContent() {
           bookingId: "",
           subject: "",
           message: "",
-          consent: false
+          consent: true,
         });
       } else {
-        alert(data.message || "Failed to submit request.");
+        setHelpFeedbackModal({
+          isOpen: true,
+          type: "error",
+          title: "Submission Failed",
+          message: data.message || "We could not submit your request. Please try again.",
+        });
       }
     } catch (error) {
       console.error("Error submitting help request:", error);
-      alert("Error submitting request.");
+      setHelpFeedbackModal({
+        isOpen: true,
+        type: "error",
+        title: "Connection Error",
+        message: "Unable to connect to support server. Please check your network and try again.",
+      });
     } finally {
       setIsSubmittingHelp(false);
     }
@@ -2118,19 +2190,63 @@ function AccountPageContent() {
                           </div>
                         </div>
 
-                        <div className="mb-4">
-                          <label className="text-[12px] font-bold text-gray-800 block mb-1.5">Subject <span className="text-red-500">*</span></label>
-                          <select
-                            value={helpFormData.subject}
-                            onChange={(e) => setHelpFormData({ ...helpFormData, subject: e.target.value })}
-                            className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-[13px] text-gray-800 focus:outline-none focus:border-primary bg-white appearance-none"
+                        <div className="mb-4 relative">
+                          <label className="text-[12px] font-bold text-gray-800 block mb-1.5">
+                            Subject <span className="text-red-500">*</span>
+                          </label>
+                          <button
+                            type="button"
+                            onClick={() => setSubjectDropdownOpen(!subjectDropdownOpen)}
+                            className={`w-full flex items-center justify-between border rounded-xl px-4 py-2.5 text-[13px] bg-white transition cursor-pointer text-left ${subjectDropdownOpen
+                              ? "border-primary ring-2 ring-primary/10 shadow-xs"
+                              : "border-gray-200 hover:border-gray-300"
+                              }`}
                           >
-                            <option value="" disabled>Select a subject</option>
-                            <option value="Booking Issue">Booking Issue</option>
-                            <option value="Puja Video Query">Puja Video Query</option>
-                            <option value="Refund/Cancellation">Refund/Cancellation</option>
-                            <option value="Other">Other</option>
-                          </select>
+                            <span className={helpFormData.subject ? "text-gray-900 font-semibold" : "text-gray-400"}>
+                              {helpFormData.subject || "Select a subject"}
+                            </span>
+                            <ChevronDown
+                              className={`w-4 h-4 text-gray-400 transition-transform duration-200 shrink-0 ${subjectDropdownOpen ? "rotate-180 text-primary" : ""
+                                }`}
+                            />
+                          </button>
+
+                          {/* Custom Styled Dropdown Menu */}
+                          {subjectDropdownOpen && (
+                            <>
+                              <div
+                                className="fixed inset-0 z-30"
+                                onClick={() => setSubjectDropdownOpen(false)}
+                              />
+                              <div className="absolute left-0 top-full mt-1.5 w-full bg-white border border-gray-200 rounded-2xl shadow-xl z-40 p-1.5 space-y-0.5 animate-in fade-in zoom-in-95 duration-150">
+                                {subjectOptions.map((opt) => {
+                                  const isSelected = helpFormData.subject === opt.value;
+                                  return (
+                                    <button
+                                      key={opt.value}
+                                      type="button"
+                                      onClick={() => {
+                                        setHelpFormData((prev) => ({ ...prev, subject: opt.value }));
+                                        setSubjectDropdownOpen(false);
+                                      }}
+                                      className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-left transition cursor-pointer ${isSelected
+                                        ? "bg-emerald-50 text-emerald-900 font-bold"
+                                        : "text-gray-700 hover:bg-gray-50 font-medium"
+                                        }`}
+                                    >
+                                      <div>
+                                        <div className="text-[13px] leading-tight">{opt.label}</div>
+                                        <div className="text-[11px] text-gray-400 font-normal mt-0.5">{opt.desc}</div>
+                                      </div>
+                                      {isSelected && (
+                                        <Check className="w-4 h-4 text-primary shrink-0 ml-2 stroke-[2.5]" />
+                                      )}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </>
+                          )}
                         </div>
 
                         <div className="mb-4">
@@ -2432,6 +2548,44 @@ function AccountPageContent() {
         )}
 
 
+
+        {/* ── Help / Support Feedback Modal ── */}
+        {helpFeedbackModal.isOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4 animate-in fade-in duration-150">
+            <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden p-6 text-center border border-gray-100 animate-in zoom-in-95 duration-150">
+              <div
+                className={`w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4 ${helpFeedbackModal.type === "success"
+                  ? "bg-emerald-50 text-emerald-600 border border-emerald-100"
+                  : "bg-red-50 text-red-600 border border-red-100"
+                  }`}
+              >
+                {helpFeedbackModal.type === "success" ? (
+                  <Check className="w-7 h-7" strokeWidth={2.5} />
+                ) : (
+                  <Info className="w-7 h-7" strokeWidth={2.5} />
+                )}
+              </div>
+
+              <h3 className="text-lg font-serif font-bold text-gray-900 mb-2">
+                {helpFeedbackModal.title}
+              </h3>
+              <p className="text-xs text-gray-500 leading-relaxed mb-6 px-2">
+                {helpFeedbackModal.message}
+              </p>
+
+              <button
+                type="button"
+                onClick={() => setHelpFeedbackModal((prev) => ({ ...prev, isOpen: false }))}
+                className={`w-full py-3 rounded-full text-xs font-bold text-white transition shadow-md cursor-pointer ${helpFeedbackModal.type === "success"
+                  ? "bg-primary hover:bg-[#008F4C] shadow-emerald-500/20"
+                  : "bg-gray-900 hover:bg-gray-800 shadow-gray-900/20"
+                  }`}
+              >
+                {helpFeedbackModal.type === "success" ? "Got it, Thank You" : "Okay, I'll Fix It"}
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* ── Login Modal ── */}
         <LoginModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
