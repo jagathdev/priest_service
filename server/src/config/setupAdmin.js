@@ -10,17 +10,25 @@ const setupAdmin = async () => {
             const cleanEmail = String(adminEmail).trim().toLowerCase();
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(cleanEmail)) {
-                console.warn("[setupAdmin] Invalid ADMIN_EMAIL format. Skipping admin bootstrap.");
+                console.warn("[setupAdmin] Invalid ADMIN_EMAIL format.");
                 return;
             }
 
             if (String(adminPassword).length < 8) {
-                console.warn("[setupAdmin] ADMIN_PASSWORD must be at least 8 characters. Skipping admin bootstrap.");
+                console.warn("[setupAdmin] ADMIN_PASSWORD must be at least 8 characters. ");
                 return;
             }
 
-            const adminCount = await Admin.countDocuments({});
-            if (adminCount === 0) {
+            const existingAdmin = await Admin.findOne({ email: cleanEmail });
+            if (existingAdmin) {
+                // Check if the environment password has changed compared to stored hash
+                const isMatch = await bcrypt.compare(adminPassword, existingAdmin.passwordHash);
+                if (!isMatch) {
+                    existingAdmin.passwordHash = await bcrypt.hash(adminPassword, 12);
+                    await existingAdmin.save();
+                    console.log(`[setupAdmin] Admin password automatically updated from .env for: ${cleanEmail}`);
+                }
+            } else {
                 const passwordHash = await bcrypt.hash(adminPassword, 12);
                 await Admin.create({
                     email: cleanEmail,
@@ -30,7 +38,6 @@ const setupAdmin = async () => {
                 });
                 console.log(`[setupAdmin] Initial admin account provisioned: ${cleanEmail}`);
             }
-            // Do not overwrite existing admin passwords
         }
     } catch (error) {
         console.error('[setupAdmin] Error setting up admin account:', error.message);
