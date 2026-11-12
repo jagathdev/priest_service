@@ -42,7 +42,7 @@ export const metadata: Metadata = {
     description: "Book authentic Vedic pujas, homas, and ritual services online. Expert priests for your spiritual and religious needs.",
     images: [
       {
-        url: "https://www.priestservices.astroved.com/images/navagraga_puja.png",
+        url: "https://priestservices.astroved.com/api/images/navagraha_puja.png",
         width: 1200,
         height: 630,
         alt: "Priest Services by AstroVed",
@@ -96,9 +96,18 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   return (
     <html lang="en" className={`${plusJakartaSans.variable} ${playfairDisplay.variable} ${outfit.variable}`}>
       <head>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
         <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABiElEQVR4AWIgDP4zMpALQkP/M2dkADgnB5iKojAAZ9uuKXtmNqYasq7SkG1raq6xIWtqRrZryjae1X/3zsvedvx/3zGnqLxcJPMvAUFwIkDAx3F2yJ9hHBepgGAbBCIoVzIyRIp/FLBzaFicuEJop/0BZhgDdIEETFQe4/i93q8EALcj6AHH+SHQZtBtiuI0/QhDkDMEs5CgRnyY7DZ0Fo8Uxbb5EqavC4JGEXyQlnaoy+3Tw7PJBwNYxSmS9Hz5NjCMHQRBAkhCkmRhvH6dQE6nEYc1oOdJkuxMJObhOMvrA0xfEwwuo1nmh3Ib1BkNZouP+ZYCZpPZVEfukDr0ryHJNFyz/PuDo8QzcwQEwfO7L7CIZ+RbCR8LLAWPUD7kW0RSFD9cskIc58Y/w8nJIh1Y4jGyD5WXl8s8FBjpAzwPScAosJq4zbfQps8IJhpDcbvR0SINyZPNg3QAkl0M4zhIxIxCS2MQdNGyV2/EHeA9Oh5uJwN9mnUF+DhPA2Ni0glMLTgcKAUAst8Rb7CK94wAAAAASUVORK5CYII=" />
         <meta id="meta-robots" name="robots" content="index, follow" />
+        {/* Anti-FOUC critical styling */}
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `
+              html { visibility: visible; opacity: 1; }
+              body { background-color: #ffffff; color: #1e293b; margin: 0; padding: 0; }
+              img { max-width: 100%; height: auto; }
+            `,
+          }}
+        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
