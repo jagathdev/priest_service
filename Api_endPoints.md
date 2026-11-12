@@ -54,16 +54,20 @@ Official, comprehensive REST API specification for Priest Services backend. This
 10. [Admin Authentication](#10-admin-authentication)
 11. [Admin Analytics & KPI Dashboard](#11-admin-analytics--kpi-dashboard)
 12. [Admin Order Management & Livestream Scheduling](#12-admin-order-management--livestream-scheduling)
-13. [Admin Devotee User Management](#13-admin-devotee-user-management)
-14. [Admin Puja & Ritual Catalog Management](#14-admin-puja--ritual-catalog-management)
-15. [Admin Homa Catalog Management](#15-admin-homa-catalog-management)
-16. [Admin Hero Banner Management](#16-admin-hero-banner-management)
-17. [Admin Promo Code Management](#17-admin-promo-code-management)
-18. [Admin Media Library & Asset Upload](#18-admin-media-library--asset-upload)
+13. [Admin Devotee User Management (Trash, Bulk & Recovery)](#13-admin-devotee-user-management)
+14. [Admin Pre-Orders / Incomplete Booking Leads](#14-admin-pre-orders--incomplete-booking-leads)
+15. [Admin Customer Inquiries & Query Management](#15-admin-customer-inquiries--query-management)
+16. [Admin Service Team Dispatch & Priest Excel Export](#16-admin-service-team-dispatch--priest-excel-export)
+17. [Admin Email Notification Recipients & Multi-Alerts](#17-admin-email-notification-recipients--multi-alerts)
+18. [Admin Puja & Ritual Catalog Management](#18-admin-puja--ritual-catalog-management)
+19. [Admin Homa Catalog Management](#19-admin-homa-catalog-management)
+20. [Admin Hero Banner Management](#20-admin-hero-banner-management)
+21. [Admin Promo Code Management](#21-admin-promo-code-management)
+22. [Admin Media Library & Asset Upload](#22-admin-media-library--asset-upload)
 
 ### PART 3: Webhooks & System Operations
-19. [Razorpay Webhook](#19-razorpay-webhook)
-20. [System Health Check](#20-system-health-check)
+23. [Razorpay Webhook](#23-razorpay-webhook)
+24. [System Health Check](#24-system-health-check)
 
 ---
 
@@ -100,7 +104,7 @@ Initiates mobile verification by sending a 6-digit numeric OTP via SMS.
 ---
 
 ### 1.2 Verify OTP & Login
-Validates the SMS OTP. If the user does not exist, an account is automatically created. Returns a signed JWT token and devotee user profile.
+Validates the SMS OTP. If the user does not exist, an account is automatically created. Returns a signed JWT token and devotee user profile. Also supports UTM marketing attribution params (`utmSource`, `utmMedium`, `utmCampaign`).
 - **Endpoint:** `POST /api/otp/verifyOtp`
 - **Auth Required:** No
 - **Rate Limit:** 5 verification attempts per 10 minutes
@@ -108,23 +112,32 @@ Validates the SMS OTP. If the user does not exist, an account is automatically c
 ```json
 {
   "mobileNumber": "9876543210",
-  "otp": "458921"
+  "otp": "458921",
+  "utmSource": "Google",
+  "utmMedium": "cpc",
+  "utmCampaign": "navratri_special"
 }
 ```
 - **Response (`200 OK`):**
 ```json
 {
   "success": true,
-  "message": "OTP verified successfully",
+  "is_user": true,
+  "message": "Login successful",
   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "user": {
-    "_id": "60d5ecb8b392d700153f93c7",
-    "name": "Devotee Name",
-    "mobileNumber": "9876543210",
-    "whatsappNumber": "9876543210",
-    "email": "devotee@example.com",
-    "role": "user",
-    "isVerified": true
+  "data": {
+    "is_user": true,
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "user": {
+      "id": "60d5ecb8b392d700153f93c7",
+      "name": "Devotee",
+      "mobileNumber": "919876543210",
+      "whatsappNumber": "919876543210",
+      "email": "devotee@example.com",
+      "role": "user",
+      "isVerified": true,
+      "walletBalance": 0
+    }
   }
 }
 ```
@@ -132,7 +145,7 @@ Validates the SMS OTP. If the user does not exist, an account is automatically c
 ```json
 {
   "success": false,
-  "message": "Invalid or expired OTP. Please try again."
+  "message": "Invalid OTP. 4 attempt(s) remaining."
 }
 ```
 
@@ -348,9 +361,9 @@ Retrieves promotional hero banners for home and catalog pages.
 
 ## 3. User Profile & Address Book (Client)
 
-### 3.1 Get Devotee Profile (Self)
-Retrieves the authenticated devotee's profile, including saved gotra, family details, and address book.
-- **Endpoint:** `GET /api/users/profile`
+### 3.1 Get Devotee Profile (Self / User ID)
+Retrieves the devotee's profile, including saved gotra, family details, and address book. Accessible via session token or specific `userId`.
+- **Endpoint:** `GET /api/users/profile` OR `GET /api/users/profile/:userId`
 - **Auth Required:** Yes (`Authorization: Bearer <user_jwt_token>`)
 - **Response (`200 OK`):**
 ```json
@@ -391,14 +404,14 @@ Updates personal information, WhatsApp contact, or adds/modifies delivery addres
 - **Request Payload:**
 ```json
 {
-  "name": "Jagathratchagan S",
+  "name": "Jagathratchagan V",
   "email": "updated_email@example.com",
   "whatsappNumber": "9876543210",
   "gender": "Male",
   "addresses": [
     {
       "type": "Home",
-      "name": "Jagathratchagan S",
+      "name": "Jagathratchagan V",
       "phone": "9876543210",
       "addressLine1": "No. 45 Temple Street",
       "city": "Chennai",
@@ -692,6 +705,77 @@ Retrieves all orders booked by the authenticated devotee.
 
 ---
 
+### 7.3 Submit Order Feedback / Review
+Allows devotees to submit star rating and feedback for their performed / completed ritual booking.
+- **Endpoint:** `POST /api/orders/:orderId/feedback`
+- **Auth Required:** No (Devotee order identification)
+- **Request Payload:**
+```json
+{
+  "rating": 5,
+  "review": "The priest conducted the puja with utmost sanctity and adherence to Vedic rituals. Highly recommend!",
+  "feedbackId": "optional_existing_id_for_editing"
+}
+```
+- **Response (`201 Created` or `200 OK`):**
+```json
+{
+  "success": true,
+  "message": "Thank you! Your feedback has been submitted.",
+  "data": {
+    "_id": "6724a8bc93a1df0012bc4431",
+    "order": "6ac06417d6fcac10cf339e5c",
+    "rating": 5,
+    "ratingLabel": "Excellent",
+    "review": "The priest conducted the puja with utmost sanctity...",
+    "userName": "Jagath",
+    "serviceName": "Rameshwaram Tharpanam",
+    "status": "published",
+    "createdAt": "2026-11-12T04:30:00.000Z"
+  }
+}
+```
+
+---
+
+### 7.4 Get Order Feedback
+Retrieves existing feedback reviews left for an order.
+- **Endpoint:** `GET /api/orders/:orderId/feedback`
+- **Auth Required:** No
+- **Response (`200 OK`):**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "_id": "6724a8bc93a1df0012bc4431",
+      "order": "6ac06417d6fcac10cf339e5c",
+      "rating": 5,
+      "ratingLabel": "Excellent",
+      "review": "The priest conducted the puja with utmost sanctity...",
+      "userName": "Jagath",
+      "createdAt": "2026-11-12T04:30:00.000Z"
+    }
+  ]
+}
+```
+
+---
+
+### 7.5 Delete Order Feedback
+Removes a devotee review from an order.
+- **Endpoint:** `DELETE /api/orders/:orderId/feedback/:feedbackId`
+- **Auth Required:** No
+- **Response (`200 OK`):**
+```json
+{
+  "success": true,
+  "message": "Feedback deleted successfully."
+}
+```
+
+---
+
 ## 8. WhatsApp Notifications & Consent (Client)
 
 ### 8.1 Register WhatsApp Opt-in
@@ -969,6 +1053,48 @@ Allows admins to schedule all paid bookings for a ritual on an upcoming date in 
 
 ---
 
+### 12.5 Bulk Update Orders Status
+Updates multiple selected orders (or all orders for a service) to a target ritual status (`confirmed`, `scheduled`, `performed`, `completed`, `cancelled`) with optional date and livestream/recording video link.
+- **Endpoint:** `POST /api/admin/orders/bulk-status`
+- **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
+- **Request Payload:**
+```json
+{
+  "orderIds": [
+    "6ac06417d6fcac10cf339e5c",
+    "6ac06417d6fcac10cf339e5d"
+  ],
+  "status": "performed",
+  "performedDate": "2026-11-12",
+  "videoLink": "https://youtu.be/ritual_recording_stream"
+}
+```
+- **Response (`200 OK`):**
+```json
+{
+  "success": true,
+  "message": "Successfully updated 2 orders to performed",
+  "count": 2
+}
+```
+
+---
+
+### 12.6 Resend Order Confirmation & Priest Notification Email
+Manually re-triggers the full branded customer invoice email and temple notification email for any specific order.
+- **Endpoint:** `POST /api/admin/orders/:orderId/resend-email`
+- **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
+- **Request Payload:** `{}` (None required)
+- **Response (`200 OK`):**
+```json
+{
+  "success": true,
+  "message": "Order confirmation email has been re-sent successfully."
+}
+```
+
+---
+
 ## 13. Admin Devotee User Management
 
 ### 13.1 Get Devotees List (With Search, Spend & Pagination)
@@ -979,8 +1105,9 @@ Allows admins to schedule all paid bookings for a ritual on an upcoming date in 
   - `limit` (optional, default: `10`)
   - `search` (optional, devotee name, mobile, email)
   - `status` (optional, `Active` / `Inactive`)
-  - `sortBy` (optional, `createdAt` / `totalSpent` / `name`)
-  - `sortOrder` (optional, `asc` / `desc`)
+  - `trash` (optional, `"true"` to query soft-deleted trash items)
+  - `sort` (optional, `latest`, `oldest`, `name_asc`, `name_desc`)
+  - `fromDate` & `toDate` (optional, ISO date filter)
 - **Response (`200 OK`):**
 ```json
 {
@@ -991,8 +1118,10 @@ Allows admins to schedule all paid bookings for a ritual on an upcoming date in 
         "_id": "60d5ecb8b392d700153f93c7",
         "name": "Jagathratchagan",
         "email": "devotee@example.com",
-        "mobileNumber": "9876543210",
-        "whatsappNumber": "9876543210",
+        "mobileNumber": "+919360270984",
+        "whatsappNumber": "+919360270984",
+        "utmSource": "Google",
+        "utmCampaign": "navratri_2026",
         "totalAmountSpent": 5100,
         "isVerified": true,
         "status": "Active",
@@ -1008,6 +1137,7 @@ Allows admins to schedule all paid bookings for a ritual on an upcoming date in 
     "stats": {
       "totalUsers": 45,
       "activeUsers": 42,
+      "trashUsers": 3,
       "totalRevenue": 245000
     }
   }
@@ -1039,22 +1169,443 @@ Allows admins to schedule all paid bookings for a ritual on an upcoming date in 
 
 ---
 
-### 13.3 Delete Devotee User (Admin)
+### 13.3 Soft-Delete Devotee User (Move to Trash)
+Moves a user to the Trash bin (`isDeleted: true`) without permanently erasing booking records.
 - **Endpoint:** `DELETE /api/admin/users/:id`
 - **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
 - **Response (`200 OK`):**
 ```json
 {
   "success": true,
-  "message": "User deleted successfully"
+  "message": "User moved to trash successfully"
 }
 ```
 
 ---
 
-## 14. Admin Puja & Ritual Catalog Management
+### 13.4 Bulk Soft-Delete Users (Move to Trash)
+- **Endpoint:** `POST /api/admin/users/bulk-delete`
+- **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
+- **Request Payload:**
+```json
+{
+  "userIds": ["60d5ecb8b392d700153f93c7", "60d5ecb8b392d700153f93c8"]
+}
+```
+- **Response (`200 OK`):**
+```json
+{
+  "success": true,
+  "message": "2 user(s) moved to trash successfully",
+  "modifiedCount": 2
+}
+```
 
-### 14.1 Create New Puja
+---
+
+### 13.5 Restore Devotee User from Trash
+- **Endpoint:** `PUT /api/admin/users/:id/restore`
+- **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
+- **Response (`200 OK`):**
+```json
+{
+  "success": true,
+  "message": "User restored successfully"
+}
+```
+
+---
+
+### 13.6 Bulk Restore Devotee Users from Trash
+- **Endpoint:** `POST /api/admin/users/bulk-restore`
+- **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
+- **Request Payload:**
+```json
+{
+  "userIds": ["60d5ecb8b392d700153f93c7", "60d5ecb8b392d700153f93c8"]
+}
+```
+- **Response (`200 OK`):**
+```json
+{
+  "success": true,
+  "message": "2 user(s) restored successfully",
+  "modifiedCount": 2
+}
+```
+
+---
+
+### 13.7 Permanently Delete Devotee User
+Completely removes devotee record from the database.
+- **Endpoint:** `DELETE /api/admin/users/:id/permanent`
+- **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
+- **Response (`200 OK`):**
+```json
+{
+  "success": true,
+  "message": "User permanently deleted from database"
+}
+```
+
+---
+
+### 13.8 Bulk Permanently Delete Devotee Users
+- **Endpoint:** `POST /api/admin/users/bulk-permanent-delete`
+- **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
+- **Request Payload:**
+```json
+{
+  "userIds": ["60d5ecb8b392d700153f93c7", "60d5ecb8b392d700153f93c8"]
+}
+```
+- **Response (`200 OK`):**
+```json
+{
+  "success": true,
+  "message": "2 user(s) permanently deleted",
+  "deletedCount": 2
+}
+```
+
+---
+
+## 14. Admin Pre-Orders / Incomplete Booking Leads
+
+Captures devotees who initiated booking on `/sankalp` or clicked "Continue to Payment" but dropped off before completing payment. Allows team to follow up.
+
+### 22.1 Get Pre-Orders List
+- **Endpoint:** `GET /api/admin/pre-orders`
+- **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
+- **Query Parameters:**
+  - `page` (optional, default: `1`)
+  - `limit` (optional, default: `10`)
+  - `search` (optional, devotee name, mobile, service)
+  - `serviceType` (optional, `All`, `Puja`, `Homa`)
+  - `fromDate` & `toDate` (optional, ISO date)
+  - `sort` (optional, `latest`, `oldest`)
+- **Response (`200 OK`):**
+```json
+{
+  "success": true,
+  "data": {
+    "leads": [
+      {
+        "_id": "6732ef8ab1c9840012e87311",
+        "userName": "Jagath",
+        "mobileNumber": "+919360270984",
+        "whatsappNumber": "+919360270984",
+        "serviceName": "Rameshwaram Tharpanam",
+        "serviceType": "Puja",
+        "serviceId": "6abd0362cd62648ac4fa1c4b",
+        "totalAmount": 525,
+        "gotra": "Siva",
+        "participants": [
+          { "name": "Jagath", "relationship": "Self" }
+        ],
+        "utmSource": "Google",
+        "utmCampaign": "diwali_offer",
+        "leadStatus": "incomplete",
+        "createdAt": "2026-11-12T04:00:00.000Z"
+      }
+    ],
+    "pagination": {
+      "total": 12,
+      "page": 1,
+      "limit": 10,
+      "totalPages": 2
+    },
+    "stats": {
+      "totalLeads": 12,
+      "totalEstimatedValue": 14200
+    }
+  }
+}
+```
+
+---
+
+### 22.2 Delete Single Pre-Order Lead
+- **Endpoint:** `DELETE /api/admin/pre-orders/:id`
+- **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
+- **Response (`200 OK`):**
+```json
+{
+  "success": true,
+  "message": "Pre-order lead deleted successfully"
+}
+```
+
+---
+
+### 18.3 Bulk Delete Pre-Order Leads
+- **Endpoint:** `POST /api/admin/pre-orders/bulk-delete`
+- **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
+- **Request Payload:**
+```json
+{
+  "leadIds": ["6732ef8ab1c9840012e87311", "6732ef8ab1c9840012e87312"]
+}
+```
+- **Response (`200 OK`):**
+```json
+{
+  "success": true,
+  "message": "2 lead(s) deleted successfully",
+  "deletedCount": 2
+}
+```
+
+---
+
+## 15. Admin Customer Inquiries & Query Management
+
+### 23.1 Get Customer Inquiries
+- **Endpoint:** `GET /api/admin/customer-queries`
+- **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
+- **Query Parameters:**
+  - `page` (optional, default: `1`)
+  - `limit` (optional, default: `10`)
+  - `search` (optional, name, email, phone, message)
+  - `status` (optional, `pending`, `resolved`, `in-progress`)
+- **Response (`200 OK`):**
+```json
+{
+  "success": true,
+  "data": {
+    "queries": [
+      {
+        "_id": "6732f1a2b1c9840012e87320",
+        "name": "Devotee Name",
+        "mobileNumber": "+919876543210",
+        "email": "devotee@example.com",
+        "subject": "Puja Consultation",
+        "message": "I would like guidance on selecting the right homa.",
+        "status": "pending",
+        "createdAt": "2026-11-12T03:30:00.000Z"
+      }
+    ],
+    "pagination": {
+      "total": 8,
+      "page": 1,
+      "limit": 10,
+      "totalPages": 1
+    }
+  }
+}
+```
+
+---
+
+### 19.2 Update Customer Inquiry Status
+- **Endpoint:** `PUT /api/admin/customer-queries/:id`
+- **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
+- **Request Payload:**
+```json
+{
+  "status": "resolved",
+  "adminNotes": "Devotee called and guided regarding Navagraha Puja timing."
+}
+```
+- **Response (`200 OK`):**
+```json
+{
+  "success": true,
+  "message": "Customer query updated successfully"
+}
+```
+
+---
+
+### 19.3 Delete Customer Inquiry
+- **Endpoint:** `DELETE /api/admin/customer-queries/:id`
+- **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
+- **Response (`200 OK`):**
+```json
+{
+  "success": true,
+  "message": "Query deleted successfully"
+}
+```
+
+---
+
+### 15.4 Bulk Delete Customer Inquiries
+- **Endpoint:** `POST /api/admin/customer-queries/bulk-delete`
+- **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
+- **Request Payload:**
+```json
+{
+  "queryIds": ["6732f1a2b1c9840012e87320", "6732f1a2b1c9840012e87321"]
+}
+```
+- **Response (`200 OK`):**
+```json
+{
+  "success": true,
+  "message": "2 queries deleted successfully",
+  "deletedCount": 2
+}
+```
+
+---
+
+## 16. Admin Service Team Dispatch & Priest Excel Export
+
+Generates filtered devotee lists, sankalpam names, and gotras for the head priest and temple operations team.
+
+### 24.1 Get Service Dispatch List
+- **Endpoint:** `GET /api/admin/service-dispatch`
+- **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
+- **Query Parameters:**
+  - `serviceName` (optional, e.g. `"Rameshwaram Tharpanam"`)
+  - `serviceType` (optional, `"Puja"` or `"Homa"`)
+  - `startDate` & `endDate` (optional, schedule window)
+  - `status` (optional, default paid/confirmed)
+- **Response (`200 OK`):**
+```json
+{
+  "success": true,
+  "count": 25,
+  "data": [
+    {
+      "orderNumber": "PS-2026-000108",
+      "serviceName": "Rameshwaram Tharpanam",
+      "serviceType": "Puja",
+      "scheduledDate": "2026-11-15T03:30:00.000Z",
+      "customerName": "Jagath",
+      "mobileNumber": "+919360270984",
+      "whatsappNumber": "+919360270984",
+      "gotra": "Siva",
+      "participants": [
+        { "name": "Jagath", "relationship": "Self" }
+      ],
+      "wish": "Peace and prosperity for family",
+      "orderStatus": "confirmed"
+    }
+  ]
+}
+```
+
+---
+
+### 20.2 Export Service Dispatch to Excel (.xlsx)
+Downloads an auto-styled `.xlsx` workbook containing devotee names, nakshatras, gotras, wishes, and packages ready for the officiating priests.
+- **Endpoint:** `GET /api/admin/service-dispatch/export`
+- **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
+- **Response:** Binary file download (`application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`)
+
+---
+
+## 17. Admin Email Notification Recipients & Multi-Alerts
+
+Manages internal staff and priest email distribution lists so operational teams receive real-time alerts whenever devotees complete paid bookings.
+
+### 21.1 Get Notification Recipients & SMTP Health
+- **Endpoint:** `GET /api/admin/notifications/recipients`
+- **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
+- **Response (`200 OK`):**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "_id": "6732f41cb1c9840012e87350",
+      "name": "Head Priest Operations",
+      "email": "priest-ops@astroved.com",
+      "role": "admin",
+      "isActive": true,
+      "notes": "Receives instant booking dispatch notifications",
+      "createdAt": "2026-11-12T04:10:00.000Z"
+    }
+  ],
+  "smtpStatus": {
+    "connected": true,
+    "host": "smtp.gmail.com"
+  }
+}
+```
+
+---
+
+### 21.2 Add Notification Recipient Email
+- **Endpoint:** `POST /api/admin/notifications/recipients`
+- **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
+- **Request Payload:**
+```json
+{
+  "name": "Temple Coordinator",
+  "email": "coordinator@astroved.com",
+  "role": "operations",
+  "isActive": true,
+  "notes": "South India Temples Dispatch"
+}
+```
+- **Response (`201 Created`):**
+```json
+{
+  "success": true,
+  "message": "Recipient added successfully",
+  "data": {
+    "_id": "6732f41cb1c9840012e87351",
+    "name": "Temple Coordinator",
+    "email": "coordinator@astroved.com"
+  }
+}
+```
+
+---
+
+### 21.3 Update Notification Recipient
+- **Endpoint:** `PUT /api/admin/notifications/recipients/:id`
+- **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
+- **Request Payload:** Same fields as create.
+- **Response (`200 OK`):**
+```json
+{
+  "success": true,
+  "message": "Recipient updated successfully"
+}
+```
+
+---
+
+### 21.4 Delete Notification Recipient
+- **Endpoint:** `DELETE /api/admin/notifications/recipients/:id`
+- **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
+- **Response (`200 OK`):**
+```json
+{
+  "success": true,
+  "message": "Recipient deleted successfully"
+}
+```
+
+---
+
+### 17.5 Trigger Test SMTP Email
+Sends an instant test email to the configured admin inbox to verify mail deliverability.
+- **Endpoint:** `POST /api/admin/notifications/test-mail`
+- **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
+- **Request Payload:**
+```json
+{
+  "targetEmail": "admin@astroved.com"
+}
+```
+- **Response (`200 OK`):**
+```json
+{
+  "success": true,
+  "message": "Test email sent successfully to admin@astroved.com"
+}
+```
+
+---
+
+## 18. Admin Puja & Ritual Catalog Management
+
+### 22.1 Create New Puja
 - **Endpoint:** `POST /api/pujas`
 - **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
 - **Request Payload:**
@@ -1094,7 +1645,7 @@ Allows admins to schedule all paid bookings for a ritual on an upcoming date in 
 
 ---
 
-### 14.2 Update Puja Details
+### 22.2 Update Puja Details
 - **Endpoint:** `PUT /api/pujas/:id`
 - **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
 - **Request Payload:** Same fields as create.
@@ -1108,7 +1659,7 @@ Allows admins to schedule all paid bookings for a ritual on an upcoming date in 
 
 ---
 
-### 14.3 Delete Puja
+### 18.3 Delete Puja
 - **Endpoint:** `DELETE /api/pujas/:id`
 - **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
 - **Response (`200 OK`):**
@@ -1121,9 +1672,9 @@ Allows admins to schedule all paid bookings for a ritual on an upcoming date in 
 
 ---
 
-## 15. Admin Homa Catalog Management
+## 19. Admin Homa Catalog Management
 
-### 15.1 Create Homa
+### 23.1 Create Homa
 - **Endpoint:** `POST /api/homas`
 - **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
 - **Request Payload:**
@@ -1152,7 +1703,7 @@ Allows admins to schedule all paid bookings for a ritual on an upcoming date in 
 
 ---
 
-### 15.2 Update Homa
+### 19.2 Update Homa
 - **Endpoint:** `PUT /api/homas/:id`
 - **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
 - **Response (`200 OK`):**
@@ -1165,7 +1716,7 @@ Allows admins to schedule all paid bookings for a ritual on an upcoming date in 
 
 ---
 
-### 15.3 Delete Homa
+### 19.3 Delete Homa
 - **Endpoint:** `DELETE /api/homas/:id`
 - **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
 - **Response (`200 OK`):**
@@ -1178,9 +1729,9 @@ Allows admins to schedule all paid bookings for a ritual on an upcoming date in 
 
 ---
 
-## 16. Admin Hero Banner Management
+## 20. Admin Hero Banner Management
 
-### 16.1 Create Hero Banner
+### 24.1 Create Hero Banner
 - **Endpoint:** `POST /api/hero-banners`
 - **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
 - **Request Payload:**
@@ -1208,7 +1759,7 @@ Allows admins to schedule all paid bookings for a ritual on an upcoming date in 
 
 ---
 
-### 16.2 Update Hero Banner
+### 20.2 Update Hero Banner
 - **Endpoint:** `PUT /api/hero-banners/:id`
 - **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
 - **Response (`200 OK`):**
@@ -1221,7 +1772,7 @@ Allows admins to schedule all paid bookings for a ritual on an upcoming date in 
 
 ---
 
-### 16.3 Delete Hero Banner
+### 20.3 Delete Hero Banner
 - **Endpoint:** `DELETE /api/hero-banners/:id`
 - **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
 - **Response (`200 OK`):**
@@ -1234,9 +1785,9 @@ Allows admins to schedule all paid bookings for a ritual on an upcoming date in 
 
 ---
 
-## 17. Admin Promo Code Management
+## 21. Admin Promo Code Management
 
-### 17.1 Get All Promo Codes
+### 21.1 Get All Promo Codes
 - **Endpoint:** `GET /api/promos`
 - **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
 - **Response (`200 OK`):**
@@ -1259,7 +1810,7 @@ Allows admins to schedule all paid bookings for a ritual on an upcoming date in 
 
 ---
 
-### 17.2 Create Promo Code
+### 21.2 Create Promo Code
 - **Endpoint:** `POST /api/promos`
 - **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
 - **Request Payload:**
@@ -1284,7 +1835,7 @@ Allows admins to schedule all paid bookings for a ritual on an upcoming date in 
 
 ---
 
-### 17.3 Toggle Promo Code Active Status
+### 21.3 Toggle Promo Code Active Status
 - **Endpoint:** `PATCH /api/promos/:id/status`
 - **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
 - **Request Payload:**
@@ -1303,7 +1854,7 @@ Allows admins to schedule all paid bookings for a ritual on an upcoming date in 
 
 ---
 
-### 17.4 Delete Promo Code
+### 21.4 Delete Promo Code
 - **Endpoint:** `DELETE /api/promos/:id`
 - **Auth Required:** Yes (`Authorization: Bearer <admin_token>`)
 - **Response (`200 OK`):**
@@ -1316,9 +1867,9 @@ Allows admins to schedule all paid bookings for a ritual on an upcoming date in 
 
 ---
 
-## 18. Admin Media Library & Asset Upload
+## 22. Admin Media Library & Asset Upload
 
-### 18.1 Upload Image File
+### 22.1 Upload Image File
 Uploads images directly to the server asset directory (`server/public/images`) and creates a record in MongoDB.
 - **Endpoint:** `POST /api/upload`
 - **Auth Required:** No (Admin portal frontend)
@@ -1346,7 +1897,7 @@ Uploads images directly to the server asset directory (`server/public/images`) a
 
 ---
 
-### 18.2 Get All Uploaded Images (Media Library)
+### 22.2 Get All Uploaded Images (Media Library)
 - **Endpoint:** `GET /api/upload`
 - **Auth Required:** No
 - **Response (`200 OK`):**
@@ -1369,7 +1920,31 @@ Uploads images directly to the server asset directory (`server/public/images`) a
 
 ---
 
-### 18.3 Delete Image from Storage & Database
+### 22.3 Edit Image Details (Filename / Metadata)
+- **Endpoint:** `PUT /api/upload/:filename`
+- **Auth Required:** No
+- **Request Payload:**
+```json
+{
+  "newFilename": "navagraha-shanti-puja.png",
+  "altText": "Navagraha Shanti Puja Banner"
+}
+```
+- **Response (`200 OK`):**
+```json
+{
+  "success": true,
+  "message": "Image updated successfully",
+  "data": {
+    "filename": "navagraha-shanti-puja.png",
+    "url": "/images/navagraha-shanti-puja.png"
+  }
+}
+```
+
+---
+
+### 22.4 Delete Image from Storage & Database
 - **Endpoint:** `DELETE /api/upload/:filename`
 - **Auth Required:** No
 - **Response (`200 OK`):**
@@ -1382,11 +1957,24 @@ Uploads images directly to the server asset directory (`server/public/images`) a
 
 ---
 
+### 22.5 Bulk Delete All Images
+- **Endpoint:** `DELETE /api/upload/all`
+- **Auth Required:** No
+- **Response (`200 OK`):**
+```json
+{
+  "success": true,
+  "message": "All images have been deleted successfully."
+}
+```
+
+---
+
 # PART 3: Webhooks & System Operations
 
-## 19. Razorpay Webhook
+## 23. Razorpay Webhook
 
-### 19.1 Payment Webhook Notification
+### 23.1 Payment Webhook Notification
 Receives server-to-server notifications directly from Razorpay. Verifies HMAC SHA-256 signature using `RAZORPAY_WEBHOOK_SECRET` against the raw request body. Automatically marks the associated order as `paid` and triggers order confirmation workflows.
 - **Endpoint:** `POST /api/payments/getRazorpayWebhook`
 - **Auth Required:** Verified via `x-razorpay-signature` header
@@ -1427,9 +2015,9 @@ Receives server-to-server notifications directly from Razorpay. Verifies HMAC SH
 
 ---
 
-## 20. System Health Check
+## 24. System Health Check
 
-### 20.1 Server Health Status
+### 24.1 Server Health Status
 - **Endpoint:** `GET /health`
 - **Auth Required:** No
 - **Response (`200 OK`):**
