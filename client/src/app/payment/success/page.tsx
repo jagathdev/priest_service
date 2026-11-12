@@ -3,13 +3,13 @@
 import React, { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { 
-  Check, 
-  Copy, 
-  FileText, 
-  Home, 
-  PlayCircle, 
-  Calendar, 
+import {
+  Check,
+  Copy,
+  FileText,
+  Home,
+  PlayCircle,
+  Calendar,
 } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import { clearUtmAttribution } from "@/lib/utmTracker";
@@ -67,6 +67,49 @@ function SuccessContent() {
 
           if (payStatus === "paid") {
             setStatusState("paid");
+
+            // Push standard E-commerce Purchase event to GTM dataLayer for Meta Pixel & Google Analytics
+            try {
+              if (typeof window !== "undefined") {
+                const w = window as any;
+                w.dataLayer = w.dataLayer || [];
+                const orderVal = Number(data.data.amount ?? data.data.pricing?.total ?? 0);
+                const orderNum = String(data.data.orderNumber || razorpayOrderId);
+
+                w.dataLayer.push({
+                  event: "purchase",
+                  ecommerce: {
+                    transaction_id: orderNum,
+                    value: orderVal,
+                    currency: "INR",
+                    items: [
+                      {
+                        item_name: data.data.itemName || "Puja Service",
+                        price: orderVal,
+                        quantity: 1,
+                      },
+                    ],
+                  },
+                  // Direct Meta Pixel event parameters for GTM Custom HTML tag
+                  value: orderVal,
+                  currency: "INR",
+                  order_id: orderNum,
+                });
+
+                // If fbq is available on window, also emit Purchase directly with value & currency
+                if (typeof w.fbq === "function") {
+                  w.fbq("track", "Purchase", {
+                    value: orderVal,
+                    currency: "INR",
+                    content_name: data.data.itemName || "Puja Service",
+                    order_id: orderNum,
+                  });
+                }
+              }
+            } catch (err) {
+              console.warn("[SuccessPage] Error emitting purchase analytics:", err);
+            }
+
             // Clear UTM attribution from cookies, localStorage, and sessionStorage once order is completed
             clearUtmAttribution();
             return;

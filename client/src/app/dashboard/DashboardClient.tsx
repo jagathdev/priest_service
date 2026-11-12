@@ -815,6 +815,7 @@ export default function DashboardClient({
                 width={192}
                 height={48}
                 className="h-10 sm:h-12 w-auto object-contain grayscale-0"
+                style={{ width: "auto" }}
               />
             </div>
             <p className="text-xs sm:text-sm text-stone-600 max-w-xs leading-relaxed font-medium">
