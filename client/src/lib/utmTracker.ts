@@ -1,31 +1,74 @@
 /**
  * Global UTM & Marketing Attribution Tracker
- * Captures query parameters (utm_source, utm_medium, utm_campaign, utm_term, utm_content, promo, ref)
- * and persists them in sessionStorage & localStorage across the user journey.
+ *
+ * Rules:
+ * 1. Cookie-Only Storage:
+ *    - All UTM attribution data is stored STRICTLY in browser cookies.
+ *    - NO localStorage or sessionStorage is used. Any legacy keys are cleaned up.
+ * 2. 7-Day Expiry:
+ *    - Cookies are saved with max-age = 7 days (604,800 seconds).
+ * 3. Overwriting:
+ *    - When a user enters with new UTM tags or ?promo=..., the new values immediately
+ *      overwrite the existing cookies and reset the 7-day timer.
+ * 4. Cleanup on Order Conversion:
+ *    - Once an order is completed/paid, `clearUtmAttribution()` deletes the cookies.
  */
 
 export interface UtmDetails {
-  utmSource: string;
+  utmSource?: string;
   utmMedium?: string;
   utmCampaign?: string;
   utmTerm?: string;
   utmContent?: string;
-  promo?: string; // Query string promo parameter (?promo=...) - distinct from promoCode (coupon discount)
-  referrer?: string;
+  promo?: string; // Query string promo parameter (?promo=...)
   landingPage?: string;
   capturedAt?: string;
 }
 
 const STORAGE_KEY = "ps_utm_attribution";
+const SEVEN_DAYS_SECONDS = 7 * 24 * 60 * 60; // 604,800 seconds (7 days)
 
 /**
- * Parses the current window URL and records UTM parameters if present.
- * If no UTM source is present, but an external document.referrer exists, infers the source.
+ * Helper to read cookie value by name in browser
+ */
+const getCookie = (name: string): string => {
+  if (typeof document === "undefined") return "";
+  const match = document.cookie.match(new RegExp(`(?:^|;\\s*)${name}=([^;]*)`));
+  return match ? decodeURIComponent(match[1]) : "";
+};
+
+/**
+ * Helper to set a cookie with 7-day expiry
+ */
+const setCookie = (name: string, value: string, maxAgeSeconds: number = SEVEN_DAYS_SECONDS): void => {
+  if (typeof document === "undefined") return;
+  document.cookie = `${name}=${encodeURIComponent(value)}; path=/; max-age=${maxAgeSeconds}; SameSite=Lax`;
+};
+
+/**
+ * Helper to delete a cookie immediately
+ */
+const deleteCookie = (name: string): void => {
+  if (typeof document === "undefined") return;
+  document.cookie = `${name}=; path=/; max-age=0; SameSite=Lax`;
+};
+
+/**
+ * Parses the current window URL and records UTM parameters ONLY if explicitly present in the query string.
+ * Stores STRICTLY in Cookies with a 7-day expiration. Overwrites any previous UTM cookies.
  */
 export const captureUtmFromUrl = (): UtmDetails | null => {
   if (typeof window === "undefined") return null;
 
   try {
+    // Purge any legacy localStorage or sessionStorage keys to ensure cookie-only operation
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+      sessionStorage.removeItem(STORAGE_KEY);
+    } catch {
+      // Ignore
+    }
+
     const urlParams = new URLSearchParams(window.location.search);
 
     const utmSource = urlParams.get("utm_source") || urlParams.get("source");
@@ -33,61 +76,45 @@ export const captureUtmFromUrl = (): UtmDetails | null => {
     const utmCampaign = urlParams.get("utm_campaign") || urlParams.get("campaign");
     const utmTerm = urlParams.get("utm_term") || urlParams.get("term");
     const utmContent = urlParams.get("utm_content") || urlParams.get("content");
-    const promoParam = urlParams.get("promo"); // Query parameter promo (marketing attribution)
+    const promoParam = urlParams.get("promo");
 
-    const rawReferrer = document.referrer || "";
-    let inferredSource = "";
+    // ONLY capture if explicit UTM or promo query parameter is present in URL
+    const hasExplicitUtm = !!(
+      utmSource ||
+      utmMedium ||
+      utmCampaign ||
+      utmTerm ||
+      utmContent ||
+      promoParam
+    );
 
-    if (!utmSource && rawReferrer) {
-      try {
-        const refUrl = new URL(rawReferrer);
-        if (!refUrl.hostname.includes(window.location.hostname)) {
-          if (refUrl.hostname.includes("google")) inferredSource = "Google Organic";
-          else if (refUrl.hostname.includes("facebook") || refUrl.hostname.includes("fb.me")) inferredSource = "Facebook";
-          else if (refUrl.hostname.includes("instagram")) inferredSource = "Instagram";
-          else if (refUrl.hostname.includes("youtube")) inferredSource = "YouTube";
-          else if (refUrl.hostname.includes("whatsapp")) inferredSource = "WhatsApp";
-          else inferredSource = refUrl.hostname.replace(/^www\./, "");
-        }
-      } catch {
-        // Invalid referrer URL
-      }
-    }
-
-    const finalSource = utmSource || inferredSource;
-
-    // If new UTM source or promo exists, store it
-    if (finalSource || promoParam) {
+    if (hasExplicitUtm) {
       const details: UtmDetails = {
-        utmSource: finalSource || "Direct",
+        utmSource: utmSource || "",
         utmMedium: utmMedium || "",
         utmCampaign: utmCampaign || "",
         utmTerm: utmTerm || "",
         utmContent: utmContent || "",
         promo: promoParam || "",
-        referrer: rawReferrer,
         landingPage: window.location.pathname + window.location.search,
         capturedAt: new Date().toISOString(),
       };
 
       try {
         const serialized = JSON.stringify(details);
-        sessionStorage.setItem(STORAGE_KEY, serialized);
-        localStorage.setItem(STORAGE_KEY, serialized);
-
-        // Store in cookies with 30-day expiration for server and cross-session persistence
-        if (typeof document !== "undefined") {
-          const maxAge = 30 * 24 * 60 * 60; // 30 days
-          document.cookie = `${STORAGE_KEY}=${encodeURIComponent(serialized)}; path=/; max-age=${maxAge}; SameSite=Lax`;
-          if (details.utmSource) {
-            document.cookie = `ps_utm_source=${encodeURIComponent(details.utmSource)}; path=/; max-age=${maxAge}; SameSite=Lax`;
-          }
-          if (details.utmCampaign) {
-            document.cookie = `ps_utm_campaign=${encodeURIComponent(details.utmCampaign)}; path=/; max-age=${maxAge}; SameSite=Lax`;
-          }
+        // Overwrite cookie with 7-day expiry
+        setCookie(STORAGE_KEY, serialized, SEVEN_DAYS_SECONDS);
+        if (details.utmSource) {
+          setCookie("ps_utm_source", details.utmSource, SEVEN_DAYS_SECONDS);
+        }
+        if (details.utmMedium) {
+          setCookie("ps_utm_medium", details.utmMedium, SEVEN_DAYS_SECONDS);
+        }
+        if (details.utmCampaign) {
+          setCookie("ps_utm_campaign", details.utmCampaign, SEVEN_DAYS_SECONDS);
         }
       } catch {
-        // Storage quota / access restricted
+        // Storage restricted
       }
 
       return details;
@@ -100,27 +127,17 @@ export const captureUtmFromUrl = (): UtmDetails | null => {
 };
 
 /**
- * Helper to read cookie value by name in browser
- */
-const getCookie = (name: string): string => {
-  if (typeof document === "undefined") return "";
-  const match = document.cookie.match(new RegExp(`(?:^|;\\s*)${name}=([^;]*)`));
-  return match ? decodeURIComponent(match[1]) : "";
-};
-
-/**
- * Retrieves the stored UTM details from storage or cookies, or returns default direct attribution.
+ * Retrieves the stored UTM details STRICTLY from cookies.
+ * Does not check localStorage or sessionStorage.
+ * Returns empty object if no UTM cookie exists.
  */
 export const getStoredUtmDetails = (): UtmDetails => {
   if (typeof window === "undefined") {
-    return { utmSource: "Direct" };
+    return {};
   }
 
   try {
-    const raw =
-      sessionStorage.getItem(STORAGE_KEY) ||
-      localStorage.getItem(STORAGE_KEY) ||
-      getCookie(STORAGE_KEY);
+    const raw = getCookie(STORAGE_KEY);
 
     if (raw) {
       const parsed = JSON.parse(raw);
@@ -129,12 +146,13 @@ export const getStoredUtmDetails = (): UtmDetails => {
       }
     }
 
-    // Secondary fallback: check individual cookies
     const cookieSource = getCookie("ps_utm_source");
+    const cookieMedium = getCookie("ps_utm_medium");
     const cookieCampaign = getCookie("ps_utm_campaign");
-    if (cookieSource) {
+    if (cookieSource || cookieMedium || cookieCampaign) {
       return {
         utmSource: cookieSource,
+        utmMedium: cookieMedium,
         utmCampaign: cookieCampaign,
       };
     }
@@ -142,16 +160,12 @@ export const getStoredUtmDetails = (): UtmDetails => {
     // Ignore parse error
   }
 
-  return {
-    utmSource: "Direct",
-    promo: "",
-    referrer: typeof document !== "undefined" ? document.referrer : "",
-    landingPage: typeof window !== "undefined" ? window.location.pathname : "",
-  };
+  return {};
 };
 
 /**
- * Builds query parameters from stored UTM attributes to append to URLs (e.g. payment success redirect)
+ * Builds query parameters from stored cookie UTM attributes ONLY if explicit UTM parameters exist.
+ * Otherwise returns empty string.
  */
 export const buildUtmQueryString = (): string => {
   if (typeof window === "undefined") return "";
@@ -160,7 +174,7 @@ export const buildUtmQueryString = (): string => {
     const utm = getStoredUtmDetails();
     const params = new URLSearchParams();
 
-    if (utm.utmSource && utm.utmSource !== "Direct") {
+    if (utm.utmSource) {
       params.set("utm_source", utm.utmSource);
     }
     if (utm.utmMedium) {
@@ -183,5 +197,26 @@ export const buildUtmQueryString = (): string => {
     return qs ? `&${qs}` : "";
   } catch {
     return "";
+  }
+};
+
+/**
+ * Deletes all UTM attribution cookies.
+ * Called when an order is completed, removing all marketing tags from the browser.
+ */
+export const clearUtmAttribution = (): void => {
+  if (typeof window === "undefined") return;
+
+  try {
+    deleteCookie(STORAGE_KEY);
+    deleteCookie("ps_utm_source");
+    deleteCookie("ps_utm_medium");
+    deleteCookie("ps_utm_campaign");
+
+    // Also clean any legacy storage keys if they exist
+    localStorage.removeItem(STORAGE_KEY);
+    sessionStorage.removeItem(STORAGE_KEY);
+  } catch {
+    // Ignore
   }
 };

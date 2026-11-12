@@ -12,7 +12,7 @@ import {
   Calendar, 
 } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
-import { captureUtmFromUrl } from "@/lib/utmTracker";
+import { clearUtmAttribution } from "@/lib/utmTracker";
 
 type StatusState = "loading" | "pending" | "paid" | "failed" | "timeout" | "not_found";
 
@@ -67,6 +67,8 @@ function SuccessContent() {
 
           if (payStatus === "paid") {
             setStatusState("paid");
+            // Clear UTM attribution from cookies, localStorage, and sessionStorage once order is completed
+            clearUtmAttribution();
             return;
           } else if (payStatus === "failed") {
             setStatusState("failed");

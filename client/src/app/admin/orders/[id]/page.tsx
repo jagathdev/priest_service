@@ -20,7 +20,6 @@ import {
   XMarkIcon,
   EnvelopeIcon,
 } from "@heroicons/react/24/outline";
-import { ShareIcon } from "lucide-react";
 import { formatIndianPhoneNumber } from "@/lib/phoneFormatter";
 
 const STATUS_CONFIG: Record<
