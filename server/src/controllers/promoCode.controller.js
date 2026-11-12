@@ -1,4 +1,6 @@
 import PromoCode from "../models/PromoCode.js";
+import PromoCodeUsage from "../models/PromoCodeUsage.js";
+import Order from "../models/Order.js";
 
 import {
     validatePromoCode,
@@ -186,10 +188,61 @@ export const getPromoCodes = async (
                 })
                 .lean();
 
+        // Calculate usage metrics (ordersCount, totalRevenue, totalDiscount) for each promo code
+        const promoIds = promos.map((p) => p._id);
+        const promoCodes = promos.map((p) => p.code);
+
+        // Aggregate orders matching promoCodeId or promoCode string
+        const orderMetrics = await Order.aggregate([
+            {
+                $match: {
+                    $or: [
+                        { promoCodeId: { $in: promoIds } },
+                        { promoCode: { $in: promoCodes } }
+                    ],
+                    paymentStatus: "paid"
+                }
+            },
+            {
+                $group: {
+                    _id: {
+                        $cond: [
+                            { $ifNull: ["$promoCodeId", false] },
+                            { $toString: "$promoCodeId" },
+                            "$promoCode"
+                        ]
+                    },
+                    ordersCount: { $sum: 1 },
+                    totalRevenue: { $sum: { $ifNull: ["$pricing.total", 0] } },
+                    totalDiscount: { $sum: { $ifNull: ["$discountAmount", 0] } }
+                }
+            }
+        ]);
+
+        const metricsMap = new Map();
+        orderMetrics.forEach((m) => {
+            if (m._id) {
+                metricsMap.set(String(m._id), m);
+            }
+        });
+
+        const promosWithMetrics = promos.map((promo) => {
+            const byId = metricsMap.get(String(promo._id));
+            const byCode = metricsMap.get(promo.code);
+            const metric = byId || byCode;
+
+            return {
+                ...promo,
+                ordersCount: metric?.ordersCount || promo.usedCount || 0,
+                totalRevenue: metric?.totalRevenue || 0,
+                totalDiscount: metric?.totalDiscount || 0,
+            };
+        });
+
         return res.status(200).json({
             success: true,
-            count: promos.length,
-            data: promos,
+            count: promosWithMetrics.length,
+            data: promosWithMetrics,
         });
     } catch (error) {
         console.error(
@@ -201,6 +254,132 @@ export const getPromoCodes = async (
             success: false,
             message:
                 "Failed to fetch promo codes",
+        });
+    }
+};
+
+// GET USERS & ORDERS USAGE DETAILS FOR A PROMO CODE
+export const getPromoCodeUsageDetails = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const promo = await PromoCode.findById(id).lean();
+        if (!promo) {
+            return res.status(404).json({
+                success: false,
+                message: "Promo code not found",
+            });
+        }
+
+        // 1. Fetch from PromoCodeUsage collection
+        const usages = await PromoCodeUsage.find({ promoCodeId: id })
+            .populate("userId", "name mobileNumber email whatsappNumber")
+            .populate("orderId", "orderNumber customerName mobileNumber whatsappNumber pricing discountAmount paymentStatus orderStatus itemName pooja createdAt")
+            .sort({ createdAt: -1 })
+            .lean();
+
+        // 2. Also check Order collection for any orders with promoCodeId or promoCode that might not have PromoCodeUsage record
+        const orders = await Order.find({
+            $or: [{ promoCodeId: id }, { promoCode: promo.code }],
+            paymentStatus: { $in: ["paid", "pending", "confirmed"] },
+        })
+            .populate("customer", "name mobileNumber email whatsappNumber")
+            .sort({ createdAt: -1 })
+            .lean();
+
+        // Merge usage entries to ensure complete devotees list
+        const processedOrderIds = new Set();
+        const records = [];
+
+        // Process usages first
+        for (const u of usages) {
+            const order = u.orderId;
+            const user = u.userId;
+            const orderIdStr = order?._id ? String(order._id) : String(u.orderId);
+            processedOrderIds.add(orderIdStr);
+
+            records.push({
+                _id: String(u._id),
+                discountAmount: u.discountAmount ?? order?.discountAmount ?? 0,
+                createdAt: u.createdAt || order?.createdAt || promo.createdAt,
+                user: {
+                    _id: user?._id ? String(user._id) : null,
+                    name: user?.name || order?.customerName || "Devotee",
+                    mobileNumber: user?.mobileNumber || order?.mobileNumber || order?.whatsappNumber || "-",
+                    email: user?.email || "-",
+                },
+                order: order
+                    ? {
+                          _id: String(order._id),
+                          orderNumber: order.orderNumber || "-",
+                          customerName: order.customerName || user?.name || "Devotee",
+                          mobileNumber: order.mobileNumber || order.whatsappNumber || user?.mobileNumber || "-",
+                          totalAmount: order.pricing?.total ?? 0,
+                          discountAmount: order.discountAmount ?? u.discountAmount ?? 0,
+                          paymentStatus: order.paymentStatus || "paid",
+                          orderStatus: order.orderStatus || "completed",
+                          itemName: order.itemName || order.pooja || "Puja Service",
+                          createdAt: order.createdAt,
+                      }
+                    : null,
+            });
+        }
+
+        // Process any additional orders not captured in usages
+        for (const o of orders) {
+            const orderIdStr = String(o._id);
+            if (!processedOrderIds.has(orderIdStr)) {
+                processedOrderIds.add(orderIdStr);
+                const user = o.customer;
+                records.push({
+                    _id: `ord_${o._id}`,
+                    discountAmount: o.discountAmount || 0,
+                    createdAt: o.createdAt,
+                    user: {
+                        _id: user?._id ? String(user._id) : null,
+                        name: o.customerName || user?.name || "Devotee",
+                        mobileNumber: o.mobileNumber || o.whatsappNumber || user?.mobileNumber || "-",
+                        email: user?.email || "-",
+                    },
+                    order: {
+                        _id: String(o._id),
+                        orderNumber: o.orderNumber || "-",
+                        customerName: o.customerName || user?.name || "Devotee",
+                        mobileNumber: o.mobileNumber || o.whatsappNumber || user?.mobileNumber || "-",
+                        totalAmount: o.pricing?.total ?? 0,
+                        discountAmount: o.discountAmount || 0,
+                        paymentStatus: o.paymentStatus || "paid",
+                        orderStatus: o.orderStatus || "completed",
+                        itemName: o.itemName || o.pooja || "Puja Service",
+                        createdAt: o.createdAt,
+                    },
+                });
+            }
+        }
+
+        // Calculate summary
+        const totalRevenue = records.reduce((sum, r) => sum + (r.order?.totalAmount || 0), 0);
+        const totalDiscountGiven = records.reduce((sum, r) => sum + (r.discountAmount || 0), 0);
+
+        return res.status(200).json({
+            success: true,
+            promo: {
+                _id: promo._id,
+                code: promo.code,
+                discountType: promo.discountType,
+                discountValue: promo.discountValue,
+                totalOrders: records.length,
+                totalRevenue,
+                totalDiscountGiven,
+            },
+            count: records.length,
+            data: records,
+        });
+    } catch (error) {
+        console.error("Get Promo Usage Details Error:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Failed to fetch promo code usage details",
         });
     }
 };

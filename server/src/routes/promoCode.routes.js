@@ -4,6 +4,7 @@ import {
     createPromoCode,
     getPromoCodes,
     getPromoCodeById,
+    getPromoCodeUsageDetails,
     updatePromoCode,
     deletePromoCode,
     updatePromoStatus,
@@ -17,6 +18,7 @@ const router = express.Router();
 
 // Admin
 router.get("/", requireAuth, requireAdmin, getPromoCodes);
+router.get("/:id/usage", requireAuth, requireAdmin, getPromoCodeUsageDetails);
 router.get("/:id", requireAuth, requireAdmin, getPromoCodeById);
 router.post("/", requireAuth, requireAdmin, createPromoCode);
 router.put("/:id", requireAuth, requireAdmin, updatePromoCode);

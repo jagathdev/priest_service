@@ -1,4 +1,4 @@
-import type { PromoCode } from "@/types/promoCode";
+import type { PromoCode, PromoCodeUsageResponse } from "@/types/promoCode";
 
 const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
 
@@ -119,4 +119,17 @@ export async function applyPromoCode(data: {
     const result = await response.json();
     if (!response.ok) throw new Error(result.message || "Failed to apply promo code");
     return result.data;
+}
+
+export async function getPromoCodeUsageDetails(id: string): Promise<PromoCodeUsageResponse> {
+    const response = await fetch(`${API_URL}/api/promos/${id}/usage`, {
+        cache: "no-store",
+        headers: {
+            ...getAdminAuthHeaders(),
+        },
+        credentials: "include",
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.message || "Failed to fetch promo code usage details");
+    return result;
 }
