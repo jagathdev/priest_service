@@ -18,6 +18,7 @@ import {
   ExclamationCircleIcon,
   ArrowUturnLeftIcon,
 } from "@heroicons/react/24/outline";
+import { formatIndianPhoneNumber } from "@/lib/phoneFormatter";
 
 interface DevoteeUser {
   _id: string;
@@ -899,9 +900,7 @@ export default function AdminUsersPage() {
                       <td className="py-4 px-4 whitespace-nowrap min-w-[140px]">
                         <div className="font-semibold text-gray-800 whitespace-nowrap">
                           {u.mobileNumber && u.mobileNumber !== "N/A"
-                            ? (u.mobileNumber.startsWith("+")
-                              ? u.mobileNumber
-                              : `+91 ${u.mobileNumber}`)
+                            ? formatIndianPhoneNumber(u.mobileNumber)
                             : <span className="text-gray-400 italic">Not Provided</span>}
                         </div>
                         {(() => {
@@ -915,7 +914,7 @@ export default function AdminUsersPage() {
                             return (
                               <div className="flex items-center gap-1 text-[11px] text-emerald-700 font-semibold mt-0.5 whitespace-nowrap">
                                 <span className="text-[9px] bg-emerald-50 px-1 py-0.2 rounded border border-emerald-200 font-bold shrink-0">WA</span>
-                                <span className="whitespace-nowrap">{wa.startsWith("+") ? wa : (wa.startsWith("91") && wa.length === 12 ? `+${wa}` : `+91 ${wa}`)}</span>
+                                <span className="whitespace-nowrap">{formatIndianPhoneNumber(wa)}</span>
                               </div>
                             );
                           }

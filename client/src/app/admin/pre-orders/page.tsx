@@ -21,6 +21,7 @@ import {
   UserCircleIcon,
   HeartIcon,
 } from "@heroicons/react/24/outline";
+import { formatIndianPhoneNumber } from "@/lib/phoneFormatter";
 
 interface ParticipantItem {
   name: string;
@@ -705,7 +706,7 @@ export default function AdminPreOrdersPage() {
                               {lead.userName}
                             </span>
                             <span className="text-[11px] font-semibold text-gray-500 block">
-                              {lead.whatsappNumber || lead.mobileNumber}
+                              {formatIndianPhoneNumber(lead.whatsappNumber || lead.mobileNumber)}
                             </span>
                           </div>
                         </div>
@@ -889,7 +890,7 @@ export default function AdminPreOrdersPage() {
                     </span>
                   </div>
                   <div className="mt-1 flex items-center gap-3 text-xs text-gray-600 font-medium">
-                    <span>📞 {viewingLead.whatsappNumber || viewingLead.mobileNumber}</span>
+                    <span>📞 {formatIndianPhoneNumber(viewingLead.whatsappNumber || viewingLead.mobileNumber)}</span>
                     {viewingLead.email && <span>• {viewingLead.email}</span>}
                   </div>
                 </div>

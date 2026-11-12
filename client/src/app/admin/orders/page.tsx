@@ -17,6 +17,7 @@ import {
   ArrowPathIcon,
   SparklesIcon,
 } from "@heroicons/react/24/outline";
+import { formatIndianPhoneNumber } from "@/lib/phoneFormatter";
 
 const STATUS_CONFIG: Record<
   string,
@@ -1087,14 +1088,8 @@ export default function AdminOrdersPage() {
                             cleanWa &&
                             (cleanMob === cleanWa || cleanMob.endsWith(cleanWa) || cleanWa.endsWith(cleanMob));
 
-                          const fmtMob = mob ? (mob.startsWith("+") ? mob : "+91 " + mob) : "";
-                          const fmtWa = wa
-                            ? wa.startsWith("+")
-                              ? wa
-                              : wa.startsWith("91") && wa.length === 12
-                                ? "+" + wa
-                                : "+91 " + wa
-                            : "";
+                          const fmtMob = mob ? formatIndianPhoneNumber(mob) : "";
+                          const fmtWa = wa ? formatIndianPhoneNumber(wa) : "";
 
                           return (
                             <div className="text-[11px] space-y-0.5 mt-0.5">

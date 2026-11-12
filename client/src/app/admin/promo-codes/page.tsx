@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import type { PromoCode, PromoCodeUsageRecord, PromoCodeUsageResponse } from "@/types/promoCode";
 import { getPromoCodes, togglePromoCode, deletePromoCode, getPromoCodeUsageDetails } from "@/lib/promoCodes";
+import { formatIndianPhoneNumber, getCleanWhatsAppDigits } from "@/lib/phoneFormatter";
 
 export default function PromoCodesPage() {
     const [promos, setPromos] = useState<PromoCode[]>([]);
@@ -417,11 +418,9 @@ export default function PromoCodesPage() {
                                                     record.order?.mobileNumber ||
                                                     record.user?.mobileNumber ||
                                                     "-";
-                                                const cleanPhone = rawPhone.replace(/\D/g, "");
-                                                const whatsappUrl =
-                                                    cleanPhone.length >= 10
-                                                        ? `https://wa.me/${cleanPhone.startsWith("91") ? cleanPhone : `91${cleanPhone}`}`
-                                                        : null;
+                                                const formattedDisplayPhone = formatIndianPhoneNumber(rawPhone);
+                                                const waDigits = getCleanWhatsAppDigits(rawPhone);
+                                                const whatsappUrl = waDigits ? `https://wa.me/${waDigits}` : null;
 
                                                 return (
                                                     <tr key={record._id || idx} className="hover:bg-gray-50/70 transition-colors">
@@ -444,7 +443,7 @@ export default function PromoCodesPage() {
                                                             <div className="flex items-center gap-1.5">
                                                                 <Phone className="w-3 h-3 text-gray-400 shrink-0" />
                                                                 <span className="font-semibold text-gray-700">
-                                                                    {rawPhone}
+                                                                    {formattedDisplayPhone}
                                                                 </span>
                                                                 {whatsappUrl && (
                                                                     <a

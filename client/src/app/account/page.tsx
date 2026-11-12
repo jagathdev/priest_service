@@ -10,6 +10,7 @@ import { useUser } from "@/contexts/UserContext";
 import LoginModal from "@/components/auth/LoginModal";
 import { authService } from "@/services/auth.service";
 import BookingsTab from "@/components/account/BookingsTab";
+import { formatIndianPhoneNumber } from "@/lib/phoneFormatter";
 import { apiClient, getAuthToken } from "@/services/api";
 import {
   User as UserIcon,
@@ -1293,7 +1294,9 @@ function AccountPageContent() {
                                 <div className="mt-4 space-y-1.5 text-xs sm:text-sm text-gray-600 font-medium">
                                   <div className="flex items-center gap-2.5">
                                     <Phone className="w-4 h-4 text-amber-600 shrink-0" />
-                                    <span>{user?.mobileNumber || user?.phone || "+91 XXXXXXXXXX"}</span>
+                                    <span>
+                                      {user?.mobileNumber || user?.phone ? formatIndianPhoneNumber(user.mobileNumber || user.phone) : "+91 XXXXXXXXXX"}
+                                    </span>
                                   </div>
                                   <div className="flex items-center gap-2.5">
                                     <Mail className="w-4 h-4 text-red-500 shrink-0" />

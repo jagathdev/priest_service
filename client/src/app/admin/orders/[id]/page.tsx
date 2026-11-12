@@ -21,6 +21,7 @@ import {
   EnvelopeIcon,
 } from "@heroicons/react/24/outline";
 import { ShareIcon } from "lucide-react";
+import { formatIndianPhoneNumber } from "@/lib/phoneFormatter";
 
 const STATUS_CONFIG: Record<
   string,
@@ -427,7 +428,7 @@ export default function AdminOrderDetailPage({ params }: { params: Promise<{ id:
             <div className="flex justify-between">
               <span className="text-gray-500">Mobile Number</span>
               <span className="font-bold text-gray-900">
-                {order.mobileNumber?.startsWith("+") ? order.mobileNumber : `+91 ${order.mobileNumber || "9876543210"}`}
+                {formatIndianPhoneNumber(order.mobileNumber)}
               </span>
             </div>
             {(() => {
@@ -438,14 +439,13 @@ export default function AdminOrderDetailPage({ params }: { params: Promise<{ id:
               const isSame = cleanMob && cleanWa && (cleanMob === cleanWa || cleanMob.endsWith(cleanWa) || cleanWa.endsWith(cleanMob));
 
               if (!isSame && wa) {
-                const fmtWa = wa.startsWith("+") ? wa : (wa.startsWith("91") && wa.length === 12 ? "+" + wa : "+91 " + wa);
                 return (
                   <div className="flex justify-between items-center">
                     <span className="text-gray-500 flex items-center gap-1">
                       <span>WhatsApp</span>
                       <span className="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">WA</span>
                     </span>
-                    <span className="font-bold text-emerald-800">{fmtWa}</span>
+                    <span className="font-bold text-emerald-800">{formatIndianPhoneNumber(wa)}</span>
                   </div>
                 );
               }
