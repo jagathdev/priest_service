@@ -19,6 +19,11 @@ const notificationRecipientSchema = new mongoose.Schema(
       default: "Admin",
       trim: true,
     },
+    alertTypes: {
+      type: [String],
+      enum: ["ORDERS", "CUSTOMER_QUERIES"],
+      default: ["ORDERS"],
+    },
     isActive: {
       type: Boolean,
       default: true,

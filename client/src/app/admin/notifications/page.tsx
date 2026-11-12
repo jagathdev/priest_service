@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import {
   EnvelopeIcon,
   PlusIcon,
@@ -16,6 +16,8 @@ import {
   InformationCircleIcon,
   ChevronDownIcon,
   CheckIcon,
+  ChatBubbleLeftRightIcon,
+  ShoppingBagIcon,
 } from "@heroicons/react/24/outline";
 
 interface Recipient {
@@ -23,6 +25,7 @@ interface Recipient {
   name: string;
   email: string;
   role: string;
+  alertTypes?: ("ORDERS" | "CUSTOMER_QUERIES")[];
   isActive: boolean;
   notes?: string;
   createdAt?: string;
@@ -35,10 +38,13 @@ interface SmtpStatus {
   message?: string;
 }
 
+type TabType = "all" | "orders" | "queries";
+
 export default function NotificationsAdminPage() {
   const [recipients, setRecipients] = useState<Recipient[]>([]);
   const [smtpStatus, setSmtpStatus] = useState<SmtpStatus | null>(null);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<TabType>("orders");
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
   // Modal State for Add / Edit
@@ -48,6 +54,7 @@ export default function NotificationsAdminPage() {
     name: "",
     email: "",
     role: "Admin",
+    alertTypes: ["ORDERS"] as ("ORDERS" | "CUSTOMER_QUERIES")[],
     isActive: true,
     notes: "",
   });
@@ -56,15 +63,17 @@ export default function NotificationsAdminPage() {
 
   const roleOptions = [
     { value: "Admin", label: "Admin", desc: "Full administrative alerts", badge: "bg-purple-100 text-purple-700" },
+    { value: "Customer Support", label: "Customer Support", desc: "Devotee queries & communications", badge: "bg-blue-100 text-blue-700" },
+    { value: "Support Lead", label: "Support Lead", desc: "Devotee escalations & tickets", badge: "bg-indigo-100 text-indigo-700" },
     { value: "Priest / Pandit", label: "Priest / Pandit", desc: "Ritual & Sankalpam details", badge: "bg-amber-100 text-amber-700" },
     { value: "Temple Coordinator", label: "Temple Coordinator", desc: "Temple schedule coordination", badge: "bg-orange-100 text-orange-700" },
-    { value: "Customer Support", label: "Customer Support", desc: "Devotee queries & communications", badge: "bg-blue-100 text-blue-700" },
     { value: "Management", label: "Management", desc: "Revenue & booking summary alerts", badge: "bg-emerald-100 text-emerald-700" },
   ];
 
   // Test Mail State
   const [testMailModalOpen, setTestMailModalOpen] = useState(false);
   const [testTargetEmail, setTestTargetEmail] = useState("");
+  const [testAlertType, setTestAlertType] = useState<"ORDERS" | "CUSTOMER_QUERIES">("ORDERS");
   const [sendingTest, setSendingTest] = useState(false);
 
   const showToast = (message: string, type: "success" | "error" = "success") => {
@@ -110,12 +119,39 @@ export default function NotificationsAdminPage() {
     fetchRecipients();
   }, [fetchRecipients]);
 
+  // Derived counts
+  const orderCount = useMemo(() => {
+    return recipients.filter((r) => {
+      if (!r.isActive) return false;
+      return !r.alertTypes || r.alertTypes.length === 0 || r.alertTypes.includes("ORDERS");
+    }).length;
+  }, [recipients]);
+
+  const queryCount = useMemo(() => {
+    return recipients.filter((r) => {
+      if (!r.isActive) return false;
+      return r.alertTypes && r.alertTypes.includes("CUSTOMER_QUERIES");
+    }).length;
+  }, [recipients]);
+
+  const filteredRecipients = useMemo(() => {
+    if (activeTab === "all") return recipients;
+    if (activeTab === "orders") {
+      return recipients.filter((r) => !r.alertTypes || r.alertTypes.length === 0 || r.alertTypes.includes("ORDERS"));
+    }
+    if (activeTab === "queries") {
+      return recipients.filter((r) => r.alertTypes && r.alertTypes.includes("CUSTOMER_QUERIES"));
+    }
+    return recipients;
+  }, [recipients, activeTab]);
+
   const handleOpenAdd = () => {
     setEditingId(null);
     setFormData({
       name: "",
       email: "",
-      role: "Admin",
+      role: activeTab === "queries" ? "Customer Support" : "Admin",
+      alertTypes: activeTab === "queries" ? ["CUSTOMER_QUERIES"] : ["ORDERS"],
       isActive: true,
       notes: "",
     });
@@ -124,20 +160,40 @@ export default function NotificationsAdminPage() {
 
   const handleOpenEdit = (rec: Recipient) => {
     setEditingId(rec._id);
+    const types = rec.alertTypes && rec.alertTypes.length > 0 ? rec.alertTypes : ["ORDERS"];
     setFormData({
       name: rec.name,
       email: rec.email,
       role: rec.role || "Admin",
+      alertTypes: types as ("ORDERS" | "CUSTOMER_QUERIES")[],
       isActive: rec.isActive,
       notes: rec.notes || "",
     });
     setModalOpen(true);
   };
 
+  const toggleAlertTypeInForm = (type: "ORDERS" | "CUSTOMER_QUERIES") => {
+    setFormData((prev) => {
+      const exists = prev.alertTypes.includes(type);
+      if (exists) {
+        if (prev.alertTypes.length === 1) {
+          showToast("A recipient must subscribe to at least one alert type", "error");
+          return prev;
+        }
+        return { ...prev, alertTypes: prev.alertTypes.filter((t) => t !== type) };
+      }
+      return { ...prev, alertTypes: [...prev.alertTypes, type] };
+    });
+  };
+
   const handleSaveRecipient = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name.trim() || !formData.email.trim()) {
       showToast("Name and Email are required", "error");
+      return;
+    }
+    if (formData.alertTypes.length === 0) {
+      showToast("Please select at least one alert subscription", "error");
       return;
     }
 
@@ -203,7 +259,7 @@ export default function NotificationsAdminPage() {
   };
 
   const handleDelete = async (id: string, email: string) => {
-    if (!window.confirm(`Are you sure you want to remove ${email} from order notifications?`)) {
+    if (!window.confirm(`Are you sure you want to remove ${email} from email notifications?`)) {
       return;
     }
 
@@ -242,7 +298,10 @@ export default function NotificationsAdminPage() {
           ...getAdminAuthHeaders(),
         },
         credentials: "include",
-        body: JSON.stringify({ email: testTargetEmail ? testTargetEmail.trim() : null }),
+        body: JSON.stringify({
+          email: testTargetEmail ? testTargetEmail.trim() : null,
+          alertType: testAlertType,
+        }),
       });
 
       const resData = await res.json();
@@ -260,8 +319,6 @@ export default function NotificationsAdminPage() {
       setSendingTest(false);
     }
   };
-
-  const activeCount = recipients.filter((r) => r.isActive).length;
 
   return (
     <div className="space-y-6 max-w-[1400px] mx-auto">
@@ -282,19 +339,19 @@ export default function NotificationsAdminPage() {
         </div>
       )}
 
-      {/* Header */}
+      {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2.5">
             <h1 className="text-xl sm:text-2xl font-black text-gray-900 tracking-tight">
-              Order Email Notifications
+              Email Alerts &amp; Notifications
             </h1>
             <span className="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-purple-50 text-purple-700 border border-purple-200">
-              {activeCount} Active {activeCount === 1 ? "Recipient" : "Recipients"}
+              {recipients.filter((r) => r.isActive).length} Active Configured
             </span>
           </div>
           <p className="text-xs text-gray-500 mt-1">
-            Whenever any puja or homa booking is confirmed, complete order details &amp; booking timestamps are immediately emailed to these recipients.
+            Manage email dispatches for confirmed order bookings and live devotee customer support inquiries.
           </p>
         </div>
 
@@ -302,7 +359,10 @@ export default function NotificationsAdminPage() {
         <div className="flex items-center gap-2.5 shrink-0">
           <button
             type="button"
-            onClick={() => setTestMailModalOpen(true)}
+            onClick={() => {
+              setTestAlertType(activeTab === "queries" ? "CUSTOMER_QUERIES" : "ORDERS");
+              setTestMailModalOpen(true);
+            }}
             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-purple-200 bg-purple-50 hover:bg-purple-100 text-purple-700 text-xs font-bold transition shadow-xs cursor-pointer active:scale-95"
           >
             <PaperAirplaneIcon className="w-4 h-4 text-purple-600" />
@@ -360,24 +420,108 @@ export default function NotificationsAdminPage() {
         </button>
       </div>
 
-      {/* Info Callout */}
-      <div className="bg-white border border-stone-200/90 rounded-2xl p-4 flex items-start gap-3 text-xs text-stone-600 shadow-2xs">
-        <InformationCircleIcon className="w-5 h-5 text-purple-600 shrink-0 mt-0.5" />
-        <div>
-          <span className="font-bold text-stone-900 block mb-0.5">Automated Real-Time Order Dispatch</span>
-          When a devotee completes payment, an email containing the <strong>Order ID, Puja Title, Package, Devotee names, Gotra, WhatsApp number, Total Price, Transaction ID, and exact Booking Date &amp; Time</strong> is sent automatically to every Active recipient listed below.
-        </div>
+      {/* Tabs Switcher: Order Notifications vs Customer Query Alerts */}
+      <div className="flex items-center gap-2 p-1.5 bg-gray-100/90 rounded-2xl w-fit border border-gray-200/80">
+
+
+        <button
+          type="button"
+          onClick={() => setActiveTab("all")}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${activeTab === "all"
+            ? "bg-white text-gray-900 shadow-sm border border-gray-200"
+            : "text-gray-600 hover:text-gray-900"
+            }`}
+        >
+          <UserGroupIcon className="w-4 h-4 text-gray-500" />
+          <span>All Recipients</span>
+          <span
+            className={`text-[10px] px-2 py-0.5 rounded-full font-extrabold ${activeTab === "all" ? "bg-gray-900 text-white" : "bg-gray-200 text-gray-700"
+              }`}
+          >
+            {recipients.length}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab("orders")}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${activeTab === "orders"
+            ? "bg-white text-purple-900 shadow-sm border border-purple-100"
+            : "text-gray-600 hover:text-gray-900"
+            }`}
+        >
+          <ShoppingBagIcon className="w-4 h-4 text-purple-600" />
+          <span>Order Notifications</span>
+          <span
+            className={`text-[10px] px-2 py-0.5 rounded-full font-extrabold ${activeTab === "orders" ? "bg-purple-100 text-purple-700" : "bg-gray-200 text-gray-700"
+              }`}
+          >
+            {orderCount}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab("queries")}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${activeTab === "queries"
+            ? "bg-white text-blue-900 shadow-sm border border-blue-100"
+            : "text-gray-600 hover:text-gray-900"
+            }`}
+        >
+          <ChatBubbleLeftRightIcon className="w-4 h-4 text-blue-600" />
+          <span>Customer Query Alerts</span>
+          <span
+            className={`text-[10px] px-2 py-0.5 rounded-full font-extrabold ${activeTab === "queries" ? "bg-blue-100 text-blue-700" : "bg-gray-200 text-gray-700"
+              }`}
+          >
+            {queryCount}
+          </span>
+        </button>
+
       </div>
+
+      {/* Info Callouts based on active tab */}
+      {activeTab === "orders" ? (
+        <div className="bg-white border border-purple-200/80 rounded-2xl p-4 flex items-start gap-3 text-xs text-stone-600 shadow-2xs">
+          <InformationCircleIcon className="w-5 h-5 text-purple-600 shrink-0 mt-0.5" />
+          <div>
+            <span className="font-bold text-stone-900 block mb-0.5">Automated Real-Time Order Dispatch</span>
+            When a devotee completes payment, an email containing the <strong>Order ID, Puja Title, Package, Devotee names, Gotra, WhatsApp number, Total Price, Transaction ID, and exact Booking Date &amp; Time</strong> is sent automatically to every Active recipient configured for Orders.
+          </div>
+        </div>
+      ) : activeTab === "queries" ? (
+        <div className="bg-white border border-blue-200/80 rounded-2xl p-4 flex items-start gap-3 text-xs text-stone-600 shadow-2xs">
+          <ChatBubbleLeftRightIcon className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
+          <div>
+            <span className="font-bold text-stone-900 block mb-0.5">Real-Time Customer Query / Support Alerts</span>
+            Whenever a customer submits a question via the <strong>&quot;Still need help?&quot; support form</strong>, an instant alert email with the devotee&apos;s name, phone, WhatsApp direct-chat link, booking reference, and question message is delivered directly to this support team list.
+          </div>
+        </div>
+      ) : (
+        <div className="bg-white border border-gray-200 rounded-2xl p-4 flex items-start gap-3 text-xs text-stone-600 shadow-2xs">
+          <UserGroupIcon className="w-5 h-5 text-gray-600 shrink-0 mt-0.5" />
+          <div>
+            <span className="font-bold text-stone-900 block mb-0.5">Complete Alert Subscriptions Overview</span>
+            Viewing all configured email accounts across Orders and Customer Queries. Each recipient can subscribe to Orders, Queries, or both.
+          </div>
+        </div>
+      )}
 
       {/* Recipients Table Card */}
       <div className="bg-white rounded-2xl border border-gray-200 shadow-xs overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <UserGroupIcon className="w-5 h-5 text-gray-500" />
-            <h2 className="text-sm font-extrabold text-gray-900">Configured Email Recipients ({recipients.length})</h2>
+            <h2 className="text-sm font-extrabold text-gray-900">
+              {activeTab === "orders"
+                ? `Order Notification Recipients (${filteredRecipients.length})`
+                : activeTab === "queries"
+                  ? `Customer Query Support Recipients (${filteredRecipients.length})`
+                  : `All Email Alert Recipients (${filteredRecipients.length})`}
+            </h2>
           </div>
           <span className="text-xs text-gray-400 font-medium hidden sm:inline">
-            Active recipients receive instant alerts upon booking
+            Active recipients receive instant alerts
           </span>
         </div>
 
@@ -388,6 +532,7 @@ export default function NotificationsAdminPage() {
                 <th className="px-6 py-3.5">RECIPIENT</th>
                 <th className="px-4 py-3.5">EMAIL ADDRESS</th>
                 <th className="px-4 py-3.5">ROLE / DEPT</th>
+                <th className="px-4 py-3.5">ALERT SUBSCRIPTIONS</th>
                 <th className="px-4 py-3.5 text-center">STATUS</th>
                 <th className="px-4 py-3.5">NOTES</th>
                 <th className="px-6 py-3.5 text-right">ACTIONS</th>
@@ -396,23 +541,33 @@ export default function NotificationsAdminPage() {
             <tbody className="divide-y divide-gray-100 bg-white">
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-16 text-center text-gray-500">
+                  <td colSpan={7} className="px-6 py-16 text-center text-gray-500">
                     <div className="flex flex-col items-center justify-center gap-2">
                       <div className="w-7 h-7 border-3 border-purple-600 border-t-transparent rounded-full animate-spin" />
                       <span className="font-semibold text-xs text-gray-600">Loading recipients...</span>
                     </div>
                   </td>
                 </tr>
-              ) : recipients.length === 0 ? (
+              ) : filteredRecipients.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-16 text-center text-gray-500">
+                  <td colSpan={7} className="px-6 py-16 text-center text-gray-500">
                     <div className="flex flex-col items-center justify-center">
                       <div className="w-12 h-12 rounded-full bg-purple-50 flex items-center justify-center text-purple-600 mb-2">
-                        <EnvelopeIcon className="w-6 h-6" />
+                        {activeTab === "queries" ? (
+                          <ChatBubbleLeftRightIcon className="w-6 h-6 text-blue-600" />
+                        ) : (
+                          <EnvelopeIcon className="w-6 h-6" />
+                        )}
                       </div>
-                      <span className="font-bold text-sm text-gray-800">No Email Recipients Configured Yet</span>
+                      <span className="font-bold text-sm text-gray-800">
+                        {activeTab === "queries"
+                          ? "No Customer Query Alert Recipients Yet"
+                          : "No Email Recipients Configured Yet"}
+                      </span>
                       <p className="text-xs text-gray-400 mt-1 max-w-sm">
-                        Add email addresses (admins, priests, operations) to start receiving instant booking confirmation alerts.
+                        {activeTab === "queries"
+                          ? "Add support team members or admins to receive instant email notifications whenever a devotee submits a support query."
+                          : "Add email addresses to start receiving instant booking confirmation alerts."}
                       </p>
                       <button
                         type="button"
@@ -425,95 +580,121 @@ export default function NotificationsAdminPage() {
                   </td>
                 </tr>
               ) : (
-                recipients.map((rec) => (
-                  <tr key={rec._id} className="hover:bg-gray-50/70 transition">
-                    {/* Name */}
-                    <td className="px-6 py-4 font-bold text-gray-900">
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 rounded-full bg-purple-100 text-purple-700 font-extrabold flex items-center justify-center text-xs shrink-0">
-                          {rec.name.charAt(0).toUpperCase()}
+                filteredRecipients.map((rec) => {
+                  const alertTypes = rec.alertTypes && rec.alertTypes.length > 0 ? rec.alertTypes : ["ORDERS"];
+                  return (
+                    <tr key={rec._id} className="hover:bg-gray-50/70 transition">
+                      {/* Name */}
+                      <td className="px-6 py-4 font-bold text-gray-900">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-8 h-8 rounded-full bg-purple-100 text-purple-700 font-extrabold flex items-center justify-center text-xs shrink-0">
+                            {rec.name.charAt(0).toUpperCase()}
+                          </div>
+                          <div>
+                            <span className="block font-bold text-gray-900">{rec.name}</span>
+                            <span className="text-[10px] text-gray-400 font-normal">
+                              Added {rec.createdAt ? new Date(rec.createdAt).toLocaleDateString("en-IN") : "Recently"}
+                            </span>
+                          </div>
                         </div>
-                        <div>
-                          <span className="block font-bold text-gray-900">{rec.name}</span>
-                          <span className="text-[10px] text-gray-400 font-normal">
-                            Added {rec.createdAt ? new Date(rec.createdAt).toLocaleDateString("en-IN") : "Recently"}
-                          </span>
+                      </td>
+
+                      {/* Email */}
+                      <td className="px-4 py-4 font-mono font-semibold text-purple-700">
+                        <a href={`mailto:${rec.email}`} className="hover:underline flex items-center gap-1.5">
+                          <EnvelopeIcon className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                          <span>{rec.email}</span>
+                        </a>
+                      </td>
+
+                      {/* Role / Dept */}
+                      <td className="px-4 py-4">
+                        <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-gray-100 text-gray-700 border border-gray-200">
+                          {rec.role || "Admin"}
+                        </span>
+                      </td>
+
+                      {/* Alert Subscriptions Badges */}
+                      <td className="px-4 py-4">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          {alertTypes.includes("ORDERS") && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200">
+                              <ShoppingBagIcon className="w-3 h-3 text-purple-600" />
+                              Orders
+                            </span>
+                          )}
+                          {alertTypes.includes("CUSTOMER_QUERIES") && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                              <ChatBubbleLeftRightIcon className="w-3 h-3 text-blue-600" />
+                              Queries
+                            </span>
+                          )}
                         </div>
-                      </div>
-                    </td>
+                      </td>
 
-                    {/* Email */}
-                    <td className="px-4 py-4 font-mono font-semibold text-purple-700">
-                      <a href={`mailto:${rec.email}`} className="hover:underline flex items-center gap-1.5">
-                        <EnvelopeIcon className="w-3.5 h-3.5 text-gray-400 shrink-0" />
-                        <span>{rec.email}</span>
-                      </a>
-                    </td>
-
-                    {/* Role / Dept */}
-                    <td className="px-4 py-4">
-                      <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-gray-100 text-gray-700 border border-gray-200">
-                        {rec.role || "Admin"}
-                      </span>
-                    </td>
-
-                    {/* Active Toggle Switch */}
-                    <td className="px-4 py-4 text-center">
-                      <button
-                        type="button"
-                        onClick={() => handleToggleActive(rec)}
-                        title={rec.isActive ? "Click to set Inactive" : "Click to set Active"}
-                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-extrabold transition cursor-pointer border ${rec.isActive
-                          ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100"
-                          : "bg-gray-100 text-gray-500 border-gray-200 hover:bg-gray-200"
-                          }`}
-                      >
-                        <span className={`w-2 h-2 rounded-full ${rec.isActive ? "bg-emerald-500" : "bg-gray-400"}`} />
-                        <span>{rec.isActive ? "Active" : "Inactive"}</span>
-                      </button>
-                    </td>
-
-                    {/* Notes */}
-                    <td className="px-4 py-4 text-gray-500 max-w-[200px] truncate">
-                      {rec.notes || <span className="text-gray-300">–</span>}
-                    </td>
-
-                    {/* Actions */}
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-1.5">
+                      {/* Active Toggle Switch */}
+                      <td className="px-4 py-4 text-center">
                         <button
                           type="button"
-                          onClick={() => {
-                            setTestTargetEmail(rec.email);
-                            setTestMailModalOpen(true);
-                          }}
-                          title={`Send test email to ${rec.email}`}
-                          className="p-1.5 rounded-lg text-purple-600 hover:bg-purple-50 transition cursor-pointer"
+                          onClick={() => handleToggleActive(rec)}
+                          title={rec.isActive ? "Click to set Inactive" : "Click to set Active"}
+                          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-extrabold transition cursor-pointer border ${rec.isActive
+                            ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100"
+                            : "bg-gray-100 text-gray-500 border-gray-200 hover:bg-gray-200"
+                            }`}
                         >
-                          <PaperAirplaneIcon className="w-4 h-4" />
+                          <span className={`w-2 h-2 rounded-full ${rec.isActive ? "bg-emerald-500" : "bg-gray-400"}`} />
+                          <span>{rec.isActive ? "Active" : "Inactive"}</span>
                         </button>
+                      </td>
 
-                        <button
-                          type="button"
-                          onClick={() => handleOpenEdit(rec)}
-                          title="Edit recipient"
-                          className="p-1.5 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition cursor-pointer"
-                        >
-                          <PencilSquareIcon className="w-4 h-4" />
-                        </button>
+                      {/* Notes */}
+                      <td className="px-4 py-4 text-gray-500 max-w-[180px] truncate">
+                        {rec.notes || <span className="text-gray-300">–</span>}
+                      </td>
 
-                        <button
-                          type="button"
-                          onClick={() => handleDelete(rec._id, rec.email)}
-                          title="Delete recipient"
-                          className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 transition cursor-pointer"
-                        >
-                          <TrashIcon className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
+                      {/* Actions */}
+                      <td className="px-6 py-4 text-right">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setTestTargetEmail(rec.email);
+                              setTestAlertType(
+                                alertTypes.includes("CUSTOMER_QUERIES") && !alertTypes.includes("ORDERS")
+                                  ? "CUSTOMER_QUERIES"
+                                  : "ORDERS"
+                              );
+                              setTestMailModalOpen(true);
+                            }}
+                            title={`Send test email to ${rec.email}`}
+                            className="p-1.5 rounded-lg text-purple-600 hover:bg-purple-50 transition cursor-pointer"
+                          >
+                            <PaperAirplaneIcon className="w-4 h-4" />
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleOpenEdit(rec)}
+                            title="Edit recipient"
+                            className="p-1.5 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition cursor-pointer"
+                          >
+                            <PencilSquareIcon className="w-4 h-4" />
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleDelete(rec._id, rec.email)}
+                            title="Delete recipient"
+                            className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 transition cursor-pointer"
+                          >
+                            <TrashIcon className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
@@ -550,7 +731,7 @@ export default function NotificationsAdminPage() {
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Temple Priest Lead / Operations Admin"
+                  placeholder="e.g. Support Desk Lead / Operations Admin"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   className="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none text-xs text-gray-900"
@@ -564,11 +745,55 @@ export default function NotificationsAdminPage() {
                 <input
                   type="email"
                   required
-                  placeholder="priest.coordinator@astroved.com"
+                  placeholder="support@priestservices.com"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   className="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none text-xs text-gray-900 font-mono"
                 />
+              </div>
+
+              {/* Alert Subscriptions Checkboxes */}
+              <div>
+                <label className="block font-bold text-gray-700 mb-1.5">
+                  Alert Subscriptions <span className="text-red-500">*</span>
+                </label>
+                <div className="grid grid-cols-2 gap-2.5">
+                  <label
+                    className={`flex items-start gap-2.5 p-2.5 rounded-xl border transition cursor-pointer ${formData.alertTypes.includes("ORDERS")
+                      ? "bg-purple-50/70 border-purple-300 text-purple-900"
+                      : "bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100"
+                      }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={formData.alertTypes.includes("ORDERS")}
+                      onChange={() => toggleAlertTypeInForm("ORDERS")}
+                      className="w-4 h-4 mt-0.5 rounded text-purple-600 focus:ring-purple-500"
+                    />
+                    <div>
+                      <span className="font-bold text-xs block">Order Bookings</span>
+                      <span className="text-[10px] text-gray-500">Confirmed puja &amp; homas</span>
+                    </div>
+                  </label>
+
+                  <label
+                    className={`flex items-start gap-2.5 p-2.5 rounded-xl border transition cursor-pointer ${formData.alertTypes.includes("CUSTOMER_QUERIES")
+                      ? "bg-blue-50/70 border-blue-300 text-blue-900"
+                      : "bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100"
+                      }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={formData.alertTypes.includes("CUSTOMER_QUERIES")}
+                      onChange={() => toggleAlertTypeInForm("CUSTOMER_QUERIES")}
+                      className="w-4 h-4 mt-0.5 rounded text-blue-600 focus:ring-blue-500"
+                    />
+                    <div>
+                      <span className="font-bold text-xs block">Customer Queries</span>
+                      <span className="text-[10px] text-gray-500">Devotee support questions</span>
+                    </div>
+                  </label>
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
@@ -647,7 +872,7 @@ export default function NotificationsAdminPage() {
                 <label className="block font-bold text-gray-700 mb-1">Notes / Description (Optional)</label>
                 <input
                   type="text"
-                  placeholder="e.g. Handles Rameshwaram and Varanasi bookings"
+                  placeholder="e.g. Handles devotee query tickets & callbacks"
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                   className="w-full px-3.5 py-2 rounded-xl border border-gray-300 focus:border-purple-500 outline-none text-xs text-gray-900"
@@ -696,13 +921,38 @@ export default function NotificationsAdminPage() {
             </div>
 
             <form onSubmit={handleSendTestMail} className="space-y-4 text-xs">
-              <p className="text-gray-600">
-                This will dispatch a sample confirmed order alert formatted exactly as real bookings appear, allowing you to verify inbox arrival, styling, and spam filters.
-              </p>
+              <div>
+                <label className="block font-bold text-gray-700 mb-1.5">Choose Alert Type to Test</label>
+                <div className="grid grid-cols-2 gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => setTestAlertType("ORDERS")}
+                    className={`p-3 rounded-xl border text-left transition cursor-pointer ${testAlertType === "ORDERS"
+                      ? "bg-purple-50 border-purple-300 text-purple-950 ring-2 ring-purple-200"
+                      : "bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100"
+                      }`}
+                  >
+                    <span className="font-extrabold text-xs block mb-0.5">📦 Order Booking</span>
+                    <span className="text-[10px] text-gray-500">Test order receipt preview</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setTestAlertType("CUSTOMER_QUERIES")}
+                    className={`p-3 rounded-xl border text-left transition cursor-pointer ${testAlertType === "CUSTOMER_QUERIES"
+                      ? "bg-blue-50 border-blue-300 text-blue-950 ring-2 ring-blue-200"
+                      : "bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100"
+                      }`}
+                  >
+                    <span className="font-extrabold text-xs block mb-0.5">💬 Customer Query</span>
+                    <span className="text-[10px] text-gray-500">Support question alert preview</span>
+                  </button>
+                </div>
+              </div>
 
               <div>
                 <label className="block font-bold text-gray-700 mb-1">
-                  Send Test To: (Leave empty to send to all active recipients)
+                  Send Test To: (Leave empty to dispatch to active list)
                 </label>
                 <input
                   type="email"
@@ -714,7 +964,8 @@ export default function NotificationsAdminPage() {
                 <span className="text-[11px] text-gray-400 mt-1 block">
                   {testTargetEmail
                     ? `Test mail will be delivered only to: ${testTargetEmail}`
-                    : `Will send to all ${activeCount} active configured recipient(s)`}
+                    : `Will send to all active recipients subscribed to ${testAlertType === "CUSTOMER_QUERIES" ? "Customer Queries" : "Orders"
+                    }`}
                 </span>
               </div>
 
@@ -729,7 +980,10 @@ export default function NotificationsAdminPage() {
                 <button
                   type="submit"
                   disabled={sendingTest}
-                  className="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold transition shadow-xs disabled:opacity-50 cursor-pointer"
+                  className={`inline-flex items-center gap-2 px-5 py-2 rounded-xl text-white font-bold transition shadow-xs disabled:opacity-50 cursor-pointer ${testAlertType === "CUSTOMER_QUERIES"
+                    ? "bg-blue-600 hover:bg-blue-700"
+                    : "bg-purple-600 hover:bg-purple-700"
+                    }`}
                 >
                   <PaperAirplaneIcon className="w-3.5 h-3.5" />
                   <span>{sendingTest ? "Sending Email..." : "Send Test Now"}</span>

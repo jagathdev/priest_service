@@ -18,7 +18,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const webhookUrl = process.env.WEBHOOK_URL || "http://localhost:8564/api/payments/getRazorpayWebhook";
+const webhookUrl = process.env.WEBHOOK_URL || "https://priestservices.astroved.com/api/payments/getRazorpayWebhook";
 const secret = process.env.RAZORPAY_WEBHOOK_SECRET || "test_secret";
 
 const eventId = `evt_cli_${Date.now()}`;

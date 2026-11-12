@@ -11,7 +11,19 @@ import Order from "../models/Order.js";
  */
 export const getRecipients = async (req, res) => {
   try {
-    const recipients = await NotificationRecipient.find()
+    const { type } = req.query;
+    const filter = {};
+    if (type === "ORDERS") {
+      filter.$or = [
+        { alertTypes: { $in: ["ORDERS"] } },
+        { alertTypes: { $exists: false } },
+        { alertTypes: { $size: 0 } },
+      ];
+    } else if (type === "CUSTOMER_QUERIES") {
+      filter.alertTypes = { $in: ["CUSTOMER_QUERIES"] };
+    }
+
+    const recipients = await NotificationRecipient.find(filter)
       .sort({ createdAt: -1 })
       .lean();
 
@@ -36,7 +48,7 @@ export const getRecipients = async (req, res) => {
  */
 export const addRecipient = async (req, res) => {
   try {
-    const { name, email, role, isActive, notes } = req.body;
+    const { name, email, role, alertTypes, isActive, notes } = req.body;
 
     if (!name || !name.trim()) {
       return res.status(400).json({ success: false, message: "Name is required" });
@@ -60,10 +72,15 @@ export const addRecipient = async (req, res) => {
       });
     }
 
+    const validAlertTypes = Array.isArray(alertTypes) && alertTypes.length > 0
+      ? alertTypes.filter((t) => ["ORDERS", "CUSTOMER_QUERIES"].includes(t))
+      : ["ORDERS"];
+
     const recipient = await NotificationRecipient.create({
       name: name.trim(),
       email: cleanEmail,
       role: role ? role.trim() : "Admin",
+      alertTypes: validAlertTypes.length > 0 ? validAlertTypes : ["ORDERS"],
       isActive: isActive !== undefined ? Boolean(isActive) : true,
       notes: notes ? notes.trim() : "",
     });
@@ -88,7 +105,7 @@ export const addRecipient = async (req, res) => {
 export const updateRecipient = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, email, role, isActive, notes } = req.body;
+    const { name, email, role, alertTypes, isActive, notes } = req.body;
 
     const recipient = await NotificationRecipient.findById(id);
     if (!recipient) {
@@ -112,6 +129,10 @@ export const updateRecipient = async (req, res) => {
 
     if (name && name.trim()) recipient.name = name.trim();
     if (role !== undefined) recipient.role = role.trim();
+    if (Array.isArray(alertTypes)) {
+      const validAlertTypes = alertTypes.filter((t) => ["ORDERS", "CUSTOMER_QUERIES"].includes(t));
+      recipient.alertTypes = validAlertTypes.length > 0 ? validAlertTypes : ["ORDERS"];
+    }
     if (isActive !== undefined) recipient.isActive = Boolean(isActive);
     if (notes !== undefined) recipient.notes = notes.trim();
 
@@ -161,12 +182,12 @@ export const deleteRecipient = async (req, res) => {
  */
 export const triggerTestMail = async (req, res) => {
   try {
-    const { email } = req.body;
-    const result = await sendTestEmail(email || null);
+    const { email, alertType } = req.body;
+    const result = await sendTestEmail(email || null, alertType || "ORDERS");
 
     return res.status(200).json({
       success: true,
-      message: `Test email sent successfully to ${result.sentTo.join(", ")}`,
+      message: `Test ${alertType === "CUSTOMER_QUERIES" ? "Customer Query" : "Order"} email sent successfully to ${result.sentTo.join(", ")}`,
       data: result,
     });
   } catch (error) {

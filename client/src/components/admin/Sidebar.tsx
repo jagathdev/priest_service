@@ -25,7 +25,7 @@ import { useState } from "react";
 const menuItems = [
   { name: "Dashboard", href: "/admin", icon: HomeIcon },
   { name: "Users", href: "/admin/users", icon: UserGroupIcon },
-  // { name: "Images Gallery", href: "/admin/images", icon: PhotoIcon },
+  { name: "Media Gallery", href: "/admin/images", icon: PhotoIcon },
   { name: "Home Banners", href: "/admin/home-banners", icon: PhotoIcon },
   { name: "Pujas", href: "/admin/pujas", icon: SparklesIcon },
   { name: "Homas", href: "/admin/homas", icon: FireIcon },

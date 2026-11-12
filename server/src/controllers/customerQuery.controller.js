@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import CustomerQuery from "../models/customerQuery.js";
+import { sendCustomerQueryAlertEmail } from "../services/email.service.js";
 
 
 // CREATE CUSTOMER QUERY / COMPLAINT
@@ -126,6 +127,11 @@ export const createCustomerQuery = async (req, res) => {
             message: message.trim(),
             consent: true,
             status: "OPEN",
+        });
+
+        // Trigger asynchronous email alert to configured support team recipients
+        sendCustomerQueryAlertEmail(customerQuery).catch((err) => {
+            console.error("[customerQuery] Email alert dispatch error:", err.message);
         });
 
         return res.status(201).json({

@@ -10,9 +10,8 @@ export default function AdminLayout({
 }) {
   const pathname = usePathname();
   const isLoginPage = pathname === "/admin/login";
-  const isImagesPage = pathname === "/admin/images" || pathname?.startsWith("/admin/images");
 
-  if (isLoginPage || isImagesPage) {
+  if (isLoginPage) {
     return <>{children}</>;
   }
 

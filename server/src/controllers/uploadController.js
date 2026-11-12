@@ -57,33 +57,29 @@ export const uploadImage = async (req, res) => {
 };
 
 /**
- * Delete Image Controller
- * Removes the physical file from server/public/images and deletes record from MongoDB
+ * Delete Image Controller (Soft Delete / Move to Trash)
+ * Flags the image as deleted without unlinking the physical file
  */
 export const deleteImage = async (req, res) => {
   try {
     const filename = path.basename(req.params.filename);
-    const filePath = path.join(uploadDir, filename);
 
-    // 1. Remove from MongoDB
-    const deletedRecord = await Media.findOneAndDelete({ filename });
-
-    // 2. Remove physical file from disk if it exists
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
-    }
-
-    if (!deletedRecord && !fs.existsSync(filePath)) {
+    const media = await Media.findOne({ filename });
+    if (!media) {
       return res.status(404).json({
         success: false,
-        message: `Image "${filename}" was not found on server storage.`,
+        message: `Image "${filename}" was not found.`,
       });
     }
 
+    media.isDeleted = true;
+    media.deletedAt = new Date();
+    await media.save();
+
     return res.status(200).json({
       success: true,
-      message: `Image "${filename}" deleted successfully from server storage and database.`,
-      deleted: deletedRecord,
+      message: `Image "${filename}" moved to trash. You can restore it anytime.`,
+      data: media,
     });
   } catch (error) {
     console.error("Delete controller error:", error);
@@ -95,12 +91,90 @@ export const deleteImage = async (req, res) => {
 };
 
 /**
- * Get All Uploaded Images (Media Library)
- * Returns all uploaded images stored in MongoDB, synchronized with files on disk
+ * Restore Image Controller
+ * Restores a soft-deleted image back to the active media library
  */
-export const getAllMedia = async (_req, res) => {
+export const restoreImage = async (req, res) => {
   try {
-    // Scan uploadDir to ensure any physical file has a Media record
+    const filename = path.basename(req.params.filename);
+
+    const media = await Media.findOne({ filename });
+    if (!media) {
+      return res.status(404).json({
+        success: false,
+        message: `Image "${filename}" was not found.`,
+      });
+    }
+
+    media.isDeleted = false;
+    media.deletedAt = null;
+    await media.save();
+
+    return res.status(200).json({
+      success: true,
+      message: `Image "${filename}" restored successfully to active media gallery.`,
+      data: media,
+    });
+  } catch (error) {
+    console.error("Restore controller error:", error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Failed to restore image.",
+    });
+  }
+};
+
+/**
+ * Permanent Delete Image Controller
+ * Removes the physical file from server/public/images and deletes record from MongoDB
+ */
+export const permanentDeleteImage = async (req, res) => {
+  try {
+    const filename = path.basename(req.params.filename);
+    const filePath = path.join(uploadDir, filename);
+
+    // 1. Remove from MongoDB
+    const deletedRecord = await Media.findOneAndDelete({ filename });
+
+    // 2. Remove physical file from disk if it exists
+    if (fs.existsSync(filePath)) {
+      try {
+        fs.unlinkSync(filePath);
+      } catch (err) {
+        console.warn("Failed to unlink file on disk:", err.message);
+      }
+    }
+
+    if (!deletedRecord && !fs.existsSync(filePath)) {
+      return res.status(404).json({
+        success: false,
+        message: `Image "${filename}" was not found on server storage.`,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: `Image "${filename}" permanently deleted from server storage and database.`,
+      deleted: deletedRecord,
+    });
+  } catch (error) {
+    console.error("Permanent delete controller error:", error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Failed to permanently delete image.",
+    });
+  }
+};
+
+/**
+ * Get All Uploaded Images (Media Library)
+ * Returns uploaded images stored in MongoDB (supports ?trash=true)
+ */
+export const getAllMedia = async (req, res) => {
+  try {
+    const isTrash = req.query?.trash === "true" || req.query?.trash === true;
+
+    // Scan uploadDir to ensure any untracked physical file has a Media record
     if (fs.existsSync(uploadDir)) {
       const diskFiles = fs.readdirSync(uploadDir);
       for (const file of diskFiles) {
@@ -110,28 +184,38 @@ export const getAllMedia = async (_req, res) => {
           const ext = path.extname(file).toLowerCase();
           if ([".jpg", ".jpeg", ".png", ".webp"].includes(ext)) {
             const mime = ext === ".png" ? "image/png" : ext === ".webp" ? "image/webp" : "image/jpeg";
-            await Media.findOneAndUpdate(
-              { filename: file },
-              {
+            // Check existing first so we don't accidentally un-trash a deleted image
+            const existing = await Media.findOne({ filename: file });
+            if (!existing) {
+              await Media.create({
                 filename: file,
                 originalName: file,
                 url: `/api/images/${file}`,
                 mimeType: mime,
                 size: stats.size,
                 uploadedBy: "admin",
-              },
-              { upsert: true, setDefaultsOnInsert: true }
-            );
+                isDeleted: false,
+              });
+            }
           }
         }
       }
     }
 
-    const mediaList = await Media.find().sort({ createdAt: -1 });
+    const query = { isDeleted: isTrash ? true : { $ne: true } };
+    const mediaList = await Media.find(query).sort({ createdAt: -1 });
+
+    const totalActiveCount = await Media.countDocuments({ isDeleted: { $ne: true } });
+    const totalTrashCount = await Media.countDocuments({ isDeleted: true });
+
     return res.status(200).json({
       success: true,
       count: mediaList.length,
       data: mediaList,
+      stats: {
+        active: totalActiveCount,
+        trash: totalTrashCount,
+      },
     });
   } catch (error) {
     console.error("Get media library error:", error);

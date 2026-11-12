@@ -31,6 +31,15 @@ const mediaSchema = new mongoose.Schema(
       type: String,
       default: "admin",
     },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+    deletedAt: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,
@@ -39,5 +48,6 @@ const mediaSchema = new mongoose.Schema(
 
 // Indexes
 mediaSchema.index({ createdAt: -1 });
+mediaSchema.index({ isDeleted: 1, createdAt: -1 });
 
 export default mongoose.model("Media", mediaSchema);
