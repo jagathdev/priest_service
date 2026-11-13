@@ -94,13 +94,26 @@ export default function CheckoutClient({ homa }: { homa: any }) {
                     </div>
                     <input
                       type="tel"
+                      maxLength={10}
                       value={details.whatsapp}
+                      onKeyDown={(e) => {
+                        if (details.whatsapp.length >= 10 && /^\d$/.test(e.key) && !e.ctrlKey && !e.metaKey) {
+                          const selection = window.getSelection()?.toString() || "";
+                          if (!selection) {
+                            e.preventDefault();
+                          }
+                        }
+                      }}
                       onChange={(e) => {
                         let val = e.target.value.replace(/\D/g, "");
-                        if (val.length > 10 && val.startsWith("91")) {
-                          val = val.slice(2);
+                        if (val.length >= 12 && val.startsWith("91")) {
+                          val = val.slice(-10);
                         }
-                        setDetails({ ...details, whatsapp: val.slice(0, 10) });
+                        val = val.slice(0, 10);
+                        if (val.length > 0 && !/^[6-9]/.test(val)) {
+                          return;
+                        }
+                        setDetails({ ...details, whatsapp: val });
                       }}
                       className="w-full bg-[#f9fafb] border border-gray-200 rounded-xl py-3.5 pl-28 pr-12 font-bold text-gray-900 outline-none focus:border-green-500 transition-all focus:bg-white focus:ring-4 focus:ring-green-500/10"
                       placeholder="9566777645"

@@ -695,17 +695,28 @@ function SankalpContent() {
                         </div>
                         <input
                           type="tel"
+                          maxLength={10}
                           value={formData.whatsapp}
+                          onKeyDown={(e) => {
+                            // If user already entered 10 digits and types another number, block it completely
+                            if (formData.whatsapp.length >= 10 && /^\d$/.test(e.key) && !e.ctrlKey && !e.metaKey) {
+                              const selection = window.getSelection()?.toString() || "";
+                              if (!selection) {
+                                e.preventDefault();
+                              }
+                            }
+                          }}
                           onChange={(e) => {
                             let val = e.target.value.replace(/\D/g, "");
-                            // If pasted with country code 91
-                            if (val.length > 10 && val.startsWith("91")) {
-                              val = val.slice(2);
+                            // If pasted with country code (e.g. 12 digits like 919360270984)
+                            if (val.length >= 12 && val.startsWith("91")) {
+                              val = val.slice(-10);
                             }
+                            // Limit strictly to 10 digits; never take an 11th digit
                             val = val.slice(0, 10);
-                            // Only allow starting digit 6, 7, 8, 9
+                            // Only allow first digit 6, 7, 8, 9
                             if (val.length > 0 && !/^[6-9]/.test(val)) {
-                              val = "";
+                              return;
                             }
                             setFormData({ ...formData, whatsapp: val });
                           }}

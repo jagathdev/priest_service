@@ -45,25 +45,45 @@ export function formatIndianPhoneNumber(phone: string | null | undefined): strin
  * - "09360270984" -> "9360270984"
  * - "9360270984" -> "9360270984"
  */
+/**
+ * Extracts pure 10-digit Indian mobile number without country code.
+ *
+ * Rules:
+ * 1. If 12 or more digits and starts with 91 (e.g. 919092779449, 919360270984):
+ *    Takes the LAST 10 digits -> (9092779449, 9360270984).
+ * 2. If exactly 10 digits:
+ *    NEVER remove 91! Even if the user's mobile number starts with 91 (e.g. 9163809425, 9193602709),
+ *    all 10 digits are kept exactly as-is.
+ * 3. If 11 digits starting with 0:
+ *    Strips the leading 0 (09360270984 -> 9360270984).
+ */
 export function extract10DigitPhone(phone: string | null | undefined): string {
     if (!phone) return "";
-    let digits = String(phone).replace(/\D/g, "");
+    const digits = String(phone).replace(/\D/g, "");
     if (!digits) return "";
 
-    // Strip leading 0 if 11 digits
-    if (digits.length === 11 && digits.startsWith("0")) {
-        digits = digits.slice(1);
-    }
-    // Strip leading 91 if 12 digits
-    if (digits.length === 12 && digits.startsWith("91")) {
-        digits = digits.slice(2);
-    }
-    // If more than 10 digits and starts with 91, take last 10 digits
-    if (digits.length > 10 && digits.startsWith("91")) {
-        digits = digits.slice(digits.length - 10);
+    // 1. If 12 or more digits and starts with 91 (e.g. 919092779449, 919360270984)
+    // The subscriber's mobile number is the last 10 digits
+    if (digits.length >= 12 && digits.startsWith("91")) {
+        return digits.slice(-10);
     }
 
-    return digits.slice(0, 10);
+    // 2. Strip leading 0 if 11 digits
+    if (digits.length === 11 && digits.startsWith("0")) {
+        return digits.slice(1);
+    }
+
+    // 3. If exactly 10 digits, DO NOT remove 91! Keep all 10 digits as-is
+    if (digits.length === 10) {
+        return digits;
+    }
+
+    // 4. Fallback: if more than 10 digits, take the last 10 digits
+    if (digits.length > 10) {
+        return digits.slice(-10);
+    }
+
+    return digits;
 }
 
 /**
