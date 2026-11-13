@@ -38,6 +38,35 @@ export function formatIndianPhoneNumber(phone: string | null | undefined): strin
 }
 
 /**
+ * Extracts pure 10-digit Indian mobile number without any prefix (+91, 91, 0).
+ * Examples:
+ * - "919360270984" -> "9360270984"
+ * - "+91 9360270984" -> "9360270984"
+ * - "09360270984" -> "9360270984"
+ * - "9360270984" -> "9360270984"
+ */
+export function extract10DigitPhone(phone: string | null | undefined): string {
+    if (!phone) return "";
+    let digits = String(phone).replace(/\D/g, "");
+    if (!digits) return "";
+
+    // Strip leading 0 if 11 digits
+    if (digits.length === 11 && digits.startsWith("0")) {
+        digits = digits.slice(1);
+    }
+    // Strip leading 91 if 12 digits
+    if (digits.length === 12 && digits.startsWith("91")) {
+        digits = digits.slice(2);
+    }
+    // If more than 10 digits and starts with 91, take last 10 digits
+    if (digits.length > 10 && digits.startsWith("91")) {
+        digits = digits.slice(digits.length - 10);
+    }
+
+    return digits.slice(0, 10);
+}
+
+/**
  * Extracts clean 10-digit number or international digits for wa.me links
  */
 export function getCleanWhatsAppDigits(phone: string | null | undefined): string {

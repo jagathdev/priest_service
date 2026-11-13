@@ -15,6 +15,7 @@ import { getStartingPriceINR } from "@/lib/pricing";
 import PriceTag from "@/components/ui/PriceTag";
 import { ArrowLeft, CreditCard, QrCode, Calendar, Lock, Check } from "lucide-react";
 import { getStoredUtmDetails, buildUtmQueryString } from "@/lib/utmTracker";
+import { extract10DigitPhone } from "@/lib/phoneFormatter";
 
 interface RazorpayResponse {
   razorpay_order_id: string;
@@ -57,7 +58,7 @@ function SankalpContent() {
 
   // Devotee details form state
   const [formData, setFormData] = useState({
-    whatsapp: searchParams?.get("wa") || user?.whatsappNumber || user?.whatsapp || user?.mobileNumber || user?.phone || "",
+    whatsapp: extract10DigitPhone(searchParams?.get("wa") || user?.whatsappNumber || user?.whatsapp || user?.mobileNumber || user?.phone || ""),
     gotra: "",
     dontKnowGotra: false,
     wish: "",
@@ -115,7 +116,7 @@ function SankalpContent() {
       }
 
       setFormData((prev) => {
-        const nextWhatsapp = (whatsappPhone || prev.whatsapp || "").replace(/\D/g, "").slice(0, 10);
+        const nextWhatsapp = extract10DigitPhone(whatsappPhone || prev.whatsapp || "");
         const nextParticipants = [...prev.participants];
         if (nextParticipants[0] && !nextParticipants[0].name.trim() && name) {
           nextParticipants[0] = { ...nextParticipants[0], name };
@@ -696,7 +697,12 @@ function SankalpContent() {
                           type="tel"
                           value={formData.whatsapp}
                           onChange={(e) => {
-                            let val = e.target.value.replace(/\D/g, "").slice(0, 10);
+                            let val = e.target.value.replace(/\D/g, "");
+                            // If pasted with country code 91
+                            if (val.length > 10 && val.startsWith("91")) {
+                              val = val.slice(2);
+                            }
+                            val = val.slice(0, 10);
                             // Only allow starting digit 6, 7, 8, 9
                             if (val.length > 0 && !/^[6-9]/.test(val)) {
                               val = "";
