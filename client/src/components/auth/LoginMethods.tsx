@@ -132,19 +132,12 @@ export default function LoginMethods() {
       if (method === "email" && isAdmin) {
         const data = await adminService.login({ email, password });
 
-        if (data.success || data.token) {
-          const token = data.token || "";
-          // Set cookie and localStorage for authentication
-          document.cookie = `adminToken=${token}; path=/; max-age=86400; SameSite=Lax`;
-          try {
-            localStorage.setItem("adminToken", token);
-          } catch {}
+        if (data.success || data.admin) {
+          // Cookie is securely set as HttpOnly by the server automatically
           window.location.href = "/admin";
           return;
         }
 
-        // const callbackUrl = new URLSearchParams(window.location.search).get("callbackUrl") || "/admin";
-        // window.location.href = callbackUrl;
         return;
       }
 

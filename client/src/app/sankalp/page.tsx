@@ -401,13 +401,19 @@ function SankalpContent() {
         whatsappNumber: formattedWa,
         participants: formData.participants
           .filter((p) => p.name.trim())
-          .map((p) => ({
-            name: p.name.trim(),
-            gotra: p.dontKnowGotra ? "" : p.gotra.trim(),
-            doesNotKnowGotra: !!p.dontKnowGotra
-          })),
-        gotra: formData.participants[0]?.dontKnowGotra ? "" : (formData.participants[0]?.gotra.trim() || formData.gotra.trim()),
-        doesNotKnowGotra: formData.participants[0]?.dontKnowGotra || formData.dontKnowGotra,
+          .map((p, pIdx) => {
+            const explicitUnknown = !!p.dontKnowGotra;
+            const enteredGotra = explicitUnknown ? "" : p.gotra.trim();
+            // If primary participant gotra is in formData.gotra, inherit it
+            const resolvedGotra = enteredGotra || (pIdx === 0 && !explicitUnknown ? (formData.gotra || "").trim() : "");
+            return {
+              name: p.name.trim(),
+              gotra: resolvedGotra,
+              doesNotKnowGotra: explicitUnknown,
+            };
+          }),
+        gotra: formData.participants[0]?.dontKnowGotra ? "" : (formData.participants[0]?.gotra?.trim() || formData.gotra?.trim() || ""),
+        doesNotKnowGotra: !!(formData.participants[0]?.dontKnowGotra || formData.dontKnowGotra),
         wish: formData.wish,
         promoCode: discountCouponCode,
         promoCodeId: appliedPromo?.promoId || null,

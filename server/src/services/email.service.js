@@ -95,16 +95,31 @@ export const generateOrderEmailHtml = (order) => {
   // Participants list HTML
   const participants = Array.isArray(order.participants) && order.participants.length > 0
     ? order.participants
-    : [{ name: customerName, gotra: order.gotra }];
+    : [{ name: customerName, gotra: order.gotra, doesNotKnowGotra: order.doesNotKnowGotra }];
 
   const participantsRows = participants
-    .map(
-      (p, idx) => `
+    .map((p, idx) => {
+      const pName = p.name || (idx === 0 ? customerName : `Devotee ${idx + 1}`);
+      const isExplicitUnknown = p.doesNotKnowGotra || (idx === 0 && order.doesNotKnowGotra);
+
+      // Resolve gotra with proper fallbacks between participant level and root order level
+      const effectiveGotra = (p.gotra && p.gotra.trim()) || (idx === 0 && order.gotra ? order.gotra.trim() : "");
+
+      let gotraDisplay = "";
+      if (effectiveGotra) {
+        gotraDisplay = effectiveGotra;
+      } else if (isExplicitUnknown) {
+        gotraDisplay = "Does not know Gotra";
+      } else {
+        gotraDisplay = "Not Specified";
+      }
+
+      return `
       <tr style="border-bottom: 1px solid #f1e6d4;">
-        <td style="padding: 10px 12px; font-weight: 700; color: #1a1a1a;">${idx + 1}. ${p.name || customerName}</td>
-        <td style="padding: 10px 12px; color: #78350f; font-weight: 600;">${p.doesNotKnowGotra || !p.gotra ? "Does not know Gotra (Kashyapa recited)" : p.gotra}</td>
-      </tr>`
-    )
+        <td style="padding: 10px 12px; font-weight: 700; color: #1a1a1a;">${idx + 1}. ${pName}</td>
+        <td style="padding: 10px 12px; color: #78350f; font-weight: 600;">${gotraDisplay}</td>
+      </tr>`;
+    })
     .join("");
 
   // Offerings list HTML

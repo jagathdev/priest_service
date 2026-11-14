@@ -18,6 +18,7 @@ import {
   ChatBubbleBottomCenterTextIcon,
   ArrowDownTrayIcon,
   EnvelopeIcon,
+  ChartBarIcon,
 } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -35,6 +36,7 @@ const menuItems = [
   { name: "Service Dispatch", href: "/admin/service-dispatch", icon: ArrowDownTrayIcon },
   { name: "Email Alerts", href: "/admin/notifications", icon: EnvelopeIcon },
   { name: "Customer Queries", href: "/admin/customer-queries", icon: ChatBubbleBottomCenterTextIcon },
+  // { name: "Visitor Analytics", href: "/admin/visitors", icon: ChartBarIcon },
 
 ];
 
@@ -43,11 +45,16 @@ export default function Sidebar() {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
 
-  const handleLogout = () => {
-    document.cookie = "adminToken=; path=/; max-age=0; SameSite=Lax";
+  const handleLogout = async () => {
     try {
-      localStorage.removeItem("adminToken");
-    } catch { }
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
+      await fetch(`${baseUrl}/api/admin/logout`, {
+        method: "POST",
+        credentials: "include",
+      });
+    } catch (err) {
+      console.warn("Logout request error:", err);
+    }
     router.push("/admin/login");
   };
 

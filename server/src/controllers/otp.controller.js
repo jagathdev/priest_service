@@ -251,7 +251,7 @@ export const verifyOtp = async (req, res) => {
         );
 
         res.cookie("token", token, {
-            httpOnly: false,
+            httpOnly: true,
             secure: process.env.NODE_ENV === "production",
             maxAge: 7 * 24 * 60 * 60 * 1000,
             path: "/",
@@ -259,7 +259,7 @@ export const verifyOtp = async (req, res) => {
         });
 
         res.cookie("userLogin", "true", {
-            httpOnly: false,
+            httpOnly: false, // Non-sensitive flag for UI hint
             secure: process.env.NODE_ENV === "production",
             maxAge: 7 * 24 * 60 * 60 * 1000,
             path: "/",

@@ -201,6 +201,60 @@ export const buildUtmQueryString = (): string => {
 };
 
 /**
+ * Generates or retrieves a persistent visitor session ID stored in cookies.
+ * Prevents counting the same user multiple times on page refreshes.
+ */
+export const getVisitorSessionId = (): string => {
+  if (typeof document === "undefined") return "";
+  let sessionId = getCookie("ps_visitor_session");
+  if (!sessionId) {
+    sessionId = "vs_" + Math.random().toString(36).substring(2, 11) + "_" + Date.now().toString(36);
+    // Session cookie valid for 24 hours
+    setCookie("ps_visitor_session", sessionId, 24 * 60 * 60);
+  }
+  return sessionId;
+};
+
+/**
+ * Sends a lightweight visitor hit to the backend for traffic & UTM analytics
+ */
+export const recordVisitorHit = async (details?: UtmDetails | null): Promise<void> => {
+  if (typeof window === "undefined") return;
+
+  try {
+    const sessionId = getVisitorSessionId();
+    if (!sessionId) return;
+
+    // Read stored UTM or provided details
+    const activeDetails = details || getStoredUtmDetails();
+
+    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "";
+
+    await fetch(`${baseUrl}/api/analytics/track-visitor`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        sessionId,
+        utmSource: activeDetails?.utmSource || "Direct",
+        utmMedium: activeDetails?.utmMedium || "",
+        utmCampaign: activeDetails?.utmCampaign || "",
+        utmTerm: activeDetails?.utmTerm || "",
+        utmContent: activeDetails?.utmContent || "",
+        promo: activeDetails?.promo || "",
+        landingPage: typeof window !== "undefined" ? window.location.pathname : "/",
+        referrer: typeof document !== "undefined" ? document.referrer : "",
+      }),
+      keepalive: true,
+    });
+  } catch (err) {
+    // Non-blocking
+    console.debug("[utmTracker] visitor tracking ping skipped:", err);
+  }
+};
+
+/**
  * Deletes all UTM attribution cookies.
  * Called when an order is completed, removing all marketing tags from the browser.
  */

@@ -401,7 +401,7 @@ iframe#prime,
   nav,
   header,
   footer,
-  .print\\:hidden,
+  .print\:hidden,
   [data-print-hide="true"] {
     display: none !important;
   }
@@ -421,5 +421,3 @@ iframe#prime,
     text-shadow: none !important;
   }
 }
-
-

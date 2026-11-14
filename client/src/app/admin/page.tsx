@@ -8,8 +8,8 @@ import {
   DevicePhoneMobileIcon,
   CheckCircleIcon,
   ClockIcon,
-  CalendarDaysIcon,
 } from "@heroicons/react/24/outline";
+import { CalendarDaysIcon } from "lucide-react";
 
 export default async function AdminDashboard() {
   const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
@@ -70,6 +70,8 @@ export default async function AdminDashboard() {
           <h1 className="text-2xl font-bold text-gray-900">Admin Control Center</h1>
           <p className="text-xs text-gray-500 mt-1">Manage Pujas, Homas, Bookings, Devotee Orders &amp; Revenue Metrics.</p>
         </div>
+
+        {/* Add Homa Puja Button */}
         <div className="flex items-center gap-3">
           <Link
             href="/admin/pujas"
@@ -86,10 +88,12 @@ export default async function AdminDashboard() {
             <span>+ Add Homa</span>
           </Link>
         </div>
+
       </div>
 
       {/* Metric Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+
         {/* Total Pujas Card */}
         <Link href="/admin/pujas" className="bg-white rounded-2xl border border-gray-200 p-6 shadow-xs hover:shadow-md transition group">
           <div className="flex items-center justify-between">
@@ -235,13 +239,9 @@ export default async function AdminDashboard() {
                 </tr>
               ) : (
                 recentBookings.map((booking: any, idx: number) => {
-                  const serviceTitle =
-                    booking.serviceName ||
-                    booking.itemName ||
-                    (typeof booking.pooja === "string" ? booking.pooja : booking.pooja?.title || booking.pooja?.name) ||
-                    "Sacred Ritual";
-                  const rawType = (booking.serviceType || booking.type || "Puja").toUpperCase();
-                  const rawStatus = (booking.orderStatus || booking.paymentStatus || "confirmed").toLowerCase();
+                  const serviceTitle = booking.serviceName || "Sacred Ritual";
+                  const rawType = (booking.serviceType || "Puja").toUpperCase();
+                  const rawStatus = (booking.orderStatus || "confirmed").toUpperCase();
 
                   let badgeClass = "bg-blue-100 text-blue-700";
                   if (rawStatus === "scheduled") badgeClass = "bg-amber-100 text-amber-700";
@@ -249,28 +249,26 @@ export default async function AdminDashboard() {
                   else if (rawStatus === "completed" || rawStatus === "paid") badgeClass = "bg-green-100 text-green-700";
                   else if (rawStatus === "confirmed") badgeClass = "bg-emerald-100 text-emerald-700";
 
-                  // Format Booking Date & Time
-                  const dateSource = booking.createdAt || booking.bookingDate;
-                  let bookingTimeInfo: { datePart: string; timePart: string } | null = null;
+                  const dateSource = booking.bookingDate || booking.createdAt;
+                  let bookingDateStr = "-";
+                  let bookingTimeStr = "";
                   if (dateSource) {
                     try {
                       const d = new Date(dateSource);
                       if (!isNaN(d.getTime())) {
-                        bookingTimeInfo = {
-                          datePart: d.toLocaleDateString("en-IN", {
-                            day: "2-digit",
-                            month: "short",
-                            year: "numeric",
-                          }),
-                          timePart: d.toLocaleTimeString("en-IN", {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            hour12: true,
-                          }),
-                        };
+                        bookingDateStr = d.toLocaleDateString("en-GB", {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                        }); // e.g. "13 Nov 2026"
+                        bookingTimeStr = d.toLocaleTimeString("en-US", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          hour12: true,
+                        }).toLowerCase(); // e.g. "11:55 am"
                       }
                     } catch {
-                      bookingTimeInfo = null;
+                      bookingDateStr = "-";
                     }
                   }
 
@@ -286,7 +284,7 @@ export default async function AdminDashboard() {
                   return (
                     <tr key={booking._id || idx} className="hover:bg-gray-50/80 transition-colors">
                       <td className="px-4 py-3.5 font-bold text-gray-900">
-                        {booking.customerName || booking.participants?.[0]?.name || booking.name || "Devotee"}
+                        {booking.customerName || "Devotee"}
                       </td>
                       <td className="px-4 py-3.5">
                         <span className="font-bold text-gray-900 block max-w-[280px] truncate" title={serviceTitle}>
@@ -320,28 +318,26 @@ export default async function AdminDashboard() {
 
                       {/* Booked At (Timestamp: Date + Time) */}
                       <td className="px-4 py-3.5 whitespace-nowrap">
-                        {bookingTimeInfo ? (
-                          <div className="space-y-0.5">
-                            <div className="font-bold text-gray-900 flex items-center gap-1 text-[11px]">
-                              <CalendarDaysIcon className="w-3.5 h-3.5 text-gray-400 shrink-0" />
-                              <span>{bookingTimeInfo.datePart}</span>
-                            </div>
-                            <div className="text-[10.5px] font-semibold text-gray-500 flex items-center gap-1">
-                              <ClockIcon className="w-3 h-3 text-gray-400 shrink-0" />
-                              <span>{bookingTimeInfo.timePart}</span>
-                            </div>
+                        <div className="space-y-1">
+                          <div className="font-bold text-gray-900 flex items-center gap-1.5 text-xs">
+                            <CalendarDaysIcon className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                            <span>{bookingDateStr}</span>
                           </div>
-                        ) : (
-                          <span className="text-gray-400">–</span>
-                        )}
+                          {bookingTimeStr && (
+                            <div className="text-[11px] font-semibold text-gray-500 flex items-center gap-1.5">
+                              <ClockIcon className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                              <span>{bookingTimeStr}</span>
+                            </div>
+                          )}
+                        </div>
                       </td>
 
                       <td className="px-4 py-3.5 font-extrabold text-gray-900 whitespace-nowrap">
-                        ₹{(booking.pricing?.total || booking.amount || 0).toLocaleString("en-IN")}
+                        ₹{(booking.pricing?.total || booking.originalAmount || 0).toLocaleString("en-IN")}
                       </td>
                       <td className="px-4 py-3.5 whitespace-nowrap">
                         <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full uppercase ${badgeClass}`}>
-                          {booking.orderStatus || booking.paymentStatus || "Confirmed"}
+                          {booking.orderStatus}
                         </span>
                       </td>
                     </tr>
@@ -352,6 +348,7 @@ export default async function AdminDashboard() {
           </table>
         </div>
       </div>
+
     </div>
   );
 }

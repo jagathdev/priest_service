@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   UserGroupIcon,
   CheckBadgeIcon,
@@ -44,38 +44,33 @@ interface StatsData {
 }
 
 export default function AdminUsersPage() {
+  // Core Data State (Simplified from 18 states down to essential data)
   const [users, setUsers] = useState<DevoteeUser[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  // Tabs: "active" (normal users) or "trash" (soft-deleted users)
-  const [activeTab, setActiveTab] = useState<"active" | "trash">("active");
-
-  // Selection state
-  const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
-
-  // Stats
   const [stats, setStats] = useState<StatsData>({
     totalUsers: 0,
     activeUsers: 0,
     trashUsers: 0,
     totalRevenue: 0,
   });
+  const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0, totalPages: 1 });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Filters & Pagination
+  // Filter State
+  const [activeTab, setActiveTab] = useState<"active" | "trash">("active");
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
-  const [statusDropdownOpen, setStatusDropdownOpen] = useState(false);
   const [sortBy, setSortBy] = useState("latest");
-  const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
-  const [dateFilterOpen, setDateFilterOpen] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalCount, setTotalCount] = useState(0);
 
-  // Edit Modal State
+  // UI Dropdowns
+  const [dateFilterOpen, setDateFilterOpen] = useState(false);
+
+  // Selection for bulk actions
+  const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
+
+  // Modals & Notifications
   const [editingUser, setEditingUser] = useState<DevoteeUser | null>(null);
   const [editFormData, setEditFormData] = useState({
     name: "",
@@ -84,65 +79,32 @@ export default function AdminUsersPage() {
     whatsappNumber: "",
     status: "Active",
   });
-  const [savingUser, setSavingUser] = useState(false);
-  const [modalError, setModalError] = useState("");
-
-  // Confirmation Modal State (Soft Delete, Permanent Delete, Bulk Delete, Bulk Permanent Delete, Restore)
   const [confirmModal, setConfirmModal] = useState<{
     open: boolean;
     title: string;
     description: string;
     actionLabel: string;
-    actionType: "soft-delete" | "permanent-delete" | "bulk-soft-delete" | "bulk-permanent-delete" | "restore" | "bulk-restore";
-    targetUser?: DevoteeUser | null;
+    actionType: "soft-delete" | "bulk-soft-delete" | "restore" | "bulk-restore" | "permanent-delete" | "bulk-permanent-delete";
+    targetUser?: DevoteeUser;
   }>({
     open: false,
     title: "",
     description: "",
     actionLabel: "",
     actionType: "soft-delete",
-    targetUser: null,
   });
-  const [modalProcessing, setModalProcessing] = useState(false);
-
-  // Toast Notification
+  const [modalLoading, setModalLoading] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
-
-  const statusDropdownRef = useRef<HTMLDivElement>(null);
-  const sortDropdownRef = useRef<HTMLDivElement>(null);
-  const dateDropdownRef = useRef<HTMLDivElement>(null);
 
   const showToast = (message: string, type: "success" | "error" = "success") => {
     setToast({ message, type });
-    setTimeout(() => setToast(null), 3500);
+    setTimeout(() => setToast(null), 3000);
   };
 
-  // Close dropdowns on outside click
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (statusDropdownRef.current && !statusDropdownRef.current.contains(e.target as Node)) {
-        setStatusDropdownOpen(false);
-      }
-      if (sortDropdownRef.current && !sortDropdownRef.current.contains(e.target as Node)) {
-        setSortDropdownOpen(false);
-      }
-      if (dateDropdownRef.current && !dateDropdownRef.current.contains(e.target as Node)) {
-        setDateFilterOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+  // Helper to get Auth Headers (credentials: "include" sends the HttpOnly cookie automatically)
+  const getHeaders = useCallback((): Record<string, string> => {
+    return { "Content-Type": "application/json" };
   }, []);
-
-  const getAdminToken = () => {
-    try {
-      const match = document.cookie.match(/(?:^|;\s*)adminToken=([^;]*)/);
-      if (match) return match[1];
-      return localStorage.getItem("adminToken") || "";
-    } catch {
-      return "";
-    }
-  };
 
   // Fetch Users
   const fetchUsers = useCallback(async () => {
@@ -150,41 +112,34 @@ export default function AdminUsersPage() {
     setError(null);
     try {
       const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
-      const token = getAdminToken();
       const params = new URLSearchParams({
-        page: String(currentPage),
+        page: String(pagination.page),
         limit: "10",
         search: search.trim(),
         sort: sortBy,
         trash: activeTab === "trash" ? "true" : "false",
       });
-      if (statusFilter !== "All") {
-        params.append("status", statusFilter);
-      }
-      if (fromDate) {
-        params.append("fromDate", fromDate);
-      }
-      if (toDate) {
-        params.append("toDate", toDate);
-      }
-
-      const headers: Record<string, string> = {};
-      if (token) headers["Authorization"] = `Bearer ${token}`;
+      if (statusFilter !== "All") params.append("status", statusFilter);
+      if (fromDate) params.append("fromDate", fromDate);
+      if (toDate) params.append("toDate", toDate);
 
       const res = await fetch(`${baseUrl}/api/admin/users?${params.toString()}`, {
-        headers,
+        headers: getHeaders(),
         credentials: "include",
       });
 
-      if (!res.ok) {
-        throw new Error("Failed to load users list");
-      }
+      if (!res.ok) throw new Error("Failed to load users list");
 
       const resData = await res.json();
       if (resData.success && resData.data) {
         setUsers(resData.data.users || []);
-        setTotalCount(resData.data.pagination?.total || 0);
-        setTotalPages(resData.data.pagination?.totalPages || 1);
+        if (resData.data.pagination) {
+          setPagination((prev) => ({
+            ...prev,
+            total: resData.data.pagination.total ?? 0,
+            totalPages: resData.data.pagination.totalPages ?? 1,
+          }));
+        }
         if (resData.data.stats) {
           setStats(resData.data.stats);
         }
@@ -194,28 +149,28 @@ export default function AdminUsersPage() {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, search, statusFilter, sortBy, fromDate, toDate, activeTab]);
+  }, [pagination.page, search, statusFilter, sortBy, fromDate, toDate, activeTab, getHeaders]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
       fetchUsers();
-    }, 250);
+    }, 200);
     return () => clearTimeout(timer);
   }, [fetchUsers]);
 
-  // Clear selections when changing tabs
-  useEffect(() => {
+  // Reset page & selection on tab change
+  const handleTabChange = (tab: "active" | "trash") => {
+    setActiveTab(tab);
     setSelectedUserIds([]);
-    setCurrentPage(1);
-  }, [activeTab]);
+    setPagination((prev) => ({ ...prev, page: 1 }));
+  };
 
   // Selection handlers
+  const isAllSelected = users.length > 0 && selectedUserIds.length === users.length;
+  const isPartiallySelected = selectedUserIds.length > 0 && selectedUserIds.length < users.length;
+
   const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.checked) {
-      setSelectedUserIds(users.map((u) => u._id));
-    } else {
-      setSelectedUserIds([]);
-    }
+    setSelectedUserIds(e.target.checked ? users.map((u) => u._id) : []);
   };
 
   const handleSelectOne = (id: string) => {
@@ -224,45 +179,31 @@ export default function AdminUsersPage() {
     );
   };
 
-  const isAllSelected = users.length > 0 && selectedUserIds.length === users.length;
-  const isPartiallySelected = selectedUserIds.length > 0 && selectedUserIds.length < users.length;
-
-  // Open Edit Modal
+  // Edit user handlers
   const handleOpenEdit = (user: DevoteeUser) => {
     setEditingUser(user);
     setEditFormData({
       name: user.name || "",
-      email: user.email === "N/A" ? "" : user.email,
-      mobileNumber: user.mobileNumber === "N/A" ? "" : user.mobileNumber,
+      email: user.email === "N/A" ? "" : user.email || "",
+      mobileNumber: user.mobileNumber || "",
       whatsappNumber: user.whatsappNumber || "",
       status: user.status || "Active",
     });
-    setModalError("");
   };
 
-  // Submit Edit
   const handleSaveEdit = async () => {
     if (!editingUser) return;
-    if (!editFormData.name.trim()) {
-      setModalError("User name is required");
-      return;
-    }
-    if (!editFormData.mobileNumber.trim()) {
-      setModalError("Mobile number is required");
+    if (!editFormData.name.trim() || !editFormData.mobileNumber.trim()) {
+      showToast("Name and Mobile Number are required", "error");
       return;
     }
 
-    setSavingUser(true);
-    setModalError("");
+    setModalLoading(true);
     try {
       const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
-      const token = getAdminToken();
-      const headers: Record<string, string> = { "Content-Type": "application/json" };
-      if (token) headers["Authorization"] = `Bearer ${token}`;
-
       const res = await fetch(`${baseUrl}/api/admin/users/${editingUser._id}`, {
         method: "PUT",
-        headers,
+        headers: getHeaders(),
         credentials: "include",
         body: JSON.stringify({
           name: editFormData.name.trim(),
@@ -274,127 +215,89 @@ export default function AdminUsersPage() {
       });
 
       const data = await res.json();
-      if (!res.ok || !data.success) {
-        throw new Error(data.message || "Failed to update user");
-      }
+      if (!res.ok || !data.success) throw new Error(data.message || "Failed to update user");
 
-      showToast("User details updated successfully", "success");
+      showToast("User updated successfully", "success");
       setEditingUser(null);
       fetchUsers();
     } catch (err: any) {
-      setModalError(err.message || "Error updating user");
+      showToast(err.message || "Error updating user", "error");
     } finally {
-      setSavingUser(false);
+      setModalLoading(false);
     }
   };
 
-  // Execute confirmation modal actions
+  // Confirmation action handler
   const handleExecuteModalAction = async () => {
     const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
-    const token = getAdminToken();
-    const headers: Record<string, string> = { "Content-Type": "application/json" };
-    if (token) headers["Authorization"] = `Bearer ${token}`;
-
-    setModalProcessing(true);
+    setModalLoading(true);
     try {
-      if (confirmModal.actionType === "soft-delete" && confirmModal.targetUser) {
-        // Soft delete single user (Move to Trash)
-        const res = await fetch(`${baseUrl}/api/admin/users/${confirmModal.targetUser._id}`, {
-          method: "DELETE",
-          headers,
-          credentials: "include",
-        });
-        const data = await res.json();
-        if (!res.ok || !data.success) throw new Error(data.message || "Failed to move user to trash");
-        showToast("User moved to trash successfully", "success");
-      } else if (confirmModal.actionType === "bulk-soft-delete") {
-        // Bulk soft delete
-        const res = await fetch(`${baseUrl}/api/admin/users/bulk-delete`, {
-          method: "POST",
-          headers,
-          credentials: "include",
-          body: JSON.stringify({ userIds: selectedUserIds }),
-        });
-        const data = await res.json();
-        if (!res.ok || !data.success) throw new Error(data.message || "Failed to move selected users to trash");
-        showToast(`${selectedUserIds.length} user(s) moved to trash`, "success");
-        setSelectedUserIds([]);
-      } else if (confirmModal.actionType === "restore" && confirmModal.targetUser) {
-        // Restore single user
-        const res = await fetch(`${baseUrl}/api/admin/users/${confirmModal.targetUser._id}/restore`, {
-          method: "PUT",
-          headers,
-          credentials: "include",
-        });
-        const data = await res.json();
-        if (!res.ok || !data.success) throw new Error(data.message || "Failed to restore user");
-        showToast("User restored successfully", "success");
-      } else if (confirmModal.actionType === "bulk-restore") {
-        // Bulk restore
-        const res = await fetch(`${baseUrl}/api/admin/users/bulk-restore`, {
-          method: "POST",
-          headers,
-          credentials: "include",
-          body: JSON.stringify({ userIds: selectedUserIds }),
-        });
-        const data = await res.json();
-        if (!res.ok || !data.success) throw new Error(data.message || "Failed to restore users");
-        showToast(`${selectedUserIds.length} user(s) restored successfully`, "success");
-        setSelectedUserIds([]);
-      } else if (confirmModal.actionType === "permanent-delete" && confirmModal.targetUser) {
-        // Permanently delete single user
-        const res = await fetch(`${baseUrl}/api/admin/users/${confirmModal.targetUser._id}/permanent`, {
-          method: "DELETE",
-          headers,
-          credentials: "include",
-        });
-        const data = await res.json();
-        if (!res.ok || !data.success) throw new Error(data.message || "Failed to permanently delete user");
-        showToast("User permanently deleted", "success");
-      } else if (confirmModal.actionType === "bulk-permanent-delete") {
-        // Bulk permanent delete
-        const res = await fetch(`${baseUrl}/api/admin/users/bulk-permanent-delete`, {
-          method: "POST",
-          headers,
-          credentials: "include",
-          body: JSON.stringify({ userIds: selectedUserIds }),
-        });
-        const data = await res.json();
-        if (!res.ok || !data.success) throw new Error(data.message || "Failed to permanently delete users");
-        showToast(`${selectedUserIds.length} user(s) permanently deleted`, "success");
-        setSelectedUserIds([]);
+      let endpoint = "";
+      let method = "POST";
+      let body: any = null;
+
+      const { actionType, targetUser } = confirmModal;
+
+      if (actionType === "soft-delete" && targetUser) {
+        endpoint = `${baseUrl}/api/admin/users/${targetUser._id}`;
+        method = "DELETE";
+      } else if (actionType === "bulk-soft-delete") {
+        endpoint = `${baseUrl}/api/admin/users/bulk-delete`;
+        body = JSON.stringify({ userIds: selectedUserIds });
+      } else if (actionType === "restore" && targetUser) {
+        endpoint = `${baseUrl}/api/admin/users/${targetUser._id}/restore`;
+        method = "PUT";
+      } else if (actionType === "bulk-restore") {
+        endpoint = `${baseUrl}/api/admin/users/bulk-restore`;
+        body = JSON.stringify({ userIds: selectedUserIds });
+      } else if (actionType === "permanent-delete" && targetUser) {
+        endpoint = `${baseUrl}/api/admin/users/${targetUser._id}/permanent`;
+        method = "DELETE";
+      } else if (actionType === "bulk-permanent-delete") {
+        endpoint = `${baseUrl}/api/admin/users/bulk-permanent-delete`;
+        body = JSON.stringify({ userIds: selectedUserIds });
       }
 
-      setConfirmModal({ ...confirmModal, open: false });
+      const res = await fetch(endpoint, {
+        method,
+        headers: getHeaders(),
+        credentials: "include",
+        body,
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.message || "Action failed");
+
+      showToast("Action completed successfully", "success");
+      setConfirmModal((prev) => ({ ...prev, open: false }));
+      setSelectedUserIds([]);
       fetchUsers();
     } catch (err: any) {
-      showToast(err.message || "Action failed", "error");
+      showToast(err.message || "Failed to perform action", "error");
     } finally {
-      setModalProcessing(false);
+      setModalLoading(false);
     }
   };
 
-  const formatDate = (isoString?: string) => {
-    if (!isoString) return { datePart: "N/A", timePart: "" };
-    const d = new Date(isoString);
-    if (isNaN(d.getTime())) return { datePart: "N/A", timePart: "" };
-    const datePart = d.toLocaleDateString("en-GB", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    });
-    const timePart = d.toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    }).toLowerCase();
-    return { datePart, timePart };
+  // Format Date helper
+  const formatDate = (isoStr?: string | null) => {
+    if (!isoStr) return { datePart: "-", timePart: "" };
+    try {
+      const d = new Date(isoStr);
+      if (isNaN(d.getTime())) return { datePart: "-", timePart: "" };
+      return {
+        datePart: d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }),
+        timePart: d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true }).toLowerCase(),
+      };
+    } catch {
+      return { datePart: "-", timePart: "" };
+    }
   };
 
+  // Avatar bg
   const getAvatarBg = (name: string, index: number) => {
     const colors = [
       "bg-purple-100 text-purple-700",
-      "bg-pink-100 text-pink-700",
       "bg-blue-100 text-blue-700",
       "bg-emerald-100 text-emerald-700",
       "bg-amber-100 text-amber-700",
@@ -402,15 +305,13 @@ export default function AdminUsersPage() {
       "bg-indigo-100 text-indigo-700",
     ];
     let code = 0;
-    for (let i = 0; i < (name || "").length; i++) {
-      code += name.charCodeAt(i);
-    }
+    for (let i = 0; i < (name || "").length; i++) code += name.charCodeAt(i);
     return colors[(code + index) % colors.length];
   };
 
   return (
     <div className="space-y-6 pb-12">
-      {/* Toast */}
+      {/* Toast Notification */}
       {toast && (
         <div
           className={`fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-xl shadow-xl text-xs font-bold text-white transition-all transform animate-in slide-in-from-bottom-5 ${toast.type === "success" ? "bg-emerald-600" : "bg-red-600"
@@ -435,7 +336,7 @@ export default function AdminUsersPage() {
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
-              setCurrentPage(1);
+              setPagination((p) => ({ ...p, page: 1 }));
             }}
             placeholder="Search by name, email, or mobile..."
             className="w-full pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-xl text-xs text-gray-800 placeholder-gray-400 focus:outline-none focus:border-emerald-500 shadow-2xs font-medium"
@@ -448,20 +349,16 @@ export default function AdminUsersPage() {
           <div className="flex items-center bg-gray-100 p-1 rounded-xl border border-gray-200 shadow-2xs">
             <button
               type="button"
-              onClick={() => setActiveTab("active")}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${activeTab === "active"
-                ? "bg-white text-gray-900 shadow-xs"
-                : "text-gray-600 hover:text-gray-900"
+              onClick={() => handleTabChange("active")}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${activeTab === "active" ? "bg-white text-gray-900 shadow-xs" : "text-gray-600 hover:text-gray-900"
                 }`}
             >
               All Users ({stats.totalUsers})
             </button>
             <button
               type="button"
-              onClick={() => setActiveTab("trash")}
-              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${activeTab === "trash"
-                ? "bg-red-50 text-red-700 shadow-xs"
-                : "text-gray-600 hover:text-red-600"
+              onClick={() => handleTabChange("trash")}
+              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${activeTab === "trash" ? "bg-red-50 text-red-700 shadow-xs" : "text-gray-600 hover:text-red-600"
                 }`}
             >
               <TrashIcon className="w-3.5 h-3.5" />
@@ -470,13 +367,13 @@ export default function AdminUsersPage() {
           </div>
 
           {/* Date Range Filter Button */}
-          <div className="relative" ref={dateDropdownRef}>
+          <div className="relative">
             <button
               type="button"
               onClick={() => setDateFilterOpen(!dateFilterOpen)}
               className={`flex items-center gap-2 bg-white border rounded-xl px-3 py-1.5 text-xs font-bold transition shadow-2xs ${fromDate || toDate
-                ? "border-emerald-500 text-emerald-700 bg-emerald-50/30"
-                : "border-gray-200 text-gray-700 hover:border-gray-300"
+                  ? "border-emerald-500 text-emerald-700 bg-emerald-50/30"
+                  : "border-gray-200 text-gray-700 hover:border-gray-300"
                 }`}
             >
               <CalendarDaysIcon className="w-4 h-4 text-gray-400" />
@@ -504,7 +401,7 @@ export default function AdminUsersPage() {
                       onClick={() => {
                         setFromDate("");
                         setToDate("");
-                        setCurrentPage(1);
+                        setPagination((p) => ({ ...p, page: 1 }));
                       }}
                       className="text-[11px] font-bold text-red-500 hover:text-red-700 transition"
                     >
@@ -521,7 +418,7 @@ export default function AdminUsersPage() {
                       value={fromDate}
                       onChange={(e) => {
                         setFromDate(e.target.value);
-                        setCurrentPage(1);
+                        setPagination((p) => ({ ...p, page: 1 }));
                       }}
                       className="w-full border border-gray-200 rounded-xl px-3 py-1.5 text-xs text-gray-800 font-medium outline-none focus:border-emerald-500 bg-white"
                     />
@@ -534,7 +431,7 @@ export default function AdminUsersPage() {
                       value={toDate}
                       onChange={(e) => {
                         setToDate(e.target.value);
-                        setCurrentPage(1);
+                        setPagination((p) => ({ ...p, page: 1 }));
                       }}
                       className="w-full border border-gray-200 rounded-xl px-3 py-1.5 text-xs text-gray-800 font-medium outline-none focus:border-emerald-500 bg-white"
                     />
@@ -548,7 +445,7 @@ export default function AdminUsersPage() {
                       const today = new Date().toISOString().split("T")[0];
                       setFromDate(today);
                       setToDate(today);
-                      setCurrentPage(1);
+                      setPagination((p) => ({ ...p, page: 1 }));
                       setDateFilterOpen(false);
                     }}
                     className="text-[11px] font-bold text-emerald-600 hover:text-emerald-700"
@@ -598,7 +495,7 @@ export default function AdminUsersPage() {
             <CheckBadgeIcon className="w-6 h-6" />
           </div>
           <div>
-            <span className="block text-xs font-semibold text-gray-500">Verified Users</span>
+            <span className="block text-xs font-semibold text-gray-500">Verified Devotees</span>
             <span className="text-2xl font-black text-gray-900 tracking-tight">
               {stats.activeUsers.toLocaleString("en-IN")}
             </span>
@@ -607,11 +504,11 @@ export default function AdminUsersPage() {
 
         {/* Total Revenue */}
         <div className="bg-white rounded-2xl border border-gray-150 p-5 flex items-center gap-4 shadow-xs">
-          <div className="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
+          <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
             <SparklesIcon className="w-6 h-6" />
           </div>
           <div>
-            <span className="block text-xs font-semibold text-gray-500">Total Revenue (All Users)</span>
+            <span className="block text-xs font-semibold text-gray-500">Total Devotee Offerings</span>
             <span className="text-2xl font-black text-gray-900 tracking-tight">
               ₹ {stats.totalRevenue.toLocaleString("en-IN")}
             </span>
@@ -619,103 +516,49 @@ export default function AdminUsersPage() {
         </div>
       </div>
 
-      {/* Main Table Card */}
+      {/* Table Container */}
       <div className="bg-white rounded-2xl border border-gray-150 shadow-xs overflow-hidden">
-        {/* Filters Top Bar inside Card */}
-        <div className="p-4 sm:px-6 sm:py-4 border-b border-gray-100 flex flex-wrap items-center justify-between gap-3 bg-white">
-          <div className="flex items-center gap-3">
-            <span className="text-xs font-bold text-gray-500">
-              Showing {users.length > 0 ? (currentPage - 1) * 10 + 1 : 0} to{" "}
-              {Math.min(currentPage * 10, totalCount)} of {totalCount}{" "}
-              {activeTab === "trash" ? "trash users" : "users"}
-            </span>
-            {activeTab === "trash" && (
-              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-red-100 text-red-700">
-                TRASH SECTION
-              </span>
-            )}
-          </div>
+        {/* Subheader: Filter Dropdowns */}
+        <div className="p-4 sm:px-6 border-b border-gray-150 flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-sm font-bold text-gray-800">
+            {activeTab === "trash" ? "Deleted Users (Trash)" : "Devotee Directory"}
+          </h2>
 
-          <div className="flex items-center gap-3">
-            {/* Filter by Status */}
-            <div className="relative" ref={statusDropdownRef}>
-              <button
-                type="button"
-                onClick={() => setStatusDropdownOpen(!statusDropdownOpen)}
-                className="flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-3.5 py-1.5 text-xs font-bold text-gray-700 hover:border-gray-300 transition"
-              >
-                <span>{statusFilter === "All" ? "All Users" : `${statusFilter} Users`}</span>
-                <ChevronDownIcon className="w-3.5 h-3.5 text-gray-400" />
-              </button>
-              {statusDropdownOpen && (
-                <div className="absolute right-0 mt-1 w-36 bg-white border border-gray-200 rounded-xl shadow-lg py-1.5 z-20">
-                  {["All", "Active", "Inactive"].map((opt) => (
-                    <button
-                      key={opt}
-                      onClick={() => {
-                        setStatusFilter(opt);
-                        setStatusDropdownOpen(false);
-                        setCurrentPage(1);
-                      }}
-                      className={`w-full text-left px-3.5 py-1.5 text-xs font-semibold hover:bg-gray-50 ${statusFilter === opt ? "text-emerald-600 bg-emerald-50/50" : "text-gray-700"
-                        }`}
-                    >
-                      {opt === "All" ? "All Users" : opt}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+          <div className="flex items-center gap-2.5">
+            {/* Status Select */}
+            <select
+              value={statusFilter}
+              onChange={(e) => {
+                setStatusFilter(e.target.value);
+                setPagination((p) => ({ ...p, page: 1 }));
+              }}
+              className="bg-white border border-gray-200 rounded-xl px-3 py-1.5 text-xs font-bold text-gray-700 outline-none hover:border-gray-300 transition cursor-pointer"
+            >
+              <option value="All">All Users</option>
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+            </select>
 
-            {/* Sort Dropdown */}
-            <div className="relative" ref={sortDropdownRef}>
-              <button
-                type="button"
-                onClick={() => setSortDropdownOpen(!sortDropdownOpen)}
-                className="flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-3.5 py-1.5 text-xs font-bold text-gray-700 hover:border-gray-300 transition"
-              >
-                <span>
-                  Sort by:{" "}
-                  {sortBy === "latest"
-                    ? "Latest"
-                    : sortBy === "oldest"
-                      ? "Oldest"
-                      : sortBy === "name_asc"
-                        ? "Name (A-Z)"
-                        : "Name (Z-A)"}
-                </span>
-                <ChevronDownIcon className="w-3.5 h-3.5 text-gray-400" />
-              </button>
-              {sortDropdownOpen && (
-                <div className="absolute right-0 mt-1 w-40 bg-white border border-gray-200 rounded-xl shadow-lg py-1.5 z-20">
-                  {[
-                    { id: "latest", label: "Latest" },
-                    { id: "oldest", label: "Oldest" },
-                    { id: "name_asc", label: "Name (A-Z)" },
-                    { id: "name_desc", label: "Name (Z-A)" },
-                  ].map((s) => (
-                    <button
-                      key={s.id}
-                      onClick={() => {
-                        setSortBy(s.id);
-                        setSortDropdownOpen(false);
-                        setCurrentPage(1);
-                      }}
-                      className={`w-full text-left px-3.5 py-1.5 text-xs font-semibold hover:bg-gray-50 ${sortBy === s.id ? "text-emerald-600 bg-emerald-50/50" : "text-gray-700"
-                        }`}
-                    >
-                      {s.label}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+            {/* Sort Select */}
+            <select
+              value={sortBy}
+              onChange={(e) => {
+                setSortBy(e.target.value);
+                setPagination((p) => ({ ...p, page: 1 }));
+              }}
+              className="bg-white border border-gray-200 rounded-xl px-3 py-1.5 text-xs font-bold text-gray-700 outline-none hover:border-gray-300 transition cursor-pointer"
+            >
+              <option value="latest">Sort by: Latest</option>
+              <option value="oldest">Sort by: Oldest</option>
+              <option value="name_asc">Name (A-Z)</option>
+              <option value="name_desc">Name (Z-A)</option>
+            </select>
           </div>
         </div>
 
-        {/* Bulk Action Banner when one or more users are selected */}
+        {/* Bulk Action Banner */}
         {selectedUserIds.length > 0 && (
-          <div className="bg-emerald-50/80 border-b border-emerald-200/80 px-6 py-2.5 flex flex-wrap items-center justify-between gap-3 animate-in fade-in duration-150">
+          <div className="bg-emerald-50/80 border-b border-emerald-200/80 px-6 py-2.5 flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <span className="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs font-black">
                 {selectedUserIds.length}
@@ -731,45 +574,43 @@ export default function AdminUsersPage() {
                 onClick={() => setSelectedUserIds([])}
                 className="px-3 py-1.5 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 text-xs font-bold transition"
               >
-                Clear Selection
+                Clear
               </button>
 
               {activeTab === "active" ? (
-                /* Active Tab Bulk Actions -> Move to Trash */
                 <button
                   type="button"
                   onClick={() =>
                     setConfirmModal({
                       open: true,
                       title: `Move ${selectedUserIds.length} User(s) to Trash?`,
-                      description: `Are you sure you want to move the selected ${selectedUserIds.length} user(s) to the Trash section? You can restore them anytime.`,
+                      description: `Are you sure you want to move the selected ${selectedUserIds.length} user(s) to Trash?`,
                       actionLabel: "Move to Trash",
                       actionType: "bulk-soft-delete",
                     })
                   }
-                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition shadow-xs"
+                  className="px-3.5 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition shadow-xs flex items-center gap-1.5"
                 >
                   <TrashIcon className="w-3.5 h-3.5" />
-                  <span>Delete Selected ({selectedUserIds.length})</span>
+                  <span>Move to Trash</span>
                 </button>
               ) : (
-                /* Trash Tab Bulk Actions -> Restore or Permanent Delete */
-                <>
+                <div className="flex items-center gap-2">
                   <button
                     type="button"
                     onClick={() =>
                       setConfirmModal({
                         open: true,
                         title: `Restore ${selectedUserIds.length} User(s)?`,
-                        description: `Restore the selected ${selectedUserIds.length} user(s) back to the active user list?`,
+                        description: `Restore selected ${selectedUserIds.length} user(s) back to active users?`,
                         actionLabel: "Restore Users",
                         actionType: "bulk-restore",
                       })
                     }
-                    className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition shadow-xs"
+                    className="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition shadow-xs flex items-center gap-1.5"
                   >
                     <ArrowUturnLeftIcon className="w-3.5 h-3.5" />
-                    <span>Restore Selected ({selectedUserIds.length})</span>
+                    <span>Restore</span>
                   </button>
 
                   <button
@@ -778,28 +619,27 @@ export default function AdminUsersPage() {
                       setConfirmModal({
                         open: true,
                         title: `Permanently Delete ${selectedUserIds.length} User(s)?`,
-                        description: `WARNING: This will permanently delete the selected ${selectedUserIds.length} user(s) from the database. This action CANNOT be undone!`,
+                        description: `WARNING: This will permanently delete ${selectedUserIds.length} user(s). This cannot be undone.`,
                         actionLabel: "Delete Permanently",
                         actionType: "bulk-permanent-delete",
                       })
                     }
-                    className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-red-700 hover:bg-red-800 text-white text-xs font-bold transition shadow-xs"
+                    className="px-3.5 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition shadow-xs flex items-center gap-1.5"
                   >
                     <TrashIcon className="w-3.5 h-3.5" />
-                    <span>Delete Permanently ({selectedUserIds.length})</span>
+                    <span>Delete Permanently</span>
                   </button>
-                </>
+                </div>
               )}
             </div>
           </div>
         )}
 
-        {/* Users Table */}
+        {/* Table */}
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-[900px]">
             <thead>
               <tr className="bg-gray-50/70 border-b border-gray-150 text-[11px] font-bold text-gray-500 uppercase tracking-wider">
-                {/* Select All Checkbox */}
                 <th className="py-3.5 pl-6 pr-2 w-10 text-center">
                   <input
                     type="checkbox"
@@ -818,7 +658,6 @@ export default function AdminUsersPage() {
                 <th className="py-3.5 px-4 whitespace-nowrap min-w-[140px]">Mobile Number</th>
                 <th className="py-3.5 px-4 whitespace-nowrap">Source / Campaign</th>
                 <th className="py-3.5 px-4">Total Amount Spent</th>
-                {/* <th className="py-3.5 px-4">Status</th> */}
                 <th className="py-3.5 px-4">
                   {activeTab === "trash" ? "Deleted On (Date & Time)" : "Joined On (Date & Time)"}
                 </th>
@@ -844,16 +683,14 @@ export default function AdminUsersPage() {
               ) : users.length === 0 ? (
                 <tr>
                   <td colSpan={10} className="py-12 text-center text-gray-400">
-                    {activeTab === "trash"
-                      ? "Trash is empty. No deleted users found."
-                      : "No users found matching the criteria."}
+                    {activeTab === "trash" ? "Trash is empty. No deleted users found." : "No users found."}
                   </td>
                 </tr>
               ) : (
                 users.map((u, idx) => {
                   const initial = (u.name || "D").charAt(0).toUpperCase();
                   const avatarColor = getAvatarBg(u.name, idx);
-                  const rowNumber = (currentPage - 1) * 10 + idx + 1;
+                  const rowNumber = (pagination.page - 1) * 10 + idx + 1;
                   const isChecked = selectedUserIds.includes(u._id);
 
                   return (
@@ -862,7 +699,7 @@ export default function AdminUsersPage() {
                       className={`hover:bg-gray-50/80 transition-colors duration-150 ${isChecked ? "bg-emerald-50/40" : ""
                         }`}
                     >
-                      {/* Individual Checkbox */}
+                      {/* Checkbox */}
                       <td className="py-4 pl-6 pr-2 text-center">
                         <input
                           type="checkbox"
@@ -873,11 +710,9 @@ export default function AdminUsersPage() {
                       </td>
 
                       {/* Row # */}
-                      <td className="py-4 px-2 text-center text-gray-400 font-bold text-xs">
-                        {rowNumber}
-                      </td>
+                      <td className="py-4 px-2 text-center text-gray-400 font-bold text-xs">{rowNumber}</td>
 
-                      {/* Name with Avatar */}
+                      {/* Name */}
                       <td className="py-4 px-4">
                         <div className="flex items-center gap-3">
                           <div
@@ -896,77 +731,28 @@ export default function AdminUsersPage() {
                         {u.email && u.email !== "N/A" ? u.email : <span className="text-gray-400 italic">Not Provided</span>}
                       </td>
 
-                      {/* Mobile & WhatsApp */}
+                      {/* Mobile */}
                       <td className="py-4 px-4 whitespace-nowrap min-w-[140px]">
-                        <div className="font-semibold text-gray-800 whitespace-nowrap">
+                        <div className="font-semibold text-gray-800">
                           {u.mobileNumber && u.mobileNumber !== "N/A"
                             ? formatIndianPhoneNumber(u.mobileNumber)
                             : <span className="text-gray-400 italic">Not Provided</span>}
                         </div>
-                        {(() => {
-                          const mob = u.mobileNumber || "";
-                          const wa = u.whatsappNumber || "";
-                          const cleanMob = mob.replace(/\D/g, "");
-                          const cleanWa = wa.replace(/\D/g, "");
-                          const isSame = cleanMob && cleanWa && (cleanMob === cleanWa || cleanMob.endsWith(cleanWa) || cleanWa.endsWith(cleanMob));
-
-                          if (!isSame && wa) {
-                            return (
-                              <div className="flex items-center gap-1 text-[11px] text-emerald-700 font-semibold mt-0.5 whitespace-nowrap">
-                                <span className="text-[9px] bg-emerald-50 px-1 py-0.2 rounded border border-emerald-200 font-bold shrink-0">WA</span>
-                                <span className="whitespace-nowrap">{formatIndianPhoneNumber(wa)}</span>
-                              </div>
-                            );
-                          }
-                          return null;
-                        })()}
                       </td>
 
-                      {/* Source / Campaign */}
+                      {/* Source */}
                       <td className="py-4 px-4 whitespace-nowrap">
-                        {(() => {
-                          const src = u.utmSource || "Direct";
-                          const lower = src.toLowerCase();
-                          let badgeStyle = "bg-gray-100 text-gray-700 border-gray-200";
-                          if (lower.includes("google")) badgeStyle = "bg-blue-50 text-blue-700 border-blue-200";
-                          else if (lower.includes("facebook") || lower.includes("fb")) badgeStyle = "bg-indigo-50 text-indigo-700 border-indigo-200";
-                          else if (lower.includes("instagram")) badgeStyle = "bg-pink-50 text-pink-700 border-pink-200";
-                          else if (lower.includes("whatsapp")) badgeStyle = "bg-emerald-50 text-emerald-700 border-emerald-200";
-                          else if (lower.includes("youtube")) badgeStyle = "bg-red-50 text-red-700 border-red-200";
-
-                          return (
-                            <div className="space-y-0.5">
-                              <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10.5px] font-bold border ${badgeStyle}`}>
-                                {src}
-                              </span>
-                              {u.utmCampaign && (
-                                <div className="text-[10px] font-semibold text-gray-600 max-w-[120px] truncate" title={u.utmCampaign}>
-                                  {u.utmCampaign}
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })()}
-                      </td>
-
-                      {/* Total Amount Spent */}
-                      <td className="py-4 px-4 font-extrabold text-gray-900">
-                        ₹ {u.totalAmountSpent.toLocaleString("en-IN")}
-                      </td>
-
-                      {/* Status */}
-                      {/* <td className="py-4 px-4">
-                        <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold ${u.status === "Active"
-                            ? "bg-emerald-50 text-emerald-700"
-                            : "bg-red-50 text-red-600"
-                            }`}
-                        >
-                          {u.status}
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10.5px] font-bold border bg-gray-100 text-gray-700 border-gray-200">
+                          {u.utmSource || "Direct"}
                         </span>
-                      </td> */}
+                      </td>
 
-                      {/* Joined or Deleted Date & Time */}
+                      {/* Spent */}
+                      <td className="py-4 px-4 font-extrabold text-gray-900">
+                        ₹ {Number(u.totalAmountSpent || 0).toLocaleString("en-IN")}
+                      </td>
+
+                      {/* Date */}
                       <td className="py-4 px-4 text-gray-500 font-medium">
                         {(() => {
                           const timeInfo = formatDate(activeTab === "trash" ? u.deletedAt || u.createdAt : u.createdAt);
@@ -991,71 +777,65 @@ export default function AdminUsersPage() {
                       <td className="py-4 pr-6 pl-4 text-center">
                         {activeTab === "active" ? (
                           <div className="inline-flex items-center gap-2">
-                            {/* Edit Button */}
                             <button
                               type="button"
                               onClick={() => handleOpenEdit(u)}
                               title="Edit user"
-                              className="w-8 h-8 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 flex items-center justify-center transition-colors active:scale-95"
+                              className="w-8 h-8 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 flex items-center justify-center transition-colors"
                             >
                               <PencilSquareIcon className="w-4 h-4" />
                             </button>
-
-                            {/* Move to Trash Button */}
                             <button
                               type="button"
                               onClick={() =>
                                 setConfirmModal({
                                   open: true,
                                   title: "Move User to Trash?",
-                                  description: `Are you sure you want to move ${u.name} to the Trash? Devotee account will be moved to trash and can be restored anytime.`,
+                                  description: `Are you sure you want to move ${u.name} to Trash?`,
                                   actionLabel: "Move to Trash",
                                   actionType: "soft-delete",
                                   targetUser: u,
                                 })
                               }
                               title="Move to trash"
-                              className="w-8 h-8 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 flex items-center justify-center transition-colors active:scale-95"
+                              className="w-8 h-8 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 flex items-center justify-center transition-colors"
                             >
                               <TrashIcon className="w-4 h-4" />
                             </button>
                           </div>
                         ) : (
                           <div className="inline-flex items-center gap-2">
-                            {/* Restore Button */}
                             <button
                               type="button"
                               onClick={() =>
                                 setConfirmModal({
                                   open: true,
                                   title: "Restore User?",
-                                  description: `Restore devotee account for ${u.name}? They will be moved back to the active users list.`,
+                                  description: `Restore devotee account for ${u.name}?`,
                                   actionLabel: "Restore User",
                                   actionType: "restore",
                                   targetUser: u,
                                 })
                               }
                               title="Restore user"
-                              className="w-8 h-8 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-600 flex items-center justify-center transition-colors active:scale-95"
+                              className="w-8 h-8 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-600 flex items-center justify-center transition-colors"
                             >
                               <ArrowUturnLeftIcon className="w-4 h-4" />
                             </button>
-
-                            {/* Permanently Delete Button */}
                             <button
                               type="button"
                               onClick={() =>
                                 setConfirmModal({
                                   open: true,
                                   title: "Permanently Delete User?",
-                                  description: `WARNING: Are you sure you want to permanently delete ${u.name}? This will remove all their records from the database and CANNOT be undone.`,
+                                  description: `WARNING: Are you sure you want to permanently delete ${u.name}? This cannot be undone.`,
                                   actionLabel: "Delete Permanently",
                                   actionType: "permanent-delete",
                                   targetUser: u,
                                 })
                               }
                               title="Delete permanently"
-                              className="w-8 h-8 rounded-lg bg-red-100 hover:bg-red-200 text-red-700 flex items-center justify-center transition-colors active:scale-95"
+                              className="w-8 h-8 rounded-lg bg-red-100 hover:bg-red-200 text-red-700 flex items-center justify-center transition-colors"
                             >
                               <TrashIcon className="w-4 h-4" />
                             </button>
@@ -1073,59 +853,40 @@ export default function AdminUsersPage() {
         {/* Pagination Footer */}
         <div className="p-4 sm:px-6 border-t border-gray-150 flex flex-col sm:flex-row items-center justify-between gap-4 bg-white">
           <div className="text-xs text-gray-500 font-medium">
-            Showing {users.length > 0 ? (currentPage - 1) * 10 + 1 : 0} to{" "}
-            {Math.min(currentPage * 10, totalCount)} of {totalCount}{" "}
+            Showing {users.length > 0 ? (pagination.page - 1) * 10 + 1 : 0} to{" "}
+            {Math.min(pagination.page * 10, pagination.total)} of {pagination.total}{" "}
             {activeTab === "trash" ? "trash users" : "users"}
           </div>
 
-          {totalPages > 1 && (
+          {pagination.totalPages > 1 && (
             <div className="flex items-center gap-1.5">
-              {/* Previous */}
               <button
                 type="button"
-                disabled={currentPage <= 1}
-                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={pagination.page <= 1}
+                onClick={() => setPagination((p) => ({ ...p, page: Math.max(1, p.page - 1) }))}
                 className="w-8 h-8 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center transition"
               >
                 <ChevronLeftIcon className="w-4 h-4" />
               </button>
 
-              {/* Page numbers */}
-              {Array.from({ length: totalPages }, (_, i) => i + 1)
-                .filter((p) => {
-                  if (totalPages <= 7) return true;
-                  if (p === 1 || p === totalPages) return true;
-                  if (Math.abs(p - currentPage) <= 1) return true;
-                  return false;
-                })
-                .map((p, pIdx, arr) => {
-                  const prevVal = arr[pIdx - 1];
-                  const showEllipsis = prevVal && p - prevVal > 1;
+              {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map((p) => (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => setPagination((prev) => ({ ...prev, page: p }))}
+                  className={`w-8 h-8 rounded-lg text-xs font-bold transition ${pagination.page === p
+                      ? "bg-emerald-600 text-white"
+                      : "border border-gray-200 text-gray-700 hover:bg-gray-50"
+                    }`}
+                >
+                  {p}
+                </button>
+              ))}
 
-                  return (
-                    <div key={p} className="flex items-center">
-                      {showEllipsis && (
-                        <span className="px-1 text-gray-400 text-xs">...</span>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => setCurrentPage(p)}
-                        className={`w-8 h-8 rounded-lg text-xs font-bold transition ${currentPage === p
-                          ? "bg-emerald-600 text-white"
-                          : "border border-gray-200 text-gray-700 hover:bg-gray-50"
-                          }`}
-                      >
-                        {p}
-                      </button>
-                    </div>
-                  );
-                })}
-
-              {/* Next */}
               <button
                 type="button"
-                disabled={currentPage >= totalPages}
-                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                disabled={pagination.page >= pagination.totalPages}
+                onClick={() => setPagination((p) => ({ ...p, page: Math.min(p.totalPages, p.page + 1) }))}
                 className="w-8 h-8 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center transition"
               >
                 <ChevronRightIcon className="w-4 h-4" />
@@ -1149,12 +910,6 @@ export default function AdminUsersPage() {
               </button>
             </div>
 
-            {modalError && (
-              <div className="mt-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-medium">
-                {modalError}
-              </div>
-            )}
-
             <div className="mt-4 space-y-4 text-left">
               <div>
                 <label className="block text-xs font-bold text-gray-700 mb-1.5">
@@ -1170,9 +925,7 @@ export default function AdminUsersPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-gray-700 mb-1.5">
-                  Email Address
-                </label>
+                <label className="block text-xs font-bold text-gray-700 mb-1.5">Email Address</label>
                 <input
                   type="email"
                   value={editFormData.email}
@@ -1196,9 +949,7 @@ export default function AdminUsersPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-gray-700 mb-1.5">
-                  Status
-                </label>
+                <label className="block text-xs font-bold text-gray-700 mb-1.5">Status</label>
                 <select
                   value={editFormData.status}
                   onChange={(e) => setEditFormData({ ...editFormData, status: e.target.value })}
@@ -1220,25 +971,23 @@ export default function AdminUsersPage() {
               </button>
               <button
                 type="button"
-                disabled={savingUser}
+                disabled={modalLoading}
                 onClick={handleSaveEdit}
                 className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition shadow-sm disabled:opacity-60"
               >
-                {savingUser ? "Saving..." : "Save Changes"}
+                {modalLoading ? "Saving..." : "Save Changes"}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Confirmation Modal (Single & Bulk Delete/Restore) */}
+      {/* Confirmation Modal */}
       {confirmModal.open && (
         <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-2xs flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-gray-150 text-center animate-in fade-in zoom-in-95 duration-200">
             <div
-              className={`w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 ${confirmModal.actionType.includes("restore")
-                ? "bg-emerald-50 text-emerald-600"
-                : "bg-red-50 text-red-600"
+              className={`w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 ${confirmModal.actionType.includes("restore") ? "bg-emerald-50 text-emerald-600" : "bg-red-50 text-red-600"
                 }`}
             >
               {confirmModal.actionType.includes("restore") ? (
@@ -1247,16 +996,12 @@ export default function AdminUsersPage() {
                 <TrashIcon className="w-6 h-6" />
               )}
             </div>
-            <h3 className="text-base font-bold text-gray-900 mb-1.5">
-              {confirmModal.title}
-            </h3>
-            <p className="text-xs text-gray-500 mb-6 leading-relaxed">
-              {confirmModal.description}
-            </p>
+            <h3 className="text-base font-bold text-gray-900 mb-1.5">{confirmModal.title}</h3>
+            <p className="text-xs text-gray-500 mb-6 leading-relaxed">{confirmModal.description}</p>
             <div className="flex items-center justify-center gap-3">
               <button
                 type="button"
-                disabled={modalProcessing}
+                disabled={modalLoading}
                 onClick={() => setConfirmModal({ ...confirmModal, open: false })}
                 className="flex-1 px-4 py-2 rounded-xl border border-gray-200 text-xs font-bold text-gray-600 hover:bg-gray-50 transition disabled:opacity-50"
               >
@@ -1264,14 +1009,14 @@ export default function AdminUsersPage() {
               </button>
               <button
                 type="button"
-                disabled={modalProcessing}
+                disabled={modalLoading}
                 onClick={handleExecuteModalAction}
                 className={`flex-1 px-4 py-2 rounded-xl text-white text-xs font-bold transition shadow-sm disabled:opacity-60 ${confirmModal.actionType.includes("restore")
-                  ? "bg-emerald-600 hover:bg-emerald-700"
-                  : "bg-red-600 hover:bg-red-700"
+                    ? "bg-emerald-600 hover:bg-emerald-700"
+                    : "bg-red-600 hover:bg-red-700"
                   }`}
               >
-                {modalProcessing ? "Processing..." : confirmModal.actionLabel}
+                {modalLoading ? "Processing..." : confirmModal.actionLabel}
               </button>
             </div>
           </div>

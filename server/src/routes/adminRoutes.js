@@ -7,6 +7,7 @@ import express from "express";
 import {
   getAdminStats,
   adminLogin,
+  adminLogout,
   getAdminOrders,
   getAdminOrderById,
   getAdminPayments,
@@ -46,6 +47,7 @@ import { loginLimiter } from "../middlewares/rateLimiters.js";
 const router = express.Router();
 
 router.post("/login", loginLimiter, adminLogin);
+router.post("/logout", adminLogout);
 
 router.use(requireAuth, requireAdmin);
 router.get("/stats", getAdminStats);

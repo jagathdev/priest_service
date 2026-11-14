@@ -48,7 +48,7 @@ export const submitOrderFeedback = async (req, res) => {
           ratingLabel,
           review: cleanReview,
         },
-        { new: true }
+        { returnDocument: 'after' }
       );
     }
 
