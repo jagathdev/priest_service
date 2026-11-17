@@ -70,7 +70,13 @@ export async function request<T>(endpoint: string, options: RequestOptions = {})
     }
 
     const text = await response.text();
-    return text ? JSON.parse(text) : ({} as T);
+    if (!text || !text.trim()) return {} as T;
+    try {
+      return JSON.parse(text) as T;
+    } catch (err) {
+      console.error("[api-client] JSON parse error on response:", err, text.slice(0, 200));
+      return {} as T;
+    }
   } catch (error) {
     if (error instanceof ApiError) {
       throw error;

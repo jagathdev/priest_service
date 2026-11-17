@@ -86,9 +86,10 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   let serverUser = null;
   if (tokenCookie?.value && mockUserCookie?.value) {
     try {
-      serverUser = JSON.parse(decodeURIComponent(mockUserCookie.value));
+      const decoded = decodeURIComponent(mockUserCookie.value).trim();
+      serverUser = JSON.parse(decoded);
     } catch (e) {
-      console.error("Failed to parse mockUser cookie on server", e);
+      console.warn("Failed to parse mockUser cookie on server:", e);
     }
   }
 

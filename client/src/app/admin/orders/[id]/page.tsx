@@ -19,8 +19,13 @@ import {
   VideoCameraIcon,
   XMarkIcon,
   EnvelopeIcon,
+  PlayIcon,
+  ArrowTopRightOnSquareIcon,
+  PencilSquareIcon,
 } from "@heroicons/react/24/outline";
 import { formatIndianPhoneNumber } from "@/lib/phoneFormatter";
+import CustomDropdown from "@/components/admin/CustomDropdown";
+import CustomSingleDatePicker from "@/components/admin/CustomSingleDatePicker";
 
 const STATUS_CONFIG: Record<
   string,
@@ -86,7 +91,36 @@ export default function AdminOrderDetailPage({ params }: { params: Promise<{ id:
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Video preview modal
+  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
+
+  // Helper to convert YouTube or Drive links to embeddable preview URLs
+  const getEmbedVideoUrl = (rawUrl: string): { type: "youtube" | "drive" | "direct" | "unknown"; embedUrl: string } => {
+    if (!rawUrl) return { type: "unknown", embedUrl: "" };
+    const trimmed = rawUrl.trim();
+
+    // YouTube: youtu.be/<id> or youtube.com/watch?v=<id> or youtube.com/embed/<id>
+    const ytMatch = trimmed.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/);
+    if (ytMatch && ytMatch[1]) {
+      return { type: "youtube", embedUrl: `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1&rel=0` };
+    }
+
+    // Google Drive: drive.google.com/file/d/<id>/view or drive.google.com/open?id=<id>
+    const driveMatch = trimmed.match(/drive\.google\.com\/(?:file\/d\/|open\?id=)([\w-]+)/);
+    if (driveMatch && driveMatch[1]) {
+      return { type: "drive", embedUrl: `https://drive.google.com/file/d/${driveMatch[1]}/preview` };
+    }
+
+    // Direct video file (mp4, webm, etc.)
+    if (/\.(mp4|webm|ogg|mov)(\?.*)?$/i.test(trimmed)) {
+      return { type: "direct", embedUrl: trimmed };
+    }
+
+    return { type: "unknown", embedUrl: trimmed };
+  };
+
   // Status updating state
+  const [isEditingControls, setIsEditingControls] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<string>("created");
   const [scheduledDate, setScheduledDate] = useState<string>("");
   const [videoLink, setVideoLink] = useState<string>("");
@@ -174,6 +208,7 @@ export default function AdminOrderDetailPage({ params }: { params: Promise<{ id:
 
       showToast("Order status & video link updated successfully!", "success");
       setOrder(resData.data);
+      setIsEditingControls(false);
     } catch (err: any) {
       showToast(err.message || "Failed to update order", "error");
     } finally {
@@ -944,11 +979,25 @@ export default function AdminOrderDetailPage({ params }: { params: Promise<{ id:
                         )}
                       </div>
                       <div>
-                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Step 5</span>
-                        <h4 className={`text-xs font-bold ${isVideoDelivered ? "text-gray-900" : "text-gray-400"}`}>
-                          Video Delivered
-                        </h4>
-                        <p className={`text-[10px] font-medium ${isVideoDelivered ? "text-emerald-700 font-bold" : "text-gray-400"}`}>
+                        <div className="flex items-center justify-between gap-2">
+                          <div>
+                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Step 5</span>
+                            <h4 className={`text-xs font-bold ${isVideoDelivered ? "text-gray-900" : "text-gray-400"}`}>
+                              Video Delivered
+                            </h4>
+                          </div>
+                          {(videoLink || order.videoLink) && (
+                            <button
+                              type="button"
+                              onClick={() => setIsVideoModalOpen(true)}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold transition shadow-xs active:scale-95 cursor-pointer"
+                            >
+                              <PlayIcon className="w-3 h-3 fill-current" />
+                              <span>Watch Video</span>
+                            </button>
+                          )}
+                        </div>
+                        <p className={`text-[10px] font-medium mt-0.5 ${isVideoDelivered ? "text-emerald-700 font-bold" : "text-gray-400"}`}>
                           {isVideoDelivered ? "Recording link delivered" : "Available after puja is performed"}
                         </p>
                       </div>
@@ -962,79 +1011,177 @@ export default function AdminOrderDetailPage({ params }: { params: Promise<{ id:
       </div>
 
       {/* Row 5: Admin Controls (Status, Puja Scheduled Date, Puja Video / Photos Link) */}
-      <div className="bg-white rounded-2xl border border-gray-150 p-5 sm:p-6 shadow-xs print:hidden">
-        <h3 className="text-sm font-bold text-gray-900 mb-4 pb-3 border-b border-gray-100 flex items-center gap-2">
-          <SparklesIcon className="w-4 h-4 text-emerald-600" />
-          Admin Controls &amp; Video Delivery Link
-        </h3>
+      <div className="bg-white rounded-2xl border border-gray-150 p-5 sm:p-6 shadow-xs print:hidden relative z-20">
+        <div className="flex items-center justify-between pb-3 mb-4 border-b border-gray-100">
+          <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
+            <SparklesIcon className="w-4 h-4 text-emerald-600" />
+            <span>Admin Controls &amp; Video Delivery Link</span>
+          </h3>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          {/* Status Selection */}
-          <div>
-            <label className="block text-xs font-bold text-gray-700 mb-2">Order Status</label>
-            <select
-              value={selectedStatus}
-              onChange={(e) => setSelectedStatus(e.target.value)}
-              className="w-full bg-white border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs font-bold text-gray-900 outline-none focus:border-emerald-500 shadow-2xs cursor-pointer"
+          {!isEditingControls ? (
+            <button
+              type="button"
+              onClick={() => setIsEditingControls(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-bold transition shadow-2xs active:scale-95 cursor-pointer"
             >
-              <option value="created">Created</option>
-              <option value="confirmed">Confirmed</option>
-              <option value="scheduled">Puja Scheduled</option>
-              <option value="performed">Performed</option>
-              <option value="completed">Completed</option>
-              <option value="cancelled">Cancelled</option>
-              <option value="refunded">Refunded</option>
-            </select>
-          </div>
-
-          {/* Scheduled Date */}
-          <div>
-            <label className="block text-xs font-bold text-gray-700 mb-2">Scheduled Puja Date</label>
-            <input
-              type="date"
-              value={scheduledDate}
-              onChange={(e) => {
-                const newDate = e.target.value;
-                setScheduledDate(newDate);
-                // When admin sets or changes the scheduled date, automatically advance status to "scheduled" if it is currently "created" or "confirmed"
-                if (newDate && (selectedStatus === "created" || selectedStatus === "confirmed")) {
-                  setSelectedStatus("scheduled");
-                }
-              }}
-              className="w-full bg-white border border-gray-200 rounded-xl px-3.5 py-2 text-xs font-bold text-gray-900 outline-none focus:border-emerald-500 shadow-2xs cursor-pointer"
-            />
-          </div>
-
-          {/* Video Link */}
-          <div>
-            <label className="block text-xs font-bold text-gray-700 mb-2 flex items-center gap-1.5">
-              <VideoCameraIcon className="w-4 h-4 text-purple-600" />
-              Puja Video &amp; Photos Link
-            </label>
-            <input
-              type="url"
-              value={videoLink}
-              onChange={(e) => setVideoLink(e.target.value)}
-              placeholder="https://drive.google.com/..."
-              className="w-full bg-white border border-gray-200 rounded-xl px-3.5 py-2 text-xs font-medium text-gray-900 outline-none focus:border-emerald-500 shadow-2xs"
-            />
-          </div>
+              <PencilSquareIcon className="w-4 h-4" />
+              <span>Edit Details</span>
+            </button>
+          ) : (
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  // Cancel edits and reset to current order values
+                  setSelectedStatus(order.orderStatus || "created");
+                  setScheduledDate(
+                    order.scheduledDate ? new Date(order.scheduledDate).toISOString().split("T")[0] : ""
+                  );
+                  setVideoLink(order.videoLink || "");
+                  setIsEditingControls(false);
+                }}
+                className="px-3 py-1.5 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 text-xs font-bold transition cursor-pointer"
+              >
+                Cancel
+              </button>
+            </div>
+          )}
         </div>
 
-        <div className="mt-5 pt-4 border-t border-gray-100 flex items-center justify-between">
-          <p className="text-[11px] text-gray-500">
-            Note: Adding a video link allows the devotee to watch their ritual video directly from their <strong>Bookings</strong> page.
-          </p>
-          <button
-            type="button"
-            disabled={isUpdating}
-            onClick={handleUpdateOrder}
-            className="inline-flex items-center gap-2 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm transition active:scale-95 disabled:opacity-60"
-          >
-            <ArrowPathIcon className={`w-4 h-4 ${isUpdating ? "animate-spin" : ""}`} />
-            {isUpdating ? "Saving Changes..." : "Apply Updates"}
-          </button>
-        </div>
+        {!isEditingControls ? (
+          /* Read-only view when not editing */
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 py-1">
+            {/* Current Status Display */}
+            <div className="bg-gray-50/80 rounded-xl p-3.5 border border-gray-200/80">
+              <span className="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1">
+                Order Status
+              </span>
+              <div className="flex items-center gap-2 mt-1">
+                <span className={`w-2.5 h-2.5 rounded-full ${currentStatusObj.dot}`} />
+                <span className="text-xs font-extrabold text-gray-900">{currentStatusObj.label}</span>
+              </div>
+            </div>
+
+            {/* Scheduled Date Display */}
+            <div className="bg-gray-50/80 rounded-xl p-3.5 border border-gray-200/80">
+              <span className="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1">
+                Scheduled Puja Date
+              </span>
+              <div className="flex items-center gap-2 mt-1 text-xs font-bold text-gray-900">
+                <CalendarDaysIcon className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>
+                  {order.scheduledDate ? formatDate(order.scheduledDate) : "Not Scheduled Yet"}
+                </span>
+              </div>
+            </div>
+
+            {/* Video Link Display */}
+            <div className="bg-gray-50/80 rounded-xl p-3.5 border border-gray-200/80 flex flex-col justify-between">
+              <span className="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1">
+                Puja Video &amp; Photos Link
+              </span>
+              {order.videoLink ? (
+                <div className="flex items-center justify-between gap-2 mt-1">
+                  <span className="text-xs text-gray-700 truncate max-w-[150px] font-mono" title={order.videoLink}>
+                    {order.videoLink}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setIsVideoModalOpen(true)}
+                    className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 hover:text-emerald-800 bg-white hover:bg-emerald-50 px-2 py-1 rounded-md border border-gray-200 shadow-2xs transition shrink-0"
+                  >
+                    <PlayIcon className="w-3 h-3 fill-current" />
+                    <span>Watch</span>
+                  </button>
+                </div>
+              ) : (
+                <span className="text-xs text-gray-400 italic mt-1">No video link attached</span>
+              )}
+            </div>
+          </div>
+        ) : (
+          /* Edit Form */
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              {/* Status Selection */}
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-2">Order Status</label>
+                <CustomDropdown
+                  value={selectedStatus}
+                  onChange={(val) => setSelectedStatus(val)}
+                  options={[
+                    { value: "created", label: "Created" },
+                    { value: "confirmed", label: "Confirmed" },
+                    { value: "scheduled", label: "Puja Scheduled" },
+                    { value: "performed", label: "Performed" },
+                    { value: "completed", label: "Completed" },
+                    { value: "cancelled", label: "Cancelled" },
+                    { value: "refunded", label: "Refunded" },
+                  ]}
+                  placeholder="Order Status"
+                  className="w-full"
+                />
+              </div>
+
+              {/* Scheduled Date */}
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-2">Scheduled Puja Date</label>
+                <CustomSingleDatePicker
+                  value={scheduledDate}
+                  onChange={(newDate) => {
+                    setScheduledDate(newDate);
+                    // Do NOT auto-advance status; user manually chooses status or leaves it
+                  }}
+                  placeholder="Select Scheduled Date"
+                  className="w-full"
+                />
+              </div>
+
+              {/* Video Link */}
+              
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-xs font-bold text-gray-700 flex items-center gap-1.5">
+                    <VideoCameraIcon className="w-4 h-4 text-purple-600" />
+                    Puja Video &amp; Photos Link
+                  </label>
+                  {(videoLink || order?.videoLink) && (
+                    <button
+                      type="button"
+                      onClick={() => setIsVideoModalOpen(true)}
+                      className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 px-2 py-0.5 rounded-md transition"
+                    >
+                      <PlayIcon className="w-3 h-3 fill-current" />
+                      <span>Preview Video</span>
+                    </button>
+                  )}
+                </div>
+                <input
+                  type="url"
+                  value={videoLink}
+                  onChange={(e) => setVideoLink(e.target.value)}
+                  placeholder="https://drive.google.com/... or https://youtube.com/..."
+                  className="w-full bg-gray-50/80 hover:bg-white focus:bg-white border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs font-medium text-gray-900 outline-none focus:border-emerald-500 shadow-2xs transition"
+                />
+              </div>
+            </div>
+
+            <div className="mt-5 pt-4 border-t border-gray-100 flex items-center justify-between">
+              <p className="text-[11px] text-gray-500">
+                Note: Changes will only take effect after clicking <strong>Apply Updates</strong>.
+              </p>
+              <button
+                type="button"
+                disabled={isUpdating}
+                onClick={handleUpdateOrder}
+                className="inline-flex items-center gap-2 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm transition active:scale-95 disabled:opacity-60 cursor-pointer"
+              >
+                <ArrowPathIcon className={`w-4 h-4 ${isUpdating ? "animate-spin" : ""}`} />
+                {isUpdating ? "Saving Changes..." : "Apply Updates"}
+              </button>
+            </div>
+          </>
+        )}
       </div>
 
       {/* For Service Team Footer Callout */}
@@ -1047,6 +1194,128 @@ export default function AdminOrderDetailPage({ params }: { params: Promise<{ id:
           </p>
         </div>
       </div>
+
+      {/* Video Preview Modal */}
+      {isVideoModalOpen && (
+        <div
+          className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 transition-all"
+          onClick={() => setIsVideoModalOpen(false)}
+        >
+          <div
+            className="bg-[#121214] text-white rounded-3xl max-w-2xl w-full shadow-2xl border border-white/10 overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Top Bar */}
+            <div className="px-5 py-4 bg-[#1a1a1e] border-b border-white/10 flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                <div>
+                  <h3 className="text-sm font-bold text-white tracking-tight">
+                    {order.pooja || order.itemName || "Puja Recording"}
+                  </h3>
+                  <p className="text-[11px] text-gray-400">Order #{order.orderNumber}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <a
+                  href={videoLink || order.videoLink || "#"}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition"
+                >
+                  <span>Full Video</span>
+                  <ArrowTopRightOnSquareIcon className="w-3.5 h-3.5" />
+                </a>
+                <button
+                  type="button"
+                  onClick={() => setIsVideoModalOpen(false)}
+                  className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition"
+                >
+                  <XMarkIcon className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Video Player / Embed View */}
+            <div className="relative bg-black w-full aspect-video flex items-center justify-center overflow-hidden">
+              {(() => {
+                const targetLink = (videoLink || order.videoLink || "").trim();
+                const parsed = getEmbedVideoUrl(targetLink);
+
+                if (!targetLink) {
+                  return (
+                    <div className="text-center p-6 text-gray-400 text-xs">
+                      <VideoCameraIcon className="w-8 h-8 mx-auto mb-2 text-gray-500" />
+                      <span>No video link provided yet. Add a video link in Admin Controls and click Apply Updates.</span>
+                    </div>
+                  );
+                }
+
+                if (parsed.type === "youtube" || parsed.type === "drive") {
+                  return (
+                    <iframe
+                      src={parsed.embedUrl}
+                      title="Puja Video Preview"
+                      className="w-full h-full border-0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      allowFullScreen
+                    />
+                  );
+                }
+
+                if (parsed.type === "direct") {
+                  return (
+                    <video
+                      src={parsed.embedUrl}
+                      controls
+                      autoPlay
+                      className="w-full h-full object-contain"
+                    >
+                      Your browser does not support the video tag.
+                    </video>
+                  );
+                }
+
+                // Generic link / fallback (cloud links, dropbox, external pages)
+                return (
+                  <div className="text-center p-6 max-w-md">
+                    <div className="w-16 h-16 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto mb-4">
+                      <PlayIcon className="w-8 h-8 fill-current" />
+                    </div>
+                    <h4 className="text-sm font-bold text-white mb-1">External Video Stream / Drive Link</h4>
+                    <p className="text-xs text-gray-400 mb-4 truncate px-2" title={targetLink}>
+                      {targetLink}
+                    </p>
+                    <a
+                      href={targetLink}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition shadow-lg"
+                    >
+                      <span>Open &amp; Watch Video</span>
+                      <ArrowTopRightOnSquareIcon className="w-4 h-4" />
+                    </a>
+                  </div>
+                );
+              })()}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-5 py-3 bg-[#151518] border-t border-white/10 flex items-center justify-between text-xs">
+              <span className="text-gray-400 text-[11px]">Priest Services Sacred Ritual Recording</span>
+              <a
+                href={videoLink || order.videoLink || "#"}
+                target="_blank"
+                rel="noreferrer"
+                className="text-emerald-400 hover:text-emerald-300 font-bold inline-flex items-center gap-1 transition"
+              >
+                <span>Watch Full Video</span>
+                <span>▶</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

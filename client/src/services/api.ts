@@ -107,6 +107,12 @@ export const apiClient = async (endpoint: string, options: RequestInit = {}) => 
 
   // Handle empty responses (like 204 No Content)
   const text = await response.text();
-  return text ? JSON.parse(text) : {};
+  if (!text || !text.trim()) return {};
+  try {
+    return JSON.parse(text);
+  } catch (err) {
+    console.error("[api.ts] Failed to parse response text as JSON:", err, text.slice(0, 200));
+    return {};
+  }
 };
 
