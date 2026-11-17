@@ -1,13 +1,12 @@
 "use client";
 
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   UserGroupIcon,
   SparklesIcon,
   FireIcon,
   MagnifyingGlassIcon,
   CalendarDaysIcon,
-  ChevronDownIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   XMarkIcon,
@@ -22,6 +21,9 @@ import {
   HeartIcon,
 } from "@heroicons/react/24/outline";
 import { formatIndianPhoneNumber } from "@/lib/phoneFormatter";
+import CustomDropdown from "@/components/admin/CustomDropdown";
+import CustomDateRangePicker from "@/components/admin/CustomDateRangePicker";
+import { ClockIcon } from "lucide-react";
 
 interface ParticipantItem {
   name: string;
@@ -78,12 +80,9 @@ export default function AdminPreOrdersPage() {
   // Filters & Pagination
   const [search, setSearch] = useState("");
   const [serviceTypeFilter, setServiceTypeFilter] = useState("All");
-  const [serviceDropdownOpen, setServiceDropdownOpen] = useState(false);
   const [sortBy, setSortBy] = useState("latest");
-  const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
-  const [dateFilterOpen, setDateFilterOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
@@ -100,30 +99,10 @@ export default function AdminPreOrdersPage() {
   // Toast
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
-  const serviceDropdownRef = useRef<HTMLDivElement>(null);
-  const sortDropdownRef = useRef<HTMLDivElement>(null);
-  const dateDropdownRef = useRef<HTMLDivElement>(null);
-
   const showToast = (message: string, type: "success" | "error" = "success") => {
     setToast({ message, type });
     setTimeout(() => setToast(null), 3500);
   };
-
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (serviceDropdownRef.current && !serviceDropdownRef.current.contains(e.target as Node)) {
-        setServiceDropdownOpen(false);
-      }
-      if (sortDropdownRef.current && !sortDropdownRef.current.contains(e.target as Node)) {
-        setSortDropdownOpen(false);
-      }
-      if (dateDropdownRef.current && !dateDropdownRef.current.contains(e.target as Node)) {
-        setDateFilterOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   const getAdminToken = () => {
     try {
@@ -339,101 +318,16 @@ export default function AdminPreOrdersPage() {
 
         {/* Action Controls */}
         <div className="flex items-center gap-3">
-          {/* Date Filter Dropdown */}
-          <div className="relative" ref={dateDropdownRef}>
-            <button
-              type="button"
-              onClick={() => setDateFilterOpen(!dateFilterOpen)}
-              className={`flex items-center gap-2 bg-white border rounded-xl px-3.5 py-2 text-xs font-bold transition shadow-xs ${fromDate || toDate
-                ? "border-emerald-500 text-emerald-700 bg-emerald-50/40"
-                : "border-gray-200 text-gray-700 hover:border-gray-300"
-                }`}
-            >
-              <CalendarDaysIcon className="w-4 h-4 text-gray-500" />
-              <span>
-                {fromDate && toDate
-                  ? `${fromDate} to ${toDate}`
-                  : fromDate
-                    ? `From ${fromDate}`
-                    : toDate
-                      ? `Until ${toDate}`
-                      : "Date Range"}
-              </span>
-              <ChevronDownIcon className="w-3.5 h-3.5 text-gray-400" />
-            </button>
-
-            {dateFilterOpen && (
-              <div className="absolute right-0 mt-2 w-72 bg-white border border-gray-200 rounded-2xl shadow-2xl p-4 z-30">
-                <div className="flex items-center justify-between pb-2 mb-3 border-b border-gray-100">
-                  <span className="text-xs font-bold text-gray-800">Filter by Date</span>
-                  {(fromDate || toDate) && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setFromDate("");
-                        setToDate("");
-                        setCurrentPage(1);
-                      }}
-                      className="text-[11px] font-bold text-red-500 hover:text-red-700 transition"
-                    >
-                      Clear
-                    </button>
-                  )}
-                </div>
-
-                <div className="space-y-3">
-                  <div>
-                    <label className="block text-[11px] font-bold text-gray-600 mb-1">From Date</label>
-                    <input
-                      type="date"
-                      value={fromDate}
-                      onChange={(e) => {
-                        setFromDate(e.target.value);
-                        setCurrentPage(1);
-                      }}
-                      className="w-full border border-gray-200 rounded-xl px-3 py-1.5 text-xs text-gray-800 font-medium outline-none focus:border-emerald-500 bg-white"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] font-bold text-gray-600 mb-1">To Date</label>
-                    <input
-                      type="date"
-                      value={toDate}
-                      onChange={(e) => {
-                        setToDate(e.target.value);
-                        setCurrentPage(1);
-                      }}
-                      className="w-full border border-gray-200 rounded-xl px-3 py-1.5 text-xs text-gray-800 font-medium outline-none focus:border-emerald-500 bg-white"
-                    />
-                  </div>
-                </div>
-
-                <div className="mt-4 pt-2 border-t border-gray-100 flex items-center justify-between">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const today = new Date().toISOString().split("T")[0];
-                      setFromDate(today);
-                      setToDate(today);
-                      setCurrentPage(1);
-                      setDateFilterOpen(false);
-                    }}
-                    className="text-[11px] font-bold text-emerald-600 hover:text-emerald-700"
-                  >
-                    Today
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setDateFilterOpen(false)}
-                    className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition"
-                  >
-                    Apply
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
+          {/* Custom Date Range Picker */}
+          <CustomDateRangePicker
+            startDate={fromDate}
+            endDate={toDate}
+            onChange={(start, end) => {
+              setFromDate(start);
+              setToDate(end);
+              setCurrentPage(1);
+            }}
+          />
 
           {/* Admin Avatar Pill */}
           <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-3.5 py-2 shadow-xs">
@@ -508,79 +402,36 @@ export default function AdminPreOrdersPage() {
 
           {/* Right Filters: Service Type & Sort */}
           <div className="flex items-center gap-3">
-            {/* Service Type Dropdown */}
-            <div className="relative" ref={serviceDropdownRef}>
-              <button
-                type="button"
-                onClick={() => setServiceDropdownOpen(!serviceDropdownOpen)}
-                className="flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-3.5 py-2 text-xs font-bold text-gray-700 hover:border-gray-300 transition shadow-2xs"
-              >
-                <span>{serviceTypeFilter === "All" ? "All Services" : `${serviceTypeFilter}s`}</span>
-                <ChevronDownIcon className="w-3.5 h-3.5 text-gray-400" />
-              </button>
-              {serviceDropdownOpen && (
-                <div className="absolute right-0 mt-1 w-36 bg-white border border-gray-200 rounded-xl shadow-xl py-1.5 z-20">
-                  {["All", "Puja", "Homa"].map((opt) => (
-                    <button
-                      key={opt}
-                      onClick={() => {
-                        setServiceTypeFilter(opt);
-                        setServiceDropdownOpen(false);
-                        setCurrentPage(1);
-                      }}
-                      className={`w-full text-left px-3.5 py-1.5 text-xs font-semibold hover:bg-gray-50 ${serviceTypeFilter === opt ? "text-emerald-600 bg-emerald-50/50" : "text-gray-700"
-                        }`}
-                    >
-                      {opt === "All" ? "All Services" : `${opt}s`}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+            {/* Custom Service Type Dropdown */}
+            <CustomDropdown
+              value={serviceTypeFilter}
+              onChange={(val) => {
+                setServiceTypeFilter(val);
+                setCurrentPage(1);
+              }}
+              options={[
+                { value: "All", label: "All Services" },
+                { value: "Puja", label: "Pujas" },
+                { value: "Homa", label: "Homas" },
+              ]}
+              placeholder="All Services"
+            />
 
-            {/* Sort Dropdown */}
-            <div className="relative" ref={sortDropdownRef}>
-              <button
-                type="button"
-                onClick={() => setSortDropdownOpen(!sortDropdownOpen)}
-                className="flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-3.5 py-2 text-xs font-bold text-gray-700 hover:border-gray-300 transition shadow-2xs"
-              >
-                <span>
-                  Sort by:{" "}
-                  {sortBy === "latest"
-                    ? "Latest"
-                    : sortBy === "oldest"
-                      ? "Oldest"
-                      : sortBy === "name_asc"
-                        ? "Name (A-Z)"
-                        : "Amount (High-Low)"}
-                </span>
-                <ChevronDownIcon className="w-3.5 h-3.5 text-gray-400" />
-              </button>
-              {sortDropdownOpen && (
-                <div className="absolute right-0 mt-1 w-44 bg-white border border-gray-200 rounded-xl shadow-xl py-1.5 z-20">
-                  {[
-                    { id: "latest", label: "Latest" },
-                    { id: "oldest", label: "Oldest" },
-                    { id: "name_asc", label: "Name (A-Z)" },
-                    { id: "amount_desc", label: "Amount (High to Low)" },
-                  ].map((s) => (
-                    <button
-                      key={s.id}
-                      onClick={() => {
-                        setSortBy(s.id);
-                        setSortDropdownOpen(false);
-                        setCurrentPage(1);
-                      }}
-                      className={`w-full text-left px-3.5 py-1.5 text-xs font-semibold hover:bg-gray-50 ${sortBy === s.id ? "text-emerald-600 bg-emerald-50/50" : "text-gray-700"
-                        }`}
-                    >
-                      {s.label}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+            {/* Custom Sort Dropdown */}
+            <CustomDropdown
+              value={sortBy}
+              onChange={(val) => {
+                setSortBy(val);
+                setCurrentPage(1);
+              }}
+              options={[
+                { value: "latest", label: "Sort by: Latest" },
+                { value: "oldest", label: "Sort by: Oldest" },
+                { value: "name_asc", label: "Sort by: Name (A-Z)" },
+                { value: "amount_desc", label: "Sort by: Amount (High-Low)" },
+              ]}
+              placeholder="Sort by"
+            />
           </div>
         </div>
 
@@ -732,9 +583,18 @@ export default function AdminPreOrdersPage() {
                         </span>
                       </td>
 
-                      {/* Preferred Date */}
-                      <td className="py-4 px-4 font-semibold text-gray-800 whitespace-nowrap">
-                        {lead.preferredDate ? formatDate(lead.preferredDate) : formatDate(lead.createdAt)}
+                      {/* Preferred Date & Time */}
+                      <td className="py-4 px-4 whitespace-nowrap">
+                        <div className="flex flex-col">
+                          <span className="font-bold text-gray-900 flex items-center gap-1.5 text-xs">
+                            <CalendarDaysIcon className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                            {lead.preferredDate ? formatDate(lead.preferredDate) : formatDate(lead.createdAt)}
+                          </span>
+                          <span className="text-[11px] text-gray-500 font-semibold flex items-center gap-1.5 mt-0.5">
+                            <ClockIcon className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                            {formatTime(lead.createdAt || lead.preferredDate) || "12:00 am"}
+                          </span>
+                        </div>
                       </td>
 
                       {/* Additional Info */}

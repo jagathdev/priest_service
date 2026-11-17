@@ -18,6 +18,8 @@ import {
   SparklesIcon,
 } from "@heroicons/react/24/outline";
 import { formatIndianPhoneNumber } from "@/lib/phoneFormatter";
+import CustomDropdown from "@/components/admin/CustomDropdown";
+import CustomDateRangePicker from "@/components/admin/CustomDateRangePicker";
 
 const STATUS_CONFIG: Record<
   string,
@@ -143,7 +145,7 @@ interface StatsData {
 }
 
 export default function AdminOrdersPage() {
-  const [activeTab, setActiveTab] = useState<"active" | "completed">("active");
+  const [activeTab, setActiveTab] = useState<"all" | "active" | "completed">("all");
 
   const [data, setData] = useState<{
     orders: OrderData[];
@@ -247,13 +249,12 @@ export default function AdminOrdersPage() {
       status: string,
       source: string,
       query: string,
-      tab: "active" | "completed",
+      tab: "all" | "active" | "completed",
       sDate: string,
       eDate: string
     ) => {
       setLoading(true);
       try {
-        const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
         const params = new URLSearchParams({
           page: page.toString(),
           limit: "10",
@@ -266,6 +267,7 @@ export default function AdminOrdersPage() {
         if (sDate) params.append("startDate", sDate);
         if (eDate) params.append("endDate", eDate);
 
+        const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
         const headers = getAdminAuthHeaders();
         const res = await fetch(`${baseUrl}/api/admin/orders?${params.toString()}`, {
           credentials: "include",
@@ -583,7 +585,7 @@ export default function AdminOrdersPage() {
           <div className="flex items-center gap-2.5">
             <h1 className="text-xl sm:text-2xl font-black text-gray-900 tracking-tight">Orders &amp; Bookings</h1>
             <span className="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200">
-              {data.totalOrders} {activeTab === "active" ? "Active" : "Completed"}
+              {data.totalOrders} {activeTab === "all" ? "All" : activeTab === "active" ? "Active" : "Completed"}
             </span>
           </div>
           <p className="text-xs text-gray-500 mt-0.5">
@@ -598,10 +600,10 @@ export default function AdminOrdersPage() {
         <button
           type="button"
           onClick={() => {
-            setActiveTab("active");
+            setActiveTab("all");
             setSelectedStatus("All");
           }}
-          className={`p-3 rounded-2xl border text-left transition-all duration-150 flex flex-col justify-between cursor-pointer ${activeTab === "active" && (selectedStatus === "All" || !selectedStatus)
+          className={`p-3 rounded-2xl border text-left transition-all duration-150 flex flex-col justify-between cursor-pointer ${activeTab === "all" && (selectedStatus === "All" || !selectedStatus)
             ? "bg-blue-50/70 border-blue-400 shadow-sm ring-2 ring-blue-400/40"
             : "bg-white border-gray-200 hover:border-gray-300 hover:shadow-2xs shadow-2xs"
             }`}
@@ -764,21 +766,45 @@ export default function AdminOrdersPage() {
       </div>
 
       {/* Unified Filter & Action Toolbar */}
-      <div className="bg-white rounded-2xl border border-gray-200 p-3 shadow-2xs flex flex-col gap-3">
-        <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
-          {/* Left: Active vs Completed Tabs */}
-          <div className="flex items-center gap-1.5 bg-gray-100/80 p-1 rounded-xl shrink-0">
+      <div className="bg-white rounded-2xl border border-gray-200 p-3.5 shadow-2xs flex flex-col gap-3">
+        {/* Row 1: Mode Switcher Tabs (Left) & Search Box (Right) */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          {/* Tabs */}
+          <div className="flex items-center gap-1.5 bg-gray-100/90 p-1 rounded-xl shrink-0">
             <button
               type="button"
-              onClick={() => setActiveTab("active")}
-              className={`px-4 py-2 rounded-lg text-xs font-extrabold transition-all cursor-pointer flex items-center gap-2 ${activeTab === "active"
+              onClick={() => {
+                setActiveTab("all");
+                setSelectedStatus("All");
+              }}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-extrabold transition-all cursor-pointer flex items-center gap-2 ${activeTab === "all"
+                ? "bg-white text-gray-900 shadow-xs"
+                : "text-gray-600 hover:text-gray-900"
+                }`}
+            >
+              <span>All Bookings</span>
+              <span
+                className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${activeTab === "all" ? "bg-blue-100 text-blue-800" : "bg-gray-200 text-gray-700"
+                  }`}
+              >
+                {data.stats?.total || data.totalOrders || 0}
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setActiveTab("active");
+                setSelectedStatus("All");
+              }}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-extrabold transition-all cursor-pointer flex items-center gap-2 ${activeTab === "active"
                 ? "bg-white text-gray-900 shadow-xs"
                 : "text-gray-600 hover:text-gray-900"
                 }`}
             >
               <span>Active Bookings</span>
               <span
-                className={`px-2 py-0.2 rounded-full text-[10px] font-bold ${activeTab === "active" ? "bg-emerald-100 text-emerald-800" : "bg-gray-200 text-gray-700"
+                className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${activeTab === "active" ? "bg-emerald-100 text-emerald-800" : "bg-gray-200 text-gray-700"
                   }`}
               >
                 {(data.stats?.total || 0) - (data.stats?.completed || 0)}
@@ -787,8 +813,11 @@ export default function AdminOrdersPage() {
 
             <button
               type="button"
-              onClick={() => setActiveTab("completed")}
-              className={`px-4 py-2 rounded-lg text-xs font-extrabold transition-all cursor-pointer flex items-center gap-2 ${activeTab === "completed"
+              onClick={() => {
+                setActiveTab("completed");
+                setSelectedStatus("All");
+              }}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-extrabold transition-all cursor-pointer flex items-center gap-2 ${activeTab === "completed"
                 ? "bg-white text-emerald-800 shadow-xs"
                 : "text-gray-600 hover:text-gray-900"
                 }`}
@@ -796,7 +825,7 @@ export default function AdminOrdersPage() {
               <CheckIcon className="w-3.5 h-3.5 stroke-[3] text-emerald-600" />
               <span>Completed Rituals</span>
               <span
-                className={`px-2 py-0.2 rounded-full text-[10px] font-bold ${activeTab === "completed" ? "bg-emerald-600 text-white" : "bg-gray-200 text-gray-700"
+                className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${activeTab === "completed" ? "bg-emerald-600 text-white" : "bg-gray-200 text-gray-700"
                   }`}
               >
                 {data.stats?.completed || 0}
@@ -804,105 +833,93 @@ export default function AdminOrdersPage() {
             </button>
           </div>
 
-          {/* Right: Search, Service, Status, Date Filters */}
-          <div className="flex flex-wrap items-center gap-2.5">
-            {/* Search Box */}
-            <div className="relative flex-1 sm:flex-initial">
-              <MagnifyingGlassIcon className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                placeholder="Search devotee, ID, phone..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full sm:w-56 pl-9 pr-3 py-2 bg-gray-50/70 border border-gray-200 rounded-xl text-xs font-medium text-gray-800 placeholder-gray-400 outline-none hover:border-gray-300 focus:border-emerald-600 focus:bg-white transition-all shadow-2xs"
-              />
-            </div>
-
-            {/* Service Dropdown */}
-            <select
-              value={selectedService}
-              onChange={(e) => setSelectedService(e.target.value)}
-              className="bg-gray-50/70 border border-gray-200 text-gray-800 text-xs font-bold rounded-xl px-3 py-2 outline-none hover:border-gray-300 focus:border-emerald-600 focus:bg-white shadow-2xs cursor-pointer transition-all"
-            >
-              {data.services.map((service) => (
-                <option key={service} value={service}>
-                  {service === "All" ? "All Services" : service}
-                </option>
-              ))}
-            </select>
-
-            {/* Source / Campaign Dropdown */}
-            <select
-              value={selectedSource}
-              onChange={(e) => setSelectedSource(e.target.value)}
-              className="bg-gray-50/70 border border-gray-200 text-gray-800 text-xs font-bold rounded-xl px-3 py-2 outline-none hover:border-gray-300 focus:border-emerald-600 focus:bg-white shadow-2xs cursor-pointer transition-all"
-            >
-              <option value="All">All Sources</option>
-              <option value="Google">Google / Ads</option>
-              <option value="Facebook">Facebook</option>
-              <option value="Instagram">Instagram</option>
-              <option value="WhatsApp">WhatsApp</option>
-              <option value="YouTube">YouTube</option>
-              <option value="Direct">Direct</option>
-            </select>
-
-            {/* Status Dropdown (Active only) */}
-            {activeTab === "active" && (
-              <select
-                value={selectedStatus}
-                onChange={(e) => setSelectedStatus(e.target.value)}
-                className="bg-gray-50/70 border border-gray-200 text-gray-800 text-xs font-bold rounded-xl px-3 py-2 outline-none hover:border-gray-300 focus:border-emerald-600 focus:bg-white shadow-2xs cursor-pointer transition-all"
+          {/* Search Box */}
+          <div className="relative w-full sm:w-72">
+            <MagnifyingGlassIcon className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              placeholder="Search devotee, ID, phone..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-9 pr-8 py-2 bg-gray-50/70 border border-gray-200 rounded-xl text-xs font-medium text-gray-800 placeholder-gray-400 outline-none hover:border-gray-300 focus:border-emerald-600 focus:bg-white transition-all shadow-2xs"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs font-bold"
               >
-                {data.statuses
-                  .filter((st) => st.toLowerCase() !== "completed")
-                  .map((st) => (
-                    <option key={st} value={st}>
-                      {st === "All" ? "All Active Statuses" : st.toUpperCase()}
-                    </option>
-                  ))}
-              </select>
-            )}
-
-            {/* Date Range Filter: Between 2 Dates */}
-            <div className="flex items-center gap-1.5 bg-gray-50/70 border border-gray-200 px-3 py-1.5 rounded-xl text-xs font-medium text-gray-700">
-              <CalendarDaysIcon className="w-4 h-4 text-emerald-600 shrink-0" />
-              <span className="text-[11px] font-bold text-gray-500 mr-1 hidden sm:inline">Between:</span>
-              <input
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                className="bg-transparent text-gray-900 text-xs font-bold outline-none cursor-pointer"
-                title="Start Date"
-              />
-              <span className="text-gray-400 font-bold px-1">→</span>
-              <input
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                className="bg-transparent text-gray-900 text-xs font-bold outline-none cursor-pointer"
-                title="End Date"
-              />
-              {(startDate || endDate) && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setStartDate("");
-                    setEndDate("");
-                  }}
-                  className="text-gray-400 hover:text-gray-700 text-xs font-bold ml-1.5 cursor-pointer"
-                  title="Clear date filter"
-                >
-                  ✕
-                </button>
-              )}
-            </div>
-
-            {(startDate || endDate) && (
-              <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">
-                Filtered: {data.totalOrders} {data.totalOrders === 1 ? "Order" : "Orders"}
-              </span>
+                ✕
+              </button>
             )}
           </div>
+        </div>
+
+        {/* Row 2: Secondary Filters (Service, Source, Status, Date Range) */}
+        <div className="flex flex-wrap items-center gap-2.5 pt-2 border-t border-gray-100">
+          {/* Custom Service Dropdown */}
+          <CustomDropdown
+            value={selectedService}
+            onChange={(val) => setSelectedService(val)}
+            options={data.services.map((s) => (s === "All" ? { value: "All", label: "All Services" } : { value: s, label: s }))}
+            placeholder="All Services"
+          />
+
+          {/* Custom Source / Campaign Dropdown */}
+          <CustomDropdown
+            value={selectedSource}
+            onChange={(val) => setSelectedSource(val)}
+            options={[
+              { value: "All", label: "All Sources" },
+              { value: "Google", label: "Google / Ads" },
+              { value: "Facebook", label: "Facebook" },
+              { value: "Instagram", label: "Instagram" },
+              { value: "WhatsApp", label: "WhatsApp" },
+              { value: "YouTube", label: "YouTube" },
+              { value: "Direct", label: "Direct" },
+            ]}
+            placeholder="All Sources"
+          />
+
+          {/* Custom Status Dropdown (Visible on both All Bookings and Active Bookings) */}
+          {(activeTab === "all" || activeTab === "active") && (
+            <CustomDropdown
+              value={selectedStatus}
+              onChange={(val) => setSelectedStatus(val)}
+              options={
+                activeTab === "all"
+                  ? data.statuses.map((st) =>
+                      st === "All"
+                        ? { value: "All", label: "All Statuses" }
+                        : { value: st, label: st.toUpperCase() }
+                    )
+                  : data.statuses
+                      .filter((st) => st.toLowerCase() !== "completed")
+                      .map((st) =>
+                        st === "All"
+                          ? { value: "All", label: "All Active Statuses" }
+                          : { value: st, label: st.toUpperCase() }
+                      )
+              }
+              placeholder={activeTab === "all" ? "All Statuses" : "All Active Statuses"}
+            />
+          )}
+
+          {/* Custom Modern Date Range Picker Popover */}
+          <CustomDateRangePicker
+            startDate={startDate}
+            endDate={endDate}
+            onChange={(start, end) => {
+              setStartDate(start);
+              setEndDate(end);
+            }}
+          />
+
+          {(startDate || endDate) && (
+            <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1.5 rounded-xl border border-emerald-200">
+              Filtered: {data.totalOrders} {data.totalOrders === 1 ? "Order" : "Orders"}
+            </span>
+          )}
         </div>
       </div>
 
