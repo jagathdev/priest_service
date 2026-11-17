@@ -889,17 +889,17 @@ export default function AdminOrdersPage() {
               options={
                 activeTab === "all"
                   ? data.statuses.map((st) =>
+                    st === "All"
+                      ? { value: "All", label: "All Statuses" }
+                      : { value: st, label: st.toUpperCase() }
+                  )
+                  : data.statuses
+                    .filter((st) => st.toLowerCase() !== "completed")
+                    .map((st) =>
                       st === "All"
-                        ? { value: "All", label: "All Statuses" }
+                        ? { value: "All", label: "All Active Statuses" }
                         : { value: st, label: st.toUpperCase() }
                     )
-                  : data.statuses
-                      .filter((st) => st.toLowerCase() !== "completed")
-                      .map((st) =>
-                        st === "All"
-                          ? { value: "All", label: "All Active Statuses" }
-                          : { value: st, label: st.toUpperCase() }
-                      )
               }
               placeholder={activeTab === "all" ? "All Statuses" : "All Active Statuses"}
             />

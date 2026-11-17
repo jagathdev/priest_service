@@ -14,6 +14,7 @@ import adminRoutes from './routes/adminRoutes.js';
 import promoCodeRoutes from "./routes/promoCode.routes.js";
 import whatsappRoutes from "./routes/whatsapp.routes.js";
 import uploadRoutes from "./routes/upload.routes.js";
+import analyticsRoutes from "./routes/analytics.routes.js";
 import { globalLimiter } from "./middlewares/rateLimiters.js";
 import { notFoundHandler, errorHandler } from "./middlewares/error.middleware.js";
 import path from "path";
@@ -105,6 +106,7 @@ app.use("/api/customerQueries", customerQueryRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/promos", promoCodeRoutes);
 app.use("/api/whatsapp", whatsappRoutes);
+app.use("/api/analytics", analyticsRoutes);
 
 // Error Middlewares (mounted LAST)
 app.use(notFoundHandler);

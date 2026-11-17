@@ -1,4 +1,8 @@
 import {
+  getAdminFeedbacks,
+  deleteAdminFeedback
+} from "../controllers/feedback.controller.js";
+import {
   getAdminPreOrders,
   deleteAdminPreOrder,
   bulkDeleteAdminPreOrders
@@ -7,6 +11,7 @@ import express from "express";
 import {
   getAdminStats,
   adminLogin,
+  adminLogout,
   getAdminOrders,
   getAdminOrderById,
   getAdminPayments,
@@ -46,6 +51,7 @@ import { loginLimiter } from "../middlewares/rateLimiters.js";
 const router = express.Router();
 
 router.post("/login", loginLimiter, adminLogin);
+router.post("/logout", adminLogout);
 
 router.use(requireAuth, requireAdmin);
 router.get("/stats", getAdminStats);
@@ -63,6 +69,10 @@ router.post("/notifications/recipients", addRecipient);
 router.put("/notifications/recipients/:id", updateRecipient);
 router.delete("/notifications/recipients/:id", deleteRecipient);
 router.post("/notifications/test-mail", triggerTestMail);
+
+// Devotee Feedbacks & Ratings
+router.get("/feedbacks", getAdminFeedbacks);
+router.delete("/feedbacks/:id", deleteAdminFeedback);
 
 // Pre-Orders / Incomplete Booking Leads
 router.get("/pre-orders", getAdminPreOrders);

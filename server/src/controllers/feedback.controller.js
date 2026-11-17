@@ -1,5 +1,6 @@
 import Order from "../models/Order.js";
 import Feedback from "../models/Feedback.js";
+import { escapeRegex } from "../utils/escapeRegex.js";
 
 const RATING_LABELS = {
   1: "Poor",
@@ -48,7 +49,7 @@ export const submitOrderFeedback = async (req, res) => {
           ratingLabel,
           review: cleanReview,
         },
-        { new: true }
+        { returnDocument: "after" }
       );
     }
 
@@ -60,6 +61,8 @@ export const submitOrderFeedback = async (req, res) => {
         user: order.customer || req.user?._id || null,
         devoteeName: order.customerName || order.participants?.[0]?.name || "Devotee",
         mobileNumber: order.mobileNumber || "",
+        whatsappNumber: order.whatsappNumber || order.mobileNumber || "",
+        email: order.email || order.customerEmail || "",
         serviceName: order.itemName || order.pooja || "Puja Ritual",
         serviceType: order.serviceType || "Puja",
         rating: numRating,
@@ -205,3 +208,218 @@ export const deleteOrderFeedback = async (req, res) => {
   }
 };
 
+/**
+ * Admin: Get all feedback reviews with pagination, search, rating filters, ritual type filters, date ranges, and KPI stats
+ * GET /api/admin/feedbacks
+ */
+export const getAdminFeedbacks = async (req, res) => {
+  try {
+    const {
+      page = 1,
+      limit = 10,
+      search = "",
+      rating = "All",
+      serviceType = "All",
+      sort = "latest",
+      startDate,
+      endDate,
+      fromDate,
+      toDate,
+    } = req.query;
+
+    const effectiveStart = startDate || fromDate;
+    const effectiveEnd = endDate || toDate;
+
+    const limitNum = Math.max(1, parseInt(limit, 10) || 10);
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const skip = (pageNum - 1) * limitNum;
+
+    // Sorting definition
+    let sortObj = { createdAt: -1 };
+    if (sort === "oldest") {
+      sortObj = { createdAt: 1 };
+    } else if (sort === "rating_desc") {
+      sortObj = { rating: -1, createdAt: -1 };
+    } else if (sort === "rating_asc") {
+      sortObj = { rating: 1, createdAt: -1 };
+    }
+
+    const query = {};
+    const andConditions = [];
+
+    // Search by devoteeName, orderNumber, email, mobile, whatsapp, or review
+    if (search && search.trim()) {
+      const escaped = escapeRegex(search.trim());
+      const regex = new RegExp(escaped, "i");
+      andConditions.push({
+        $or: [
+          { devoteeName: regex },
+          { orderNumber: regex },
+          { email: regex },
+          { mobileNumber: regex },
+          { whatsappNumber: regex },
+          { serviceName: regex },
+          { review: regex },
+        ],
+      });
+    }
+
+    // Rating Filter
+    if (rating && rating !== "All") {
+      const rNum = parseInt(rating, 10);
+      if (!isNaN(rNum)) {
+        query.rating = rNum;
+      }
+    }
+
+    // Service Type Filter (handle Puja / Pooja / Homa)
+    if (serviceType && serviceType !== "All") {
+      const lower = serviceType.toLowerCase();
+      if (lower === "puja" || lower === "pooja") {
+        query.serviceType = { $in: [/puja/i, /pooja/i] };
+      } else {
+        query.serviceType = new RegExp(`^${escapeRegex(serviceType)}$`, "i");
+      }
+    }
+
+    // Date Range Filter
+    if (effectiveStart || effectiveEnd) {
+      const dateCond = {};
+      if (effectiveStart) {
+        const start = new Date(effectiveStart);
+        start.setHours(0, 0, 0, 0);
+        if (!isNaN(start.getTime())) dateCond.$gte = start;
+      }
+      if (effectiveEnd) {
+        const end = new Date(effectiveEnd);
+        end.setHours(23, 59, 59, 999);
+        if (!isNaN(end.getTime())) dateCond.$lte = end;
+      }
+      if (Object.keys(dateCond).length > 0) {
+        query.createdAt = dateCond;
+      }
+    }
+
+    if (andConditions.length > 0) {
+      query.$and = andConditions;
+    }
+
+    const [feedbacks, totalCount, statsAgg] = await Promise.all([
+      Feedback.find(query)
+        .sort(sortObj)
+        .skip(skip)
+        .limit(limitNum)
+        .populate("order", "orderNumber devoteeName mobileNumber email pricing serviceName serviceType")
+        .lean(),
+      Feedback.countDocuments(query),
+      Feedback.aggregate([
+        {
+          $group: {
+            _id: null,
+            totalReviews: { $sum: 1 },
+            avgRating: { $avg: "$rating" },
+            fiveStars: {
+              $sum: { $cond: [{ $eq: ["$rating", 5] }, 1, 0] },
+            },
+            fourStars: {
+              $sum: { $cond: [{ $eq: ["$rating", 4] }, 1, 0] },
+            },
+            threeStars: {
+              $sum: { $cond: [{ $eq: ["$rating", 3] }, 1, 0] },
+            },
+            pujaReviews: {
+              $sum: {
+                $cond: [
+                  {
+                    $in: [
+                      { $toLower: { $ifNull: ["$serviceType", "puja"] } },
+                      ["puja", "pooja"],
+                    ],
+                  },
+                  1,
+                  0,
+                ],
+              },
+            },
+            homaReviews: {
+              $sum: {
+                $cond: [
+                  {
+                    $eq: [
+                      { $toLower: { $ifNull: ["$serviceType", ""] } },
+                      "homa",
+                    ],
+                  },
+                  1,
+                  0,
+                ],
+              },
+            },
+          },
+        },
+      ]),
+    ]);
+
+    const stats = statsAgg[0] || {
+      totalReviews: 0,
+      avgRating: 0,
+      fiveStars: 0,
+      fourStars: 0,
+      threeStars: 0,
+      pujaReviews: 0,
+      homaReviews: 0,
+    };
+
+    return res.status(200).json({
+      success: true,
+      data: feedbacks,
+      totalCount,
+      totalPages: Math.ceil(totalCount / limitNum) || 1,
+      currentPage: pageNum,
+      stats: {
+        totalReviews: stats.totalReviews,
+        avgRating: Number((stats.avgRating || 0).toFixed(1)),
+        fiveStars: stats.fiveStars,
+        fourStars: stats.fourStars,
+        threeStars: stats.threeStars,
+        pujaReviews: stats.pujaReviews,
+        homaReviews: stats.homaReviews,
+      },
+    });
+  } catch (error) {
+    console.error("[Feedback Controller] Error fetching feedbacks:", error?.stack || error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch feedback records",
+    });
+  }
+};
+
+/**
+ * Admin: Delete a feedback record
+ * DELETE /api/admin/feedbacks/:id
+ */
+export const deleteAdminFeedback = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      return res.status(400).json({ success: false, message: "Feedback ID is required" });
+    }
+
+    const deleted = await Feedback.findByIdAndDelete(id);
+    if (!deleted) {
+      return res.status(404).json({ success: false, message: "Feedback record not found" });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Feedback deleted successfully",
+    });
+  } catch (error) {
+    console.error("[Feedback Controller] Error deleting feedback:", error?.stack || error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to delete feedback record",
+    });
+  }
+};

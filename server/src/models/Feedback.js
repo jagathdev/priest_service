@@ -30,6 +30,17 @@ const feedbackSchema = new mongoose.Schema(
       default: "",
       trim: true,
     },
+    whatsappNumber: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    email: {
+      type: String,
+      default: "",
+      trim: true,
+      lowercase: true,
+    },
     serviceName: {
       type: String,
       default: "Puja Ritual",

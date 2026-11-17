@@ -35,6 +35,7 @@ const menuItems = [
   { name: "Service Dispatch", href: "/admin/service-dispatch", icon: ArrowDownTrayIcon },
   { name: "Email Alerts", href: "/admin/notifications", icon: EnvelopeIcon },
   { name: "Customer Queries", href: "/admin/customer-queries", icon: ChatBubbleBottomCenterTextIcon },
+  { name: "Feedbacks", href: "/admin/feedback", icon: ChatBubbleBottomCenterTextIcon },
 
 ];
 

@@ -3,6 +3,7 @@ import Homa from "../models/homaModel.js";
 import Order from "../models/Order.js";
 import User from "../models/user.js";
 import Otp from "../models/otp.js";
+import VisitorHit from "../models/VisitorHit.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import Admin from "../models/Admin.js";
@@ -10,23 +11,29 @@ import { escapeRegex } from "../utils/escapeRegex.js";
 export const adminLogin = async (req, res) => {
   try {
     const { email, password } = req.body || {};
+    // console.log(`[Express Backend] Admin login attempt for: ${email}`);
+
     if (!email || !password || typeof email !== "string" || typeof password !== "string") {
+      console.warn(`[Express Backend] Admin login failed: Missing email or password`);
       return res.status(400).json({ success: false, message: "Valid email and password are required" });
     }
 
     const cleanEmail = email.trim().toLowerCase();
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(cleanEmail)) {
+      console.warn(`[Express Backend] Admin login failed: Invalid email format for '${cleanEmail}'`);
       return res.status(400).json({ success: false, message: "Invalid email format" });
     }
 
     const admin = await Admin.findOne({ email: cleanEmail });
     if (!admin) {
+      console.warn(`[Express Backend] Admin login failed: No admin account found with email '${cleanEmail}'`);
       return res.status(401).json({ success: false, message: "Invalid email or password" });
     }
 
     const isMatch = await bcrypt.compare(password, admin.passwordHash);
     if (!isMatch) {
+      console.warn(`[Express Backend] Admin login failed: Incorrect password for '${cleanEmail}'`);
       return res.status(401).json({ success: false, message: "Invalid email or password" });
     }
 
@@ -34,6 +41,17 @@ export const adminLogin = async (req, res) => {
     await admin.save();
 
     const token = jwt.sign({ id: admin._id, role: admin.role }, process.env.JWT_SECRET, { expiresIn: "1d" });
+    // console.log(`[Express Backend] Admin login successful for '${cleanEmail}', JWT issued.`);
+
+    // Set secure HttpOnly cookie for admin authentication
+    const cookieOptions = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 24 * 60 * 60 * 1000, // 1 day
+      path: "/",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    };
+    res.cookie("adminToken", token, cookieOptions);
 
     return res.status(200).json({
       success: true,
@@ -46,8 +64,22 @@ export const adminLogin = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error("Admin login error:", error.message);
+    console.error("[Express Backend] Admin login unexpected error:", error?.stack || error);
     return res.status(500).json({ success: false, message: "Failed to login" });
+  }
+};
+
+export const adminLogout = async (req, res) => {
+  try {
+    res.clearCookie("adminToken", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    });
+    return res.status(200).json({ success: true, message: "Logged out successfully" });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: "Failed to logout" });
   }
 };
 
@@ -412,6 +444,42 @@ export const getAdminStats = async (req, res) => {
       utmCampaign: b.utmCampaign || "",
     }));
 
+    const todayDateKey = new Date().toISOString().slice(0, 10);
+    const totalVisitors = await VisitorHit.countDocuments({});
+    const todayVisitors = await VisitorHit.countDocuments({ dateKey: todayDateKey });
+
+    // Group visitors by UTM Source
+    const visitorSourceStats = await VisitorHit.aggregate([
+      {
+        $group: {
+          _id: { $ifNull: ["$utmSource", "Direct"] },
+          count: { $sum: 1 },
+        },
+      },
+      { $sort: { count: -1 } },
+      { $limit: 10 },
+    ]);
+
+    // Group visitors by UTM Campaign
+    const visitorCampaignStats = await VisitorHit.aggregate([
+      {
+        $match: {
+          utmCampaign: { $exists: true, $ne: "" },
+        },
+      },
+      {
+        $group: {
+          _id: {
+            source: "$utmSource",
+            campaign: "$utmCampaign",
+          },
+          count: { $sum: 1 },
+        },
+      },
+      { $sort: { count: -1 } },
+      { $limit: 15 },
+    ]);
+
     return res.status(200).json({
       success: true,
       data: {
@@ -419,6 +487,19 @@ export const getAdminStats = async (req, res) => {
         homas: homaCount,
         orders: ordersCount,
         revenue,
+        visitors: {
+          total: totalVisitors,
+          today: todayVisitors,
+          sources: visitorSourceStats.map((item) => ({
+            source: item._id || "Direct",
+            count: item.count,
+          })),
+          campaigns: visitorCampaignStats.map((item) => ({
+            source: item._id.source || "Direct",
+            campaign: item._id.campaign,
+            count: item.count,
+          })),
+        },
         otps: {
           total: totalOtps,
           today: todayOtps,
