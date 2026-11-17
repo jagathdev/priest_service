@@ -31,6 +31,7 @@ export default function CustomSingleDatePicker({
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  const [prevValue, setPrevValue] = useState(value);
   const initialDate = value ? new Date(value) : new Date();
   const [viewYear, setViewYear] = useState(
     isNaN(initialDate.getTime()) ? new Date().getFullYear() : initialDate.getFullYear()
@@ -39,7 +40,9 @@ export default function CustomSingleDatePicker({
     isNaN(initialDate.getTime()) ? new Date().getMonth() : initialDate.getMonth()
   );
 
-  useEffect(() => {
+  // Synchronize calendar view during render when prop value changes (React recommended pattern)
+  if (value !== prevValue) {
+    setPrevValue(value);
     if (value) {
       const d = new Date(value);
       if (!isNaN(d.getTime())) {
@@ -47,7 +50,7 @@ export default function CustomSingleDatePicker({
         setViewMonth(d.getMonth());
       }
     }
-  }, [value]);
+  }
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {

@@ -1138,7 +1138,7 @@ export default function AdminOrderDetailPage({ params }: { params: Promise<{ id:
               </div>
 
               {/* Video Link */}
-              
+
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <label className="block text-xs font-bold text-gray-700 flex items-center gap-1.5">

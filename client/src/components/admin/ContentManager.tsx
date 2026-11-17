@@ -17,6 +17,8 @@ import {
   ArrowUpTrayIcon,
   LinkIcon,
   ArrowPathIcon,
+  CheckCircleIcon,
+  ExclamationCircleIcon,
 } from "@heroicons/react/24/outline";
 
 export const getAdminBaseApiUrl = (): string => {
@@ -204,6 +206,14 @@ export default function ContentManager({
     filename: string;
     onSuccess: (url: string) => void;
   } | null>(null);
+
+  // Toast feedback state
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+
+  const showToast = (message: string, type: "success" | "error" = "success") => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3500);
+  };
 
   const uploadImageFile = async (
     file: File,
@@ -785,16 +795,24 @@ export default function ContentManager({
         body: JSON.stringify(payload),
       });
       if (res.ok) {
+        const itemNoun = title ? title.replace(/s$/, "") : "Item";
+        const successMessage = editingId
+          ? `${itemNoun} updated successfully!`
+          : `${itemNoun} created successfully!`;
+        showToast(successMessage, "success");
         resetForm();
         fetchItems();
       } else {
         const errorData = await res.json().catch(() => ({}));
         const msg = errorData.message || errorData.error || `Failed to save (Status ${res.status})`;
         setFormError(msg);
+        showToast(msg, "error");
       }
     } catch (error: any) {
       console.error("Failed to save item:", error);
-      setFormError(error?.message || "Failed to save item.");
+      const msg = error?.message || "Failed to save item.";
+      setFormError(msg);
+      showToast(msg, "error");
     } finally {
       setSubmitting(false);
     }
@@ -813,13 +831,17 @@ export default function ContentManager({
         credentials: "include",
       });
       if (res.ok) {
+        const itemNoun = title ? title.replace(/s$/, "") : "Item";
+        showToast(`${itemNoun} deleted successfully!`, "success");
         fetchItems();
       } else {
         const errorData = await res.json().catch(() => ({}));
-        alert(errorData.message || `Failed to delete (Status ${res.status})`);
+        const msg = errorData.message || `Failed to delete (Status ${res.status})`;
+        showToast(msg, "error");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to delete item:", error);
+      showToast(error?.message || "Failed to delete item.", "error");
     }
   };
 
@@ -1878,6 +1900,21 @@ export default function ContentManager({
 
   return (
     <div className="min-h-full">
+      {/* Toast Notification */}
+      {toast && (
+        <div
+          className={`fixed bottom-6 right-6 z-50 flex items-center gap-2.5 px-4 py-3 rounded-2xl shadow-2xl text-xs font-bold text-white transition-all transform animate-in slide-in-from-bottom-5 ${toast.type === "success" ? "bg-emerald-600 shadow-emerald-600/30" : "bg-red-600 shadow-red-600/30"
+            }`}
+        >
+          {toast.type === "success" ? (
+            <CheckCircleIcon className="w-5 h-5 shrink-0" />
+          ) : (
+            <ExclamationCircleIcon className="w-5 h-5 shrink-0" />
+          )}
+          <span>{toast.message}</span>
+        </div>
+      )}
+
       {/* Sticky Header Bar: Flush at top:0 with zero gap/hole */}
       <div className="sticky top-0 z-30 w-full bg-[#f3f0ff] border-b border-[#e8e2ff] px-4 md:px-6 py-4 shadow-xs">
         <div className="flex items-center justify-between">
@@ -2260,14 +2297,46 @@ export default function ContentManager({
                                       {item.status === "inactive" || item.isActive === false ? "Inactive" : "Active"}
                                     </span>
                                     <button
+                                      type="button"
                                       onClick={async () => {
                                         const isCurrentActive = item.isActive !== false && item.status !== "inactive";
                                         const nextStatus = isCurrentActive ? false : true;
-                                        const payload = { ...item, isActive: nextStatus, status: isCurrentActive ? "inactive" : "active" }; delete payload._id;
-                                        const res = await fetch(getEndpoint(type, item._id), { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
-                                        if (res.ok) fetchItems();
+                                        const payload = {
+                                          ...item,
+                                          isActive: nextStatus,
+                                          status: isCurrentActive ? "inactive" : "active",
+                                        };
+                                        delete payload._id;
+                                        delete payload.createdAt;
+                                        delete payload.updatedAt;
+                                        delete payload.__v;
+
+                                        try {
+                                          const res = await fetch(getEndpoint(type, item._id), {
+                                            method: "PUT",
+                                            headers: {
+                                              "Content-Type": "application/json",
+                                              ...getAdminAuthHeaders(),
+                                            },
+                                            credentials: "include",
+                                            body: JSON.stringify(payload),
+                                          });
+
+                                          if (res.ok) {
+                                            showToast(
+                                              `Marked as ${isCurrentActive ? "Inactive" : "Active"} successfully!`,
+                                              "success"
+                                            );
+                                            fetchItems();
+                                          } else {
+                                            const err = await res.json().catch(() => ({}));
+                                            showToast(err.message || "Failed to update status", "error");
+                                          }
+                                        } catch (error: any) {
+                                          showToast(error?.message || "Failed to update status", "error");
+                                        }
                                       }}
-                                      className="rounded-md border border-gray-300 px-2 py-1 text-xs text-gray-700 hover:bg-gray-50"
+                                      className="rounded-md border border-gray-300 px-2 py-1 text-xs text-gray-700 hover:bg-gray-50 cursor-pointer"
                                     >
                                       Mark {item.isActive !== false && item.status !== "inactive" ? "Inactive" : "Active"}
                                     </button>
