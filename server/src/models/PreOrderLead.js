@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import Counter from "./Counter.js";
 
 const participantSchema = new mongoose.Schema(
   {
@@ -26,6 +27,12 @@ const preOrderLeadSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       default: null,
+    },
+    orderNumber: {
+      type: String,
+      default: "",
+      trim: true,
+      index: true,
     },
     userName: {
       type: String,
@@ -141,6 +148,17 @@ const preOrderLeadSchema = new mongoose.Schema(
 );
 
 preOrderLeadSchema.index({ mobileNumber: 1, whatsappNumber: 1, createdAt: -1 });
+
+preOrderLeadSchema.pre("save", async function () {
+  if (this.isNew && !this.orderNumber) {
+    const counter = await Counter.findByIdAndUpdate(
+      { _id: "orderNumber" },
+      { $inc: { seq: 1 } },
+      { returnDocument: "after", upsert: true }
+    );
+    this.orderNumber = `PS-${new Date().getFullYear()}-${String(counter.seq).padStart(6, "0")}`;
+  }
+});
 
 const PreOrderLead =
   mongoose.models.PreOrderLead || mongoose.model("PreOrderLead", preOrderLeadSchema);

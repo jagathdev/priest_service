@@ -1,4 +1,5 @@
 import PreOrderLead from "../models/PreOrderLead.js";
+import Order from "../models/Order.js";
 
 // Helper to escape regex special characters
 const escapeRegex = (string) => {
@@ -19,6 +20,7 @@ export const getAdminPreOrders = async (req, res) => {
       const escaped = escapeRegex(search.trim());
       const regex = new RegExp(escaped, "i");
       query.$or = [
+        { orderNumber: regex },
         { userName: regex },
         { mobileNumber: regex },
         { whatsappNumber: regex },
@@ -74,32 +76,68 @@ export const getAdminPreOrders = async (req, res) => {
       .limit(limitNum)
       .lean();
 
-    const formattedLeads = leads.map((l) => ({
-      _id: l._id,
-      userName: l.userName || "Devotee",
-      mobileNumber: l.mobileNumber || l.whatsappNumber || "N/A",
-      whatsappNumber: l.whatsappNumber || l.mobileNumber || "",
-      email: l.email || "",
-      serviceType: l.serviceType || "Puja",
-      serviceId: l.serviceId,
-      serviceName: l.serviceName || "Sacred Ritual",
-      packageName: l.packageName || "Standard Package",
-      packagePrice: l.packagePrice || 0,
-      totalAmount: l.totalAmount || 0,
-      preferredDate: l.preferredDate || "",
-      participants: l.participants || [],
-      gotra: l.gotra || "",
-      doesNotKnowGotra: Boolean(l.doesNotKnowGotra),
-      wish: l.wish || "",
-      offerings: l.offerings || [],
-      utmSource: l.utmSource || "Direct",
-      utmMedium: l.utmMedium || "",
-      utmCampaign: l.utmCampaign || "",
-      utmSource: l.utmSource || "Direct",
-      utmMedium: l.utmMedium || "",
-      utmCampaign: l.utmCampaign || "",
-      createdAt: l.createdAt,
-    }));
+    // For any older leads missing orderNumber in pre_order_leads collection,
+    // lookup the matching Order created during checkout by razorpayOrderId or uniqueId
+    const missingLeads = leads.filter((l) => !l.orderNumber);
+    let orderMap = new Map();
+    if (missingLeads.length > 0) {
+      const razorpayIds = missingLeads.map((l) => l.razorpayOrderId).filter(Boolean);
+      const uniqueIds = missingLeads.map((l) => l.uniqueId).filter(Boolean);
+      const orClauses = [];
+      if (razorpayIds.length > 0) orClauses.push({ razorpayOrderId: { $in: razorpayIds } });
+      if (uniqueIds.length > 0) orClauses.push({ uniqueId: { $in: uniqueIds } });
+
+      if (orClauses.length > 0) {
+        const matchedOrders = await Order.find({ $or: orClauses })
+          .select("orderNumber razorpayOrderId uniqueId")
+          .lean();
+
+        matchedOrders.forEach((o) => {
+          if (o.orderNumber) {
+            if (o.razorpayOrderId) orderMap.set(o.razorpayOrderId, o.orderNumber);
+            if (o.uniqueId) orderMap.set(o.uniqueId, o.orderNumber);
+          }
+        });
+      }
+    }
+
+    const formattedLeads = leads.map((l) => {
+      let displayOrderNumber = l.orderNumber || "";
+      if (!displayOrderNumber) {
+        if (l.razorpayOrderId && orderMap.has(l.razorpayOrderId)) {
+          displayOrderNumber = orderMap.get(l.razorpayOrderId);
+        } else if (l.uniqueId && orderMap.has(l.uniqueId)) {
+          displayOrderNumber = orderMap.get(l.uniqueId);
+        } else if (l.uniqueId && !l.uniqueId.includes("-") && /^\d+$/.test(l.uniqueId)) {
+          displayOrderNumber = `PS-2026-${String(l.uniqueId).padStart(6, "0")}`;
+        }
+      }
+
+      return {
+        _id: l._id,
+        orderNumber: displayOrderNumber,
+        userName: l.userName || "Devotee",
+        mobileNumber: l.mobileNumber || l.whatsappNumber || "N/A",
+        whatsappNumber: l.whatsappNumber || l.mobileNumber || "",
+        email: l.email || "",
+        serviceType: l.serviceType || "Puja",
+        serviceId: l.serviceId,
+        serviceName: l.serviceName || "Sacred Ritual",
+        packageName: l.packageName || "Standard Package",
+        packagePrice: l.packagePrice || 0,
+        totalAmount: l.totalAmount || 0,
+        preferredDate: l.preferredDate || "",
+        participants: l.participants || [],
+        gotra: l.gotra || "",
+        doesNotKnowGotra: Boolean(l.doesNotKnowGotra),
+        wish: l.wish || "",
+        offerings: l.offerings || [],
+        utmSource: l.utmSource || "Direct",
+        utmMedium: l.utmMedium || "",
+        utmCampaign: l.utmCampaign || "",
+        createdAt: l.createdAt,
+      };
+    });
 
     return res.status(200).json({
       success: true,

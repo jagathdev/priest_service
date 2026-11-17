@@ -193,6 +193,7 @@ export const createPaymentOrder = async (req, res) => {
         // Save lead in pre_order_leads collection for admin pre-orders monitoring
         try {
             await PreOrderLead.create({
+                orderNumber: createdOrder.orderNumber || "",
                 user: authenticatedUserId,
                 userName: customerName || "Devotee",
                 mobileNumber: mobileNumber || "",

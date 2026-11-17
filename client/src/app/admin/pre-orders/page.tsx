@@ -33,6 +33,7 @@ interface ParticipantItem {
 
 interface PreOrderLeadItem {
   _id: string;
+  orderNumber?: string;
   userName: string;
   mobileNumber: string;
   whatsappNumber: string;
@@ -469,11 +470,11 @@ export default function AdminPreOrdersPage() {
         )}
 
         {/* Pre-Orders Table */}
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse min-w-[950px]">
+        <div className="w-full overflow-x-hidden">
+          <table className="w-full text-left border-collapse table-fixed">
             <thead>
               <tr className="bg-gray-50/80 border-b border-gray-200 text-[11px] font-bold text-gray-500 uppercase tracking-wider">
-                <th className="py-3.5 pl-6 pr-2 w-10 text-center">
+                <th className="py-3.5 pl-4 pr-1 w-9 text-center">
                   <input
                     type="checkbox"
                     checked={isAllSelected}
@@ -485,19 +486,20 @@ export default function AdminPreOrdersPage() {
                     className="w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer disabled:cursor-not-allowed"
                   />
                 </th>
-                <th className="py-3.5 px-2 w-10 text-center">#</th>
-                <th className="py-3.5 px-4">User Details</th>
-                <th className="py-3.5 px-4">Service Interested</th>
-                <th className="py-3.5 px-4">Preferred Date</th>
-                <th className="py-3.5 px-4">Additional Info</th>
-                <th className="py-3.5 px-4">Amount</th>
-                <th className="py-3.5 pr-6 pl-4 text-center w-28">Actions</th>
+                <th className="py-3.5 px-1 w-8 text-center">#</th>
+                <th className="py-3.5 px-2.5 w-[14%]">ORDER NUMBER</th>
+                <th className="py-3.5 px-3 w-[18%]">USER DETAILS</th>
+                <th className="py-3.5 px-3 w-[20%]">SERVICE INTERESTED</th>
+                <th className="py-3.5 px-2.5 w-[14%]">PREFERRED DATE</th>
+                <th className="py-3.5 px-2.5 w-[12%]">ADDITIONAL INFO</th>
+                <th className="py-3.5 px-2.5 w-[11%]">AMOUNT</th>
+                <th className="py-3.5 pr-4 pl-1 text-center w-[11%]">ACTIONS</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-150 text-xs font-medium text-gray-700">
               {loading ? (
                 <tr>
-                  <td colSpan={8} className="py-12 text-center text-gray-400">
+                  <td colSpan={9} className="py-12 text-center text-gray-400">
                     <div className="inline-flex items-center gap-2">
                       <div className="w-4 h-4 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
                       <span>Loading incomplete pre-orders...</span>
@@ -506,13 +508,13 @@ export default function AdminPreOrdersPage() {
                 </tr>
               ) : error ? (
                 <tr>
-                  <td colSpan={8} className="py-12 text-center text-red-500">
+                  <td colSpan={9} className="py-12 text-center text-red-500">
                     {error}
                   </td>
                 </tr>
               ) : leads.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-12 text-center text-gray-400">
+                  <td colSpan={9} className="py-12 text-center text-gray-400">
                     No incomplete pre-orders found. Devotees who click &ldquo;Continue with Payment&rdquo; without completing checkout will appear here.
                   </td>
                 </tr>
@@ -526,11 +528,15 @@ export default function AdminPreOrdersPage() {
                   return (
                     <tr
                       key={lead._id}
-                      className={`hover:bg-gray-50/80 transition-colors duration-150 ${isChecked ? "bg-emerald-50/40" : ""
+                      onClick={() => setViewingLead(lead)}
+                      className={`hover:bg-emerald-50/40 transition-colors duration-150 cursor-pointer ${isChecked ? "bg-emerald-50/60" : ""
                         }`}
                     >
                       {/* Checkbox */}
-                      <td className="py-4 pl-6 pr-2 text-center">
+                      <td
+                        className="py-3.5 pl-4 pr-1 text-center"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <input
                           type="checkbox"
                           checked={isChecked}
@@ -540,23 +546,30 @@ export default function AdminPreOrdersPage() {
                       </td>
 
                       {/* Row # */}
-                      <td className="py-4 px-2 text-center text-gray-400 font-bold text-xs">
+                      <td className="py-3.5 px-1 text-center text-gray-400 font-bold text-xs">
                         {rowNumber}
                       </td>
 
+                      {/* Order Number */}
+                      <td className="py-3.5 px-2.5 font-mono font-bold text-xs">
+                        <span className="text-emerald-700 hover:text-emerald-900 transition truncate block" title={lead.orderNumber}>
+                          {lead.orderNumber || "–"}
+                        </span>
+                      </td>
+
                       {/* User Details */}
-                      <td className="py-4 px-4">
-                        <div className="flex items-center gap-3">
+                      <td className="py-3.5 px-3">
+                        <div className="flex items-center gap-2.5">
                           <div
-                            className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-extrabold shrink-0 ${avatarColor}`}
+                            className={`w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-extrabold shrink-0 ${avatarColor}`}
                           >
                             {initial}
                           </div>
-                          <div>
-                            <span className="font-bold text-gray-900 block truncate max-w-[170px]">
+                          <div className="overflow-hidden min-w-0">
+                            <span className="font-bold text-gray-900 block truncate" title={lead.userName}>
                               {lead.userName}
                             </span>
-                            <span className="text-[11px] font-semibold text-gray-500 block">
+                            <span className="text-[11px] font-semibold text-gray-500 block truncate">
                               {formatIndianPhoneNumber(lead.whatsappNumber || lead.mobileNumber)}
                             </span>
                           </div>
@@ -564,33 +577,33 @@ export default function AdminPreOrdersPage() {
                       </td>
 
                       {/* Service Interested */}
-                      <td className="py-4 px-4">
-                        <div className="flex items-center gap-2">
+                      <td className="py-3.5 px-3 overflow-hidden">
+                        <div className="flex items-center gap-1.5">
                           <span
-                            className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-extrabold ${lead.serviceType?.toLowerCase().includes("homa")
+                            className={`inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-extrabold shrink-0 ${lead.serviceType?.toLowerCase().includes("homa")
                               ? "bg-amber-100 text-amber-800"
                               : "bg-purple-100 text-purple-800"
                               }`}
                           >
                             {lead.serviceType?.toLowerCase().includes("homa") ? "HOMA" : "PUJA"}
                           </span>
-                          <span className="font-bold text-gray-900 truncate max-w-[190px]">
+                          <span className="font-bold text-gray-900 truncate text-xs" title={lead.serviceName}>
                             {lead.serviceName}
                           </span>
                         </div>
-                        <span className="text-[11px] text-gray-500 block mt-0.5">
+                        <span className="text-[11px] text-gray-500 block mt-0.5 truncate" title={lead.packageName}>
                           {lead.packageName}
                         </span>
                       </td>
 
                       {/* Preferred Date & Time */}
-                      <td className="py-4 px-4 whitespace-nowrap">
+                      <td className="py-3.5 px-2.5">
                         <div className="flex flex-col">
-                          <span className="font-bold text-gray-900 flex items-center gap-1.5 text-xs">
+                          <span className="font-bold text-gray-900 flex items-center gap-1 text-[11px] truncate">
                             <CalendarDaysIcon className="w-3.5 h-3.5 text-gray-400 shrink-0" />
                             {lead.preferredDate ? formatDate(lead.preferredDate) : formatDate(lead.createdAt)}
                           </span>
-                          <span className="text-[11px] text-gray-500 font-semibold flex items-center gap-1.5 mt-0.5">
+                          <span className="text-[10px] text-gray-500 font-semibold flex items-center gap-1 mt-0.5 truncate">
                             <ClockIcon className="w-3.5 h-3.5 text-gray-400 shrink-0" />
                             {formatTime(lead.createdAt || lead.preferredDate) || "12:00 am"}
                           </span>
@@ -598,35 +611,38 @@ export default function AdminPreOrdersPage() {
                       </td>
 
                       {/* Additional Info */}
-                      <td className="py-4 px-4 max-w-[220px]">
+                      <td className="py-3.5 px-2.5 overflow-hidden">
                         {lead.wish ? (
-                          <span className="text-gray-700 italic line-clamp-1">&ldquo;{lead.wish}&rdquo;</span>
+                          <span className="text-gray-700 italic line-clamp-1 text-xs" title={lead.wish}>&ldquo;{lead.wish}&rdquo;</span>
                         ) : lead.gotra ? (
-                          <span className="text-gray-700">Gotra: {lead.gotra}</span>
+                          <span className="text-gray-700 truncate block text-xs" title={`Gotra: ${lead.gotra}`}>Gotra: {lead.gotra}</span>
                         ) : (
-                          <span className="text-gray-400">Devotee details provided</span>
+                          <span className="text-gray-400 text-xs">Devotee details</span>
                         )}
                         {lead.participants.length > 1 && (
-                          <span className="text-[10px] font-bold text-emerald-600 block mt-0.5">
+                          <span className="text-[10px] font-bold text-emerald-600 block mt-0.5 truncate">
                             +{lead.participants.length - 1} more devotee(s)
                           </span>
                         )}
                       </td>
 
                       {/* Total Amount */}
-                      <td className="py-4 px-4 font-black text-gray-900 whitespace-nowrap">
+                      <td className="py-3.5 px-2.5 font-black text-gray-900 text-xs whitespace-nowrap">
                         ₹ {lead.totalAmount.toLocaleString("en-IN")}
                       </td>
 
                       {/* Actions */}
-                      <td className="py-4 pr-6 pl-4 text-center">
-                        <div className="inline-flex items-center gap-1.5">
+                      <td
+                        className="py-3.5 pr-4 pl-1 text-center"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <div className="inline-flex items-center gap-1">
                           {/* View Button */}
                           <button
                             type="button"
                             onClick={() => setViewingLead(lead)}
                             title="View devotee details"
-                            className="px-2.5 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-bold flex items-center gap-1 transition-colors active:scale-95"
+                            className="px-2 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-bold flex items-center gap-1 transition-colors active:scale-95"
                           >
                             <EyeIcon className="w-3.5 h-3.5" />
                             <span>View</span>
@@ -637,7 +653,7 @@ export default function AdminPreOrdersPage() {
                             type="button"
                             onClick={() => setDeletingLead(lead)}
                             title="Remove lead"
-                            className="w-7 h-7 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 flex items-center justify-center transition-colors active:scale-95"
+                            className="w-6 h-6 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 flex items-center justify-center transition-colors active:scale-95"
                           >
                             <TrashIcon className="w-3.5 h-3.5" />
                           </button>
@@ -712,8 +728,14 @@ export default function AdminPreOrdersPage() {
 
       {/* View Devotee Details Modal (Clean Design) */}
       {viewingLead && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-xl w-full shadow-2xl border border-gray-100 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        <div
+          className="fixed inset-0 z-50 bg-black/30 backdrop-blur-xs flex items-center justify-center p-4 transition-all"
+          onClick={() => setViewingLead(null)}
+        >
+          <div
+            className="bg-white rounded-3xl max-w-xl w-full shadow-2xl border border-gray-100 overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
             {/* Modal Header */}
             <div className="px-6 py-5 bg-gradient-to-r from-emerald-600 via-emerald-700 to-teal-800 text-white flex items-center justify-between border-b border-emerald-800/20">
               <div className="flex items-center gap-3.5">
@@ -721,9 +743,16 @@ export default function AdminPreOrdersPage() {
                   <UserCircleIcon className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-black tracking-tight text-white leading-snug drop-shadow-sm">
-                    Devotee Booking Lead
-                  </h3>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-lg font-black tracking-tight text-white leading-snug drop-shadow-sm">
+                      Devotee Booking Lead
+                    </h3>
+                    {viewingLead.orderNumber && (
+                      <span className="px-2 py-0.5 rounded font-mono text-[11px] font-bold bg-white/20 text-white tracking-wider border border-white/20">
+                        {viewingLead.orderNumber}
+                      </span>
+                    )}
+                  </div>
                   <p className="text-xs font-semibold text-emerald-100 mt-0.5">
                     Order checkout initiated on {formatDate(viewingLead.createdAt)} at {formatTime(viewingLead.createdAt)}
                   </p>
@@ -901,8 +930,14 @@ export default function AdminPreOrdersPage() {
 
       {/* Delete Single Lead Modal */}
       {deletingLead && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-gray-150 text-center animate-in fade-in zoom-in-95 duration-200">
+        <div
+          className="fixed inset-0 z-50 bg-black/30 backdrop-blur-xs flex items-center justify-center p-4 transition-all"
+          onClick={() => setDeletingLead(null)}
+        >
+          <div
+            className="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-gray-150 text-center animate-in fade-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="w-12 h-12 rounded-full bg-red-50 text-red-600 flex items-center justify-center mx-auto mb-4">
               <TrashIcon className="w-6 h-6" />
             </div>
@@ -934,8 +969,14 @@ export default function AdminPreOrdersPage() {
 
       {/* Bulk Delete Confirmation Modal */}
       {showBulkDeleteConfirm && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-gray-150 text-center animate-in fade-in zoom-in-95 duration-200">
+        <div
+          className="fixed inset-0 z-50 bg-black/30 backdrop-blur-xs flex items-center justify-center p-4 transition-all"
+          onClick={() => setShowBulkDeleteConfirm(false)}
+        >
+          <div
+            className="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-gray-150 text-center animate-in fade-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="w-12 h-12 rounded-full bg-red-50 text-red-600 flex items-center justify-center mx-auto mb-4">
               <TrashIcon className="w-6 h-6" />
             </div>

@@ -8,7 +8,6 @@ import {
   DevicePhoneMobileIcon,
   CheckCircleIcon,
   ClockIcon,
-  CalendarDaysIcon,
 } from "@heroicons/react/24/outline";
 
 export default async function AdminDashboard() {
@@ -213,28 +212,29 @@ export default async function AdminDashboard() {
           <Link href="/admin/orders" className="text-xs font-bold text-success hover:underline">View All →</Link>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs sm:text-sm">
-            <thead className="bg-gray-50 text-gray-400 uppercase text-[11px] font-bold tracking-wider">
+        <div className="w-full overflow-x-hidden">
+          <table className="w-full text-left text-xs table-fixed">
+            <thead className="bg-gray-50 text-gray-500 uppercase text-[10.5px] font-bold tracking-wider border-b border-gray-100">
               <tr>
-                <th className="px-4 py-3">Devotee Name</th>
-                <th className="px-4 py-3">Service Ritual</th>
-                <th className="px-4 py-3">Type</th>
-                <th className="px-4 py-3 whitespace-nowrap">Source / Campaign</th>
-                <th className="px-4 py-3 whitespace-nowrap">Booked At (Date &amp; Time)</th>
-                <th className="px-4 py-3">Amount</th>
-                <th className="px-4 py-3">Status</th>
+                <th className="py-3 px-3 w-10 text-center">#</th>
+                <th className="py-3 px-3 w-28 sm:w-36">Devotee</th>
+                <th className="py-3 px-3">Service Ritual</th>
+                <th className="py-3 px-2 w-20 text-center">Type</th>
+                <th className="py-3 px-2 w-24 text-center">Source</th>
+                <th className="py-3 px-3 w-28 sm:w-32">Booked At</th>
+                <th className="py-3 px-3 w-20 text-right">Amount</th>
+                <th className="py-3 px-3 w-24 text-center">Status</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 font-medium">
               {recentBookings.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-6 text-center text-gray-500 text-xs">
+                  <td colSpan={8} className="px-4 py-8 text-center text-gray-500 text-xs">
                     No recent devotee bookings found.
                   </td>
                 </tr>
               ) : (
-                recentBookings.map((booking: any, idx: number) => {
+                recentBookings.slice(0, 10).map((booking: any, idx: number) => {
                   const serviceTitle =
                     booking.serviceName ||
                     booking.itemName ||
@@ -243,11 +243,11 @@ export default async function AdminDashboard() {
                   const rawType = (booking.serviceType || booking.type || "Puja").toUpperCase();
                   const rawStatus = (booking.orderStatus || booking.paymentStatus || "confirmed").toLowerCase();
 
-                  let badgeClass = "bg-blue-100 text-blue-700";
-                  if (rawStatus === "scheduled") badgeClass = "bg-amber-100 text-amber-700";
-                  else if (rawStatus === "performed") badgeClass = "bg-indigo-100 text-indigo-700";
-                  else if (rawStatus === "completed" || rawStatus === "paid") badgeClass = "bg-green-100 text-green-700";
-                  else if (rawStatus === "confirmed") badgeClass = "bg-emerald-100 text-emerald-700";
+                  let badgeClass = "bg-blue-50 text-blue-700 border border-blue-200";
+                  if (rawStatus === "scheduled") badgeClass = "bg-amber-50 text-amber-700 border border-amber-200";
+                  else if (rawStatus === "performed") badgeClass = "bg-indigo-50 text-indigo-700 border border-indigo-200";
+                  else if (rawStatus === "completed" || rawStatus === "paid") badgeClass = "bg-emerald-50 text-emerald-700 border border-emerald-200";
+                  else if (rawStatus === "confirmed") badgeClass = "bg-teal-50 text-teal-700 border border-teal-200";
 
                   // Format Booking Date & Time
                   const dateSource = booking.createdAt || booking.bookingDate;
@@ -266,7 +266,7 @@ export default async function AdminDashboard() {
                             hour: "2-digit",
                             minute: "2-digit",
                             hour12: true,
-                          }),
+                          }).toLowerCase(),
                         };
                       }
                     } catch {
@@ -283,66 +283,93 @@ export default async function AdminDashboard() {
                   else if (lowerSrc.includes("whatsapp")) sourceBadgeStyle = "bg-emerald-50 text-emerald-700 border-emerald-200";
                   else if (lowerSrc.includes("youtube")) sourceBadgeStyle = "bg-red-50 text-red-700 border-red-200";
 
+                  const orderId = booking._id;
+
                   return (
-                    <tr key={booking._id || idx} className="hover:bg-gray-50/80 transition-colors">
-                      <td className="px-4 py-3.5 font-bold text-gray-900">
-                        {booking.customerName || booking.participants?.[0]?.name || booking.name || "Devotee"}
-                      </td>
-                      <td className="px-4 py-3.5">
-                        <span className="font-bold text-gray-900 block max-w-[280px] truncate" title={serviceTitle}>
-                          {serviceTitle}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3.5">
-                        <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-extrabold tracking-wide uppercase ${rawType.includes("HOMA")
-                            ? "bg-purple-100 text-purple-700 border border-purple-200"
-                            : "bg-emerald-100 text-emerald-700 border border-emerald-200"
-                            }`}
-                        >
-                          {rawType.includes("HOMA") ? "HOMA" : "PUJA"}
-                        </span>
+                    <tr
+                      key={booking._id || idx}
+                      className="hover:bg-emerald-50/40 transition-colors group cursor-pointer"
+                    >
+                      {/* S.No */}
+                      <td className="py-3 px-3 text-center text-xs font-bold text-gray-400">
+                        <Link href={`/admin/orders/${orderId}`} className="block w-full h-full">
+                          {idx + 1}
+                        </Link>
                       </td>
 
-                      {/* Source / Campaign */}
-                      <td className="px-4 py-3.5 whitespace-nowrap">
-                        <div className="space-y-0.5">
-                          <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10.5px] font-bold border ${sourceBadgeStyle}`}>
+                      {/* Devotee Name */}
+                      <td className="py-3 px-3">
+                        <Link href={`/admin/orders/${orderId}`} className="block">
+                          <span className="font-bold text-gray-900 block truncate group-hover:text-emerald-700 transition" title={booking.customerName || booking.participants?.[0]?.name || "Devotee"}>
+                            {booking.customerName || booking.participants?.[0]?.name || booking.name || "Devotee"}
+                          </span>
+                        </Link>
+                      </td>
+
+                      {/* Service Ritual */}
+                      <td className="py-3 px-3">
+                        <Link href={`/admin/orders/${orderId}`} className="block">
+                          <span className="font-bold text-gray-800 block truncate group-hover:text-emerald-700 transition" title={serviceTitle}>
+                            {serviceTitle}
+                          </span>
+                        </Link>
+                      </td>
+
+                      {/* Service Type */}
+                      <td className="py-3 px-2 text-center">
+                        <Link href={`/admin/orders/${orderId}`} className="inline-block">
+                          <span
+                            className={`inline-flex items-center px-1.5 py-0.5 rounded text-[9.5px] font-black uppercase ${rawType.includes("HOMA")
+                              ? "bg-purple-100 text-purple-700"
+                              : "bg-emerald-100 text-emerald-700"
+                              }`}
+                          >
+                            {rawType.includes("HOMA") ? "HOMA" : "PUJA"}
+                          </span>
+                        </Link>
+                      </td>
+
+                      {/* Source */}
+                      <td className="py-3 px-2 text-center">
+                        <Link href={`/admin/orders/${orderId}`} className="inline-block">
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold border ${sourceBadgeStyle}`}>
                             {src}
                           </span>
-                          {booking.utmCampaign && (
-                            <div className="text-[10px] font-semibold text-gray-600 max-w-[140px] truncate" title={booking.utmCampaign}>
-                              {booking.utmCampaign}
-                            </div>
-                          )}
-                        </div>
+                        </Link>
                       </td>
 
                       {/* Booked At (Timestamp: Date + Time) */}
-                      <td className="px-4 py-3.5 whitespace-nowrap">
-                        {bookingTimeInfo ? (
-                          <div className="space-y-0.5">
-                            <div className="font-bold text-gray-900 flex items-center gap-1 text-[11px]">
-                              <CalendarDaysIcon className="w-3.5 h-3.5 text-gray-400 shrink-0" />
-                              <span>{bookingTimeInfo.datePart}</span>
+                      <td className="py-3 px-3">
+                        <Link href={`/admin/orders/${orderId}`} className="block">
+                          {bookingTimeInfo ? (
+                            <div className="space-y-0.5">
+                              <div className="font-bold text-gray-800 text-[11px] truncate">
+                                {bookingTimeInfo.datePart}
+                              </div>
+                              <div className="text-[10px] font-semibold text-gray-400">
+                                {bookingTimeInfo.timePart}
+                              </div>
                             </div>
-                            <div className="text-[10.5px] font-semibold text-gray-500 flex items-center gap-1">
-                              <ClockIcon className="w-3 h-3 text-gray-400 shrink-0" />
-                              <span>{bookingTimeInfo.timePart}</span>
-                            </div>
-                          </div>
-                        ) : (
-                          <span className="text-gray-400">–</span>
-                        )}
+                          ) : (
+                            <span className="text-gray-400">–</span>
+                          )}
+                        </Link>
                       </td>
 
-                      <td className="px-4 py-3.5 font-extrabold text-gray-900 whitespace-nowrap">
-                        ₹{(booking.pricing?.total || booking.amount || 0).toLocaleString("en-IN")}
+                      {/* Amount */}
+                      <td className="py-3 px-3 font-extrabold text-gray-900 text-right whitespace-nowrap">
+                        <Link href={`/admin/orders/${orderId}`} className="block">
+                          ₹{(booking.pricing?.total || booking.amount || 0).toLocaleString("en-IN")}
+                        </Link>
                       </td>
-                      <td className="px-4 py-3.5 whitespace-nowrap">
-                        <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full uppercase ${badgeClass}`}>
-                          {booking.orderStatus || booking.paymentStatus || "Confirmed"}
-                        </span>
+
+                      {/* Status */}
+                      <td className="py-3 px-3 text-center">
+                        <Link href={`/admin/orders/${orderId}`} className="inline-block">
+                          <span className={`text-[9.5px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wide inline-block ${badgeClass}`}>
+                            {booking.orderStatus || booking.paymentStatus || "Confirmed"}
+                          </span>
+                        </Link>
                       </td>
                     </tr>
                   );

@@ -13,6 +13,7 @@ import {
   PhoneIcon,
 } from "@heroicons/react/24/outline";
 import CustomDateRangePicker from "@/components/admin/CustomDateRangePicker";
+import CustomDropdown from "@/components/admin/CustomDropdown";
 
 // WhatsApp SVG Icon
 function WhatsAppIcon({ className = "w-3.5 h-3.5" }: { className?: string }) {
@@ -263,18 +264,19 @@ export default function AdminServiceDispatchPage() {
           {/* Left: Service Searchable Dropdown */}
           <div className="flex flex-wrap items-center gap-2.5 flex-1">
             {/* Service Type (All, Puja, Homa) */}
-            <select
+            <CustomDropdown
               value={selectedType}
-              onChange={(e) => {
-                setSelectedType(e.target.value);
+              onChange={(val) => {
+                setSelectedType(val);
                 setCurrentPage(1);
               }}
-              className="bg-gray-50 border border-gray-200 text-xs font-bold rounded-xl px-3 py-2 text-gray-800 focus:outline-none focus:border-emerald-500 cursor-pointer"
-            >
-              <option value="All">All Categories</option>
-              <option value="Puja">Pujas Only</option>
-              <option value="Homa">Homas Only</option>
-            </select>
+              options={[
+                { value: "All", label: "All Categories" },
+                { value: "Puja", label: "Pujas Only" },
+                { value: "Homa", label: "Homas Only" },
+              ]}
+              placeholder="All Categories"
+            />
 
             {/* Select Specific Ritual Name */}
             <div className="relative min-w-[240px] flex-1 max-w-md" ref={serviceDropdownRef}>
@@ -348,21 +350,22 @@ export default function AdminServiceDispatchPage() {
 
           {/* Right: Date Range & Status Filters */}
           <div className="flex flex-wrap items-center gap-2.5">
-            {/* Status */}
-            <select
+            {/* Status Dropdown */}
+            <CustomDropdown
               value={selectedStatus}
-              onChange={(e) => {
-                setSelectedStatus(e.target.value);
+              onChange={(val) => {
+                setSelectedStatus(val);
                 setCurrentPage(1);
               }}
-              className="bg-gray-50 border border-gray-200 text-xs font-bold rounded-xl px-3 py-2 text-gray-800 focus:outline-none focus:border-emerald-500 cursor-pointer"
-            >
-              <option value="All">All Paid / Confirmed</option>
-              <option value="scheduled">Scheduled</option>
-              <option value="confirmed">Confirmed</option>
-              <option value="performed">Performed</option>
-              <option value="completed">Completed</option>
-            </select>
+              options={[
+                { value: "All", label: "All Paid / Confirmed" },
+                { value: "scheduled", label: "Scheduled" },
+                { value: "confirmed", label: "Confirmed" },
+                { value: "performed", label: "Performed" },
+                { value: "completed", label: "Completed" },
+              ]}
+              placeholder="All Paid / Confirmed"
+            />
 
             {/* Custom Modern Date Range Picker Popover */}
             <CustomDateRangePicker

@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   ChevronDownIcon,
   CheckIcon,
@@ -145,6 +146,7 @@ interface StatsData {
 }
 
 export default function AdminOrdersPage() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<"all" | "active" | "completed">("all");
 
   const [data, setData] = useState<{
@@ -1053,10 +1055,14 @@ export default function AdminOrdersPage() {
                   return (
                     <tr
                       key={ord._id}
-                      className={`hover:bg-gray-50/80 transition ${isChecked ? "bg-emerald-50/40" : ""}`}
+                      onClick={() => router.push(`/admin/orders/${ord._id}`)}
+                      className={`hover:bg-emerald-50/40 transition cursor-pointer ${isChecked ? "bg-emerald-50/60" : ""}`}
                     >
                       {/* Checkbox */}
-                      <td className="pl-4 pr-1 py-3 text-center">
+                      <td
+                        className="pl-4 pr-1 py-3 text-center"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <input
                           type="checkbox"
                           checked={isChecked}
@@ -1197,7 +1203,10 @@ export default function AdminOrdersPage() {
                       </td>
 
                       {/* 8. Quick Actions (View, Edit Modal) */}
-                      <td className="px-3 py-3 text-right pr-4">
+                      <td
+                        className="px-3 py-3 text-right pr-4"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <div className="flex items-center justify-end gap-1.5">
                           <Link
                             href={`/admin/orders/${ord._id}`}
@@ -1266,8 +1275,14 @@ export default function AdminOrdersPage() {
 
       {/* Status Prompt Modal (Scheduled Date / Performed Date / Video Link) */}
       {statusPromptModal.open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-gray-100 overflow-hidden transform transition-all">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30 backdrop-blur-xs animate-in fade-in duration-150"
+          onClick={() => setStatusPromptModal((prev) => ({ ...prev, open: false }))}
+        >
+          <div
+            className="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-gray-100 overflow-hidden transform transition-all"
+            onClick={(e) => e.stopPropagation()}
+          >
             {/* Modal Header */}
             <div className="px-6 py-4 bg-gradient-to-r from-emerald-600 via-emerald-700 to-teal-800 text-white flex items-center justify-between">
               <div>
@@ -1380,8 +1395,14 @@ export default function AdminOrdersPage() {
 
       {/* Edit Order Modal (Allows editing status, scheduled date, performed date, and video link) */}
       {editingOrder && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white rounded-2xl max-w-lg w-full shadow-2xl border border-gray-100 overflow-hidden transform transition-all">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30 backdrop-blur-xs animate-in fade-in duration-150"
+          onClick={() => setEditingOrder(null)}
+        >
+          <div
+            className="bg-white rounded-2xl max-w-lg w-full shadow-2xl border border-gray-100 overflow-hidden transform transition-all"
+            onClick={(e) => e.stopPropagation()}
+          >
             {/* Header */}
             <div className="px-6 py-4 bg-gradient-to-r from-emerald-600 to-teal-800 text-white flex items-center justify-between">
               <div>

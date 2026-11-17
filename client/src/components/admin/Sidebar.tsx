@@ -18,6 +18,8 @@ import {
   ChatBubbleBottomCenterTextIcon,
   ArrowDownTrayIcon,
   EnvelopeIcon,
+  GlobeAltIcon,
+  ArrowTopRightOnSquareIcon,
 } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -127,9 +129,18 @@ export default function Sidebar() {
             Logout
           </button>
         </nav>
-        <div className="border-t border-gray-100 p-4 text-xs font-bold text-gray-500">
-          <Link href="/" className="flex items-center hover:text-success transition">
-            <span className="mr-2">←</span> Back to Main Site
+        <div className="border-t border-gray-150 p-3 bg-gray-50/50">
+          <Link
+            href="/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold text-gray-700 bg-white border border-gray-200 hover:border-emerald-500 hover:text-emerald-700 hover:shadow-xs transition-all duration-150 group"
+          >
+            <div className="flex items-center gap-2">
+              <GlobeAltIcon className="w-4 h-4 text-emerald-600 group-hover:scale-110 transition-transform" />
+              <span>Visit Website</span>
+            </div>
+            <ArrowTopRightOnSquareIcon className="w-3.5 h-3.5 text-gray-400 group-hover:text-emerald-600 transition-colors" />
           </Link>
         </div>
       </div>

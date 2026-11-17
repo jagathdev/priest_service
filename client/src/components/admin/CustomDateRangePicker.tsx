@@ -107,6 +107,7 @@ export default function CustomDateRangePicker({
   const clearRange = (e?: React.MouseEvent) => {
     e?.stopPropagation();
     onChange("", "");
+    setIsOpen(false);
   };
 
   // Generate calendar days
@@ -146,19 +147,18 @@ export default function CustomDateRangePicker({
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all border cursor-pointer select-none ${
-          isOpen || startDate || endDate
-            ? "bg-white border-emerald-500 shadow-sm ring-2 ring-emerald-500/20 text-gray-900"
-            : "bg-gray-50/80 hover:bg-white border-gray-200 text-gray-700 hover:border-gray-300 shadow-2xs"
-        }`}
+        className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all border cursor-pointer select-none ${isOpen || startDate || endDate
+          ? "bg-white border-emerald-500 shadow-sm ring-2 ring-emerald-500/20 text-gray-900"
+          : "bg-gray-50/80 hover:bg-white border-gray-200 text-gray-700 hover:border-gray-300 shadow-2xs"
+          }`}
       >
         <CalendarDaysIcon className="w-4 h-4 text-emerald-600 shrink-0" />
         <span>
           {startDate && endDate
             ? `${formatDateDisplay(startDate)} → ${formatDateDisplay(endDate)}`
             : startDate
-            ? `${formatDateDisplay(startDate)} → End Date...`
-            : "Select Date Range"}
+              ? `${formatDateDisplay(startDate)} → End Date...`
+              : "Select Date Range"}
         </span>
 
         {(startDate || endDate) && (
@@ -173,7 +173,7 @@ export default function CustomDateRangePicker({
       </button>
 
       {isOpen && (
-        <div className="absolute left-0 mt-2 rounded-2xl bg-white border border-gray-100 shadow-[0_16px_48px_rgba(0,0,0,0.15)] p-4 z-50 animate-in fade-in zoom-in-95 duration-150 flex flex-col sm:flex-row gap-4 w-[310px] sm:w-[480px]">
+        <div className="absolute right-0 mt-2 rounded-2xl bg-white border border-gray-100 shadow-[0_16px_48px_rgba(0,0,0,0.15)] p-4 z-50 animate-in fade-in zoom-in-95 duration-150 flex flex-col sm:flex-row gap-4 w-[310px] sm:w-[480px] max-w-[calc(100vw-2rem)]">
           {/* Quick Preset Buttons */}
           <div className="flex flex-row sm:flex-col gap-1.5 border-b sm:border-b-0 sm:border-r border-gray-100 pb-3 sm:pb-0 sm:pr-3 shrink-0 overflow-x-auto sm:overflow-visible">
             <span className="text-[10px] font-extrabold uppercase tracking-wider text-gray-400 mb-1 hidden sm:block">
@@ -268,13 +268,12 @@ export default function CustomDateRangePicker({
                     onClick={() => handleDateClick(item.dateStr)}
                     onMouseEnter={() => setHoverDate(item.dateStr)}
                     onMouseLeave={() => setHoverDate(null)}
-                    className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg text-xs font-bold transition-all flex items-center justify-center cursor-pointer ${
-                      isStart || isEnd
-                        ? "bg-emerald-600 text-white font-black shadow-sm"
-                        : inRange
+                    className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg text-xs font-bold transition-all flex items-center justify-center cursor-pointer ${isStart || isEnd
+                      ? "bg-emerald-600 text-white font-black shadow-sm"
+                      : inRange
                         ? "bg-emerald-50 text-emerald-800 rounded-none first:rounded-l-lg last:rounded-r-lg font-bold"
                         : "text-gray-700 hover:bg-gray-100"
-                    }`}
+                      }`}
                   >
                     {item.dayNum}
                   </button>
