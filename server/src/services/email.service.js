@@ -77,16 +77,18 @@ export const generateOrderEmailHtml = (order) => {
   const promo = order.promo || null;
   const wish = order.wish || null;
 
-  // Format booking date & time
+  // Format booking date & time in Indian Standard Time (IST)
   const rawDate = order.createdAt || order.bookingDate || new Date();
   const dateObj = new Date(rawDate);
   const formattedDate = dateObj.toLocaleDateString("en-IN", {
+    timeZone: "Asia/Kolkata",
     weekday: "long",
     day: "numeric",
     month: "long",
     year: "numeric",
   });
   const formattedTime = dateObj.toLocaleTimeString("en-IN", {
+    timeZone: "Asia/Kolkata",
     hour: "2-digit",
     minute: "2-digit",
     hour12: true,
@@ -139,14 +141,14 @@ export const generateOrderEmailHtml = (order) => {
           
           <!-- Top Header Strip with Auspicious Temple Banner -->
           <tr>
-            <td style="background: linear-gradient(135deg, #059669 0%, #00B05F 100%); padding: 26px 30px; text-align: center; color: #ffffff;">
-              <div style="font-size: 11px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; opacity: 0.9; margin-bottom: 4px;">
+            <td bgcolor="#059669" style="background-color: #059669; background: linear-gradient(135deg, #059669 0%, #00B05F 100%); padding: 26px 30px; text-align: center; color: #ffffff;">
+              <div style="font-size: 11px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; color: #ffffff; opacity: 0.95; margin-bottom: 4px;">
                 PRIEST SERVICES • ASTROVED
               </div>
-              <h1 style="margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -0.5px;">
-                🕉️ New Ritual Order Confirmed!
+              <h1 style="margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -0.5px; color: #ffffff;">
+                &#2384; New Ritual Order Confirmed!
               </h1>
-              <div style="margin-top: 8px; display: inline-block; background-color: rgba(255,255,255,0.22); padding: 4px 14px; rounded-radius: 20px; border-radius: 20px; font-size: 12px; font-weight: 700;">
+              <div style="margin-top: 8px; display: inline-block; background-color: rgba(255,255,255,0.22); padding: 4px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; color: #ffffff;">
                 Order ID: ${orderNumber}
               </div>
             </td>
@@ -374,10 +376,10 @@ export const generateCustomerQueryEmailHtml = (query) => {
 
           <!-- Header -->
           <tr>
-            <td style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #9333ea 100%); padding: 32px 30px; text-align: center; color: #ffffff;">
-              <div style="font-size: 26px; line-height: 1; margin-bottom: 8px;">🕉️</div>
+            <td bgcolor="#4f46e5" style="background-color: #4f46e5; background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #9333ea 100%); padding: 32px 30px; text-align: center; color: #ffffff;">
+              <div style="font-size: 26px; line-height: 1; margin-bottom: 8px;">&#2384;</div>
               <h1 style="margin: 0 0 6px 0; font-size: 22px; font-weight: 800; letter-spacing: -0.5px; color: #ffffff;">New Customer Query Alert</h1>
-              <p style="margin: 0; font-size: 13px; font-weight: 500; color: #e0e7ff; opacity: 0.95;">
+              <p style="margin: 0; font-size: 13px; font-weight: 500; color: #ffffff; opacity: 0.95;">
                 Devotee Support Request • Submitted via Priest Services
               </p>
             </td>
