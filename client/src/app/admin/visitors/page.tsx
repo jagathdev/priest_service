@@ -8,10 +8,9 @@ import {
   ArrowPathIcon,
   MagnifyingGlassIcon,
   ChartBarIcon,
-  CalendarIcon,
-  XMarkIcon,
   ArrowTrendingUpIcon,
 } from "@heroicons/react/24/outline";
+import CustomDateRangePicker from "@/components/admin/CustomDateRangePicker";
 
 interface VisitorSource {
   source: string;
@@ -286,39 +285,16 @@ export default function VisitorAnalyticsPage() {
 
           {/* Right Controls: Custom Date Pickers & Search */}
           <div className="flex flex-wrap items-center gap-2.5">
-            {/* Custom Date Pickers */}
-            <div className="flex items-center gap-1.5 bg-gray-50/80 border border-gray-200 rounded-xl px-2.5 py-1 text-xs">
-              <CalendarIcon className="w-3.5 h-3.5 text-gray-400" />
-              <input
-                type="date"
-                value={startDate}
-                onChange={(e) => {
-                  setStartDate(e.target.value);
-                  setDateRangePreset("custom");
-                }}
-                className="bg-transparent outline-none text-xs font-semibold text-gray-800"
-              />
-              <span className="text-gray-400 font-bold">–</span>
-              <input
-                type="date"
-                value={endDate}
-                onChange={(e) => {
-                  setEndDate(e.target.value);
-                  setDateRangePreset("custom");
-                }}
-                className="bg-transparent outline-none text-xs font-semibold text-gray-800"
-              />
-              {(startDate || endDate) && (
-                <button
-                  type="button"
-                  onClick={() => handlePresetChange("all")}
-                  title="Clear dates"
-                  className="text-gray-400 hover:text-rose-600 transition ml-1"
-                >
-                  <XMarkIcon className="w-3.5 h-3.5" />
-                </button>
-              )}
-            </div>
+            {/* Custom Date Range Picker */}
+            <CustomDateRangePicker
+              startDate={startDate}
+              endDate={endDate}
+              onChange={(start, end) => {
+                setStartDate(start);
+                setEndDate(end);
+                setDateRangePreset("custom");
+              }}
+            />
 
             {/* Campaign Search Input */}
             <div className="relative flex-1 sm:flex-initial">

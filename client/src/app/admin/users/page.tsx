@@ -18,6 +18,7 @@ import {
   ExclamationCircleIcon,
   ArrowUturnLeftIcon,
 } from "@heroicons/react/24/outline";
+import CustomDateRangePicker from "@/components/admin/CustomDateRangePicker";
 import { formatIndianPhoneNumber } from "@/lib/phoneFormatter";
 
 interface DevoteeUser {
@@ -70,7 +71,6 @@ export default function AdminUsersPage() {
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
-  const [dateFilterOpen, setDateFilterOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
@@ -110,7 +110,6 @@ export default function AdminUsersPage() {
 
   const statusDropdownRef = useRef<HTMLDivElement>(null);
   const sortDropdownRef = useRef<HTMLDivElement>(null);
-  const dateDropdownRef = useRef<HTMLDivElement>(null);
 
   const showToast = (message: string, type: "success" | "error" = "success") => {
     setToast({ message, type });
@@ -125,9 +124,6 @@ export default function AdminUsersPage() {
       }
       if (sortDropdownRef.current && !sortDropdownRef.current.contains(e.target as Node)) {
         setSortDropdownOpen(false);
-      }
-      if (dateDropdownRef.current && !dateDropdownRef.current.contains(e.target as Node)) {
-        setDateFilterOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -470,102 +466,15 @@ export default function AdminUsersPage() {
           </div>
 
           {/* Date Range Filter Button */}
-          <div className="relative" ref={dateDropdownRef}>
-            <button
-              type="button"
-              onClick={() => setDateFilterOpen(!dateFilterOpen)}
-              className={`flex items-center gap-2 bg-white border rounded-xl px-3 py-1.5 text-xs font-bold transition shadow-2xs ${fromDate || toDate
-                ? "border-emerald-500 text-emerald-700 bg-emerald-50/30"
-                : "border-gray-200 text-gray-700 hover:border-gray-300"
-                }`}
-            >
-              <CalendarDaysIcon className="w-4 h-4 text-gray-400" />
-              <span>
-                {fromDate && toDate
-                  ? `${fromDate} to ${toDate}`
-                  : fromDate
-                    ? `From ${fromDate}`
-                    : toDate
-                      ? `Until ${toDate}`
-                      : "Filter by Date"}
-              </span>
-              <ChevronDownIcon className="w-3.5 h-3.5 text-gray-400" />
-            </button>
-
-            {dateFilterOpen && (
-              <div className="absolute right-0 mt-2 w-72 bg-white border border-gray-200 rounded-2xl shadow-xl p-4 z-30">
-                <div className="flex items-center justify-between pb-2 mb-3 border-b border-gray-100">
-                  <span className="text-xs font-bold text-gray-800">
-                    {activeTab === "trash" ? "Deleted Date Range" : "Registration Date Range"}
-                  </span>
-                  {(fromDate || toDate) && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setFromDate("");
-                        setToDate("");
-                        setCurrentPage(1);
-                      }}
-                      className="text-[11px] font-bold text-red-500 hover:text-red-700 transition"
-                    >
-                      Clear
-                    </button>
-                  )}
-                </div>
-
-                <div className="space-y-3">
-                  <div>
-                    <label className="block text-[11px] font-bold text-gray-600 mb-1">From Date</label>
-                    <input
-                      type="date"
-                      value={fromDate}
-                      onChange={(e) => {
-                        setFromDate(e.target.value);
-                        setCurrentPage(1);
-                      }}
-                      className="w-full border border-gray-200 rounded-xl px-3 py-1.5 text-xs text-gray-800 font-medium outline-none focus:border-emerald-500 bg-white"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] font-bold text-gray-600 mb-1">To Date</label>
-                    <input
-                      type="date"
-                      value={toDate}
-                      onChange={(e) => {
-                        setToDate(e.target.value);
-                        setCurrentPage(1);
-                      }}
-                      className="w-full border border-gray-200 rounded-xl px-3 py-1.5 text-xs text-gray-800 font-medium outline-none focus:border-emerald-500 bg-white"
-                    />
-                  </div>
-                </div>
-
-                <div className="mt-4 pt-2 border-t border-gray-100 flex items-center justify-between">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const today = new Date().toISOString().split("T")[0];
-                      setFromDate(today);
-                      setToDate(today);
-                      setCurrentPage(1);
-                      setDateFilterOpen(false);
-                    }}
-                    className="text-[11px] font-bold text-emerald-600 hover:text-emerald-700"
-                  >
-                    Today
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setDateFilterOpen(false)}
-                    className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition"
-                  >
-                    Apply
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
+          <CustomDateRangePicker
+            startDate={fromDate}
+            endDate={toDate}
+            onChange={(start, end) => {
+              setFromDate(start);
+              setToDate(end);
+              setCurrentPage(1);
+            }}
+          />
 
           {/* Admin Avatar Pill */}
           <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-3 py-1.5 shadow-2xs">

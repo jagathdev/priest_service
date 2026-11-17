@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useRef, useCallback } from "react";
 import {
-  CalendarDaysIcon,
   ChevronDownIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -13,6 +12,7 @@ import {
   ExclamationCircleIcon,
   PhoneIcon,
 } from "@heroicons/react/24/outline";
+import CustomDateRangePicker from "@/components/admin/CustomDateRangePicker";
 
 // WhatsApp SVG Icon
 function WhatsAppIcon({ className = "w-3.5 h-3.5" }: { className?: string }) {
@@ -364,44 +364,16 @@ export default function AdminServiceDispatchPage() {
               <option value="completed">Completed</option>
             </select>
 
-            {/* Date Range */}
-            <div className="flex items-center gap-1.5 bg-gray-50 border border-gray-200 rounded-xl px-3 py-1.5 text-xs">
-              <CalendarDaysIcon className="w-4 h-4 text-emerald-600 shrink-0" />
-              <input
-                type="date"
-                value={startDate}
-                onChange={(e) => {
-                  setStartDate(e.target.value);
-                  setCurrentPage(1);
-                }}
-                className="bg-transparent text-xs font-bold text-gray-800 focus:outline-none cursor-pointer"
-                title="Start Date"
-              />
-              <span className="text-gray-400">-</span>
-              <input
-                type="date"
-                value={endDate}
-                onChange={(e) => {
-                  setEndDate(e.target.value);
-                  setCurrentPage(1);
-                }}
-                className="bg-transparent text-xs font-bold text-gray-800 focus:outline-none cursor-pointer"
-                title="End Date"
-              />
-              {(startDate || endDate) && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setStartDate("");
-                    setEndDate("");
-                    setCurrentPage(1);
-                  }}
-                  className="text-gray-400 hover:text-gray-600 ml-1"
-                >
-                  <XMarkIcon className="w-3.5 h-3.5" />
-                </button>
-              )}
-            </div>
+            {/* Custom Modern Date Range Picker Popover */}
+            <CustomDateRangePicker
+              startDate={startDate}
+              endDate={endDate}
+              onChange={(start, end) => {
+                setStartDate(start);
+                setEndDate(end);
+                setCurrentPage(1);
+              }}
+            />
           </div>
         </div>
       </div>

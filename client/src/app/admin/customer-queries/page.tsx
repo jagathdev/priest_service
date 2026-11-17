@@ -4,7 +4,6 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import {
   ChatBubbleBottomCenterTextIcon,
   MagnifyingGlassIcon,
-  CalendarDaysIcon,
   ChevronDownIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -20,6 +19,7 @@ import {
   TagIcon,
   ChatBubbleLeftEllipsisIcon,
 } from "@heroicons/react/24/outline";
+import CustomDateRangePicker from "@/components/admin/CustomDateRangePicker";
 
 // Crisp WhatsApp SVG Icon
 function WhatsAppIcon({ className = "w-3.5 h-3.5" }: { className?: string }) {
@@ -668,41 +668,16 @@ export default function AdminCustomerQueriesPage() {
               )}
             </div>
 
-            {/* Date Range Filters */}
-            <div className="flex items-center gap-1.5 bg-gray-50 border border-gray-200 rounded-xl px-2.5 py-1.5 text-xs">
-              <CalendarDaysIcon className="w-3.5 h-3.5 text-gray-400" />
-              <input
-                type="date"
-                value={fromDate}
-                onChange={(e) => {
-                  setFromDate(e.target.value);
-                  setCurrentPage(1);
-                }}
-                className="bg-transparent text-[11px] font-semibold text-gray-700 focus:outline-none"
-              />
-              <span className="text-gray-300">-</span>
-              <input
-                type="date"
-                value={toDate}
-                onChange={(e) => {
-                  setToDate(e.target.value);
-                  setCurrentPage(1);
-                }}
-                className="bg-transparent text-[11px] font-semibold text-gray-700 focus:outline-none"
-              />
-              {(fromDate || toDate) && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setFromDate("");
-                    setToDate("");
-                  }}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  <XMarkIcon className="w-3 h-3" />
-                </button>
-              )}
-            </div>
+            {/* Custom Modern Date Range Picker Popover */}
+            <CustomDateRangePicker
+              startDate={fromDate}
+              endDate={toDate}
+              onChange={(start, end) => {
+                setFromDate(start);
+                setToDate(end);
+                setCurrentPage(1);
+              }}
+            />
           </div>
         </div>
 
