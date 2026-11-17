@@ -117,7 +117,7 @@ export default function AdminFeedbackPage() {
     try {
       const match = document.cookie.match(/(?:^|;\s*)adminToken=([^;]*)/);
       if (match) return match[1];
-      return localStorage.getItem("adminToken") || "";
+      return "";
     } catch {
       return "";
     }

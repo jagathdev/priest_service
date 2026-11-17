@@ -6,13 +6,12 @@ const getAdminAuthHeaders = (): Record<string, string> => {
     if (typeof window === "undefined") return {};
     const adminCookieMatch = document.cookie.match(/(?:^|;\s*)adminToken=([^;]+)/);
     const adminCookieToken = adminCookieMatch ? decodeURIComponent(adminCookieMatch[1]) : null;
-    const adminLocalToken = localStorage.getItem("adminToken");
 
     const userCookieMatch = document.cookie.match(/(?:^|;\s*)token=([^;]+)/);
     const userCookieToken = userCookieMatch ? decodeURIComponent(userCookieMatch[1]) : null;
     const userLocalToken = localStorage.getItem("token");
 
-    const token = adminCookieToken || adminLocalToken || userCookieToken || userLocalToken;
+    const token = adminCookieToken || userCookieToken || userLocalToken;
     return token ? { Authorization: `Bearer ${token}` } : {};
 };
 
@@ -96,10 +95,11 @@ export async function applyPromoCode(data: {
 }) {
     let token = null;
     if (typeof window !== "undefined") {
-        token = localStorage.getItem("token") || localStorage.getItem("adminToken");
-        if (!token) {
-            const match = document.cookie.match(/(?:^|;\s*)(?:token|adminToken)=([^;]+)/);
-            if (match) token = decodeURIComponent(match[1]);
+        const match = document.cookie.match(/(?:^|;\s*)(?:token|adminToken)=([^;]+)/);
+        if (match) {
+            token = decodeURIComponent(match[1]);
+        } else {
+            token = localStorage.getItem("token");
         }
     }
 

@@ -49,7 +49,7 @@ export function UserProvider({ children, initialUser }: { children: ReactNode; i
   // Initialize user from localStorage / cookies on client mount
   useEffect(() => {
     try {
-      let token = localStorage.getItem("token") || localStorage.getItem("adminToken");
+      let token = localStorage.getItem("token");
       if (!token && typeof document !== "undefined") {
         const match = document.cookie.match(/(?:^|;\s*)(?:token|adminToken)=([^;]+)/);
         if (match && match[1]) token = decodeURIComponent(match[1]);

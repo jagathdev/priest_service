@@ -238,7 +238,7 @@ export default function AdminOrdersPage() {
   const getAdminAuthHeaders = (): Record<string, string> => {
     try {
       const match = document.cookie.match(/(?:^|;\s*)adminToken=([^;]*)/);
-      const token = match ? match[1] : localStorage.getItem("adminToken");
+      const token = match ? match[1] : null;
       if (token) return { Authorization: `Bearer ${token}` };
     } catch { }
     return {};

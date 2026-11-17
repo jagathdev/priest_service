@@ -544,7 +544,7 @@ function AccountPageContent() {
     if (typeof window === "undefined") return {};
     const match = document.cookie.match(/(?:^|;\s*)(?:token|adminToken)=([^;]+)/);
     const cookieToken = match ? decodeURIComponent(match[1]) : null;
-    const localToken = localStorage.getItem("token") || localStorage.getItem("adminToken");
+    const localToken = localStorage.getItem("token");
     const token = cookieToken || localToken;
     return token ? { Authorization: `Bearer ${token}` } : {};
   };

@@ -485,13 +485,12 @@ export default function ContentManager({
     if (typeof window === "undefined") return {};
     const adminCookieMatch = document.cookie.match(/(?:^|;\s*)adminToken=([^;]+)/);
     const adminCookieToken = adminCookieMatch ? decodeURIComponent(adminCookieMatch[1]) : null;
-    const adminLocalToken = localStorage.getItem("adminToken");
 
     const userCookieMatch = document.cookie.match(/(?:^|;\s*)token=([^;]+)/);
     const userCookieToken = userCookieMatch ? decodeURIComponent(userCookieMatch[1]) : null;
     const userLocalToken = localStorage.getItem("token");
 
-    const token = adminCookieToken || adminLocalToken || userCookieToken || userLocalToken;
+    const token = adminCookieToken || userCookieToken || userLocalToken;
     return token ? { Authorization: `Bearer ${token}` } : {};
   }, []);
 

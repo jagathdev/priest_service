@@ -84,7 +84,8 @@ export default function NotificationsAdminPage() {
   const getAdminAuthHeaders = (): Record<string, string> => {
     let token = "";
     if (typeof window !== "undefined") {
-      token = localStorage.getItem("adminToken") || "";
+      const match = document.cookie.match(/(?:^|;\s*)adminToken=([^;]*)/);
+      token = match ? match[1] : "";
     }
     return token ? { Authorization: `Bearer ${token}` } : {};
   };

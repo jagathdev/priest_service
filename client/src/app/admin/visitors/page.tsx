@@ -83,7 +83,7 @@ export default function VisitorAnalyticsPage() {
     try {
       const match = document.cookie.match(/(?:^|;\s*)adminToken=([^;]*)/);
       if (match) return match[1];
-      return localStorage.getItem("adminToken") || "";
+      return "";
     } catch {
       return "";
     }

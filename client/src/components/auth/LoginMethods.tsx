@@ -134,10 +134,10 @@ export default function LoginMethods() {
 
         if (data.success || data.token) {
           const token = data.token || "";
-          // Set cookie and localStorage for authentication
+          // Set cookie for authentication (no localStorage for admin token)
           document.cookie = `adminToken=${token}; path=/; max-age=86400; SameSite=Lax`;
           try {
-            localStorage.setItem("adminToken", token);
+            localStorage.removeItem("adminToken");
           } catch {}
           window.location.href = "/admin";
           return;

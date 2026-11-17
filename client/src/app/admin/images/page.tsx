@@ -113,7 +113,6 @@ export default function MediaManagerPage() {
     const hasAdminToken =
       typeof document !== "undefined" &&
       (document.cookie.includes("adminToken=") ||
-        localStorage.getItem("adminToken") ||
         localStorage.getItem("token"));
 
     if (!hasAdminToken) {

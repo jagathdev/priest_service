@@ -137,7 +137,7 @@ export default function AdminOrderDetailPage({ params }: { params: Promise<{ id:
     try {
       const match = document.cookie.match(/(?:^|;\s*)adminToken=([^;]*)/);
       if (match) return match[1];
-      return localStorage.getItem("adminToken") || "";
+      return "";
     } catch {
       return "";
     }

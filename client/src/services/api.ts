@@ -20,14 +20,9 @@ export const getAuthToken = (): string | null => {
 
   if (typeof window === 'undefined') return null;
 
-  // 3. Admin-specific preference when on /admin routes
+  // 3. Admin-specific preference when on /admin routes (check cookie only)
   const isAdminRoute = typeof window !== 'undefined' && window.location.pathname.startsWith('/admin');
   if (isAdminRoute) {
-    try {
-      const localAdminToken = localStorage.getItem('adminToken');
-      if (isValidToken(localAdminToken)) return localAdminToken.trim();
-    } catch { }
-
     const adminMatch = document.cookie.match(/(?:^|;\s*)adminToken=([^;]+)/);
     if (adminMatch && isValidToken(adminMatch[1])) {
       const decoded = decodeURIComponent(adminMatch[1]);
@@ -35,13 +30,10 @@ export const getAuthToken = (): string | null => {
     }
   }
 
-  // 4. Fallback: Check localStorage
+  // 4. Fallback: Check localStorage for normal user token
   try {
     const localToken = localStorage.getItem('token');
     if (isValidToken(localToken)) return localToken.trim();
-
-    const localAdminToken = localStorage.getItem('adminToken');
-    if (isValidToken(localAdminToken)) return localAdminToken.trim();
   } catch {
     // localStorage might not be accessible
   }
