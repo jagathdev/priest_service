@@ -5,24 +5,24 @@ import {
   UserGroupIcon,
   SparklesIcon,
   FireIcon,
-  MagnifyingGlassIcon,
   CalendarDaysIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  XMarkIcon,
   TrashIcon,
   EyeIcon,
-  CheckCircleIcon,
-  ExclamationCircleIcon,
   PhoneIcon,
   ChatBubbleBottomCenterTextIcon,
   ShoppingBagIcon,
   UserCircleIcon,
   HeartIcon,
+  XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { formatIndianPhoneNumber } from "@/lib/phoneFormatter";
 import CustomDropdown from "@/components/admin/CustomDropdown";
 import CustomDateRangePicker from "@/components/admin/CustomDateRangePicker";
+import { Modal } from "@/components/ui/Modal";
+import { Pagination } from "@/components/ui/Pagination";
+import { SearchInput } from "@/components/ui/Filter";
+import { usePagination } from "@/hooks/common/usePagination";
+import { useToast } from "@/contexts/ToastContext";
 import { ClockIcon } from "lucide-react";
 
 interface ParticipantItem {
@@ -97,13 +97,14 @@ export default function AdminPreOrdersPage() {
   const [isBulkDeleting, setIsBulkDeleting] = useState(false);
   const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
 
-  // Toast
-  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+  // Toast Context
+  const { success, error: toastError } = useToast();
 
-  const showToast = (message: string, type: "success" | "error" = "success") => {
-    setToast({ message, type });
-    setTimeout(() => setToast(null), 3500);
-  };
+  const pagination = usePagination({
+    totalItems: totalCount,
+    initialPage: currentPage,
+    initialLimit: 10,
+  });
 
   const getAdminToken = () => {
     try {
@@ -209,12 +210,12 @@ export default function AdminPreOrdersPage() {
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.message || "Failed to delete lead");
 
-      showToast("Pre-order record removed successfully", "success");
+      success("Pre-order record removed successfully");
       setDeletingLead(null);
       setSelectedLeadIds((prev) => prev.filter((id) => id !== deletingLead._id));
       fetchLeads();
     } catch (err: any) {
-      showToast(err.message || "Delete failed", "error");
+      toastError(err.message || "Delete failed");
     } finally {
       setIsDeleting(false);
     }
@@ -239,12 +240,12 @@ export default function AdminPreOrdersPage() {
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.message || "Failed to bulk delete leads");
 
-      showToast(`${selectedLeadIds.length} pre-order record(s) removed`, "success");
+      success(`${selectedLeadIds.length} pre-order record(s) removed`);
       setShowBulkDeleteConfirm(false);
       setSelectedLeadIds([]);
       fetchLeads();
     } catch (err: any) {
-      showToast(err.message || "Bulk delete failed", "error");
+      toastError(err.message || "Bulk delete failed");
     } finally {
       setIsBulkDeleting(false);
     }
@@ -293,21 +294,6 @@ export default function AdminPreOrdersPage() {
 
   return (
     <div className="p-4 md:p-8 space-y-6 max-w-7xl mx-auto">
-      {/* Toast Notification */}
-      {toast && (
-        <div
-          className={`fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-xl shadow-xl text-xs font-bold text-white transition-all transform animate-in slide-in-from-bottom-5 ${toast.type === "success" ? "bg-emerald-600" : "bg-red-600"
-            }`}
-        >
-          {toast.type === "success" ? (
-            <CheckCircleIcon className="w-5 h-5 shrink-0" />
-          ) : (
-            <ExclamationCircleIcon className="w-5 h-5 shrink-0" />
-          )}
-          <span>{toast.message}</span>
-        </div>
-      )}
-
       {/* Header & Page Title */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -388,20 +374,16 @@ export default function AdminPreOrdersPage() {
       <div className="bg-white rounded-2xl border border-gray-200 shadow-xs overflow-hidden">
         {/* Search & Filter Toolbar */}
         <div className="p-4 sm:px-6 sm:py-4 border-b border-gray-150 flex flex-wrap items-center justify-between gap-3 bg-white">
-          {/* Search bar inside Card */}
-          <div className="relative flex-1 min-w-[240px] max-w-md">
-            <MagnifyingGlassIcon className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setCurrentPage(1);
-              }}
-              placeholder="Search by name, mobile, service, or gotra..."
-              className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-800 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:bg-white transition font-medium"
-            />
-          </div>
+          {/* Search bar with instant clear */}
+          <SearchInput
+            value={search}
+            onChange={(val) => {
+              setSearch(val);
+              setCurrentPage(1);
+            }}
+            placeholder="Search by name, mobile, service, or gotra..."
+            className="flex-1 min-w-[240px] max-w-md"
+          />
 
           {/* Right Filters: Service Type & Sort */}
           <div className="flex items-center gap-3">
@@ -669,63 +651,16 @@ export default function AdminPreOrdersPage() {
           </table>
         </div>
 
-        {/* Pagination Footer */}
-        <div className="p-4 sm:px-6 border-t border-gray-150 flex flex-col sm:flex-row items-center justify-between gap-4 bg-white">
-          <div className="text-xs text-gray-500 font-medium">
-            Showing {leads.length > 0 ? (currentPage - 1) * 10 + 1 : 0} to{" "}
-            {Math.min(currentPage * 10, totalCount)} of {totalCount} incomplete bookings
-          </div>
-
-          {totalPages > 1 && (
-            <div className="flex items-center gap-1.5">
-              <button
-                type="button"
-                disabled={currentPage <= 1}
-                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                className="w-8 h-8 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center transition"
-              >
-                <ChevronLeftIcon className="w-4 h-4" />
-              </button>
-
-              {Array.from({ length: totalPages }, (_, i) => i + 1)
-                .filter((p) => {
-                  if (totalPages <= 7) return true;
-                  if (p === 1 || p === totalPages) return true;
-                  if (Math.abs(p - currentPage) <= 1) return true;
-                  return false;
-                })
-                .map((p, pIdx, arr) => {
-                  const prevVal = arr[pIdx - 1];
-                  const showEllipsis = prevVal && p - prevVal > 1;
-
-                  return (
-                    <div key={p} className="flex items-center">
-                      {showEllipsis && <span className="px-1 text-gray-400 text-xs">...</span>}
-                      <button
-                        type="button"
-                        onClick={() => setCurrentPage(p)}
-                        className={`w-8 h-8 rounded-lg text-xs font-bold transition ${currentPage === p
-                          ? "bg-emerald-600 text-white"
-                          : "border border-gray-200 text-gray-700 hover:bg-gray-50"
-                          }`}
-                      >
-                        {p}
-                      </button>
-                    </div>
-                  );
-                })}
-
-              <button
-                type="button"
-                disabled={currentPage >= totalPages}
-                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                className="w-8 h-8 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center transition"
-              >
-                <ChevronRightIcon className="w-4 h-4" />
-              </button>
-            </div>
-          )}
-        </div>
+        {/* Reusable Pagination */}
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={(p) => setCurrentPage(p)}
+          pageNumbers={pagination.pageNumbers}
+          totalItems={totalCount}
+          startIndex={(currentPage - 1) * 10}
+          endIndex={Math.min(currentPage * 10, totalCount)}
+        />
       </div>
 
       {/* View Devotee Details Modal (Clean Design) */}
@@ -931,84 +866,79 @@ export default function AdminPreOrdersPage() {
       )}
 
       {/* Delete Single Lead Modal */}
-      {deletingLead && (
-        <div
-          className="fixed inset-0 z-50 bg-black/30 backdrop-blur-xs flex items-center justify-center p-4 transition-all"
-          onClick={() => setDeletingLead(null)}
-        >
-          <div
-            className="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-gray-150 text-center animate-in fade-in zoom-in-95 duration-200"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="w-12 h-12 rounded-full bg-red-50 text-red-600 flex items-center justify-center mx-auto mb-4">
-              <TrashIcon className="w-6 h-6" />
-            </div>
-            <h3 className="text-base font-bold text-gray-900 mb-1.5">Delete Pre-Order Lead?</h3>
-            <p className="text-xs text-gray-500 mb-6 leading-relaxed">
-              Are you sure you want to delete the pre-order record for <span className="font-bold text-gray-800">{deletingLead.userName}</span>?
-            </p>
-            <div className="flex items-center justify-center gap-3">
-              <button
-                type="button"
-                disabled={isDeleting}
-                onClick={() => setDeletingLead(null)}
-                className="flex-1 px-4 py-2 rounded-xl border border-gray-200 text-xs font-bold text-gray-600 hover:bg-gray-50 transition"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                disabled={isDeleting}
-                onClick={handleDeleteConfirm}
-                className="flex-1 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition shadow-sm disabled:opacity-60"
-              >
-                {isDeleting ? "Deleting..." : "Delete"}
-              </button>
-            </div>
+      <Modal
+        isOpen={!!deletingLead}
+        onClose={() => setDeletingLead(null)}
+        maxWidth="sm"
+        showCloseButton={false}
+      >
+        <div className="text-center">
+          <div className="w-12 h-12 rounded-full bg-red-50 text-red-600 flex items-center justify-center mx-auto mb-4">
+            <TrashIcon className="w-6 h-6" />
+          </div>
+          <h3 className="text-base font-bold text-gray-900 mb-1.5">Delete Pre-Order Lead?</h3>
+          <p className="text-xs text-gray-500 mb-6 leading-relaxed">
+            Are you sure you want to delete the pre-order record for{" "}
+            <span className="font-bold text-gray-800">{deletingLead?.userName}</span>?
+          </p>
+          <div className="flex items-center justify-center gap-3">
+            <button
+              type="button"
+              disabled={isDeleting}
+              onClick={() => setDeletingLead(null)}
+              className="flex-1 px-4 py-2 rounded-xl border border-gray-200 text-xs font-bold text-gray-600 hover:bg-gray-50 transition"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              disabled={isDeleting}
+              onClick={handleDeleteConfirm}
+              className="flex-1 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition shadow-sm disabled:opacity-60"
+            >
+              {isDeleting ? "Deleting..." : "Delete"}
+            </button>
           </div>
         </div>
-      )}
+      </Modal>
 
       {/* Bulk Delete Confirmation Modal */}
-      {showBulkDeleteConfirm && (
-        <div
-          className="fixed inset-0 z-50 bg-black/30 backdrop-blur-xs flex items-center justify-center p-4 transition-all"
-          onClick={() => setShowBulkDeleteConfirm(false)}
-        >
-          <div
-            className="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-gray-150 text-center animate-in fade-in zoom-in-95 duration-200"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="w-12 h-12 rounded-full bg-red-50 text-red-600 flex items-center justify-center mx-auto mb-4">
-              <TrashIcon className="w-6 h-6" />
-            </div>
-            <h3 className="text-base font-bold text-gray-900 mb-1.5">
-              Delete {selectedLeadIds.length} Pre-Orders?
-            </h3>
-            <p className="text-xs text-gray-500 mb-6 leading-relaxed">
-              Are you sure you want to delete the selected {selectedLeadIds.length} incomplete pre-orders?
-            </p>
-            <div className="flex items-center justify-center gap-3">
-              <button
-                type="button"
-                disabled={isBulkDeleting}
-                onClick={() => setShowBulkDeleteConfirm(false)}
-                className="flex-1 px-4 py-2 rounded-xl border border-gray-200 text-xs font-bold text-gray-600 hover:bg-gray-50 transition"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                disabled={isBulkDeleting}
-                onClick={handleBulkDeleteConfirm}
-                className="flex-1 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition shadow-sm disabled:opacity-60"
-              >
-                {isBulkDeleting ? "Deleting..." : "Delete Selected"}
-              </button>
-            </div>
+      <Modal
+        isOpen={showBulkDeleteConfirm}
+        onClose={() => setShowBulkDeleteConfirm(false)}
+        maxWidth="sm"
+        showCloseButton={false}
+      >
+        <div className="text-center">
+          <div className="w-12 h-12 rounded-full bg-red-50 text-red-600 flex items-center justify-center mx-auto mb-4">
+            <TrashIcon className="w-6 h-6" />
+          </div>
+          <h3 className="text-base font-bold text-gray-900 mb-1.5">
+            Delete {selectedLeadIds.length} Pre-Orders?
+          </h3>
+          <p className="text-xs text-gray-500 mb-6 leading-relaxed">
+            Are you sure you want to delete the selected {selectedLeadIds.length} incomplete pre-orders?
+          </p>
+          <div className="flex items-center justify-center gap-3">
+            <button
+              type="button"
+              disabled={isBulkDeleting}
+              onClick={() => setShowBulkDeleteConfirm(false)}
+              className="flex-1 px-4 py-2 rounded-xl border border-gray-200 text-xs font-bold text-gray-600 hover:bg-gray-50 transition"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              disabled={isBulkDeleting}
+              onClick={handleBulkDeleteConfirm}
+              className="flex-1 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition shadow-sm disabled:opacity-60"
+            >
+              {isBulkDeleting ? "Deleting..." : "Delete Selected"}
+            </button>
           </div>
         </div>
-      )}
+      </Modal>
     </div>
   );
 }
