@@ -260,11 +260,11 @@ export default function Navbar() {
                   PUJA
                 </Link>
               </li>
-              {/* <li>
+              <li>
                 <Link href="/homa" className={isActivePath("/homa") ? "text-[#00B05F] font-extrabold border-b-2 border-[#00B05F] pb-1" : "transition-colors hover:text-[#00B05F] uppercase"}>
-                  HOMAS
+                  HOMA
                 </Link>
-              </li> */}
+              </li>
               <li>
                 <Link href="/account" className={isActivePath("/account") || isActivePath("/profile") ? "text-[#00B05F] font-extrabold border-b-2 border-[#00B05F] pb-1" : "transition-colors hover:text-[#00B05F] uppercase"}>
                   ACCOUNT

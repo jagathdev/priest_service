@@ -1,45 +1,60 @@
 "use client";
-import { formatDayDateMonth } from "@/lib/dateFormatter";
 
-import React, { useState, useMemo } from "react";
+import { formatDayDateMonth } from "@/lib/dateFormatter";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import Image from "next/image";
-import Navbar from "@/components/layout/Navbar";
 import Link from "next/link";
-import { getPriceComparison } from "@/lib/pricing";
-import PriceTag from "@/components/ui/PriceTag";
-// import { useRouter } from "next/navigation";
+import Navbar from "@/components/layout/Navbar";
+import { SparklesIcon } from "@heroicons/react/24/outline";
 import {
-  ArrowRight,
+  X,
   Search,
   SlidersHorizontal,
+  ArrowRight,
   Check,
-  Calendar,
   MapPin,
+  Calendar,
   ChevronRight,
   Share2,
   Clock,
 } from "lucide-react";
-import Footer from "@/components/layout/Footer";
 import WishlistButton from "@/components/common/WishlistButton";
+import { formatStartingPrice, getPriceComparison } from "@/lib/pricing";
+import PriceTag from "@/components/ui/PriceTag";
+import ShareModal, { ShareData } from "@/components/common/ShareModal";
 
 interface Homa {
   _id: string;
   title: string;
   subtitle?: string;
-  shortTitle?: string;
   description?: string;
   imageUrl: string;
   badge?: string;
+  shortTitle?: string;
   buttonText?: string;
   location?: string;
   date?: string;
   time?: string;
   slug?: string;
+  packages?: Array<{
+    priceINR?: number | string;
+    price?: number | string;
+    [key: string]: unknown;
+  }>;
+  price?: number | string;
+  priceINR?: number | string;
+  sellingPrice?: number | string;
+  listPriceINR?: number | string;
+  details?: {
+    benefits?: { title: string; description: string }[];
+    templeLocation?: string;
+  };
   deity?: string;
+  tithis?: string;
   dosha?: string;
-  homaType?: string;
-  price?: number;
-  packages?: { price?: number }[];
+  benefit?: string;
+  filterLocation?: string;
+  productId?: number;
 }
 
 const slugify = (value: string) =>
@@ -70,125 +85,367 @@ const getHomaImageUrl = (imageUrl?: string): string => {
   return `/${safeEncode(trimmed)}`;
 };
 
+interface FilterGroup {
+  label: string;
+  options: { value: string }[];
+}
+
+type FilterState = Record<string, string[]>;
+
+const defaultFilters: FilterState = {
+  Deity: [],
+  Tithis: [],
+  Dosha: [],
+  Benefits: [],
+  Location: [],
+};
+
+/** Returns true if the homa matches ALL active filters */
+function homaMatchesFilters(
+  homa: Homa,
+  filters: FilterState,
+  searchQuery: string,
+  filterGroups: FilterGroup[]
+): boolean {
+  if (searchQuery.trim()) {
+    const q = searchQuery.toLowerCase();
+    const searchMatches = [homa.title, homa.shortTitle, homa.subtitle, homa.description, homa.location, homa.badge]
+      .filter(Boolean)
+      .some((text) => text?.toLowerCase().includes(q));
+    if (!searchMatches) return false;
+  }
+
+  const fieldMapping: Record<string, keyof Homa> = {
+    Deity: "deity",
+    Tithis: "tithis",
+    Dosha: "dosha",
+    Benefits: "benefit",
+    Location: "filterLocation",
+  };
+
+  for (const group of filterGroups) {
+    const selectedValues = filters[group.label];
+    if (!selectedValues || selectedValues.length === 0) continue;
+
+    const groupMatches = selectedValues.some((selectedValue) => {
+      const fieldName = fieldMapping[group.label];
+      const savedValue = fieldName ? homa[fieldName] : undefined;
+
+      if (typeof savedValue === "string" && savedValue.trim()) {
+        if (savedValue.trim().toLowerCase() === selectedValue.toLowerCase()) {
+          return true;
+        }
+      }
+
+      if (group.label === "Location" && homa.location) {
+        if (homa.location.toLowerCase().includes(selectedValue.toLowerCase())) {
+          return true;
+        }
+      }
+
+      return false;
+    });
+
+    if (!groupMatches) return false;
+  }
+  return true;
+}
+
+function HomaFilterModal({
+  filters,
+  filterGroups,
+  initialTab,
+  onClose,
+  onApply,
+  onClear,
+}: {
+  filters: FilterState;
+  filterGroups: FilterGroup[];
+  initialTab?: string;
+  onClose: () => void;
+  onApply: (filters: FilterState) => void;
+  onClear: () => void;
+}) {
+  const [draftFilters, setDraftFilters] = useState<FilterState>(filters);
+  const [activeTab, setActiveTab] = useState<string>(
+    (initialTab && filterGroups.some((g) => g.label === initialTab))
+      ? initialTab
+      : filterGroups[0]?.label || ""
+  );
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const selectFilter = (label: string, value: string) => {
+    setDraftFilters((prev) => {
+      const current = prev[label] || [];
+      if (current.includes(value)) {
+        return { ...prev, [label]: current.filter((v) => v !== value) };
+      } else {
+        return { ...prev, [label]: [...current, value] };
+      }
+    });
+  };
+
+  const activeGroup = filterGroups.find((g) => g.label === activeTab) || filterGroups[0];
+  const filteredOptions = activeGroup
+    ? activeGroup.options.filter((o) =>
+      o.value.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+    : [];
+
+  const totalSelectedCount = Object.values(draftFilters).reduce(
+    (acc, curr) => acc + (curr?.length || 0),
+    0
+  );
+
+  if (filterGroups.length === 0) return null;
+
+  return (
+    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 p-2.5 sm:p-4 backdrop-blur-sm transition-opacity duration-300">
+      <div className="w-full max-w-[550px] h-[82vh] max-h-[580px] flex flex-col overflow-hidden rounded-[20px] bg-white shadow-2xl animate-[fadeIn_0.2s_ease-out]">
+
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 sm:px-6 py-3.5 sm:py-4 border-b border-[#ebd5c1] shrink-0 bg-white">
+          <h3 className="text-lg sm:text-[22px] font-serif font-bold text-ink">Homa Filters</h3>
+          <button onClick={onClose} aria-label="Close filters" className="p-1 text-gray-400 hover:text-gray-700 transition-colors">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="flex flex-1 min-h-0 overflow-hidden">
+          {/* Sidebar */}
+          <div className="w-[36%] sm:w-1/3 border-r border-[#ebd5c1] overflow-y-auto bg-stone-50/50">
+            {filterGroups.map((group) => {
+              const isActive = group.label === activeTab;
+              const groupSelectedCount = (draftFilters[group.label] || []).length;
+              return (
+                <button
+                  key={group.label}
+                  onClick={() => {
+                    setActiveTab(group.label);
+                    setSearchQuery("");
+                  }}
+                  className={`w-full text-left px-3 sm:px-4 py-3 sm:py-3.5 text-xs sm:text-sm font-bold transition-colors relative flex items-center justify-between ${isActive ? 'bg-[#F1F5F9] text-[#00B05F]' : 'text-gray-700 hover:bg-gray-100/60'}`}
+                >
+                  <span className="truncate">{group.label}</span>
+                  {groupSelectedCount > 0 && (
+                    <span className="w-4 h-4 rounded-full bg-[#00B05F] text-white text-[10px] font-bold flex items-center justify-center shrink-0 ml-1">
+                      {groupSelectedCount}
+                    </span>
+                  )}
+                  {isActive && <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#00B05F]"></div>}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Content */}
+          <div className="w-[64%] sm:w-2/3 p-3.5 sm:p-5 overflow-y-auto relative custom-scrollbar bg-white">
+            <h4 className="text-sm sm:text-base font-bold text-[#9e1c1c] mb-2.5 sm:mb-4">{activeGroup.label}</h4>
+
+            {/* Search */}
+            <div className="relative mb-3.5 sm:mb-5">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={`Search ${activeGroup.label}`}
+                className="w-full pl-8 sm:pl-9 pr-3 py-1.5 sm:py-2 border border-gray-200 rounded-full outline-none text-xs sm:text-sm focus:border-[#009644] transition-colors"
+              />
+              <Search className="w-3.5 h-3.5 text-gray-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+            </div>
+
+            {/* Options */}
+            <div className="space-y-3 sm:space-y-4">
+              {filteredOptions.length > 0 ? (
+                filteredOptions.map((option) => {
+                  const isSelected = (draftFilters[activeGroup.label] || []).includes(option.value);
+                  return (
+                    <label key={option.value} className="flex items-start gap-2.5 cursor-pointer group select-none">
+                      <div className="relative flex items-center justify-center shrink-0 mt-0.5">
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => selectFilter(activeGroup.label, option.value)}
+                          className="peer w-[18px] h-[18px] appearance-none rounded-[4px] border border-gray-300 checked:bg-white checked:border-[#00B05F] transition-colors cursor-pointer"
+                        />
+                        <Check className="absolute w-3 h-3 text-transparent peer-checked:text-[#00B05F] pointer-events-none transition-colors" strokeWidth={3} />
+                      </div>
+                      <span className="text-xs sm:text-sm font-semibold text-gray-700 group-hover:text-gray-900 leading-snug pt-[1px]">{option.value}</span>
+                    </label>
+                  );
+                })
+              ) : (
+                <p className="text-xs sm:text-sm text-gray-500 text-center py-4">No matching options found.</p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="shrink-0 flex items-center justify-between px-3.5 py-3 sm:px-6 sm:py-3.5 border-t border-[#ebd5c1] gap-2.5 sm:gap-3 bg-white shadow-[0_-4px_16px_rgba(0,0,0,0.06)] z-10">
+          <button
+            type="button"
+            onClick={() => { setDraftFilters(defaultFilters); onClear(); }}
+            className="flex-1 h-11 sm:h-12 border border-gray-300 hover:border-gray-400 bg-gray-50 hover:bg-gray-100 active:bg-gray-200 rounded-full text-xs sm:text-sm font-bold text-gray-700 transition-all text-center flex items-center justify-center shadow-xs cursor-pointer"
+          >
+            Clear Filter
+          </button>
+          <button
+            type="button"
+            onClick={() => onApply(draftFilters)}
+            className="flex-1 h-11 sm:h-12 bg-[#00B05F] hover:bg-[#008F4C] active:bg-[#091e32] text-white rounded-full text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 shadow-md shadow-slate-900/20 active:scale-[0.99] transition-all group cursor-pointer"
+          >
+            <span>Apply Filter</span>
+            {totalSelectedCount > 0 && (
+              <span className="bg-white/25 text-white text-[11px] font-extrabold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
+                {totalSelectedCount}
+              </span>
+            )}
+            <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white group-hover:translate-x-0.5 transition-transform shrink-0" strokeWidth={2.5} />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// --- Main Homa Listing Page ----------------------------------------------------
 export default function HomaClient({ initialHomas }: { initialHomas?: Homa[] }) {
   const allHomas = useMemo(() => initialHomas || [], [initialHomas]);
-  const fetched = true; // Since it's SSR, data is always already fetched when the component mounts
+  const fetched = true;
+  const [filters, setFilters] = useState<FilterState>(defaultFilters);
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [filterModalInitialTab, setFilterModalInitialTab] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedType, setSelectedType] = useState("All Homas");
-  const [selectedDeities, setSelectedDeities] = useState<string[]>([]);
-  const [selectedDoshas, setSelectedDoshas] = useState<string[]>([]);
-  // const router = useRouter();
+  const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [shareData, setShareData] = useState<ShareData>({});
 
-  const toggleDeity = (deity: string) => {
-    setSelectedDeities((prev) =>
-      prev.includes(deity) ? prev.filter((d) => d !== deity) : [...prev, deity]
-    );
+  const openFilterModal = (tabLabel?: string) => {
+    setFilterModalInitialTab(tabLabel || "");
+    setIsFilterModalOpen(true);
   };
 
-  const toggleDosha = (dosha: string) => {
-    setSelectedDoshas((prev) =>
-      prev.includes(dosha) ? prev.filter((d) => d !== dosha) : [...prev, dosha]
-    );
+  const openShareModal = (data: ShareData) => {
+    setShareData(data);
+    setShareModalOpen(true);
   };
+
+  const clearFilters = () => setFilters(defaultFilters);
+  const applyFilters = useCallback((nextFilters: FilterState) => {
+    setFilters(nextFilters);
+    setIsFilterModalOpen(false);
+  }, []);
+
+  const hasActiveFilters = Object.values(filters).some((arr) => arr && arr.length > 0);
+
+  // Compute dynamic filter groups from saved homas
+  const dynamicFilterGroups = useMemo(() => {
+    const extractValues = (key: keyof Homa, altKey?: keyof Homa) => {
+      const map = new Map<string, string>();
+      allHomas.forEach((h) => {
+        const val1 = h[key];
+        if (typeof val1 === "string" && val1.trim()) {
+          const trimmed = val1.trim();
+          const lower = trimmed.toLowerCase();
+          if (!map.has(lower)) {
+            map.set(lower, trimmed);
+          }
+        }
+        if (altKey) {
+          const val2 = h[altKey];
+          if (typeof val2 === "string" && val2.trim()) {
+            const trimmed = val2.trim();
+            const lower = trimmed.toLowerCase();
+            if (!map.has(lower)) {
+              map.set(lower, trimmed);
+            }
+          }
+        }
+      });
+      return Array.from(map.values()).sort((a, b) => a.localeCompare(b));
+    };
+
+    const deities = extractValues("deity");
+    const tithis = extractValues("tithis");
+    const doshas = extractValues("dosha");
+    const benefits = extractValues("benefit");
+    const locations = extractValues("filterLocation");
+
+    const groups: FilterGroup[] = [];
+
+    if (deities.length > 0) {
+      groups.push({
+        label: "Deity",
+        options: deities.map((v) => ({ value: v })),
+      });
+    }
+    if (tithis.length > 0) {
+      groups.push({
+        label: "Tithis",
+        options: tithis.map((v) => ({ value: v })),
+      });
+    }
+    if (doshas.length > 0) {
+      groups.push({
+        label: "Dosha",
+        options: doshas.map((v) => ({ value: v })),
+      });
+    }
+    if (benefits.length > 0) {
+      groups.push({
+        label: "Benefit",
+        options: benefits.map((v) => ({ value: v })),
+      });
+    }
+    if (locations.length > 0) {
+      groups.push({
+        label: "Location",
+        options: locations.map((v) => ({ value: v })),
+      });
+    }
+
+    return groups;
+  }, [allHomas]);
+
+  // Handle ?filter=... param in URL
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const filterParam = params.get("filter");
+      if (filterParam) {
+        const found = dynamicFilterGroups.find(
+          (g) => g.label.toLowerCase() === filterParam.toLowerCase()
+        );
+        const modalTab = found ? found.label : (filterParam.toLowerCase() === "location" ? "Location" : "");
+        if (modalTab) {
+          const timeoutId = setTimeout(() => {
+            openFilterModal(modalTab);
+          }, 0);
+          return () => clearTimeout(timeoutId);
+        }
+      }
+    }
+  }, [dynamicFilterGroups]);
 
   // Filter homas
   const displayedHomas = useMemo(() => {
-    return allHomas.filter((homa) => {
-      // Search filter
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase();
-        const textMatch =
-          homa.title.toLowerCase().includes(q) ||
-          (homa.description && homa.description.toLowerCase().includes(q)) ||
-          (homa.location && homa.location.toLowerCase().includes(q)) ||
-          (homa.subtitle && homa.subtitle.toLowerCase().includes(q));
-        if (!textMatch) return false;
-      }
-
-      // Type filter
-      if (selectedType !== "All Homas") {
-        if (homa.homaType && homa.homaType !== selectedType) {
-          const keyword = selectedType.toLowerCase().replace(" homa", "");
-          const matchesKeyword = homa.title.toLowerCase().includes(keyword);
-          if (!matchesKeyword) return false;
-        }
-      }
-
-      // Deity filter
-      if (selectedDeities.length > 0) {
-        const matchedDeity = selectedDeities.some(
-          (d) => homa.deity && homa.deity.trim().toLowerCase() === d.trim().toLowerCase()
-        );
-        if (!matchedDeity) return false;
-      }
-
-      // Dosha filter
-      if (selectedDoshas.length > 0) {
-        const matchedDosha = selectedDoshas.some(
-          (d) => homa.dosha && homa.dosha.trim().toLowerCase() === d.trim().toLowerCase()
-        );
-        if (!matchedDosha) return false;
-      }
-
-      return true;
-    });
-  }, [allHomas, searchQuery, selectedType, selectedDeities, selectedDoshas]);
-
-  const dynamicHomaTypes = useMemo(() => {
-    const set = new Set<string>();
-    allHomas.forEach((h) => {
-      if (h.homaType && h.homaType.trim()) set.add(h.homaType.trim());
-    });
-    return Array.from(set).sort();
-  }, [allHomas]);
-
-  const homaTypeOptions = useMemo(() => {
-    const list = [{ label: "All Homas", count: allHomas.length }];
-    dynamicHomaTypes.forEach((t) => {
-      list.push({
-        label: t,
-        count: allHomas.filter((h) => h.homaType === t).length,
-      });
-    });
-    return list;
-  }, [allHomas, dynamicHomaTypes]);
-
-  const deityOptions = useMemo(() => {
-    const map = new Map<string, string>();
-    allHomas.forEach((h) => {
-      if (h.deity && h.deity.trim()) {
-        const trimmed = h.deity.trim();
-        const lower = trimmed.toLowerCase();
-        if (!map.has(lower)) {
-          map.set(lower, trimmed);
-        }
-      }
-    });
-    return Array.from(map.values()).sort((a, b) => a.localeCompare(b));
-  }, [allHomas]);
-
-  const doshaOptions = useMemo(() => {
-    const map = new Map<string, string>();
-    allHomas.forEach((h) => {
-      if (h.dosha && h.dosha.trim()) {
-        const trimmed = h.dosha.trim();
-        const lower = trimmed.toLowerCase();
-        if (!map.has(lower)) {
-          map.set(lower, trimmed);
-        }
-      }
-    });
-    return Array.from(map.values()).sort((a, b) => a.localeCompare(b));
-  }, [allHomas]);
+    return allHomas.filter((h) => homaMatchesFilters(h, filters, searchQuery, dynamicFilterGroups));
+  }, [allHomas, filters, searchQuery, dynamicFilterGroups]);
 
   return (
     <>
       <Navbar />
-      <main className="min-h-screen bg-[#fafafc] pb-16 font-sans">
-        {/* ── Top Header Hero Banner ── */}
-        <section className="bg-gradient-to-b from-[#fff7f8] via-[#ffffff] to-[#fafafc] pt-12 pb-10 text-center border-b border-gray-150 relative overflow-hidden">
+      <ShareModal
+        isOpen={shareModalOpen}
+        onClose={() => setShareModalOpen(false)}
+        data={shareData}
+      />
+      <main className="min-h-screen">
+        {/* Hero Section - Light Sacred Sandalwood Theme */}
+        <div className="bg-gradient-to-b from-[#fff6ef] via-[#fdeee0] to-[#f9e3d0] py-12 md:py-16 text-center border-b border-[#fcd5b5] relative overflow-hidden">
           {/* Left Inverted Mandala Decoration */}
-          <div className="absolute left-0 top-0 bottom-0 h-full pointer-events-none opacity-40 z-0 hidden min-[769px]:flex items-center">
+          <div className="absolute left-0 top-0 bottom-0 h-full pointer-events-none opacity-50 z-0 hidden min-[769px]:flex items-center">
             <Image
               src="/images/mandala.png"
               alt="Mandala Left"
@@ -200,7 +457,7 @@ export default function HomaClient({ initialHomas }: { initialHomas?: Homa[] }) 
           </div>
 
           {/* Right Mandala Decoration */}
-          <div className="absolute right-0 top-0 bottom-0 h-full pointer-events-none opacity-40 z-0 hidden min-[769px]:flex items-center">
+          <div className="absolute right-0 top-0 bottom-0 h-full pointer-events-none opacity-50 z-0 hidden min-[769px]:flex items-center">
             <Image
               src="/images/mandala.png"
               alt="Mandala Right"
@@ -210,403 +467,258 @@ export default function HomaClient({ initialHomas }: { initialHomas?: Homa[] }) 
             />
           </div>
 
-          <div className="mx-auto max-w-4xl px-4 relative z-10">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-[#5b1422] tracking-tight leading-tight font-serif">
-              Discover Sacred Pujas &amp; Divine Blessings
+          <div className="relative z-10 max-w-[1350px] mx-auto px-4 sm:px-6 lg:px-10">
+            <h1 className="text-3xl sm:text-4xl md:text-[48px] font-serif font-extrabold tracking-tight mb-4 leading-tight text-[#2c1209]">
+              Book Powerful <span className="text-[#d95a2b]">Sacred Homas</span> Online
             </h1>
-            <p className="mt-3 text-xs sm:text-sm text-gray-500 max-w-2xl mx-auto leading-relaxed font-medium">
-              Receive continued divine blessings through temple offerings performed with your Name, Gotram and Nakshatram.
+            <p className="text-stone-600 text-sm md:text-base max-w-2xl mx-auto mb-8 font-medium leading-relaxed">
+              Invoking divine energies through Vedic fire rituals performed by experienced Vedic Priests. Experience transformative spiritual blessings, health, prosperity, and obstacle removal.
             </p>
 
-            {/* Large Search & Filter Input Bar */}
-            <div className="mt-8 max-w-2xl mx-auto relative">
-              <div className="flex items-center bg-white rounded-full border border-gray-250 shadow-sm px-5 py-3 hover:border-gray-400 transition-all">
-                <Search className="w-5 h-5 text-gray-400 shrink-0 mr-1" />
+            {/* Light Search & Filter Container */}
+            <div className="max-w-2xl mx-auto bg-white/90 backdrop-blur-md rounded-2xl p-2.5 sm:p-3 shadow-xl shadow-orange-950/5 border border-[#fcd5b5] flex items-center gap-2">
+              <div className="relative flex-1">
                 <input
                   type="text"
+                  placeholder="What homa are you looking for?"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="What homa are you looking for?"
-                  className="w-full bg-transparent border-none text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-0 px-2 font-medium"
+                  className="w-full pl-5 pr-10 py-3 rounded-xl text-sm text-stone-800 outline-none placeholder:text-stone-400 font-medium bg-transparent"
                 />
+                <Search className="w-5 h-5 absolute right-3.5 top-1/2 -translate-y-1/2 text-[#d95a2b]" />
+              </div>
+              {dynamicFilterGroups.length > 0 && (
                 <button
-                  type="button"
-                  aria-label="Filter options"
-                  className="p-1.5 rounded-full hover:bg-gray-100 transition text-gray-600 shrink-0 border-l border-gray-200 pl-3"
+                  onClick={() => openFilterModal()}
+                  className="bg-[#d95a2b] hover:bg-[#c24a1e] text-white px-6 py-3 rounded-xl flex items-center gap-2 text-xs sm:text-sm font-bold shadow-md transition-all shrink-0 active:scale-95 cursor-pointer"
                 >
-                  <SlidersHorizontal className="w-4 h-4 text-gray-600" />
+                  <SlidersHorizontal className="w-4 h-4 text-white" />
+                  <span>Filter</span>
+                  {hasActiveFilters && (
+                    <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span>
+                  )}
                 </button>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ── Main Layout: Left Sidebar + Right Card Grid ── */}
-        <div className="mx-auto max-w-[1360px] px-4 sm:px-6 lg:px-8 pt-10">
-          <div className="flex flex-col lg:flex-row gap-8 items-start">
-            {/* ── Left Sidebar Filter Card ── */}
-            {(homaTypeOptions.length > 1 || deityOptions.length > 0 || doshaOptions.length > 0) && (
-              <aside className="w-full lg:w-[270px] shrink-0 bg-white rounded-2xl border border-gray-200 shadow-xs p-5 space-y-6">
-                {/* Section 1: Homa Type */}
-                {homaTypeOptions.length > 1 && (
-                  <div>
-                    <h3 className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">Homa type</h3>
-                    <div className="space-y-1">
-                      {homaTypeOptions.map((item) => {
-                        const isSelected = selectedType === item.label;
-                        return (
-                          <button
-                            key={item.label}
-                            type="button"
-                            onClick={() => setSelectedType(item.label)}
-                            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all ${isSelected
-                              ? "bg-[#F1F5F9] text-primary font-bold"
-                              : "text-gray-700 hover:bg-gray-50"
-                              }`}
-                          >
-                            <span className="flex items-center gap-2">
-                              {isSelected && (
-                                <Check className="w-4 h-4 text-primary" strokeWidth={3} />
-                              )}
-                              <span>{item.label}</span>
-                            </span>
-                            <span className={`text-xs px-2 py-0.5 rounded-full ${isSelected ? "bg-primary/10 text-primary font-bold" : "text-gray-400 font-mono"}`}>
-                              {item.count}
-                            </span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                {homaTypeOptions.length > 1 && (deityOptions.length > 0 || doshaOptions.length > 0) && <hr className="border-gray-100" />}
-
-                {/* Section 2: Deity */}
-                {deityOptions.length > 0 && (
-                  <div>
-                    <h3 className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">Deity</h3>
-                    <div className="space-y-2.5">
-                      {deityOptions.map((deity) => {
-                        const isChecked = selectedDeities.includes(deity);
-                        return (
-                          <label key={deity} className="flex items-center gap-3 text-xs sm:text-sm text-gray-700 font-medium cursor-pointer hover:text-gray-900 select-none">
-                            <input
-                              type="checkbox"
-                              checked={isChecked}
-                              onChange={() => toggleDeity(deity)}
-                              className="w-4 h-4 rounded text-primary focus:ring-success border-gray-300"
-                            />
-                            <span>{deity}</span>
-                          </label>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                {deityOptions.length > 0 && doshaOptions.length > 0 && <hr className="border-gray-100" />}
-
-                {/* Section 3: Dosha */}
-                {doshaOptions.length > 0 && (
-                  <div>
-                    <h3 className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">Dosha</h3>
-                    <div className="space-y-2.5">
-                      {doshaOptions.map((dosha) => {
-                        const isChecked = selectedDoshas.includes(dosha);
-                        return (
-                          <label key={dosha} className="flex items-center gap-3 text-xs sm:text-sm text-gray-700 font-medium cursor-pointer hover:text-gray-900 select-none">
-                            <input
-                              type="checkbox"
-                              checked={isChecked}
-                              onChange={() => toggleDosha(dosha)}
-                              className="w-4 h-4 rounded text-primary focus:ring-success border-gray-300"
-                            />
-                            <span>{dosha}</span>
-                          </label>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                {(selectedDeities.length > 0 || selectedDoshas.length > 0 || selectedType !== "All Homas" || searchQuery) && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSelectedType("All Homas");
-                      setSelectedDeities([]);
-                      setSelectedDoshas([]);
-                      setSearchQuery("");
-                    }}
-                    className="w-full py-2.5 text-xs font-bold text-red-500 hover:bg-red-50 rounded-xl transition border border-red-100 mt-2"
-                  >
-                    Clear All Filters
-                  </button>
-                )}
-              </aside>
-            )}
-
-            {/* ── Right Content Area ── */}
-            <div className="flex-1 w-full">
-              {/* Title Header Bar */}
-              <div className="flex items-center justify-between mb-6 pb-2 border-b border-gray-150">
-                <div>
-                  <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
-                    {selectedType === "All Homas" ? "All Homas" : selectedType}
-                  </h2>
-                  <p className="text-xs text-gray-500 mt-1 font-medium">
-                    Daily, Weekly and Monthly Homas for peace, prosperity and divine blessings.
-                  </p>
-                </div>
-                <span className="text-xs font-semibold text-gray-400 font-mono">
-                  {displayedHomas.length} {displayedHomas.length === 1 ? "Homa" : "Homas"}
-                </span>
-              </div>
-
-              {/* Homa Cards Grid (3 Columns) */}
-              {!fetched ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 w-full">
-                  {Array.from({ length: 6 }).map((_, i) => (
-                    <div key={`skeleton-${i}`} className="bg-gray-100/80 rounded-[32px] h-[450px] animate-pulse border border-stone-100"></div>
-                  ))}
-                </div>
-              ) : displayedHomas.length === 0 ? (
-                <div className="bg-white rounded-2xl border border-dashed border-gray-250 p-12 text-center shadow-xs">
-                  <p className="text-base font-bold text-gray-700">No homas found matching your filters</p>
-                  <p className="text-xs text-gray-400 mt-1">Try searching with another deity, dosha or clear filters.</p>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSelectedType("All Homas");
-                      setSelectedDeities([]);
-                      setSelectedDoshas([]);
-                      setSearchQuery("");
-                    }}
-                    className="mt-4 px-6 py-2.5 rounded-full bg-primary text-white text-xs font-bold hover:bg-[#058a51] transition"
-                  >
-                    Clear Filters
-                  </button>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                  {displayedHomas.map((homa) => {
-                    const priceVal = homa.price || homa.packages?.[0]?.price || 516;
-
-                    return (
-                      <div
-                        key={homa._id}
-                        className="bg-white rounded-2xl border border-gray-200/90 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.12),0_2px_6px_-1px_rgba(0,0,0,0.08)] hover:shadow-[0_12px_28px_-6px_rgba(0,0,0,0.18),0_8px_10px_-6px_rgba(0,0,0,0.1)] transition-all duration-300 overflow-hidden flex flex-col group relative"
-                      >
-                        <Link
-                          href={`/homa/${homa.slug || slugify(homa.title)}`}
-                          className="flex flex-col flex-1 cursor-pointer"
-                        >
-                          {/* ── Top Image Container ── */}
-                          <div className="relative w-full aspect-[3/2] overflow-hidden bg-gray-100 shrink-0">
-                            <Image
-                              src={getHomaImageUrl(homa.imageUrl)}
-                              alt={homa.title}
-                              fill
-                              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                              unoptimized
-                              className="w-full h-full object-cover object-left group-hover:scale-105 transition-transform duration-500"
-                            />
-
-                            {/* Top Left Maroon Badge Pill */}
-                            <div className="absolute top-3 left-3 bg-danger text-white text-[11px] font-extrabold px-3.5 py-1.5 rounded-full shadow-md z-10 backdrop-blur-xs max-w-[80%] truncate">
-                              {homa.badge || homa.subtitle}
-                            </div>
-                          </div>
-
-                          {/* ── Maroon Decorative Subtitle Line Below Image ── */}
-                          <div className="pt-3 px-4 text-center">
-                            <p className="text-[10px] font-bold text-[#800000] uppercase tracking-widest flex items-center justify-center gap-1.5">
-                              <span className="w-3.5 h-px bg-[#800000]/40 inline-block"></span>
-                              <span className="truncate">{homa.subtitle || homa.shortTitle}</span>
-                              <span className="w-3.5 h-px bg-[#800000]/40 inline-block"></span>
-                            </p>
-                          </div>
-
-                          {/* ── Card Content Body ── */}
-                          <div className="p-4 flex flex-col flex-1">
-                            <h3 className="text-[16px] font-bold text-gray-900 leading-snug line-clamp-2 min-h-[46px]">
-                              {homa.title}
-                            </h3>
-
-                            <p className="text-xs text-gray-500 line-clamp-2 mt-1.5 mb-4 leading-relaxed min-h-[36px]">
-                              {homa.description}
-                            </p>
-
-                            {/* Location & Date Details Box: Vedic Gold & Amber Temple Card */}
-                            <div className="bg-gradient-to-b from-[#FFFDF9] to-[#FFF9F0] border border-[#ECD9C3] rounded-2xl p-2.5 sm:p-3 shadow-xs space-y-1.5 mt-auto mb-4">
-                              {/* Row 1: Puja Date & Occasion (Full Width) */}
-                              <div className="flex items-center gap-2.5 bg-white/95 border border-[#E8D5B5] rounded-xl px-2.5 py-1.5 shadow-2xs min-w-0 transition-all hover:border-[#D99B52]">
-                                <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-[#E65100]/15 via-[#F97316]/10 to-amber-100/60 border border-[#F0CA9E] flex items-center justify-center shrink-0 shadow-2xs text-[#C2410C]">
-                                  <Calendar className="w-3.5 h-3.5 text-[#C2410C]" strokeWidth={2.2} />
-                                </div>
-                                <div className="min-w-0 flex-1">
-                                  <span className="block text-xs sm:text-[12.5px] font-extrabold text-[#0B1E36] leading-tight">
-                                    {formatDayDateMonth(homa.date) || homa.date}
-                                  </span>
-                                  {homa.subtitle && (
-                                    <span className="block text-[10px] sm:text-[10.5px] text-stone-600 font-medium leading-normal mt-0.5 truncate pb-0.5">
-                                      {homa.subtitle}
-                                    </span>
-                                  )}
-                                </div>
-                              </div>
-
-                              {/* Row 2: Puja Time (Full Width, stacked below Date) */}
-                              {homa.time && (
-                                <div className="flex items-center gap-2.5 bg-gradient-to-br from-[#FFF9EE] via-[#FFF3E0] to-[#FFF9EE] border border-[#F0CA9E] rounded-xl px-2.5 py-1.5 shadow-2xs min-w-0 transition-all hover:border-[#D99B52]">
-                                  <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-[#C2410C] to-[#E65100] flex items-center justify-center shrink-0 shadow-xs text-white">
-                                    <Clock className="w-3.5 h-3.5 text-amber-200" strokeWidth={2.2} />
-                                  </div>
-                                  <div className="min-w-0 flex-1 flex items-baseline justify-between gap-2">
-                                    <span className="block text-xs sm:text-[12.5px] font-extrabold text-[#0B1E36] leading-tight">
-                                      {homa.time}
-                                    </span>
-                                  </div>
-                                </div>
-                              )}
-
-                              {/* Horizontal Divider */}
-                              <div className="w-full h-[1px] bg-[#ECD9C3]/70" />
-
-                              {/* Row 3: Temple Venue & Location Full Width */}
-                              <div className="flex items-center gap-2 bg-white/90 border border-[#EADBCC]/80 rounded-xl px-2.5 py-1.5 shadow-2xs">
-                                <div className="w-5 h-5 rounded-md bg-gradient-to-br from-[#E65100]/10 to-[#F97316]/15 text-[#C2410C] flex items-center justify-center shrink-0 border border-[#F5D8B3]">
-                                  <MapPin className="w-3 h-3" strokeWidth={2.2} />
-                                </div>
-                                <div className="flex items-baseline gap-1.5 truncate">
-                                  <span className="font-extrabold text-[#0B1E36] text-[11.5px] sm:text-xs truncate leading-tight">
-                                    {homa.location || "Sacred Temple Venue"}
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* ── Card Footer ── */}
-                            <div className="mt-auto pt-3.5 border-t border-gray-100 flex items-center justify-between bg-white">
-                              <div>
-                                {(() => {
-                                  const pInfo = getPriceComparison(homa);
-                                  return (
-                                    <PriceTag
-                                      sellingPrice={pInfo.sellingPrice ?? priceVal}
-                                      listPrice={pInfo.listPrice}
-                                      sellingPriceClassName="text-xl font-extrabold text-gray-900"
-                                      listPriceClassName="text-xs font-bold text-stone-400 line-through decoration-red-500 decoration-1.5 ml-1"
-                                      className="flex items-baseline gap-1.5 flex-wrap"
-                                    />
-                                  );
-                                })()}
-                                <span className="text-[11px] text-gray-400 font-medium block -mt-1">Per Booking</span>
-                              </div>
-
-                              <div
-                                className="bg-primary hover:bg-[#008F4C] text-white text-xs font-black px-4.5 py-2.5 rounded-full transition-all shadow-xs flex items-center gap-2 group-hover:shadow-md"
-                              >
-                                <span>{homa.buttonText || "BOOK NOW"}</span>
-                                <div className="w-4 h-4 rounded-full bg-white/20 flex items-center justify-center">
-                                  <ChevronRight className="w-2.5 h-2.5 text-white" strokeWidth={3} />
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </Link>
-
-                        {/* Top Right Action Buttons (Heart & Share) */}
-                        <div className="absolute top-3 right-3 flex items-center gap-1.5 z-10" onClick={(e) => e.stopPropagation()}>
-                          <WishlistButton itemId={homa._id} />
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              if (navigator.share) {
-                                navigator.share({ title: homa.title, url: window.location.href });
-                              }
-                            }}
-                            aria-label="Share homa"
-                            className="w-8 h-8 rounded-full bg-white/95 hover:bg-white text-gray-700 hover:text-blue-500 flex items-center justify-center shadow-sm transition"
-                          >
-                            <Share2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-
-              {/* End of results notice */}
-              {fetched && displayedHomas.length > 0 && (
-                <div className="mt-12 text-center py-6 border-t border-gray-100">
-                  <p className="text-xs font-semibold text-gray-400">
-                    You&apos;ve reached the end of available services ({displayedHomas.length} of {allHomas.length} Homas)
-                  </p>
-                </div>
               )}
             </div>
           </div>
         </div>
 
-        {/* ── Bottom Dark Banner (Exact Match from Reference Image) ── */}
-        <section className="mt-16 bg-gradient-to-r from-[#20050b] via-[#3b0914] to-[#1a0308] text-white py-14 px-4 text-center">
-          <div className="mx-auto max-w-3xl">
-            <h2 className="text-2xl sm:text-3xl font-bold font-serif leading-tight">
-              A Sacred Path to Divine Blessings Book Your Sacred Homa
+        <div className="mx-auto max-w-[1350px] px-4 sm:px-6 lg:px-10 py-10 bg-[#ffffff]">
+          <div className="flex items-center justify-between mb-5 sm:mb-6 gap-2">
+            <h2 className="text-[19px] min-[360px]:text-[22px] min-[390px]:text-2xl sm:text-3xl lg:text-4xl font-serif font-bold text-[#5c2424] whitespace-nowrap tracking-tight sm:tracking-normal">
+              Upcoming Online Homas
             </h2>
-            <p className="mt-2 text-xs sm:text-sm text-gray-300 font-medium">
-              Connect with divine blessings through authentic Vedic rituals.
-            </p>
-
-            {/* Social Follow Buttons */}
-            <div className="mt-5 flex items-center justify-center gap-3">
-              <span className="text-sm font-semibold text-gray-300 mr-1">Follow us -</span>
-              <a href="#" className="w-8 h-8 rounded-full bg-[#1877f2] flex items-center justify-center text-white hover:opacity-90 transition">
-                <Share2 className="w-4 h-4" />
-              </a>
-              <a href="#" className="w-8 h-8 rounded-full bg-gradient-to-tr from-amber-500 via-pink-500 to-purple-600 flex items-center justify-center text-white hover:opacity-90 transition">
-                <Share2 className="w-4 h-4" />
-              </a>
-              <a href="#" className="w-8 h-8 rounded-full bg-black flex items-center justify-center text-white hover:opacity-90 transition">
-                <Share2 className="w-3.5 h-3.5" />
-              </a>
-              <a href="#" className="w-8 h-8 rounded-full bg-[#ff0000] flex items-center justify-center text-white hover:opacity-90 transition">
-                <Share2 className="w-4 h-4" />
-              </a>
-            </div>
-
-            {/* Find the Right Homa CTA Button */}
-            <div className="mt-6">
-              <Link
-                href="#top"
-                onClick={(e) => {
-                  e.preventDefault();
-                  window.scrollTo({ top: 0, behavior: "smooth" });
-                }}
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white text-[#5b1422] text-xs sm:text-sm font-extrabold hover:bg-gray-100 transition shadow-lg"
-              >
-                <span>Find the Right Homa</span>
-                <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
-                  <ArrowRight className="w-3 h-3 text-white" strokeWidth={3} />
-                </div>
-              </Link>
-            </div>
-
-            {/* Trust Features Row */}
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-6 text-xs text-gray-300 font-medium">
-              <span className="flex items-center gap-1.5"><span className="text-primary font-bold text-sm">✓</span> 100% Secure</span>
-              <span className="flex items-center gap-1.5"><span className="text-primary font-bold text-sm">✓</span> Video Recording Sent</span>
-              <span className="flex items-center gap-1.5"><span className="text-primary font-bold text-sm">✓</span> Vedic Priests</span>
-            </div>
           </div>
-        </section>
+
+          {/* Quick Categories Filter row */}
+          {dynamicFilterGroups.length > 0 && (
+            <div className="flex overflow-x-auto gap-2.5 pb-4 no-scrollbar mb-6">
+              <button
+                onClick={clearFilters}
+                className={`shrink-0 rounded-full px-5 py-2 text-sm font-bold transition-colors ${!hasActiveFilters ? "bg-[#d95a2b] text-white" : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50"}`}
+              >
+                All
+              </button>
+              {dynamicFilterGroups.map((group: FilterGroup) => (
+                <button
+                  key={group.label}
+                  onClick={() => openFilterModal(group.label)}
+                  className={`shrink-0 rounded-full px-5 py-2 text-sm font-bold transition-colors border ${filters[group.label]?.length > 0 ? "bg-[#d95a2b] text-white border-[#d95a2b]" : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"}`}
+                >
+                  {group.label}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Filter Modal */}
+          {isFilterModalOpen && dynamicFilterGroups.length > 0 && (
+            <HomaFilterModal
+              filters={filters}
+              filterGroups={dynamicFilterGroups}
+              initialTab={filterModalInitialTab}
+              onClose={() => setIsFilterModalOpen(false)}
+              onApply={applyFilters}
+              onClear={clearFilters}
+            />
+          )}
+
+          {/* Grid of Cards */}
+          {!fetched ? (
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:gap-8 lg:grid-cols-3 w-full mt-12">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={`skeleton-${i}`} className="bg-gray-100/80 rounded-[32px] h-[450px] animate-pulse border border-stone-100"></div>
+              ))}
+            </div>
+          ) : displayedHomas.length === 0 ? (
+            <div className="mt-16 flex flex-col items-center justify-center gap-4 rounded-2xl border border-dashed border-[#e3d1c2] bg-white py-16 text-center">
+              <SparklesIcon className="h-10 w-10 text-[#d95a2b]" />
+              <p className="text-lg font-semibold text-[#5c2424]">No homas found</p>
+              <p className="text-sm text-gray-500">Try adjusting your filters to find what you&apos;re looking for.</p>
+              <button
+                type="button"
+                onClick={clearFilters}
+                className="mt-2 rounded-full bg-[#d95a2b] px-6 py-2.5 text-sm font-bold text-white shadow-md hover:bg-[#b0451f] transition cursor-pointer"
+              >
+                Clear Filters
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 lg:gap-8 max-w-[1350px] mx-auto w-full">
+              {displayedHomas.map((homa: Homa) => {
+                const fullUrl = typeof window !== 'undefined' ? `${window.location.origin}/homa/${homa.slug || slugify(homa.title)}` : '';
+                return (
+                  <div
+                    key={homa._id}
+                    className="bg-white rounded-2xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.12),0_2px_6px_-1px_rgba(0,0,0,0.08)] border border-gray-200/90 flex flex-col overflow-hidden group hover:shadow-[0_14px_30px_-6px_rgba(0,0,0,0.18),0_10px_12px_-6px_rgba(0,0,0,0.1)] hover:-translate-y-1 transition-all duration-300 relative"
+                  >
+                    <Link
+                      href={`/homa/${homa.slug || slugify(homa.title)}`}
+                      className="flex flex-col flex-1 cursor-pointer"
+                    >
+                      <div className="relative w-full aspect-[3/2] shrink-0 overflow-hidden">
+                        <Image
+                          src={getHomaImageUrl(homa.imageUrl)}
+                          alt={homa.title}
+                          fill
+                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                          unoptimized
+                          className="w-full h-full object-cover object-left transition-transform duration-700"
+                        />
+                        {homa.badge && (
+                          <div className="absolute top-4 left-0 bg-[#d92b2b] text-white text-[12px] font-extrabold px-3.5 py-1.5 shadow-md rounded-r-lg uppercase tracking-wider">
+                            {homa.badge}
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="p-4 sm:p-5 lg:p-6 flex flex-col flex-1 text-left">
+                        {(homa.shortTitle || homa.subtitle) && (
+                          <div className="flex items-center justify-center gap-2 mb-2 w-full text-center">
+                            <div className="w-8 h-[1px] bg-accent/40" />
+                            <span className="text-accent font-serif font-extrabold text-xs sm:text-[13px] tracking-wider uppercase flex items-center gap-1.5 text-center">
+                              <span className="text-[10px]">♦</span> {homa.shortTitle || homa.subtitle} <span className="text-[10px]">♦</span>
+                            </span>
+                            <div className="w-8 h-[1px] bg-accent/40" />
+                          </div>
+                        )}
+
+                        <h3 className="text-[20px] sm:text-[21px] font-serif font-extrabold text-gray-900 mb-2 leading-snug line-clamp-2">
+                          {homa.title}
+                        </h3>
+
+                        <p className="text-gray-600 text-[14px] leading-relaxed line-clamp-2 mb-5 flex-1">
+                          {homa.description}
+                        </p>
+
+                        {/* Location & Date Details Box: Vedic Gold & Amber Temple Card */}
+                        <div className="bg-gradient-to-b from-[#FFFDF9] to-[#FFF9F0] border border-[#ECD9C3] rounded-2xl p-2.5 sm:p-3 shadow-xs space-y-1.5 mt-auto mb-4">
+                          {/* Row 1: Homa Date & Occasion (Full Width) */}
+                          <div className="flex items-center gap-2.5 bg-white/95 border border-[#E8D5B5] rounded-xl px-2.5 py-1.5 shadow-2xs min-w-0 transition-all hover:border-[#D99B52]">
+                            <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-[#E65100]/15 via-[#F97316]/10 to-amber-100/60 border border-[#F0CA9E] flex items-center justify-center shrink-0 shadow-2xs text-[#C2410C]">
+                              <Calendar className="w-3.5 h-3.5 text-[#C2410C]" strokeWidth={2.2} />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <span className="block text-xs sm:text-[12.5px] font-extrabold text-[#0B1E36] leading-tight">
+                                {formatDayDateMonth(homa.date) || homa.date}
+                              </span>
+                              {homa.subtitle && (
+                                <span className="block text-[10px] sm:text-[10.5px] text-stone-600 font-medium leading-normal mt-0.5 truncate pb-0.5">
+                                  {homa.subtitle}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Row 2: Homa Time (Full Width, stacked below Date) */}
+                          {homa.time && (
+                            <div className="flex items-center gap-2.5 bg-gradient-to-br from-[#FFF9EE] via-[#FFF3E0] to-[#FFF9EE] border border-[#F0CA9E] rounded-xl px-2.5 py-1.5 shadow-2xs min-w-0 transition-all hover:border-[#D99B52]">
+                              <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-[#C2410C] to-[#E65100] flex items-center justify-center shrink-0 shadow-xs text-white">
+                                <Clock className="w-3.5 h-3.5 text-amber-200" strokeWidth={2.2} />
+                              </div>
+                              <div className="min-w-0 flex-1 flex items-baseline justify-between gap-2">
+                                <span className="block text-xs sm:text-[12.5px] font-extrabold text-[#0B1E36] leading-tight">
+                                  {homa.time}
+                                </span>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Horizontal Divider */}
+                          <div className="w-full h-[1px] bg-[#ECD9C3]/70" />
+
+                          {/* Row 3: Temple Venue & Location Full Width */}
+                          <div className="flex items-center gap-2 bg-white/90 border border-[#EADBCC]/80 rounded-xl px-2.5 py-1.5 shadow-2xs">
+                            <div className="w-5 h-5 rounded-md bg-gradient-to-br from-[#E65100]/10 to-[#F97316]/15 text-[#C2410C] flex items-center justify-center shrink-0 border border-[#F5D8B3]">
+                              <MapPin className="w-3 h-3" strokeWidth={2.2} />
+                            </div>
+                            <div className="flex items-baseline gap-1.5 truncate">
+                              <span className="font-extrabold text-[#0B1E36] text-[11.5px] sm:text-xs truncate leading-tight">
+                                {homa.location || "Sacred Temple Venue"}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between gap-2.5 mt-auto pt-3 border-t border-gray-100">
+                          <div className="shrink-0 min-w-0">
+                            {/* Price display */}
+                            {(() => {
+                              const pInfo = getPriceComparison(homa as any);
+                              return (
+                                <PriceTag
+                                  sellingPrice={pInfo.sellingPrice ?? formatStartingPrice(homa as any)}
+                                  listPrice={pInfo.listPrice}
+                                  sellingPriceClassName="text-[19px] sm:text-[22px] font-black text-gray-900"
+                                  listPriceClassName="text-xs sm:text-sm font-bold text-stone-400 line-through decoration-red-500 decoration-1.5 ml-1"
+                                  className="flex items-baseline gap-1 flex-wrap"
+                                />
+                              );
+                            })()}
+                            <div className="text-[10px] sm:text-[11px] text-gray-500 font-bold uppercase tracking-wider">Per Booking</div>
+                          </div>
+                          <div
+                            className="bg-[#00B05F] text-white text-xs sm:text-sm font-extrabold px-4 sm:px-5 py-2.5 sm:py-3 rounded-full hover:bg-[#008F4C] transition-all duration-200 flex items-center justify-center gap-1.5 shrink-0 whitespace-nowrap shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-95 cursor-pointer"
+                          >
+                            <span>{homa.buttonText || "Book Now"}</span>
+                            <ChevronRight className="w-4 h-4 shrink-0" strokeWidth={2.8} />
+                          </div>
+                        </div>
+                      </div>
+                    </Link>
+
+                    {/* Floating Actions Overlay */}
+                    <div className="absolute top-4 right-4 flex flex-col gap-2 z-10" onClick={(e) => e.stopPropagation()}>
+                      <WishlistButton itemId={homa._id} />
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          openShareModal({
+                            title: homa.title,
+                            description: homa.subtitle || homa.description,
+                            location: homa.location || homa.filterLocation || homa.details?.templeLocation,
+                            url: fullUrl,
+                          });
+                        }}
+                        className="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-sm text-gray-600 hover:text-[#d95a2b] transition-colors cursor-pointer"
+                      >
+                        <Share2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+          {displayedHomas.length > 0 && fetched && (
+            <div className="mt-12 text-center pb-10">
+              <p className="text-[16px] sm:text-[18px] mb-2 font-medium text-gray-600">You&apos;ve reached the end of available homas</p>
+              <p className="text-[14px] text-gray-500">{displayedHomas.length} of {displayedHomas.length} homas shown</p>
+            </div>
+          )}
+        </div>
       </main>
-      <Footer />
     </>
   );
 }

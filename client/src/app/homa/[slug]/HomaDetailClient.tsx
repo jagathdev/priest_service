@@ -1,9 +1,6 @@
 "use client";
 
 import { useEffect, useState, useMemo, useRef } from "react";
-import Image from "next/image";
-import { getStartingListPriceINR } from "@/lib/pricing";
-import PriceTag from "@/components/ui/PriceTag";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
@@ -13,20 +10,23 @@ import { checkAuthStatus } from "@/lib/authCheck";
 import { XMarkIcon } from "@heroicons/react/24/solid";
 import WishlistButton from "@/components/common/WishlistButton";
 import PujaCountdownCard from "@/components/common/PujaCountdownCard";
+import ShareModal from "@/components/common/ShareModal";
 import GalleryLightboxModal from "@/components/common/GalleryLightboxModal";
+import Image from "next/image";
+import { getStartingPriceINR, getStartingListPriceINR } from "@/lib/pricing";
+import PriceTag from "@/components/ui/PriceTag";
 import {
   ChevronLeft,
   ChevronRight,
   ZoomIn,
   Share2,
   Check,
-  Flame,
+  Sparkles,
   ArrowRight,
   Video,
   ShieldCheck,
   Landmark,
   Scroll,
-  Sparkles,
 } from "lucide-react";
 
 interface HomaPackage {
@@ -89,9 +89,7 @@ interface Homa {
   packages?: HomaPackage[];
   offerings?: HomaOffering[];
   gallery?: string[];
-  galleryUrl?: string | string[];
   templeImage?: string;
-  templeImageUrl?: string;
   details?: {
     heroTitle?: string;
     heroSubtitle?: string;
@@ -100,7 +98,6 @@ interface Homa {
     templeLocation?: string;
     templeNote?: string;
     templeImage?: string;
-    templeImageUrl?: string;
     benefits?: { title: string; description: string; icon?: string }[];
     process?: { title: string; description: string }[];
     inclusions?: string[];
@@ -116,7 +113,7 @@ const slugify = (value: string) =>
     .replace(/\s+/g, "-")
     .replace(/-+/g, "-");
 
-export const getHomaImageUrl = (imageUrl?: string): string => {
+const getPujaImageUrl = (imageUrl?: string): string => {
   if (!imageUrl || typeof imageUrl !== "string") return "";
   const trimmed = imageUrl.trim();
   if (!trimmed) return "";
@@ -139,14 +136,14 @@ export const getHomaImageUrl = (imageUrl?: string): string => {
 const DEFAULT_PACKAGE_AVATARS = [
   "/images/package_individual.webp",
   "/images/partner.webp",
-  "/images/package_family.webp",
+  "/images/package_family.png",
 ];
 
-export default function HomaDetailClient({
+export default function PujaDetailClient({
   initialHoma,
 }: {
   initialHoma: Homa | null;
-  recommendations?: Homa[];
+  recommendations?: any[];
 }) {
   const params = useParams<{ slug: string }>();
   const slugParam = params?.slug;
@@ -155,17 +152,16 @@ export default function HomaDetailClient({
 
   const [homa, setHoma] = useState<Homa | null>(initialHoma);
   const [loading, setLoading] = useState(!initialHoma);
-  const [selectedPackageId, setSelectedPackageId] = useState<string | null>(
-    initialHoma?.packages?.[0]?.id ?? null
-  );
+  const [selectedPackageId, setSelectedPackageId] = useState<string | null>(null);
   const [showPackageModal, setShowPackageModal] = useState(false);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
   const [activeTab, setActiveTab] = useState("about");
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [pendingSankalpUrl, setPendingSankalpUrl] = useState<string | null>(null);
+  const [shareModalOpen, setShareModalOpen] = useState(false);
   const [showStickyBar, setShowStickyBar] = useState(false);
   const [activeBannerIndex, setActiveBannerIndex] = useState(0);
-  const [shareSuccess, setShareSuccess] = useState(false);
+  const [galleryCarouselIdx, setGalleryCarouselIdx] = useState(0);
   const [galleryLightboxOpen, setGalleryLightboxOpen] = useState(false);
   const [lightboxImageIdx, setLightboxImageIdx] = useState(0);
   const [failedGalleryImages, setFailedGalleryImages] = useState<Record<string, boolean>>({});
@@ -180,6 +176,12 @@ export default function HomaDetailClient({
   const heroTouchEndX = useRef<number | null>(null);
   const heroTouchStartY = useRef<number | null>(null);
   const heroTouchEndY = useRef<number | null>(null);
+
+  // Touch Swipe state for Gallery Carousel
+  const galleryTouchStartX = useRef<number | null>(null);
+  const galleryTouchEndX = useRef<number | null>(null);
+  const galleryTouchStartY = useRef<number | null>(null);
+  const galleryTouchEndY = useRef<number | null>(null);
 
   // Check if description text actually exceeds 3 lines in the rendered DOM
   useEffect(() => {
@@ -206,7 +208,6 @@ export default function HomaDetailClient({
       }
     }
   }, [activeTab]);
-
 
   useEffect(() => {
     const handleScroll = () => {
@@ -246,12 +247,11 @@ export default function HomaDetailClient({
   useEffect(() => {
     if (initialHoma) {
       setHoma(initialHoma);
-      setSelectedPackageId(initialHoma.packages?.[0]?.id ?? null);
       setLoading(false);
       return;
     }
 
-    const loadHoma = async () => {
+    const loadPuja = async () => {
       try {
         if (!slug) {
           setHoma(null);
@@ -276,12 +276,11 @@ export default function HomaDetailClient({
             : [];
 
         const match = list.find(
-          (h: Homa) => h.slug === slug || slugify(h.title) === slug || h._id === slug
+          (p: Homa) => p.slug === slug || slugify(p.title) === slug || p._id === slug
         );
 
         if (match) {
           setHoma(match);
-          setSelectedPackageId(match.packages?.[0]?.id ?? null);
         } else {
           setHoma(null);
         }
@@ -292,10 +291,21 @@ export default function HomaDetailClient({
       }
     };
 
-    loadHoma();
+    loadPuja();
   }, [slug, initialHoma]);
 
   // Handle Tab Scroll Listener (Accurate getBoundingClientRect viewport detection for iOS & Desktop)
+  useEffect(() => {
+    if (tabsContainerRef.current) {
+      const activeEl = tabsContainerRef.current.querySelector(`[data-tab-id="${activeTab}"]`) as HTMLElement;
+      if (activeEl) {
+        const container = tabsContainerRef.current;
+        const left = activeEl.offsetLeft - (container.offsetWidth / 2) + (activeEl.offsetWidth / 2);
+        container.scrollTo({ left: Math.max(0, left), behavior: "smooth" });
+      }
+    }
+  }, [activeTab]);
+
   useEffect(() => {
     const handleScroll = () => {
       const sections = ["about", "benefits", "process", "temple", "receive", "faqs", "gallery"];
@@ -321,6 +331,7 @@ export default function HomaDetailClient({
         const el = document.getElementById(sectionId);
         if (el) {
           const rect = el.getBoundingClientRect();
+          // If the top of the section is at or past the sticky header threshold
           if (rect.top <= headerOffset + 50) {
             currentSection = sectionId;
           }
@@ -409,7 +420,7 @@ export default function HomaDetailClient({
 
     if (homa?.packages && homa.packages.length > 0) {
       return homa.packages.map((pkg: any, idx: number) => {
-        const basePrice = pkg.priceINR ?? pkg.price ?? homa.price ?? 1250;
+        const basePrice = pkg.priceINR ?? pkg.price ?? getStartingPriceINR(homa) ?? 0;
         const defaultDevotees = idx === 0 ? "1 Devotee" : idx === 1 ? "2 Devotees" : idx === 2 ? "4 Devotees" : "Multiple Devotees";
         return {
           id: pkg.id || pkg._id || `pkg-${idx + 1}`,
@@ -419,14 +430,14 @@ export default function HomaDetailClient({
           listPriceINR: pkg.listPriceINR ?? pkg.listPrice,
           priceUSD: pkg.priceUSD,
           priceMYR: pkg.priceMYR,
-          description: pkg.description || "Includes personalized sankalpam and havan video proof.",
+          description: pkg.description || "Includes personalized sankalpam and video proof.",
           imageUrl: DEFAULT_PACKAGE_AVATARS[idx % DEFAULT_PACKAGE_AVATARS.length],
           discountPercent: pkg.discountPercent || "",
         };
       });
     }
 
-    const basePrice = homa?.price || 1250;
+    const basePrice = getStartingPriceINR(homa) ?? 0;
     return [
       {
         id: "pkg-1",
@@ -436,7 +447,7 @@ export default function HomaDetailClient({
         listPriceINR: undefined as number | undefined,
         priceUSD: undefined as number | undefined,
         priceMYR: undefined as number | undefined,
-        description: "Personalized Sankalpam for 1 Person with havan video recording.",
+        description: "Personalized Sankalpam for 1 Person with video recording.",
         imageUrl: DEFAULT_PACKAGE_AVATARS[0],
         discountPercent: "",
       },
@@ -444,7 +455,7 @@ export default function HomaDetailClient({
         id: "pkg-2",
         name: "Couple",
         devoteeCount: "2 Devotees",
-        priceINR: basePrice + 300,
+        priceINR: basePrice + 200,
         listPriceINR: undefined as number | undefined,
         priceUSD: undefined as number | undefined,
         priceMYR: undefined as number | undefined,
@@ -456,7 +467,7 @@ export default function HomaDetailClient({
         id: "pkg-3",
         name: "Family",
         devoteeCount: "4 Devotees",
-        priceINR: basePrice + 600,
+        priceINR: basePrice + 400,
         listPriceINR: undefined as number | undefined,
         priceUSD: undefined as number | undefined,
         priceMYR: undefined as number | undefined,
@@ -474,11 +485,11 @@ export default function HomaDetailClient({
     }
   }, [packagesList, selectedPackageId]);
 
-  const getDisplayPrice = (item: Record<string, any>) => {
-    return item?.[`price${currency}`] ?? item?.priceINR ?? item?.price ?? 1250;
+  const getDisplayPrice = (item: any) => {
+    return item?.[`price${currency}`] ?? item?.priceINR ?? item?.price ?? getStartingPriceINR(item) ?? 0;
   };
 
-  const getDisplayListPrice = (item: Record<string, any>) => {
+  const getDisplayListPrice = (item: any) => {
     return item?.[`listPrice${currency}`] ?? item?.listPriceINR ?? item?.listPrice ?? getStartingListPriceINR(item) ?? 0;
   };
 
@@ -492,15 +503,15 @@ export default function HomaDetailClient({
 
   const priceVal = selectedPackage
     ? getDisplayPrice(selectedPackage)
-    : homa?.price || 1250;
+    : getStartingPriceINR(homa) ?? 0;
 
-  const handleAddHomaToCart = async () => {
+  const handleAddPujaToCart = async () => {
     try {
       const { is_user } = await checkAuthStatus();
-      const actualHomaId = homa?._id || (homa as any)?.id || slug;
+      const actualPujaId = homa?._id || (homa as any)?.id || slug;
       const totalAmount = priceVal;
 
-      const sankalpUrl = `/sankalp?pujaId=${encodeURIComponent(actualHomaId)}&amount=${totalAmount}&type=homa&pkg=${selectedPackageId || ""}&title=${encodeURIComponent(homa?.title || "")}&slug=${encodeURIComponent(
+      const sankalpUrl = `/sankalp?pujaId=${encodeURIComponent(actualPujaId)}&amount=${totalAmount}&type=homa&pkg=${selectedPackageId || ""}&title=${encodeURIComponent(homa?.title || "")}&slug=${encodeURIComponent(
         slug || ""
       )}`;
 
@@ -510,12 +521,12 @@ export default function HomaDetailClient({
         return;
       }
       window.location.href = sankalpUrl;
-    } catch (err: unknown) {
+    } catch (err: any) {
       console.error("Error booking homa:", err);
     }
   };
 
-  const DEFAULT_BANNER_IMAGE = "/images/Lakshmi-Homam.jpg";
+  const DEFAULT_BANNER_IMAGE = "/images/Navagraha-Shanti-Homa.jpg";
 
   const bannerImages: string[] = useMemo(() => {
     if (!homa) return [DEFAULT_BANNER_IMAGE];
@@ -528,7 +539,7 @@ export default function HomaDetailClient({
         for (const p of parts) {
           const trimmed = p.trim();
           if (trimmed) {
-            const formatted = getHomaImageUrl(trimmed);
+            const formatted = getPujaImageUrl(trimmed);
             if (formatted) {
               list.push(formatted);
             }
@@ -555,13 +566,13 @@ export default function HomaDetailClient({
     if (hasAdditional) {
       addUrl(addImgs);
     } else {
-      // 3. Fallback to gallery images if no additionalImages provided
+      // 3. Gallery images from DB if no additionalImages provided
       addUrl(homa.gallery);
       addUrl((homa as any).galleryUrl);
       addUrl((homa as any).details?.gallery);
     }
 
-    // 4. Details sub-object main image
+    // 4. Details sub-object main image from DB
     if (list.length === 0) {
       addUrl((homa?.details as any)?.imageUrl);
     }
@@ -582,6 +593,45 @@ export default function HomaDetailClient({
     }, 5000);
     return () => clearInterval(interval);
   }, [bannerImages.length]);
+
+  const galleryList = useMemo(() => {
+    if (!homa) return [];
+    const list: string[] = [];
+    const addImg = (val: any) => {
+      if (!val) return;
+      if (typeof val === "string") {
+        const parts = val.split(/[\n,]+/);
+        for (const p of parts) {
+          const trimmed = p.trim();
+          if (trimmed) {
+            const formatted = getPujaImageUrl(trimmed);
+            if (formatted && !list.includes(formatted)) {
+              list.push(formatted);
+            }
+          }
+        }
+      } else if (Array.isArray(val)) {
+        for (const item of val) {
+          addImg(item);
+        }
+      }
+    };
+
+    addImg(homa.gallery);
+    addImg((homa as any).galleryUrl);
+    if ((homa as any).details?.gallery) addImg((homa as any).details.gallery);
+    return list.filter((img) => !failedGalleryImages[img]);
+  }, [homa, failedGalleryImages]);
+
+  const subNavTabs = useMemo(() => [
+    { id: "about", label: "About homa" },
+    { id: "benefits", label: "Homa Benefits" },
+    { id: "process", label: "Homa Procedure" },
+    { id: "temple", label: "Temple Details" },
+    { id: "receive", label: "What will you receive" },
+    { id: "faqs", label: "FAQs" },
+    ...(galleryList.length > 0 ? [{ id: "gallery", label: "Homa Gallery" }] : []),
+  ], [galleryList.length]);
 
   if (loading) {
     return (
@@ -606,7 +656,7 @@ export default function HomaDetailClient({
             href="/homa"
             className="bg-[#00B05F] text-white font-extrabold px-8 py-3 rounded-full hover:bg-[#008F4C] transition-colors"
           >
-            Explore All Homas
+            Explore All Pujas
           </Link>
         </div>
         <Footer />
@@ -614,25 +664,25 @@ export default function HomaDetailClient({
     );
   }
 
+  // Fallback structures if admin data is not provided
   const defaultBenefits = [
-    { title: "Courage to overcome obstacles", description: "Invocational fire lab blessing to grant strength and overcome hardships.", icon: "🛡️" },
-    { title: "Fulfillment of efforts & endeavours", description: "Divine support for success in work, career, and personal goals.", icon: "🎯" },
-    { title: "Divine grace for new ventures", description: "Auspicious fire lab with peace, protection, and growth.", icon: "✨" },
-    { title: "Full Confidence & Willpower", description: "Strengthen focus, remove self-doubt and fear.", icon: "⚡" },
-    { title: "Family Well-being", description: "Harmony, happiness, and health for all family members.", icon: "🏡" },
+    { title: "Divine Grace & Protection", description: "Invocational blessing to grant strength, peace, and protection.", icon: "🛡️" },
+    { title: "Success & Obstacle Removal", description: "Divine support for overcoming difficulties and achieving success.", icon: "🎯" },
+    { title: "Prosperity & Abundance", description: "Auspicious sacred rituals bringing prosperity and family wellbeing.", icon: "✨" },
+    { title: "Positive Energy & Peace", description: "Strengthen focus, harmony, and positive vibrations at home.", icon: "⚡" },
+    { title: "Family Wellbeing", description: "Harmony, happiness, and health for all family members.", icon: "🏡" },
   ];
 
   const defaultProcess = [
-    { title: "Sankalpam", description: "Offering devotee's names and gotram during the sacred fire lab by learned priests." },
-    { title: "Ganapati Puja & Invocation", description: "Invoking Lord Ganesha for obstruction-free Homa and divine harmony." },
-    { title: "Special Ahuti & Offerings", description: "Authentic homa fire offerings with sacred herbs, ghee, and mantras." },
-    { title: "Archana & Chanting of Namas", description: "Chanting sacred vedic mantras and 108 names for fulfillment of noble desires." },
-    { title: "Purnahuti & Bhasma Prasad", description: "Offering final purnahuti and receiving divine sacred ash blessings." },
+    { title: "Sankalpam", description: "Offering devotee's names and gotram during the sacred ritual by learned priests." },
+    { title: "Ganapati Homa & Invocation", description: "Invoking Lord Ganesha for obstruction-free Homa and divine harmony." },
+    { title: "Sacred Archana & Chanting", description: "Chanting sacred vedic mantras and 108 names for fulfillment of noble desires." },
+    { title: "Mangalarathi & Prasad", description: "Offering final mangalarathi and receiving divine prasad blessings." },
   ];
 
   const defaultFaqs = [
     { question: "Where is this homa being performed?", answer: "This homa is performed at sacred temples by verified, experienced Vedic pandits following authentic rites." },
-    { question: "Why is this homa performed?", answer: "It is performed to invoke sacred fire energy, remove karma and difficulties, and fulfill specific prayers for health, career, and family." },
+    { question: "Why is this homa performed?", answer: "It is performed to seek divine blessings, remove difficulties, and fulfill specific prayers for health, career, and family." },
     { question: "Who will perform the homa?", answer: "Highly experienced Vedic priests with proper initiations will conduct your sankalpam and rituals." },
     { question: "Do I need to be physically present?", answer: "No, physical presence is not required. The pandit recites your Name and Gotra in the Sankalpam, and a full video recording is sent to your WhatsApp within 48 hours." },
   ];
@@ -645,7 +695,7 @@ export default function HomaDetailClient({
     homa.subtitle ||
     homa.heroSubtitle ||
     homa.details?.heroSubtitle ||
-    "In Vedic tradition, Homa (Fire Lab) is considered the most potent ritual to invoke divine energies through Agni Devata, burning away negative karmas.";
+    `Perform sacred ${homa.title} with authentic Vedic rituals to seek divine grace, peace, and fulfillment of prayers.`;
 
   const badgeText =
     homa.badge ||
@@ -653,34 +703,33 @@ export default function HomaDetailClient({
     homa.subtitle ||
     homa.heroTitle ||
     homa.details?.heroTitle ||
-    "SPECIAL VEDIC HOMA";
+    "SPECIAL SANKALPAM";
 
   const descriptionText =
     homa.description ||
     homa.subtitle ||
     homa.heroSubtitle ||
     homa.details?.heroSubtitle ||
-    "A sacred fire lab for peace, prosperity, health, and divine protection.";
+    "A special sacred ritual for devotees seeking courage, prosperity, and fulfillment of noble wishes.";
 
 
-
-  const templeLocationText =
-    homa.templeLocation ||
-    homa.location ||
-    homa.templeVenue ||
-    homa.details?.templeLocation ||
-    "Sacred Temple Yagashala, India";
 
   const templeVenueText =
     homa.templeVenue ||
     homa.details?.templeName ||
+    (homa as any).templeName ||
+    "Sacred Temple Venue";
+
+  const templeLocationText =
+    homa.templeLocation ||
+    homa.details?.templeLocation ||
     homa.location ||
-    "Sacred Temple Yagashala";
+    "Sacred Temple Venue, India";
 
   const templeNoteText =
     homa.templeNote ||
     homa.details?.templeNote ||
-    "This sacred yagashala is renowned for authentic fire lab rituals, powerful divine vibrations, and traditional Vedic chants.";
+    "This sacred temple is renowned for authentic Vedic rituals, powerful divine vibrations, and traditional archana services.";
 
   const benefitsList =
     homa.benefits && homa.benefits.length > 0
@@ -713,32 +762,12 @@ export default function HomaDetailClient({
           { title: "Full Homa Video Recording", description: "Delivered directly to your WhatsApp number within 48 hours of ritual completion." },
         ];
 
-  const galleryList = (
-    Array.isArray(homa.gallery) && homa.gallery.length > 0
-      ? homa.gallery.map((img: string) => getHomaImageUrl(img)).filter(Boolean)
-      : Array.isArray(homa.galleryUrl) && homa.galleryUrl.length > 0
-        ? homa.galleryUrl.map((img: string) => getHomaImageUrl(img)).filter(Boolean)
-        : typeof homa.galleryUrl === "string" && homa.galleryUrl.trim()
-          ? [getHomaImageUrl(homa.galleryUrl)]
-          : []
-  ).filter((img: string) => !failedGalleryImages[img]);
-
   const templeImage =
-    (typeof homa.templeImageUrl === "string" && homa.templeImageUrl.trim()) ||
+    (typeof (homa as any).templeImageUrl === "string" && (homa as any).templeImageUrl.trim()) ||
     (typeof homa.templeImage === "string" && homa.templeImage.trim()) ||
-    (typeof homa.details?.templeImageUrl === "string" && homa.details.templeImageUrl.trim()) ||
+    (typeof (homa as any).details?.templeImageUrl === "string" && (homa as any).details.templeImageUrl.trim()) ||
     (typeof homa.details?.templeImage === "string" && homa.details.templeImage.trim()) ||
     "";
-
-  const subHomaTabs = [
-    { id: "about", label: "About homa" },
-    { id: "benefits", label: "Homa Benefits" },
-    { id: "process", label: "Homa Procedure" },
-    { id: "temple", label: "Temple Details" },
-    { id: "receive", label: "What will you receive" },
-    { id: "faqs", label: "FAQs" },
-  ];
-
   const renderAboutContent = (text: string) => {
     if (!text) return null;
 
@@ -795,11 +824,11 @@ export default function HomaDetailClient({
   };
 
   return (
-    <main className="min-h-screen bg-white text-[#1f1f1f] font-sans pb-52 sm:pb-56 lg:pb-40">
+    <main className="min-h-screen bg-white text-[#1f1f1f] font-sans">
       <Navbar />
 
       {/* ── 1. Top Hero Section ── */}
-      <section data-reveal className="bg-[#faf9f6] border-b border-[#f0e4d0] py-8 sm:py-12">
+      <section data-reveal className="bg-[#ffffff] border-b border-[#f0e4d0] py-4 sm:py-6 lg:py-4 xl:py-6">
         <div className="max-w-[1350px] mx-auto px-4 sm:px-6 lg:px-10">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
 
@@ -837,14 +866,14 @@ export default function HomaDetailClient({
                 className="relative w-full aspect-[3/2] sm:aspect-[3/2] sm:h-auto md:h-auto lg:h-[340px] xl:h-[415px] rounded-2xl min-[375px]:rounded-3xl overflow-hidden border border-stone-200/90 shadow-md group touch-pan-y bg-stone-100"
               >
                 <Image
-                  src={bannerImages[activeBannerIndex] || (homa ? getHomaImageUrl(homa.imageUrl) : "/images/Ganesh-Chaturthi-Mahapuja.jpg")}
+                  src={bannerImages[activeBannerIndex] || (homa ? getPujaImageUrl(homa.imageUrl) : "/images/Ganesh-Chaturthi-Mahapuja.jpg")}
                   alt={`${homa?.title || "Homa"} - Sacred Ritual Banner ${activeBannerIndex + 1}`}
                   fill
                   priority
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, (max-width: 1280px) 50vw, 650px"
                   unoptimized
                   className="w-full h-full object-cover object-left transition-all duration-300 cursor-pointer"
-                  onClick={handleAddHomaToCart}
+                  onClick={handleAddPujaToCart}
                 />
               </div>
 
@@ -899,7 +928,7 @@ export default function HomaDetailClient({
               <div className="hidden lg:flex flex-row items-center justify-between gap-2 xl:gap-3 mt-3 w-full">
                 {/* Stats Container */}
                 <div className="flex items-center justify-between flex-1 py-0 px-0">
-                  {/* Stat 1: Ratings */}
+                  {/* Stat 1: Poojas Performed */}
                   <div className="text-center flex-1 px-0.5 xl:px-1">
                     <span className="block text-sm lg:text-[14px] xl:text-base 2xl:text-lg font-extrabold text-[#1f1a17] leading-tight whitespace-nowrap">10M+</span>
                     <span className="text-[10px] xl:text-[11px] 2xl:text-xs text-stone-500 font-medium block mt-0.5 leading-tight">poojas performed</span>
@@ -907,7 +936,7 @@ export default function HomaDetailClient({
 
                   <div className="w-[1px] h-5 xl:h-6 bg-stone-300/80 shrink-0" />
 
-                  {/* Stat 2: Homas Conducted */}
+                  {/* Stat 2: Scholars and Priests */}
                   <div className="text-center flex-1 px-0.5 xl:px-1">
                     <span className="block text-sm lg:text-[14px] xl:text-base 2xl:text-lg font-extrabold text-[#1f1a17] leading-tight whitespace-nowrap">180+</span>
                     <span className="text-[10px] xl:text-[11px] 2xl:text-xs text-stone-500 font-medium block mt-0.5 leading-tight">scholars and priests</span>
@@ -934,19 +963,11 @@ export default function HomaDetailClient({
                   <button
                     type="button"
                     aria-label="Share homa"
-                    onClick={() => {
-                      if (navigator.share) {
-                        navigator.share({ title: homa.title, url: window.location.href });
-                      } else {
-                        navigator.clipboard?.writeText(window.location.href);
-                        setShareSuccess(true);
-                        setTimeout(() => setShareSuccess(false), 2000);
-                      }
-                    }}
+                    onClick={() => setShareModalOpen(true)}
                     className="flex-initial border border-stone-300 hover:border-stone-500 bg-white text-stone-800 font-medium text-xs xl:text-sm px-3 xl:px-4 py-1.5 rounded-full flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-xs"
                   >
-                    <Share2 className="w-3.5 h-3.5 xl:w-4 xl:h-4" />
-                    <span>{shareSuccess ? "Copied!" : "Share"}</span>
+                    <Share2 className="w-3.5 h-3.5 xl:w-4 xl:h-4 text-stone-800" />
+                    <span>Share</span>
                   </button>
                 </div>
               </div>
@@ -956,7 +977,7 @@ export default function HomaDetailClient({
             <div className="lg:col-span-6 flex flex-col lg:pl-[10px]">
               {/* Filigree Subtag */}
               <div className="flex items-center justify-center lg:justify-start gap-2 mb-1 lg:mb-1.5 w-full max-w-full overflow-hidden">
-                <span className="text-[#F47820] font-serif font-extrabold text-xs sm:text-[13px] tracking-wider uppercase flex items-center justify-center text-center gap-1.5 flex-wrap">
+                <span className="text-[#E65100] hover:text-[#C2410C] font-serif font-extrabold text-xs sm:text-[13px] tracking-wider uppercase flex items-center justify-center text-center gap-1.5 flex-wrap">
                   <span className="text-center">{badgeText}</span>
                 </span>
               </div>
@@ -986,10 +1007,10 @@ export default function HomaDetailClient({
 
               {/* Dynamic Countdown & Temple Card fetched from Dashboard */}
               <PujaCountdownCard
-                templeVenue={templeVenueText || "Sacred Temple Yagashala"}
-                location={homa.location || homa.templeLocation || "India"}
+                templeVenue={templeVenueText || "Sacred Temple Venue"}
+                location={templeLocationText !== templeVenueText ? templeLocationText : homa.location || "India"}
                 dateText={`${homa.date || "Saturday, 10 October"}${homa.time ? " at " + homa.time : ""}`}
-                occasionText={homa.subtitle || (homa as any).occasion || (homa as any).dateOccasion || homa.badge || (homa as any).tithis || "Special Vedic Homa"}
+                occasionText={homa.subtitle || (homa as any).occasion || (homa as any).dateOccasion || homa.badge || (homa as any).tithis || "Mahalaya Amavasya"}
                 eventDateTime={homa.eventDateTime}
                 showTimer={homa.showTimer}
                 devoteesCount={(homa as any).devoteeCount || 150}
@@ -999,108 +1020,106 @@ export default function HomaDetailClient({
               />
 
               {/* Package Selection Cards Grid */}
-              {packagesList.length > 0 && (
-                <div className="mb-3 lg:mb-3.5">
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
-                    {packagesList.map((pkg, idx) => {
-                      const isSelected = selectedPackage?.id === pkg.id;
-                      const displayPrice = getDisplayPrice(pkg);
-                      const pkgAvatar = DEFAULT_PACKAGE_AVATARS[idx % DEFAULT_PACKAGE_AVATARS.length];
-                      const devoteesText = pkg.devoteeCount || (pkg as any).devotees || (idx === 0 ? "1 Devotee" : idx === 1 ? "2 Devotees" : idx === 2 ? "4 Devotees" : "Multiple Devotees");
-                      const discountBadge = pkg.discountPercent ? String(pkg.discountPercent).trim() : null;
+              <div className="mb-3 lg:mb-3.5">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
+                  {packagesList.map((pkg, idx) => {
+                    const isSelected = selectedPackage?.id === pkg.id;
+                    const displayPrice = getDisplayPrice(pkg);
+                    const pkgAvatar = DEFAULT_PACKAGE_AVATARS[idx % DEFAULT_PACKAGE_AVATARS.length];
+                    const devoteesText = pkg.devoteeCount || (pkg as any).devotees || (idx === 0 ? "1 Devotee" : idx === 1 ? "2 Devotees" : idx === 2 ? "4 Devotees" : "Multiple Devotees");
+                    const discountBadge = pkg.discountPercent ? String(pkg.discountPercent).trim() : null;
 
-                      return (
-                        <div
-                          key={pkg.id}
-                          onClick={() => setSelectedPackageId(pkg.id)}
-                          className={`relative border-2 rounded-2xl p-3.5 sm:p-2.5 lg:p-3 cursor-pointer transition-all flex flex-row items-center justify-start min-h-[80px] sm:min-h-[72px] lg:min-h-[74px] hover:shadow-xs ${isSelected
-                            ? "border-[#00B05F] bg-[#F1F5F9] shadow-xs"
-                            : "border-stone-200 hover:border-stone-300 bg-white"
-                            }`}
-                        >
-                          {/* Bookmark Ribbon on Mobile & Large Desktop / Sleek Corner Pill on Tablet (1024px lg:max-xl) */}
-                          {discountBadge && (
-                            <>
-                              {/* Tablet / 1024px Screen Style: Elegant Floating Top-Right Corner Pill */}
-                              <div className="hidden lg:flex xl:hidden absolute -top-2.5 right-1 z-20 pointer-events-none items-center shadow-xs">
-                                <span className="bg-gradient-to-r from-rose-600 to-rose-700 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full border border-white shadow-xs tracking-wider flex items-center gap-0.5 leading-none">
-                                  <span>{discountBadge.replace(/off/i, "").trim()}</span>
-                                  <span className="text-[7px] text-amber-300">OFF</span>
+                    return (
+                      <div
+                        key={pkg.id}
+                        onClick={() => setSelectedPackageId(pkg.id)}
+                        className={`relative border-2 rounded-2xl p-3.5 sm:p-2.5 lg:p-3 cursor-pointer transition-all flex flex-row items-center justify-start min-h-[80px] sm:min-h-[72px] lg:min-h-[74px] hover:shadow-xs ${isSelected
+                          ? "border-[#00B05F] bg-[#F1F5F9] shadow-xs"
+                          : "border-stone-200 hover:border-stone-300 bg-white"
+                          }`}
+                      >
+                        {/* Bookmark Ribbon on Mobile & Large Desktop / Sleek Corner Pill on Tablet (1024px lg:max-xl) */}
+                        {discountBadge && (
+                          <>
+                            {/* Tablet / 1024px Screen Style: Elegant Floating Top-Right Corner Pill */}
+                            <div className="hidden lg:flex xl:hidden absolute -top-2.5 right-1 z-20 pointer-events-none items-center shadow-xs">
+                              <span className="bg-gradient-to-r from-rose-600 to-rose-700 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full border border-white shadow-xs tracking-wider flex items-center gap-0.5 leading-none">
+                                <span>{discountBadge.replace(/off/i, "").trim()}</span>
+                                <span className="text-[7px] text-amber-300">OFF</span>
+                              </span>
+                            </div>
+
+                            {/* Mobile, sm, and xl+ Screens: Classic Ribbon Bookmark */}
+                            <div className="flex lg:hidden xl:flex absolute -top-2.5 right-1.5 sm:right-2 z-20 pointer-events-none">
+                              <div className="relative bg-gradient-to-b from-rose-600 via-rose-700 to-rose-800 text-white px-1.5 sm:px-2 pt-1 pb-1.5 rounded-t-md shadow-md flex flex-col items-center leading-none min-w-[34px] sm:min-w-[38px] border-t border-rose-400/30">
+                                <span className="text-[10px] sm:text-[11px] font-black tracking-tight text-white drop-shadow-xs">
+                                  {discountBadge.replace(/off/i, "").trim()}
                                 </span>
-                              </div>
-
-                              {/* Mobile, sm, and xl+ Screens: Classic Ribbon Bookmark */}
-                              <div className="flex lg:hidden xl:flex absolute -top-2.5 right-1.5 sm:right-2 z-20 pointer-events-none">
-                                <div className="relative bg-gradient-to-b from-rose-600 via-rose-700 to-rose-800 text-white px-1.5 sm:px-2 pt-1 pb-1.5 rounded-t-md shadow-md flex flex-col items-center leading-none min-w-[34px] sm:min-w-[38px] border-t border-rose-400/30">
-                                  <span className="text-[10px] sm:text-[11px] font-black tracking-tight text-white drop-shadow-xs">
-                                    {discountBadge.replace(/off/i, "").trim()}
-                                  </span>
-                                  <span className="text-[8px] sm:text-[8.5px] font-black text-amber-300 tracking-wider uppercase mt-0.5">
-                                    OFF
-                                  </span>
-                                  {/* Bottom ribbon notch cutout */}
-                                  <div className="absolute -bottom-1 left-0 right-0 flex justify-center">
-                                    <div className="w-0 h-0 border-l-[17px] sm:border-l-[19px] border-l-rose-800 border-r-[17px] sm:border-r-[19px] border-r-rose-800 border-b-[4px] border-b-transparent" />
-                                  </div>
+                                <span className="text-[8px] sm:text-[8.5px] font-black text-amber-300 tracking-wider uppercase mt-0.5">
+                                  OFF
+                                </span>
+                                {/* Bottom ribbon notch cutout */}
+                                <div className="absolute -bottom-1 left-0 right-0 flex justify-center">
+                                  <div className="w-0 h-0 border-l-[17px] sm:border-l-[19px] border-l-rose-800 border-r-[17px] sm:border-r-[19px] border-r-rose-800 border-b-[4px] border-b-transparent" />
                                 </div>
                               </div>
-                            </>
-                          )}
-
-                          {/* Recommended Badge on Couple Package (idx === 1) */}
-                          {idx === 1 && (
-                            <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#00B05F] text-white text-[11px] font-bold px-3 py-0.5 rounded-full shadow-xs z-10 whitespace-nowrap">
-                              Recommended
                             </div>
-                          )}
+                          </>
+                        )}
 
-                          {/* Avatar Image on the Left */}
-                          <div className="relative w-11 h-11 sm:w-10 sm:h-10 lg:w-11 lg:h-11 rounded-full overflow-hidden shrink-0 border border-stone-200/90 bg-white shadow-2xs mr-3.5 sm:mr-2.5 lg:mr-3">
-                            <Image
-                              src={pkgAvatar || "/images/Ganesh-Chaturthi-Mahapuja.jpg"}
-                              alt={`${pkg.name || "Package"} - ${homa?.title || "Homa"}`}
-                              width={56}
-                              height={56}
-                              unoptimized
-                              className="w-full h-full object-cover object-center"
-                            />
+                        {/* Recommended Badge on Couple Package (idx === 1) */}
+                        {idx === 1 && (
+                          <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#00B05F] text-white text-[11px] font-bold px-3 py-0.5 rounded-full shadow-xs z-10 whitespace-nowrap">
+                            Recommended
                           </div>
+                        )}
 
-                          {/* Details on the Right */}
-                          <div className="flex-1 min-w-0 text-left space-y-0.5 sm:space-y-0.5 pr-6 sm:pr-0">
-                            <h4 className="font-extrabold text-stone-900 text-sm sm:text-xs lg:text-[13px] leading-tight break-words">
-                              {pkg.name}
-                            </h4>
-                            <span className="text-xs sm:text-[11px] font-medium text-stone-500 block leading-tight truncate">
-                              {devoteesText}
-                            </span>
-                            <div className="flex items-center justify-between mt-1 sm:mt-0.5">
-                              <PriceTag
-                                sellingPrice={displayPrice}
-                                listPrice={getDisplayListPrice(pkg)}
-                                sellingPriceClassName={`font-extrabold text-base sm:text-sm lg:text-base ${isSelected ? "text-[#00B05F]" : "text-stone-900"}`}
-                                listPriceClassName="text-xs font-bold text-stone-400 line-through decoration-red-500 decoration-1.5 mr-1"
-                                className="flex items-baseline gap-1 flex-wrap"
-                              />
-                              {/* Checkmark Badge on Selected Package */}
-                              {isSelected && (
-                                <div className="w-5 h-5 rounded-full bg-[#00B05F] text-white flex items-center justify-center shrink-0 shadow-xs ml-1">
-                                  <Check className="w-3 h-3" strokeWidth={3.5} />
-                                </div>
-                              )}
-                            </div>
+                        {/* Avatar Image on the Left */}
+                        <div className="relative w-11 h-11 sm:w-10 sm:h-10 lg:w-11 lg:h-11 rounded-full overflow-hidden shrink-0 border border-stone-200/90 bg-white shadow-2xs mr-3.5 sm:mr-2.5 lg:mr-3">
+                          <Image
+                            src={pkgAvatar || "/images/Ganesh-Chaturthi-Mahapuja.jpg"}
+                            alt={`${pkg.name || "Package"} - ${homa?.title || "Homa"}`}
+                            width={56}
+                            height={56}
+                            unoptimized
+                            className="w-full h-full object-cover object-center"
+                          />
+                        </div>
+
+                        {/* Details on the Right */}
+                        <div className="flex-1 min-w-0 text-left space-y-0.5 sm:space-y-0.5 pr-6 sm:pr-0">
+                          <h4 className="font-extrabold text-stone-900 text-sm sm:text-xs lg:text-[13px] leading-tight truncate">
+                            {pkg.name}
+                          </h4>
+                          <span className="text-xs sm:text-[11px] font-medium text-stone-500 block leading-tight truncate">
+                            {devoteesText}
+                          </span>
+                          <div className="flex items-center justify-between mt-1 sm:mt-0.5">
+                            <PriceTag
+                              sellingPrice={displayPrice}
+                              listPrice={getDisplayListPrice(pkg)}
+                              sellingPriceClassName={`font-extrabold text-base sm:text-sm lg:text-base ${isSelected ? "text-[#00B05F]" : "text-stone-900"}`}
+                              listPriceClassName="text-xs font-bold text-stone-400 line-through decoration-red-500 decoration-1.5 mr-1"
+                              className="flex items-baseline gap-1 flex-wrap"
+                            />
+                            {/* Checkmark Badge on Selected Package */}
+                            {isSelected && (
+                              <div className="w-5 h-5 rounded-full bg-[#00B05F] text-white flex items-center justify-center shrink-0 shadow-xs ml-1">
+                                <Check className="w-3 h-3 text-white" strokeWidth={3.5} />
+                              </div>
+                            )}
                           </div>
                         </div>
-                      );
-                    })}
-                  </div>
+                      </div>
+                    );
+                  })}
                 </div>
-              )}
+              </div>
 
               {/* Primary Participate / Book Now CTA Button */}
               <button
                 ref={heroCtaRef}
-                onClick={handleAddHomaToCart}
+                onClick={handleAddPujaToCart}
                 className="w-full bg-[#00B05F] hover:bg-[#008F4C] active:scale-[0.98] text-white font-extrabold text-base sm:text-lg lg:text-xl py-3 sm:py-3.5 lg:py-3 px-6 sm:px-8 rounded-full shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2.5 sm:gap-3 mb-2 tracking-wide group"
               >
                 {/* <span className="tabular-nums font-black">₹{priceVal.toLocaleString("en-IN")}</span> */}
@@ -1111,24 +1130,23 @@ export default function HomaDetailClient({
               </button>
 
               {/* Secondary WhatsApp & Call Buttons */}
-              {/* <div className="flex flex-wrap items-center gap-3">
+              {/* <div className="flex flex-col sm:flex-row items-center gap-3">
                 <a
                   href="https://wa.me/919566777645"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex-1 min-w-[150px] inline-flex items-center justify-center gap-2 bg-white border border-[#CBD5E1] text-[#00B05F] hover:bg-slate-50 font-extrabold text-xs sm:text-sm py-2.5 px-4 rounded-full transition-colors shadow-xs"
+                  className="w-full sm:flex-1 inline-flex items-center justify-center gap-2 bg-white border border-[#CBD5E1] text-[#00B05F] hover:bg-slate-50 font-extrabold text-xs sm:text-sm py-2.5 px-4 rounded-full transition-colors shadow-xs"
                 >
                   <i className="fa-brands fa-whatsapp text-lg text-[#25D366]"></i>
                   <span>Book via WhatsApp</span>
                 </a>
                 <a
                   href="tel:+919677391108"
-                  className="flex-1 min-w-[150px] inline-flex items-center justify-center gap-2 bg-white border border-[#CBD5E1] text-[#1E293B] hover:bg-slate-50 font-extrabold text-xs sm:text-sm py-2.5 px-4 rounded-full transition-colors shadow-xs"
+                  className="w-full sm:flex-1 inline-flex items-center justify-center gap-2 bg-white border border-[#CBD5E1] text-[#1E293B] hover:bg-slate-50 font-extrabold text-xs sm:text-sm py-2.5 px-4 rounded-full transition-colors shadow-xs"
                 >
                   <Phone className="w-4 h-4 min-w-[16px] min-h-[16px] text-[#00B05F]" />
                   <span>Book via Call</span>
                 </a>
-
               </div> */}
 
             </div>
@@ -1182,7 +1200,7 @@ export default function HomaDetailClient({
               </div>
             </div>
 
-            {/* Standard layout on 1440px and wider desktop screens (>= 1440px) */}
+            {/* Static spread layout on 1440px and wider desktop screens (>= 1440px) */}
             <div className="badge-static-1440 hidden min-[1440px]:flex max-w-[1350px] mx-auto items-center justify-around gap-6 px-4 text-xs sm:text-sm font-bold text-[#00B05F] whitespace-nowrap">
               {badgeList.map((b, idx) => (
                 <span key={idx} className="flex items-center gap-2">
@@ -1196,74 +1214,79 @@ export default function HomaDetailClient({
 
       {/* ── 2b. Ratings Stats & Action Strip (Wishlist & Share) Above Nav Tabs (Below 1000px only) ── */}
       <div data-reveal className="lg:hidden w-full bg-white border-b border-stone-200/90 py-3 sm:py-3.5">
-        <div className="max-w-[1350px] mx-auto px-2.5 sm:px-6 lg:px-10 flex items-center justify-between gap-1.5 sm:gap-3">
-          {/* Stats Container */}
+        {/* Mobile layout: stats and buttons cleanly proportioned */}
+        <div className="md:hidden w-full px-2.5 sm:px-4 flex items-center justify-between gap-1.5 sm:gap-2.5">
           <div className="flex items-center justify-between flex-1 min-w-0 pr-1">
-            {/* Stat 1: Poojas Performed */}
             <div className="text-center flex-1 min-w-0 px-0.5">
-              <span className="block text-[11px] sm:text-base font-extrabold text-[#1f1a17] leading-tight whitespace-nowrap">
-                10M+
-              </span>
-              <span className="text-[9px] sm:text-xs text-stone-500 font-medium block mt-0.5 leading-tight truncate">
-                Pujas
-              </span>
+              <span className="block text-[11px] font-extrabold text-[#1f1a17] leading-tight whitespace-nowrap">10M+</span>
+              <span className="text-[9px] text-stone-500 font-medium block mt-0.5 leading-tight truncate">Pujas</span>
             </div>
-
-            <div className="w-[1px] h-5 sm:h-7 bg-stone-200 shrink-0 mx-0.5" />
-
-            {/* Stat 2: Scholars and Priests */}
+            <div className="w-[1px] h-5 bg-stone-200 shrink-0 mx-0.5" />
             <div className="text-center flex-1 min-w-0 px-0.5">
-              <span className="block text-[11px] sm:text-base font-extrabold text-[#1f1a17] leading-tight whitespace-nowrap">
-                180+
-              </span>
-              <span className="text-[9px] sm:text-xs text-stone-500 font-medium block mt-0.5 leading-tight truncate">
-                Pandits
-              </span>
+              <span className="block text-[11px] font-extrabold text-[#1f1a17] leading-tight whitespace-nowrap">180+</span>
+              <span className="text-[9px] text-stone-500 font-medium block mt-0.5 leading-tight truncate">Pandits</span>
             </div>
-
-            <div className="w-[1px] h-5 sm:h-7 bg-stone-200 shrink-0 mx-0.5" />
-
-            {/* Stat 3: Years of Vedic Expertise */}
+            <div className="w-[1px] h-5 bg-stone-200 shrink-0 mx-0.5" />
             <div className="text-center flex-1 min-w-0 px-0.5">
-              <span className="block text-[11px] sm:text-base font-extrabold text-[#1f1a17] leading-tight whitespace-nowrap">
-                25+ Yrs
-              </span>
-              <span className="text-[9px] sm:text-xs text-stone-500 font-medium block mt-0.5 leading-tight truncate">
-                Vedic Seva
-              </span>
+              <span className="block text-[11px] font-extrabold text-[#1f1a17] leading-tight whitespace-nowrap">25+ Yrs</span>
+              <span className="text-[9px] text-stone-500 font-medium block mt-0.5 leading-tight truncate">Vedic Seva</span>
             </div>
           </div>
-
-          {/* Action Buttons: Wishlist & Share (Circular icon buttons matching Image 3) */}
-          <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0 pl-1 border-l border-stone-200/80">
-            {/* Circular Wishlist Button */}
+          <div className="flex items-center gap-1.5 shrink-0 pl-1 border-l border-stone-200/80">
             <WishlistButton
               itemId={homa._id}
-              className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border border-stone-300 hover:border-stone-500 bg-white flex items-center justify-center text-stone-700 shadow-2xs hover:bg-stone-50 transition-all active:scale-95"
-              iconClassName="w-3.5 h-3.5 sm:w-5 sm:h-5"
+              className="w-8 h-8 rounded-full border border-stone-300 hover:border-stone-500 bg-white flex items-center justify-center text-stone-700 shadow-2xs hover:bg-stone-50 transition-all active:scale-95"
+              iconClassName="w-3.5 h-3.5"
             />
-
-            {/* Circular Share Button */}
             <button
               type="button"
               aria-label="Share homa"
-              onClick={() => {
-                if (navigator.share) {
-                  navigator.share({ title: homa.title, url: window.location.href });
-                } else {
-                  navigator.clipboard?.writeText(window.location.href);
-                  setShareSuccess(true);
-                  setTimeout(() => setShareSuccess(false), 2000);
-                }
-              }}
-              className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border border-stone-300 hover:border-stone-500 bg-white flex items-center justify-center text-stone-700 shadow-2xs hover:bg-stone-50 transition-all active:scale-95 relative cursor-pointer"
+              onClick={() => setShareModalOpen(true)}
+              className="w-8 h-8 rounded-full border border-stone-300 hover:border-stone-500 bg-white flex items-center justify-center text-stone-700 shadow-2xs hover:bg-stone-50 transition-all active:scale-95 cursor-pointer"
             >
-              <Share2 className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
-              {shareSuccess && (
-                <span className="absolute -top-7 right-0 bg-stone-900 text-white text-[10px] font-semibold py-0.5 px-2 rounded shadow-sm whitespace-nowrap">
-                  Copied!
-                </span>
-              )}
+              <Share2 className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+
+        {/* Tablet layout (md=768px): all 5 items equal space */}
+        <div className="hidden md:flex lg:hidden w-full px-6 md:px-8 items-center">
+          {/* Stat 1 */}
+          <div className="flex-1 flex flex-col items-center justify-center text-center">
+            <span className="block text-base font-extrabold text-[#1f1a17] leading-tight">10M+</span>
+            <span className="text-xs text-stone-500 font-medium block mt-0.5 leading-tight">poojas performed</span>
+          </div>
+          <div className="w-[1px] h-7 bg-stone-200 shrink-0" />
+          {/* Stat 2 */}
+          <div className="flex-1 flex flex-col items-center justify-center text-center">
+            <span className="block text-base font-extrabold text-[#1f1a17] leading-tight">180+</span>
+            <span className="text-xs text-stone-500 font-medium block mt-0.5 leading-tight">scholars and priests</span>
+          </div>
+          <div className="w-[1px] h-7 bg-stone-200 shrink-0" />
+          {/* Stat 3 */}
+          <div className="flex-1 flex flex-col items-center justify-center text-center">
+            <span className="block text-base font-extrabold text-[#1f1a17] leading-tight">25+ years</span>
+            <span className="text-xs text-stone-500 font-medium block mt-0.5 leading-tight">of Vedic expertise</span>
+          </div>
+          <div className="w-[1px] h-7 bg-stone-200 shrink-0" />
+          {/* Wishlist */}
+          <div className="flex-1 flex items-center justify-center">
+            <WishlistButton
+              itemId={homa._id}
+              className="w-10 h-10 rounded-full border border-stone-300 hover:border-stone-500 bg-white flex items-center justify-center text-stone-700 shadow-2xs hover:bg-stone-50 transition-all active:scale-95"
+              iconClassName="w-5 h-5"
+            />
+          </div>
+          <div className="w-[1px] h-7 bg-stone-200 shrink-0" />
+          {/* Share */}
+          <div className="flex-1 flex items-center justify-center">
+            <button
+              type="button"
+              aria-label="Share homa"
+              onClick={() => setShareModalOpen(true)}
+              className="w-10 h-10 rounded-full border border-stone-300 hover:border-stone-500 bg-white flex items-center justify-center text-stone-700 shadow-2xs hover:bg-stone-50 transition-all active:scale-95"
+            >
+              <Share2 className="w-5 h-5" />
             </button>
           </div>
         </div>
@@ -1276,7 +1299,7 @@ export default function HomaDetailClient({
             ref={tabsContainerRef}
             className="w-full flex items-center justify-start lg:justify-between overflow-x-auto no-scrollbar gap-7 sm:gap-6 lg:gap-8 text-xs sm:text-sm font-bold text-stone-600 scroll-smooth px-3 sm:px-1"
           >
-            {subHomaTabs.map((tab) => (
+            {subNavTabs.map((tab) => (
               <a
                 key={tab.id}
                 href={`#${tab.id}`}
@@ -1286,8 +1309,8 @@ export default function HomaDetailClient({
                   setActiveTab(tab.id);
                   const el = document.getElementById(tab.id);
                   if (el) {
-                    const yOffset = -150;
-                    const y = el.getBoundingClientRect().top + window.pageYOffset + yOffset;
+                    const headerHeight = window.innerWidth < 640 ? 110 : window.innerWidth < 1024 ? 120 : 130;
+                    const y = el.getBoundingClientRect().top + window.pageYOffset - headerHeight;
                     window.scrollTo({ top: y, behavior: "smooth" });
                   }
                 }}
@@ -1310,16 +1333,16 @@ export default function HomaDetailClient({
         <div className="lg:col-span-8 space-y-12">
 
           {/* Section: About Homa */}
-          <section id="about" data-reveal className="scroll-mt-32">
+          <section id="about" data-reveal className="scroll-mt-36">
             <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1f1a17] mb-6">About homa</h2>
 
-            <div className="bg-[#fdfbf7] border border-[#f0e4d0] rounded-3xl p-6 sm:p-8 relative overflow-hidden">
+            <div className="bg-[#ffffff] border border-[#f0e4d0] rounded-3xl p-6 sm:p-8 relative overflow-hidden">
               {renderAboutContent(aboutText)}
 
               <div className="flex flex-row items-center justify-around gap-6 border-t border-[#f0e4d0] pt-6 text-xs text-stone-700">
                 <div>
                   <span className="text-stone-400 font-bold block mb-1 uppercase tracking-wider">Occasion</span>
-                  <span className="font-extrabold text-stone-900 text-sm sm:text-base">{homa.date || "Auspicious Tithis"}</span>
+                  <span className="font-extrabold text-stone-900 text-sm sm:text-base">{homa.date || "Auspicious Tithis"}{homa.time ? " at " + homa.time : ""}</span>
                 </div>
                 <div className="w-px h-8 bg-[#f0e4d0]" />
                 <div>
@@ -1331,13 +1354,13 @@ export default function HomaDetailClient({
           </section>
 
           {/* Section: Homa Benefits */}
-          <section id="benefits" data-reveal className="scroll-mt-32">
+          <section id="benefits" data-reveal className="scroll-mt-36">
             <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1f1a17] mb-6">Homa Benefits</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
               {benefitsList.map((b, idx) => (
                 <div key={idx} data-reveal data-delay={((idx % 4) * 100).toString()} className="bg-white border border-stone-200/90 rounded-2xl p-5 flex items-start gap-4 shadow-xs hover:shadow-md transition-shadow">
                   <div className="w-10 h-10 rounded-xl bg-[#800000] text-white flex items-center justify-center shrink-0 font-bold">
-                    {b.icon || "🔥"}
+                    {b.icon || "❖"}
                   </div>
                   <div>
                     <h3 className="font-bold text-stone-900 text-sm sm:text-base mb-1">{b.title}</h3>
@@ -1349,7 +1372,7 @@ export default function HomaDetailClient({
           </section>
 
           {/* Section: Homa Procedure */}
-          <section id="process" data-reveal className="scroll-mt-32">
+          <section id="process" data-reveal className="scroll-mt-36">
             <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1f1a17] mb-6">Homa Procedure</h2>
             <div className="space-y-4">
               {processList.map((step, idx) => (
@@ -1367,9 +1390,9 @@ export default function HomaDetailClient({
           </section>
 
           {/* Section: Temple Details */}
-          <section id="temple" data-reveal className="scroll-mt-32">
+          <section id="temple" data-reveal className="scroll-mt-36">
             <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1f1a17] mb-6">Temple Details</h2>
-            <div className="bg-white border border-stone-200/90 rounded-3xl p-6 sm:p-8 flex flex-col md:flex-row gap-6 items-center shadow-xs">
+            <div className="bg-white border border-stone-200/90 rounded-3xl flex flex-col md:flex-row gap-6 items-center shadow-xs overflow-hidden">
               {templeImage && (
                 <div className="w-full md:w-1/3 h-48 rounded-2xl overflow-hidden bg-stone-100 shrink-0 relative">
                   <Image
@@ -1382,12 +1405,12 @@ export default function HomaDetailClient({
                   />
                 </div>
               )}
-              <div className="flex-1">
+              <div className="flex-1 p-5 text-center sm:text-left">
                 <h3 className="font-serif font-bold text-stone-900 text-xl mb-2">{templeVenueText}</h3>
                 <p className="text-stone-600 text-xs sm:text-sm leading-relaxed font-medium mb-4">
                   {templeNoteText}
                 </p>
-                <span className="inline-flex items-center gap-1.5 text-xs font-bold text-[#F47820]">
+                <span className="inline-flex items-center justify-center sm:justify-start gap-1.5 text-xs font-bold text-[#F47820]">
                   📍 {templeLocationText}
                 </span>
               </div>
@@ -1395,7 +1418,7 @@ export default function HomaDetailClient({
           </section>
 
           {/* Section: What will you receive */}
-          <section id="receive" data-reveal className="scroll-mt-32">
+          <section id="receive" data-reveal className="scroll-mt-36">
             <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1f1a17] mb-6">What will you receive</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
               {inclusionsList.map((inc: any, idx: number) => {
@@ -1417,7 +1440,7 @@ export default function HomaDetailClient({
           </section>
 
           {/* Section: Frequently Asked Questions (FAQs) */}
-          <section id="faqs" data-reveal className="scroll-mt-32">
+          <section id="faqs" data-reveal className="scroll-mt-36">
             <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1f1a17] mb-6">Frequently Asked Questions (FAQs)</h2>
             <div className="space-y-3">
               {faqList.map((faq, idx) => (
@@ -1444,9 +1467,110 @@ export default function HomaDetailClient({
 
           {/* Section: Homa Gallery */}
           {galleryList.length > 0 && (
-            <section id="gallery" data-reveal className="scroll-mt-32 pb-32 sm:pb-36 lg:pb-44">
+            <section id="gallery" data-reveal className="scroll-mt-36 pb-32 sm:pb-36 lg:pb-44">
               <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1f1a17] mb-6">Homa Gallery</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+
+              {/* Mobile: Carousel */}
+              <div className="sm:hidden relative">
+                <div
+                  onTouchStart={(e) => {
+                    galleryTouchStartX.current = e.touches[0].clientX;
+                    galleryTouchStartY.current = e.touches[0].clientY;
+                  }}
+                  onTouchMove={(e) => {
+                    galleryTouchEndX.current = e.touches[0].clientX;
+                    galleryTouchEndY.current = e.touches[0].clientY;
+                  }}
+                  onTouchEnd={() => {
+                    if (galleryTouchStartX.current === null || galleryTouchEndX.current === null) return;
+                    const deltaX = galleryTouchStartX.current - galleryTouchEndX.current;
+                    const deltaY = (galleryTouchStartY.current ?? 0) - (galleryTouchEndY.current ?? 0);
+
+                    // Swipe trigger if horizontal swipe > 40px
+                    if (Math.abs(deltaX) > 40 && Math.abs(deltaX) > Math.abs(deltaY)) {
+                      if (deltaX > 0) {
+                        // Swiped Left -> Next Image
+                        setGalleryCarouselIdx((prev) => (prev + 1) % galleryList.length);
+                      } else {
+                        // Swiped Right -> Previous Image
+                        setGalleryCarouselIdx((prev) => (prev - 1 + galleryList.length) % galleryList.length);
+                      }
+                    }
+                    galleryTouchStartX.current = null;
+                    galleryTouchEndX.current = null;
+                    galleryTouchStartY.current = null;
+                    galleryTouchEndY.current = null;
+                  }}
+                  onClick={() => {
+                    setLightboxImageIdx(galleryCarouselIdx);
+                    setGalleryLightboxOpen(true);
+                  }}
+                  className="relative h-64 rounded-2xl overflow-hidden border border-stone-200 shadow-xs cursor-pointer group touch-pan-y"
+                >
+                  {/* Full Image */}
+                  <Image
+                    src={galleryList[galleryCarouselIdx] as string}
+                    alt={`${homa?.title || "Homa"} - Sacred Ritual Photo ${galleryCarouselIdx + 1}`}
+                    fill
+                    sizes="100vw"
+                    unoptimized
+                    className="w-full h-full object-cover transition-all duration-300"
+                    onError={() => {
+                      const brokenImg = galleryList[galleryCarouselIdx] as string;
+                      if (brokenImg) {
+                        setFailedGalleryImages((prev) => ({ ...prev, [brokenImg]: true }));
+                      }
+                    }}
+                  />
+                  <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-full bg-black/40 text-white flex items-center justify-center backdrop-blur-xs">
+                      <ZoomIn className="w-5 h-5" strokeWidth={2} />
+                    </div>
+                  </div>
+                  {galleryList.length > 1 && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setGalleryCarouselIdx((prev) => (prev - 1 + galleryList.length) % galleryList.length);
+                        }}
+                        aria-label="Previous gallery image"
+                        className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center backdrop-blur-sm transition-all shadow-md z-10"
+                      >
+                        <ChevronLeft className="w-5 h-5 text-white" strokeWidth={2.5} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setGalleryCarouselIdx((prev) => (prev + 1) % galleryList.length);
+                        }}
+                        aria-label="Next gallery image"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center backdrop-blur-sm transition-all shadow-md z-10"
+                      >
+                        <ChevronRight className="w-5 h-5 text-white" strokeWidth={2.5} />
+                      </button>
+                    </>
+                  )}
+                </div>
+                {galleryList.length > 1 && (
+                  <div className="flex items-center justify-center gap-2 mt-3">
+                    {galleryList.map((_: string, idx: number) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => setGalleryCarouselIdx(idx)}
+                        aria-label={`Go to gallery image ${idx + 1}`}
+                        className={idx === galleryCarouselIdx ? "w-6 h-2 bg-[#00B05F] rounded-full transition-all" : "w-2 h-2 bg-stone-300 hover:bg-stone-400 rounded-full transition-all"}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* sm+ : Grid */}
+              <div className="hidden sm:grid grid-cols-2 sm:grid-cols-3 gap-4">
                 {galleryList.map((img: string, idx: number) => (
                   <div
                     key={idx}
@@ -1461,7 +1585,7 @@ export default function HomaDetailClient({
                       src={img}
                       alt={`${homa?.title || "Homa"} - Sacred Ritual Photo ${idx + 1}`}
                       fill
-                      sizes="(max-width: 640px) 100vw, 33vw"
+                      sizes="(max-width: 640px) 50vw, 33vw"
                       unoptimized
                       className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                       onError={() => {
@@ -1485,12 +1609,12 @@ export default function HomaDetailClient({
         <div className="lg:col-span-4 space-y-6 pt-0 pb-16 sm:pb-20 lg:pb-36">
 
           {/* Dedicated Vedic Homa Sticky Card */}
-          <div data-reveal className="bg-[#fdfbf7] border border-[#f0e4d0] rounded-3xl p-5 sm:p-6 pb-7 sm:pb-8 shadow-xs static lg:sticky lg:top-[140px] xl:top-[144px] space-y-4 sm:space-y-5 mb-0 lg:mb-28">
+          <div data-reveal className="bg-[#ffffff] border border-[#f0e4d0] rounded-3xl p-5 sm:p-6 pb-6 sm:pb-8 shadow-xs static lg:sticky lg:top-[140px] xl:top-[144px] space-y-4 sm:space-y-5 mb-0 lg:mb-28">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-[#800000] text-white flex items-center justify-center font-bold shrink-0">🔥</div>
+
               <div>
                 <h3 className="font-serif font-bold text-stone-900 text-base">Dedicated Vedic Homa</h3>
-                <span className="text-xs text-stone-500 font-semibold">100% Authentic Fire Lab</span>
+                <span className="text-xs text-stone-500 font-semibold">100% Authentic Rituals</span>
               </div>
             </div>
 
@@ -1518,8 +1642,8 @@ export default function HomaDetailClient({
                   rel="noopener noreferrer"
                   className="w-full bg-[#00B05F] hover:bg-[#008F4C] text-white font-extrabold text-xs sm:text-sm py-3 px-4 rounded-full transition-colors flex items-center justify-center gap-2 shadow-sm"
                 >
-                  <i className="fa-brands fa-whatsapp text-lg text-[#25D366]"></i>
-                  <span>WhatsApp</span>
+                  <i className="fa-brands fa-whatsapp text-lg text-white"></i>
+                  <span>Get Free Homa Guidance</span>
                 </a>
               </div>
             </div>
@@ -1543,7 +1667,7 @@ export default function HomaDetailClient({
           {/* Left Column: Lotus Icon + Uppercase Title + Price */}
           <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
             <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-white text-[#00B05F] flex items-center justify-center shrink-0 shadow-sm">
-              <Flame className="w-5 h-5 sm:w-6 sm:h-6 text-[#00B05F]" />
+              <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-[#00B05F]" />
             </div>
             <div className="min-w-0 flex-1">
               <span className="text-[10px] sm:text-xs font-extrabold text-slate-200 tracking-wider uppercase block truncate max-w-[120px] sm:max-w-none">
@@ -1561,12 +1685,12 @@ export default function HomaDetailClient({
 
           {/* Right Column: White Pill Button with Navy Circle Arrow */}
           <button
-            onClick={handleAddHomaToCart}
+            onClick={handleAddPujaToCart}
             className="bg-white hover:bg-slate-100 active:scale-95 text-[#00B05F] font-extrabold text-xs sm:text-sm px-3 sm:px-6 py-2 sm:py-2.5 rounded-full shadow-md transition-all flex items-center gap-1.5 sm:gap-2 shrink-0 whitespace-nowrap cursor-pointer"
           >
             <span className="max-w-[125px] sm:max-w-none truncate">{homa.buttonText || "Book Now"}</span>
             <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-[#00B05F] text-white flex items-center justify-center shrink-0">
-              <ArrowRight className="w-3 h-3 sm:w-3.5 sm:h-3.5 stroke-[3]" />
+              <ArrowRight className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-white" strokeWidth={3} />
             </div>
           </button>
         </div>
@@ -1584,45 +1708,43 @@ export default function HomaDetailClient({
             </button>
 
             <h3 className="text-2xl font-serif font-bold text-stone-900 mb-2">Select Package</h3>
-            <p className="text-stone-600 text-xs sm:text-sm mb-6">Choose your desired package for sacred fire lab participation.</p>
+            <p className="text-stone-600 text-xs sm:text-sm mb-6">Choose your desired package for sacred ritual participation.</p>
 
-            {packagesList.length > 0 && (
-              <div className="space-y-4 mb-6">
-                {packagesList.map((pkg) => {
-                  const isSelected = selectedPackage?.id === pkg.id;
-                  return (
-                    <div
-                      key={pkg.id}
-                      onClick={() => setSelectedPackageId(pkg.id)}
-                      className={`border-2 rounded-2xl p-4 cursor-pointer transition-all flex items-center justify-between ${isSelected
-                        ? "border-[#00B05F] bg-[#F1F5F9] shadow-xs"
-                        : "border-stone-200 hover:border-stone-400 bg-white"
-                        }`}
-                    >
-                      <div>
-                        <h4 className="font-bold text-stone-900 text-base">{pkg.name}</h4>
-                        <p className="text-stone-600 text-xs mt-1">{pkg.description || "Includes personalized sankalpam and video proof."}</p>
-                      </div>
-                      <div className="text-right">
-                        <PriceTag
-                          sellingPrice={getDisplayPrice(pkg)}
-                          listPrice={getDisplayListPrice(pkg)}
-                          sellingPriceClassName="font-extrabold text-lg text-stone-900 block"
-                          listPriceClassName="text-xs font-bold text-stone-400 line-through decoration-red-500 decoration-1.5 mr-1"
-                          className="flex items-baseline gap-1 flex-wrap justify-end"
-                        />
-                        <span className="text-[10px] font-bold text-[#00B05F] uppercase">{isSelected ? "Selected ✓" : "Select"}</span>
-                      </div>
+            <div className="space-y-4 mb-6">
+              {packagesList.map((pkg) => {
+                const isSelected = selectedPackage?.id === pkg.id;
+                return (
+                  <div
+                    key={pkg.id}
+                    onClick={() => setSelectedPackageId(pkg.id)}
+                    className={`border-2 rounded-2xl p-4 cursor-pointer transition-all flex items-center justify-between ${isSelected
+                      ? "border-[#00B05F] bg-[#F1F5F9] shadow-xs"
+                      : "border-stone-200 hover:border-stone-400 bg-white"
+                      }`}
+                  >
+                    <div>
+                      <h4 className="font-bold text-stone-900 text-base">{pkg.name}</h4>
+                      <p className="text-stone-600 text-xs mt-1">{pkg.description || "Includes personalized sankalpam and video proof."}</p>
                     </div>
-                  );
-                })}
-              </div>
-            )}
+                    <div className="text-right">
+                      <PriceTag
+                        sellingPrice={getDisplayPrice(pkg)}
+                        listPrice={getDisplayListPrice(pkg)}
+                        sellingPriceClassName="font-extrabold text-lg text-stone-900 block"
+                        listPriceClassName="text-xs font-bold text-stone-400 line-through decoration-red-500 decoration-1.5 mr-1"
+                        className="flex items-baseline gap-1 flex-wrap justify-end"
+                      />
+                      <span className="text-[10px] font-bold text-[#00B05F] uppercase">{isSelected ? "Selected ✓" : "Select"}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
 
             <button
               onClick={() => {
                 setShowPackageModal(false);
-                handleAddHomaToCart();
+                handleAddPujaToCart();
               }}
               className="w-full bg-[#00B05F] hover:bg-[#008F4C] text-white font-extrabold text-base py-3.5 rounded-full shadow-md transition-all"
             >
@@ -1644,7 +1766,20 @@ export default function HomaDetailClient({
         }}
       />
 
-      {/* ── 9. Sacred Homa Gallery Lightbox ── */}
+      {/* ── 9. Dynamic Share Modal ── */}
+      <ShareModal
+        isOpen={shareModalOpen}
+        onClose={() => setShareModalOpen(false)}
+        data={{
+          title: homa.title,
+          description: homa.heroSubtitle || homa.subtitle || homa.description || homa.about,
+          templeVenue: homa.templeVenue,
+          location: homa.location || homa.templeLocation,
+          url: typeof window !== "undefined" ? window.location.href : undefined,
+        }}
+      />
+
+      {/* ── 10. Sacred Homa Gallery Lightbox ── */}
       <GalleryLightboxModal
         isOpen={galleryLightboxOpen}
         onClose={() => setGalleryLightboxOpen(false)}
