@@ -374,12 +374,14 @@ export default function AdminUsersPage() {
     if (!isoString) return { datePart: "N/A", timePart: "" };
     const d = new Date(isoString);
     if (isNaN(d.getTime())) return { datePart: "N/A", timePart: "" };
-    const datePart = d.toLocaleDateString("en-GB", {
+    const datePart = d.toLocaleDateString("en-IN", {
+      timeZone: "Asia/Kolkata",
       day: "2-digit",
       month: "short",
       year: "numeric",
     });
-    const timePart = d.toLocaleTimeString("en-US", {
+    const timePart = d.toLocaleTimeString("en-IN", {
+      timeZone: "Asia/Kolkata",
       hour: "2-digit",
       minute: "2-digit",
       hour12: true,

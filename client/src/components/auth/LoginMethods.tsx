@@ -138,7 +138,7 @@ export default function LoginMethods() {
           document.cookie = `adminToken=${token}; path=/; max-age=86400; SameSite=Lax`;
           try {
             localStorage.removeItem("adminToken");
-          } catch {}
+          } catch { }
           window.location.href = "/admin";
           return;
         }
@@ -305,6 +305,7 @@ export default function LoginMethods() {
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
                 placeholder="Enter your password"
+                autoComplete="current-password"
                 className="w-full bg-transparent text-base text-[#342151] outline-none placeholder:text-[#a288cf] pr-10"
               />
               <button

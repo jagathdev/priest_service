@@ -475,6 +475,7 @@ export default function PromoCodesPage() {
                                                                 <div className="flex flex-col items-end">
                                                                     <span className="font-semibold text-gray-700">
                                                                         {new Date(record.createdAt).toLocaleDateString("en-IN", {
+                                                                            timeZone: "Asia/Kolkata",
                                                                             day: "numeric",
                                                                             month: "short",
                                                                             year: "numeric",
@@ -482,6 +483,7 @@ export default function PromoCodesPage() {
                                                                     </span>
                                                                     <span className="text-[10px] text-gray-400">
                                                                         {new Date(record.createdAt).toLocaleTimeString("en-IN", {
+                                                                            timeZone: "Asia/Kolkata",
                                                                             hour: "2-digit",
                                                                             minute: "2-digit",
                                                                             hour12: true,

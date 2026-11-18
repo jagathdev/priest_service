@@ -254,7 +254,8 @@ export default function AdminPreOrdersPage() {
     if (!isoString) return "N/A";
     const d = new Date(isoString);
     if (isNaN(d.getTime())) return "N/A";
-    return d.toLocaleDateString("en-GB", {
+    return d.toLocaleDateString("en-IN", {
+      timeZone: "Asia/Kolkata",
       day: "2-digit",
       month: "short",
       year: "numeric",
@@ -266,6 +267,7 @@ export default function AdminPreOrdersPage() {
     const d = new Date(isoString);
     if (isNaN(d.getTime())) return "";
     return d.toLocaleTimeString("en-IN", {
+      timeZone: "Asia/Kolkata",
       hour: "2-digit",
       minute: "2-digit",
       hour12: true,
