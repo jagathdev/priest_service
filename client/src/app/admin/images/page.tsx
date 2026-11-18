@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
-import { useRouter } from "next/navigation";
 import {
   UploadCloud,
   Trash2,
@@ -40,7 +39,6 @@ interface MediaStats {
 }
 
 export default function MediaManagerPage() {
-  const router = useRouter();
   const [_authorized, setAuthorized] = useState(false);
   const [activeTab, setActiveTab] = useState<"active" | "trash">("active");
   const [mediaList, setMediaList] = useState<MediaItem[]>([]);
@@ -83,12 +81,30 @@ export default function MediaManagerPage() {
 
   const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8564";
 
+  const getAdminAuthHeaders = useCallback((): Record<string, string> => {
+    if (typeof window === "undefined") return {};
+    const adminCookieMatch = document.cookie.match(/(?:^|;\s*)adminToken=([^;]+)/);
+    const adminCookieToken = adminCookieMatch ? decodeURIComponent(adminCookieMatch[1]) : null;
+
+    const userCookieMatch = document.cookie.match(/(?:^|;\s*)token=([^;]+)/);
+    const userCookieToken = userCookieMatch ? decodeURIComponent(userCookieMatch[1]) : null;
+    const userLocalToken = localStorage.getItem("token");
+
+    const token = adminCookieToken || userCookieToken || userLocalToken;
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  }, []);
+
   // Fetch media depending on active tab
   const fetchMedia = useCallback(async () => {
     try {
       setLoading(true);
       const isTrash = activeTab === "trash";
-      const res = await fetch(`${API_BASE}/api/upload${isTrash ? "?trash=true" : ""}`);
+      const res = await fetch(`${API_BASE}/api/upload${isTrash ? "?trash=true" : ""}`, {
+        headers: {
+          ...getAdminAuthHeaders(),
+        },
+        credentials: "include",
+      });
       if (res.ok) {
         const json = await res.json();
         setMediaList(json.data || []);
@@ -106,22 +122,12 @@ export default function MediaManagerPage() {
     } finally {
       setLoading(false);
     }
-  }, [API_BASE, activeTab]);
+  }, [API_BASE, activeTab, getAdminAuthHeaders]);
 
   useEffect(() => {
-    // Check if user is logged in as admin
-    const hasAdminToken =
-      typeof document !== "undefined" &&
-      (document.cookie.includes("adminToken=") ||
-        localStorage.getItem("token"));
-
-    if (!hasAdminToken) {
-      router.replace("/admin/login");
-    } else {
-      setAuthorized(true);
-      fetchMedia();
-    }
-  }, [router, fetchMedia]);
+    setAuthorized(true);
+    fetchMedia();
+  }, [fetchMedia]);
 
   // Filter & Search
   const filteredMedia = useMemo(() => {
@@ -193,6 +199,10 @@ export default function MediaManagerPage() {
 
       const res = await fetch(`${API_BASE}/api/upload`, {
         method: "POST",
+        headers: {
+          ...getAdminAuthHeaders(),
+        },
+        credentials: "include",
         body: formData,
       });
 
@@ -232,7 +242,11 @@ export default function MediaManagerPage() {
 
       const res = await fetch(`${API_BASE}/api/upload/${encodeURIComponent(editingItem.filename)}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...getAdminAuthHeaders(),
+        },
+        credentials: "include",
         body: JSON.stringify({ newName: newName.trim() }),
       });
 
@@ -261,6 +275,10 @@ export default function MediaManagerPage() {
       setActionLoading(true);
       const res = await fetch(`${API_BASE}/api/upload/${encodeURIComponent(deletingItem.filename)}`, {
         method: "DELETE",
+        headers: {
+          ...getAdminAuthHeaders(),
+        },
+        credentials: "include",
       });
       if (res.ok) {
         showToast(`Image moved to Trash: "${deletingItem.filename}". You can restore it anytime.`);
@@ -283,6 +301,10 @@ export default function MediaManagerPage() {
       setActionLoading(true);
       const res = await fetch(`${API_BASE}/api/upload/${encodeURIComponent(filename)}/restore`, {
         method: "PUT",
+        headers: {
+          ...getAdminAuthHeaders(),
+        },
+        credentials: "include",
       });
       if (res.ok) {
         showToast(`Restored image "${filename}" back to gallery!`);
@@ -305,6 +327,10 @@ export default function MediaManagerPage() {
       setActionLoading(true);
       const res = await fetch(`${API_BASE}/api/upload/${encodeURIComponent(permanentDeletingItem.filename)}/permanent`, {
         method: "DELETE",
+        headers: {
+          ...getAdminAuthHeaders(),
+        },
+        credentials: "include",
       });
       if (res.ok) {
         showToast(`Permanently erased "${permanentDeletingItem.filename}" from storage.`);
