@@ -201,6 +201,76 @@ export const buildUtmQueryString = (): string => {
 };
 
 /**
+ * Retrieves or initializes an anonymous visitor session ID stored in cookies.
+ * Valid for 30 days.
+ */
+export const getOrCreateVisitorSessionId = (): string => {
+  if (typeof window === "undefined") return "";
+
+  const SESSION_COOKIE_NAME = "ps_visitor_session";
+  let sessionId = getCookie(SESSION_COOKIE_NAME);
+
+  if (!sessionId) {
+    if (typeof crypto !== "undefined" && crypto.randomUUID) {
+      sessionId = crypto.randomUUID();
+    } else {
+      sessionId = "vs_" + Math.random().toString(36).substring(2, 15) + "_" + Date.now().toString(36);
+    }
+    // Store in cookie for 30 days
+    setCookie(SESSION_COOKIE_NAME, sessionId, 30 * 24 * 60 * 60);
+  }
+
+  return sessionId;
+};
+
+/**
+ * Sends a visitor hit to the backend analytics API (/api/analytics/track-visitor).
+ * Deduplicated per route/landing. Non-blocking and fails gracefully.
+ */
+export const recordVisitorHit = async (landingPath?: string): Promise<void> => {
+  if (typeof window === "undefined") return;
+
+  try {
+    const sessionId = getOrCreateVisitorSessionId();
+    if (!sessionId) return;
+
+    // Do not track admin portal visits
+    const currentPath = landingPath || window.location.pathname;
+    if (currentPath.startsWith("/admin") || currentPath.startsWith("/api")) {
+      return;
+    }
+
+    const utm = getStoredUtmDetails();
+    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "";
+
+    const payload = {
+      sessionId,
+      utmSource: utm.utmSource || "Direct",
+      utmMedium: utm.utmMedium || "",
+      utmCampaign: utm.utmCampaign || "",
+      utmTerm: utm.utmTerm || "",
+      utmContent: utm.utmContent || "",
+      promo: utm.promo || "",
+      landingPage: currentPath + (window.location.search || ""),
+      referrer: typeof document !== "undefined" ? document.referrer || "" : "",
+    };
+
+    fetch(`${baseUrl}/api/analytics/track-visitor`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+      keepalive: true,
+    }).catch(() => {
+      // Non-blocking catch
+    });
+  } catch {
+    // Non-blocking
+  }
+};
+
+/**
  * Deletes all UTM attribution cookies.
  * Called when an order is completed, removing all marketing tags from the browser.
  */

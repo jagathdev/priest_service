@@ -258,11 +258,13 @@ export default async function AdminDashboard() {
                       if (!isNaN(d.getTime())) {
                         bookingTimeInfo = {
                           datePart: d.toLocaleDateString("en-IN", {
+                            timeZone: "Asia/Kolkata",
                             day: "2-digit",
                             month: "short",
                             year: "numeric",
                           }),
                           timePart: d.toLocaleTimeString("en-IN", {
+                            timeZone: "Asia/Kolkata",
                             hour: "2-digit",
                             minute: "2-digit",
                             hour12: true,

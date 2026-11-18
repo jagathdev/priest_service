@@ -550,11 +550,13 @@ export default function AdminOrdersPage() {
     const d = new Date(rawDate);
     if (isNaN(d.getTime())) return "–";
     const datePart = d.toLocaleDateString("en-IN", {
+      timeZone: "Asia/Kolkata",
       day: "2-digit",
       month: "short",
       year: "numeric",
     });
     const timePart = d.toLocaleTimeString("en-IN", {
+      timeZone: "Asia/Kolkata",
       hour: "2-digit",
       minute: "2-digit",
       hour12: true,
