@@ -990,11 +990,11 @@ export default function PujaDetailClient({
               {/* Subtitle / Description with Read More / Read Less option */}
               <div className="mb-2.5 text-center lg:text-left">
                 <p className="text-stone-600 text-xs sm:text-[13px] font-medium leading-relaxed transition-all inline">
-                  {descriptionText && descriptionText.length > 180 && !isDescExpanded
-                    ? `${descriptionText.slice(0, 180).trim()}...`
+                  {descriptionText && descriptionText.length > 130 && !isDescExpanded
+                    ? `${descriptionText.slice(0, 130).trim()}...`
                     : descriptionText}
                 </p>
-                {descriptionText && descriptionText.length > 180 && (
+                {descriptionText && descriptionText.length > 130 && (
                   <button
                     type="button"
                     onClick={() => setIsDescExpanded((prev) => !prev)}
@@ -1033,7 +1033,7 @@ export default function PujaDetailClient({
                       <div
                         key={pkg.id}
                         onClick={() => setSelectedPackageId(pkg.id)}
-                        className={`relative border-2 rounded-2xl p-3.5 sm:p-2.5 lg:p-3 cursor-pointer transition-all flex flex-row items-center justify-start min-h-[80px] sm:min-h-[72px] lg:min-h-[74px] hover:shadow-xs ${isSelected
+                        className={`relative border-2 rounded-2xl p-3.5 sm:p-2 lg:p-2 xl:p-3 cursor-pointer transition-all flex flex-row items-center justify-start min-h-[80px] sm:min-h-[72px] lg:min-h-[72px] hover:shadow-xs ${isSelected
                           ? "border-[#00B05F] bg-[#F1F5F9] shadow-xs"
                           : "border-stone-200 hover:border-stone-300 bg-white"
                           }`}
@@ -1067,15 +1067,15 @@ export default function PujaDetailClient({
                           </>
                         )}
 
-                        {/* Recommended Badge on Couple Package (idx === 1) */}
+                        {/* Recommended Badge on Couple Package (idx === 1) - Always at Bottom */}
                         {idx === 1 && (
-                          <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#00B05F] text-white text-[11px] font-bold px-3 py-0.5 rounded-full shadow-xs z-10 whitespace-nowrap">
+                          <div className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 bg-[#00B05F] text-white text-[10.5px] sm:text-[11px] font-bold px-3 py-0.5 rounded-full shadow-xs z-10 whitespace-nowrap">
                             Recommended
                           </div>
                         )}
 
                         {/* Avatar Image on the Left */}
-                        <div className="relative w-11 h-11 sm:w-10 sm:h-10 lg:w-11 lg:h-11 rounded-full overflow-hidden shrink-0 border border-stone-200/90 bg-white shadow-2xs mr-3.5 sm:mr-2.5 lg:mr-3">
+                        <div className="relative w-11 h-11 sm:w-9 sm:h-9 lg:w-9 lg:h-9 xl:w-11 xl:h-11 rounded-full overflow-hidden shrink-0 border border-stone-200/90 bg-white shadow-2xs mr-3 sm:mr-2 lg:mr-2 xl:mr-3">
                           <Image
                             src={pkgAvatar || "/images/Ganesh-Chaturthi-Mahapuja.jpg"}
                             alt={`${pkg.name || "Package"} - ${homa?.title || "Homa"}`}
@@ -1087,25 +1087,25 @@ export default function PujaDetailClient({
                         </div>
 
                         {/* Details on the Right */}
-                        <div className="flex-1 min-w-0 text-left space-y-0.5 sm:space-y-0.5 pr-6 sm:pr-0">
-                          <h4 className="font-extrabold text-stone-900 text-sm sm:text-xs lg:text-[13px] leading-tight truncate">
+                        <div className="flex-1 min-w-0 text-left space-y-0.5 sm:space-y-0.5 pr-2 sm:pr-0">
+                          <h4 className="font-extrabold text-stone-900 text-sm sm:text-xs lg:text-[12px] xl:text-[13px] leading-tight truncate">
                             {pkg.name}
                           </h4>
-                          <span className="text-xs sm:text-[11px] font-medium text-stone-500 block leading-tight truncate">
+                          <span className="text-xs sm:text-[11px] lg:text-[10.5px] xl:text-[11px] font-medium text-stone-500 block leading-tight truncate">
                             {devoteesText}
                           </span>
                           <div className="flex items-center justify-between mt-1 sm:mt-0.5">
                             <PriceTag
                               sellingPrice={displayPrice}
                               listPrice={getDisplayListPrice(pkg)}
-                              sellingPriceClassName={`font-extrabold text-base sm:text-sm lg:text-base ${isSelected ? "text-[#00B05F]" : "text-stone-900"}`}
-                              listPriceClassName="text-xs font-bold text-stone-400 line-through decoration-red-500 decoration-1.5 mr-1"
-                              className="flex items-baseline gap-1 flex-wrap"
+                              sellingPriceClassName={`font-extrabold text-base sm:text-sm lg:text-[13px] xl:text-base ${isSelected ? "text-[#00B05F]" : "text-stone-900"}`}
+                              listPriceClassName="text-xs lg:text-[10px] xl:text-xs font-bold text-stone-400 line-through decoration-red-500 decoration-1.5 mr-0.5"
+                              className="flex items-baseline gap-0.5 xl:gap-1"
                             />
                             {/* Checkmark Badge on Selected Package */}
                             {isSelected && (
-                              <div className="w-5 h-5 rounded-full bg-[#00B05F] text-white flex items-center justify-center shrink-0 shadow-xs ml-1">
-                                <Check className="w-3 h-3 text-white" strokeWidth={3.5} />
+                              <div className="w-5 h-5 lg:w-4 lg:h-4 xl:w-5 xl:h-5 rounded-full bg-[#00B05F] text-white flex items-center justify-center shrink-0 shadow-xs ml-0.5">
+                                <Check className="w-3 h-3 lg:w-2.5 lg:h-2.5 xl:w-3 xl:h-3 text-white" strokeWidth={3.5} />
                               </div>
                             )}
                           </div>

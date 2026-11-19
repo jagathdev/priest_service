@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 
-import { Home, Flame, User } from "lucide-react";
+import { Home, FlameKindling, User, Castle } from "lucide-react";
 
 // Paths where bottom nav is hidden (e.g. checkout / payment)
 const HIDDEN_ON_PATHS = ["/sankalp", "/payment", "/auth", "/admin"];
@@ -20,8 +20,18 @@ function HomeIcon({ active }: { active: boolean }) {
 
 function PujaIcon({ active }: { active: boolean }) {
   return (
-    <Flame
+    <Castle
       className={`h-[22px] w-[22px] mb-0.5 ${active ? "text-[#00B05F] fill-[#00B05F]/20" : "text-gray-500"}`}
+      strokeWidth={active ? 2.5 : 2}
+    />
+  );
+}
+
+function HomaIcon({ active }: { active: boolean }) {
+  return (
+    <FlameKindling
+      className={`h-[22px] w-[22px] mb-0.5 transition-colors ${active ? "text-[#00B05F] fill-[#00B05F]/20" : "text-gray-500"
+        }`}
       strokeWidth={active ? 2.5 : 2}
     />
   );
@@ -56,6 +66,7 @@ export default function MobileBottomNav() {
 
   const isHomeActive = pathname === "/" || pathname === "/dashboard";
   const isPujaActive = pathname?.startsWith("/puja");
+  const isHomaActive = pathname?.startsWith("/homa");
   const isAccountActive = pathname?.startsWith("/account") || pathname?.startsWith("/profile");
 
   return (
@@ -91,6 +102,20 @@ export default function MobileBottomNav() {
               }`}
           >
             PUJA
+          </span>
+        </Link>
+
+        {/* HOMA */}
+        <Link
+          href="/homa"
+          className="flex flex-col items-center justify-center flex-1 h-full active:bg-gray-50 transition-colors"
+        >
+          <HomaIcon active={isHomaActive} />
+          <span
+            className={`text-[11px] font-bold tracking-wider uppercase ${isHomaActive ? "text-[#00B05F]" : "text-gray-500"
+              }`}
+          >
+            HOMA
           </span>
         </Link>
 

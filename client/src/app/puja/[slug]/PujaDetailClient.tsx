@@ -1067,9 +1067,9 @@ export default function PujaDetailClient({
                           </>
                         )}
 
-                        {/* Recommended Badge on Couple Package (idx === 1) */}
+                        {/* Recommended Badge on Couple Package (idx === 1) - Always at Bottom */}
                         {idx === 1 && (
-                          <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#00B05F] text-white text-[11px] font-bold px-3 py-0.5 rounded-full shadow-xs z-10 whitespace-nowrap">
+                          <div className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 bg-[#00B05F] text-white text-[10.5px] sm:text-[11px] font-bold px-3 py-0.5 rounded-full shadow-xs z-10 whitespace-nowrap">
                             Recommended
                           </div>
                         )}
