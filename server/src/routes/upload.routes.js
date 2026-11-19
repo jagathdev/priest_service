@@ -33,7 +33,8 @@ const storage = multer.diskStorage({
     if (!baseName) baseName = "media";
 
     const targetFileName = `${baseName}${ext}`;
-    const fileExists = fs.existsSync(path.join(uploadDir, targetFileName));
+    const targetFilePath = path.join(uploadDir, targetFileName);
+    const fileExists = fs.existsSync(targetFilePath);
     const allowOverwrite =
       req.query?.overwrite === "true" ||
       req.query?.overwrite === true ||
@@ -45,6 +46,15 @@ const storage = multer.diskStorage({
       err.code = "FILE_ALREADY_EXISTS";
       err.targetFileName = targetFileName;
       return cb(err);
+    }
+
+    // If overwrite is requested and old file exists, unlink it first so it is cleanly replaced
+    if (fileExists && allowOverwrite) {
+      try {
+        fs.unlinkSync(targetFilePath);
+      } catch (err) {
+        // Continue if already unlocked
+      }
     }
 
     cb(null, targetFileName);

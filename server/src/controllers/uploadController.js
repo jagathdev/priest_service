@@ -6,24 +6,27 @@ import Media from "../models/Media.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Physical upload directory: server/public/images
-export const uploadDir = path.resolve(__dirname, "../../public/images");
+// Physical upload directory: project root /assets (parallel to client and server)
+export const uploadDir = process.env.ASSETS_DIR
+  ? path.resolve(process.env.ASSETS_DIR)
+  : path.resolve(__dirname, "../../../assets");
+
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
 
 /**
- * Upload Image Controller
- * Saves uploaded file metadata into MongoDB and returns clean public URL
+ * Upload Media Controller
+ * Saves uploaded file metadata into MongoDB and returns clean public URL (/assets/filename)
  */
 export const uploadImage = async (req, res) => {
   try {
     if (!req.file) {
-      return res.status(400).json({ success: false, message: "No image file provided." });
+      return res.status(400).json({ success: false, message: "No media file provided." });
     }
 
     const filename = req.file.filename;
-    const url = `/api/images/${filename}`;
+    const url = `/assets/${filename}`;
 
     // Upsert in MongoDB Media collection to avoid duplicate records on overwrite
     const mediaDoc = await Media.findOneAndUpdate(
@@ -41,7 +44,7 @@ export const uploadImage = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: "Image uploaded successfully",
+      message: "Media uploaded successfully",
       data: mediaDoc,
       filename,
       url,
@@ -51,14 +54,14 @@ export const uploadImage = async (req, res) => {
     console.error("Upload controller error:", error);
     return res.status(500).json({
       success: false,
-      message: error.message || "Failed to upload image.",
+      message: error.message || "Failed to upload media.",
     });
   }
 };
 
 /**
- * Delete Image Controller (Soft Delete / Move to Trash)
- * Flags the image as deleted without unlinking the physical file
+ * Delete Media Controller (Soft Delete / Move to Trash)
+ * Flags the media as deleted without unlinking the physical file
  */
 export const deleteImage = async (req, res) => {
   try {
@@ -68,7 +71,7 @@ export const deleteImage = async (req, res) => {
     if (!media) {
       return res.status(404).json({
         success: false,
-        message: `Image "${filename}" was not found.`,
+        message: `File "${filename}" was not found.`,
       });
     }
 
@@ -78,21 +81,21 @@ export const deleteImage = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: `Image "${filename}" moved to trash. You can restore it anytime.`,
+      message: `File "${filename}" moved to trash. You can restore it anytime.`,
       data: media,
     });
   } catch (error) {
     console.error("Delete controller error:", error);
     return res.status(500).json({
       success: false,
-      message: error.message || "Failed to delete image.",
+      message: error.message || "Failed to delete file.",
     });
   }
 };
 
 /**
- * Restore Image Controller
- * Restores a soft-deleted image back to the active media library
+ * Restore Media Controller
+ * Restores a soft-deleted item back to active media library
  */
 export const restoreImage = async (req, res) => {
   try {
@@ -102,7 +105,7 @@ export const restoreImage = async (req, res) => {
     if (!media) {
       return res.status(404).json({
         success: false,
-        message: `Image "${filename}" was not found.`,
+        message: `File "${filename}" was not found.`,
       });
     }
 
@@ -112,21 +115,21 @@ export const restoreImage = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: `Image "${filename}" restored successfully to active media gallery.`,
+      message: `File "${filename}" restored successfully to active media gallery.`,
       data: media,
     });
   } catch (error) {
     console.error("Restore controller error:", error);
     return res.status(500).json({
       success: false,
-      message: error.message || "Failed to restore image.",
+      message: error.message || "Failed to restore file.",
     });
   }
 };
 
 /**
- * Permanent Delete Image Controller
- * Removes the physical file from server/public/images and deletes record from MongoDB
+ * Permanent Delete Media Controller
+ * Removes the physical file from root /assets and deletes record from MongoDB
  */
 export const permanentDeleteImage = async (req, res) => {
   try {
@@ -136,7 +139,7 @@ export const permanentDeleteImage = async (req, res) => {
     // 1. Remove from MongoDB
     const deletedRecord = await Media.findOneAndDelete({ filename });
 
-    // 2. Remove physical file from disk if it exists
+    // 2. Remove physical file from root assets disk if it exists
     if (fs.existsSync(filePath)) {
       try {
         fs.unlinkSync(filePath);
@@ -148,49 +151,59 @@ export const permanentDeleteImage = async (req, res) => {
     if (!deletedRecord && !fs.existsSync(filePath)) {
       return res.status(404).json({
         success: false,
-        message: `Image "${filename}" was not found on server storage.`,
+        message: `File "${filename}" was not found on server storage.`,
       });
     }
 
     return res.status(200).json({
       success: true,
-      message: `Image "${filename}" permanently deleted from server storage and database.`,
+      message: `File "${filename}" permanently deleted from server storage and database.`,
       deleted: deletedRecord,
     });
   } catch (error) {
     console.error("Permanent delete controller error:", error);
     return res.status(500).json({
       success: false,
-      message: error.message || "Failed to permanently delete image.",
+      message: error.message || "Failed to permanently delete file.",
     });
   }
 };
 
 /**
- * Get All Uploaded Images (Media Library)
- * Returns uploaded images stored in MongoDB (supports ?trash=true)
+ * Get All Uploaded Media (Media Library)
+ * Returns files stored in MongoDB (supports ?trash=true) and syncs physical root assets
  */
 export const getAllMedia = async (req, res) => {
   try {
     const isTrash = req.query?.trash === "true" || req.query?.trash === true;
 
-    // Scan uploadDir to ensure any untracked physical file has a Media record
+    // Scan uploadDir (root assets) to ensure any physical file has a Media record
     if (fs.existsSync(uploadDir)) {
       const diskFiles = fs.readdirSync(uploadDir);
       for (const file of diskFiles) {
+        if (file === ".gitkeep") continue;
         const filePath = path.join(uploadDir, file);
         const stats = fs.statSync(filePath);
         if (stats.isFile()) {
           const ext = path.extname(file).toLowerCase();
-          if ([".jpg", ".jpeg", ".png", ".webp"].includes(ext)) {
-            const mime = ext === ".png" ? "image/png" : ext === ".webp" ? "image/webp" : "image/jpeg";
-            // Check existing first so we don't accidentally un-trash a deleted image
+          const isImg = [".jpg", ".jpeg", ".png", ".webp"].includes(ext);
+          const isVid = [".mp4", ".webm", ".mov"].includes(ext);
+
+          if (isImg || isVid) {
+            let mime = "application/octet-stream";
+            if (ext === ".png") mime = "image/png";
+            else if (ext === ".webp") mime = "image/webp";
+            else if (ext === ".jpg" || ext === ".jpeg") mime = "image/jpeg";
+            else if (ext === ".mp4") mime = "video/mp4";
+            else if (ext === ".webm") mime = "video/webm";
+            else if (ext === ".mov") mime = "video/quicktime";
+
             const existing = await Media.findOne({ filename: file });
             if (!existing) {
               await Media.create({
                 filename: file,
                 originalName: file,
-                url: `/api/images/${file}`,
+                url: `/assets/${file}`,
                 mimeType: mime,
                 size: stats.size,
                 uploadedBy: "admin",
@@ -227,8 +240,8 @@ export const getAllMedia = async (req, res) => {
 };
 
 /**
- * Edit / Rename Image Controller
- * Renames physical file on disk and updates MongoDB record
+ * Edit / Rename Media Controller
+ * Renames physical file in root /assets and updates MongoDB record
  */
 export const editImage = async (req, res) => {
   try {
@@ -238,7 +251,7 @@ export const editImage = async (req, res) => {
     if (!newName || typeof newName !== "string" || !newName.trim()) {
       return res.status(400).json({
         success: false,
-        message: "New image name is required.",
+        message: "New filename is required.",
       });
     }
 
@@ -250,7 +263,7 @@ export const editImage = async (req, res) => {
       .replace(/-+/g, "-")
       .replace(/^-|-$/g, "");
 
-    if (!sanitizedBase) sanitizedBase = "image";
+    if (!sanitizedBase) sanitizedBase = "media";
     const targetFilename = `${sanitizedBase}${ext}`;
 
     if (oldFilename === targetFilename) {
@@ -268,7 +281,7 @@ export const editImage = async (req, res) => {
     if (fs.existsSync(newFilePath)) {
       return res.status(409).json({
         success: false,
-        message: `An image with the name "${targetFilename}" already exists.`,
+        message: `A file with the name "${targetFilename}" already exists.`,
       });
     }
 
@@ -283,28 +296,28 @@ export const editImage = async (req, res) => {
       {
         filename: targetFilename,
         originalName: `${sanitizedBase}${ext}`,
-        url: `/api/images/${targetFilename}`,
+        url: `/assets/${targetFilename}`,
       },
       { returnDocument: "after" }
     );
 
     return res.status(200).json({
       success: true,
-      message: `Image successfully renamed to "${targetFilename}".`,
+      message: `File successfully renamed to "${targetFilename}".`,
       data: updatedMedia,
     });
   } catch (error) {
-    console.error("Edit image controller error:", error);
+    console.error("Edit media controller error:", error);
     return res.status(500).json({
       success: false,
-      message: error.message || "Failed to edit image.",
+      message: error.message || "Failed to edit file.",
     });
   }
 };
 
 /**
- * Delete All Uploaded Images
- * Wipes all files from server/public/images and clears Media collection
+ * Delete All Uploaded Media
+ * Wipes files from root /assets and clears Media collection
  */
 export const deleteAllMedia = async (_req, res) => {
   try {
@@ -314,6 +327,7 @@ export const deleteAllMedia = async (_req, res) => {
     if (fs.existsSync(uploadDir)) {
       const files = fs.readdirSync(uploadDir);
       for (const file of files) {
+        if (file === ".gitkeep") continue;
         const filePath = path.join(uploadDir, file);
         if (fs.statSync(filePath).isFile()) {
           fs.unlinkSync(filePath);
@@ -327,14 +341,14 @@ export const deleteAllMedia = async (_req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: `All images deleted successfully (${deletedFilesCount} files removed from storage, ${deleteResult.deletedCount} database records removed).`,
+      message: `All files deleted successfully (${deletedFilesCount} files removed from storage, ${deleteResult.deletedCount} database records removed).`,
       count: deletedFilesCount,
     });
   } catch (error) {
     console.error("Delete all media error:", error);
     return res.status(500).json({
       success: false,
-      message: error.message || "Failed to delete all images.",
+      message: error.message || "Failed to delete all files.",
     });
   }
 };

@@ -88,7 +88,15 @@ app.get('/health', (req, res) => {
     res.status(200).json({ status: 'ok', timestamp: new Date() });
 });
 
-// Serve uploaded images statically (both /api/images and /images for backward compatibility)
+// Serve permanent root assets statically from project root /assets (parallel to client & server)
+const rootAssetsDir = process.env.ASSETS_DIR || path.resolve(__dirname, '../../assets');
+app.use('/assets', express.static(rootAssetsDir, {
+    setHeaders: (res) => {
+        res.setHeader('Accept-Ranges', 'bytes'); // Enables fast video chunk streaming
+    }
+}));
+
+// Serve uploaded images statically (backward compatibility for existing database entries)
 app.use('/api/images', express.static(path.resolve(__dirname, '../public/images')));
 app.use('/images', express.static(path.resolve(__dirname, '../public/images')));
 

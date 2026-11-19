@@ -8,6 +8,14 @@ const nextConfig: NextConfig = {
         source: '/api/:path*',
         destination: `${process.env.INTERNAL_API_URL || 'http://localhost:8564'}/api/:path*`,
       },
+      {
+        source: '/assets/:path*',
+        destination: `${process.env.INTERNAL_API_URL || 'http://localhost:8564'}/assets/:path*`,
+      },
+      {
+        source: '/images/:path*',
+        destination: `${process.env.INTERNAL_API_URL || 'http://localhost:8564'}/images/:path*`,
+      },
     ];
   },
   images: {

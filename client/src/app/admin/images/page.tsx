@@ -13,7 +13,6 @@ import {
   AlertTriangle,
   X,
   FileImage,
-  Video,
   HardDrive,
   Layers,
   RotateCcw,
@@ -190,15 +189,19 @@ export default function MediaManagerPage() {
       setUploadError("");
 
       const formData = new FormData();
-      formData.append("image", selectedFile);
       if (customName.trim()) {
         formData.append("customName", customName.trim());
       }
       if (allowOverwrite) {
         formData.append("overwrite", "true");
       }
+      formData.append("image", selectedFile);
 
-      const res = await fetch(`${API_BASE}/api/upload`, {
+      const uploadUrl = allowOverwrite
+        ? `${API_BASE}/api/upload?overwrite=true`
+        : `${API_BASE}/api/upload`;
+
+      const res = await fetch(uploadUrl, {
         method: "POST",
         headers: {
           ...getAdminAuthHeaders(),
