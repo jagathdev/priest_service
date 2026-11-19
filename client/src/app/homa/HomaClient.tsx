@@ -1,7 +1,7 @@
 "use client";
 
 import { formatDayDateMonth } from "@/lib/dateFormatter";
-import React, { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
@@ -65,10 +65,12 @@ const slugify = (value: string) =>
     .replace(/\s+/g, "-")
     .replace(/-+/g, "-");
 
+const DEFAULT_HOMA_IMAGE = "/images/Lakshmi-Homam.jpg";
+
 const getHomaImageUrl = (imageUrl?: string): string => {
-  if (!imageUrl || typeof imageUrl !== "string") return "";
+  if (!imageUrl || typeof imageUrl !== "string") return DEFAULT_HOMA_IMAGE;
   const trimmed = imageUrl.trim();
-  if (!trimmed) return "";
+  if (!trimmed) return DEFAULT_HOMA_IMAGE;
   const safeEncode = (url: string) => {
     try {
       return encodeURI(decodeURI(url));
