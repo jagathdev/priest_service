@@ -42,16 +42,17 @@ export const uploadImage = async (req, res) => {
 
     const filename = req.file.filename;
     const baseUrl = getPublicBaseUrl(req);
-    const fullUrl = `${baseUrl}/assets/${filename}`;
     const relativeUrl = `/assets/${filename}`;
+    const fullUrl = `${baseUrl}/assets/${filename}`;
 
-    // Upsert in MongoDB Media collection to avoid duplicate records on overwrite
+    // Always store clean relative URL (/assets/filename) in MongoDB
+    // so it works seamlessly across localhost, Render, and priestservices.astroved.com
     const mediaDoc = await Media.findOneAndUpdate(
       { filename },
       {
         filename,
         originalName: req.file.originalname,
-        url: fullUrl,
+        url: relativeUrl,
         mimeType: req.file.mimetype,
         size: req.file.size,
         uploadedBy: "admin",
@@ -237,12 +238,14 @@ export const getAllMedia = async (req, res) => {
     const query = { isDeleted: isTrash ? true : { $ne: true } };
     const rawList = await Media.find(query).sort({ createdAt: -1 });
 
-    // Ensure all returned media URLs are normalized to full URLs
+    // Dynamic resolution based on caller's environment:
+    // If accessed from localhost -> http://localhost:8564/assets/filename
+    // If accessed from Render -> https://priest-service.onrender.com/assets/filename
+    // If accessed from priestservices.astroved.com -> https://priestservices.astroved.com/assets/filename
     const mediaList = rawList.map((doc) => {
       const obj = doc.toObject();
-      if (obj.url && obj.url.startsWith("/")) {
-        obj.url = `${baseUrl}${obj.url}`;
-      }
+      const filename = obj.filename || (obj.url ? obj.url.split("/").pop() : "");
+      obj.url = `${baseUrl}/assets/${filename}`;
       return obj;
     });
 
