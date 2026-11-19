@@ -13,6 +13,7 @@ import PujaCountdownCard from "@/components/common/PujaCountdownCard";
 import ShareModal from "@/components/common/ShareModal";
 import GalleryLightboxModal from "@/components/common/GalleryLightboxModal";
 import Image from "next/image";
+import { getYouTubeEmbedUrl, isYouTubeUrl } from "@/lib/videoUtils";
 import { getStartingPriceINR, getStartingListPriceINR } from "@/lib/pricing";
 import PriceTag from "@/components/ui/PriceTag";
 import {
@@ -62,6 +63,8 @@ interface Homa {
   description?: string;
   imageUrl: string;
   additionalImages?: string[];
+  videoUrl?: string;
+  videoTitle?: string;
   badge?: string;
   shortTitle?: string;
   location?: string;
@@ -308,7 +311,7 @@ export default function PujaDetailClient({
 
   useEffect(() => {
     const handleScroll = () => {
-      const sections = ["about", "benefits", "process", "temple", "receive", "faqs", "gallery"];
+      const sections = ["about", "video", "benefits", "process", "temple", "receive", "faqs", "gallery"];
       const headerOffset = window.innerWidth < 640 ? 120 : 150;
 
       // Check if user has reached or scrolled near the bottom of the page
@@ -625,13 +628,14 @@ export default function PujaDetailClient({
 
   const subNavTabs = useMemo(() => [
     { id: "about", label: "About homa" },
+    ...(homa?.videoUrl ? [{ id: "video", label: "Homa Video" }] : []),
     { id: "benefits", label: "Homa Benefits" },
     { id: "process", label: "Homa Procedure" },
     { id: "temple", label: "Temple Details" },
     { id: "receive", label: "What will you receive" },
     { id: "faqs", label: "FAQs" },
     ...(galleryList.length > 0 ? [{ id: "gallery", label: "Homa Gallery" }] : []),
-  ], [galleryList.length]);
+  ], [galleryList.length, homa?.videoUrl]);
 
   if (loading) {
     return (
@@ -1352,6 +1356,59 @@ export default function PujaDetailClient({
               </div>
             </div>
           </section>
+
+          {/* Section: Sacred Homa Video */}
+          {Boolean(homa?.videoUrl) && (
+            <section id="video" data-reveal className="scroll-mt-36">
+              <div className="flex items-center justify-between mb-4 sm:mb-6">
+                <div>
+                  <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1f1a17]">
+                    Homa Video
+                  </h2>
+                  <p className="text-xs sm:text-sm text-stone-500 mt-1">
+                    Watch sacred glimpses and authentic Vedic rituals performed with devotion
+                  </p>
+                </div>
+                <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold">
+                  <Video className="w-3.5 h-3.5" />
+                  <span>Recorded Stream</span>
+                </div>
+              </div>
+
+              <div className="rounded-3xl border border-[#f0e4d0] bg-white overflow-hidden shadow-xs p-3 sm:p-5">
+                <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-black/95 shadow-md flex items-center justify-center">
+                  {isYouTubeUrl(homa?.videoUrl) ? (
+                    <iframe
+                      src={getYouTubeEmbedUrl(homa?.videoUrl || "", true) || ""}
+                      title="Homa Ritual Video"
+                      loading="lazy"
+                      className="w-full h-full border-0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      allowFullScreen
+                    />
+                  ) : (
+                    <video
+                      src={homa?.videoUrl}
+                      controls
+                      autoPlay
+                      muted
+                      preload="metadata"
+                      playsInline
+                      poster={homa?.imageUrl}
+                      className="w-full h-full object-contain"
+                    >
+                      Your browser does not support the video tag.
+                    </video>
+                  )}
+                </div>
+                {homa?.videoTitle && (
+                  <p className="mt-3 text-xs sm:text-sm font-semibold text-stone-700 text-center">
+                    {homa.videoTitle}
+                  </p>
+                )}
+              </div>
+            </section>
+          )}
 
           {/* Section: Homa Benefits */}
           <section id="benefits" data-reveal className="scroll-mt-36">

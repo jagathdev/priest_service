@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import Image from "next/image";
+import { getYouTubeEmbedUrl, isYouTubeUrl } from "@/lib/videoUtils";
 import {
   PencilSquareIcon,
   PlusIcon,
@@ -19,6 +20,7 @@ import {
   ArrowPathIcon,
   CheckCircleIcon,
   ExclamationCircleIcon,
+  VideoCameraIcon,
 } from "@heroicons/react/24/outline";
 
 export const getAdminBaseApiUrl = (): string => {
@@ -115,6 +117,7 @@ interface Field {
   | "text"
   | "textarea"
   | "url"
+  | "video"
   | "number"
   | "date"
   | "date-ddmmyyyy"
@@ -219,16 +222,19 @@ export default function ContentManager({
     file: File,
     key: string,
     label: string,
-    options?: { overwrite?: boolean; onSuccess?: (url: string) => void }
+    options?: { overwrite?: boolean; isVideo?: boolean; onSuccess?: (url: string) => void }
   ): Promise<string | null> => {
     if (!file) return null;
 
-    // Client-side 3 MB limit check
-    const MAX_FILE_SIZE = 3 * 1024 * 1024; // 3MB
+    const isVideo = Boolean(options?.isVideo || file.type.startsWith("video/") || key.toLowerCase().includes("video"));
+    const MAX_FILE_SIZE = isVideo ? 20 * 1024 * 1024 : 3 * 1024 * 1024; // 20MB for video, 3MB for image
     if (file.size > MAX_FILE_SIZE) {
+      const limitMsg = isVideo
+        ? "Max 20 MB video only allowed to upload. Please choose a video smaller than 20 MB."
+        : "Max 3 MB image only allowed to upload. Please choose an image smaller than 3 MB.";
       setUploadErrors((prev) => ({
         ...prev,
-        [key]: "Max 3 MB image only allowed to upload. Please choose an image smaller than 3 MB.",
+        [key]: limitMsg,
       }));
       return null;
     }
@@ -1715,6 +1721,168 @@ export default function ContentManager({
               className="block w-full rounded-xl border border-slate-200 bg-slate-50/70 pl-11 pr-3.5 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:bg-white focus:border-amber-500 focus:outline-none focus:ring-4 focus:ring-amber-500/15 shadow-2xs transition-all"
             />
           </div>
+        ) : field.type === "video" ? (
+          (() => {
+            const curUrl = String(formData[field.name] || "").trim();
+            const activeMode = (urlInputMode[field.name] || (curUrl ? "link" : "upload"));
+            const isUploading = Boolean(uploadingFields[field.name]);
+            const uploadError = uploadErrors[field.name] || null;
+
+            const handleFileSelected = async (file: File) => {
+              await uploadImageFile(file, field.name, field.name, {
+                isVideo: true,
+                onSuccess: (url) => {
+                  setFormData((prev: any) => ({
+                    ...prev,
+                    [field.name]: url,
+                  }));
+                },
+              });
+            };
+
+            const handleDeleteVideo = async () => {
+              if (!confirm(`Are you sure you want to remove this video and delete it from server storage?`)) return;
+              await deleteImageFile(curUrl);
+              setFormData((prev: any) => ({ ...prev, [field.name]: "" }));
+            };
+
+            return (
+              <div className="space-y-3">
+                {/* Dual Mode Switch: Video Link or Upload Video */}
+                <div className="flex items-center gap-1.5 p-1 rounded-xl bg-slate-100/90 w-fit border border-slate-200/80">
+                  <button
+                    type="button"
+                    onClick={() => setUrlInputMode((prev) => ({ ...prev, [field.name]: "link" }))}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${activeMode === "link"
+                      ? "bg-white text-primary shadow-xs"
+                      : "text-slate-600 hover:text-slate-900"
+                      }`}
+                  >
+                    <LinkIcon className="h-3.5 w-3.5" />
+                    <span>Add Video Link</span>
+                    {curUrl && <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setUrlInputMode((prev) => ({ ...prev, [field.name]: "upload" }))}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${activeMode === "upload"
+                      ? "bg-white text-primary shadow-xs"
+                      : "text-slate-600 hover:text-slate-900"
+                      }`}
+                  >
+                    <VideoCameraIcon className="h-3.5 w-3.5" />
+                    <span>Upload Video (Max 20 MB)</span>
+                  </button>
+                </div>
+
+                {uploadError && (
+                  <div className="rounded-xl border border-red-200 bg-red-50 p-2.5 text-xs font-semibold text-red-600">
+                    {uploadError}
+                  </div>
+                )}
+
+                {/* Option 1: Direct Video Link / YouTube / Embed */}
+                {activeMode === "link" ? (
+                  <div className="relative">
+                    <input
+                      type="text"
+                      id={field.name}
+                      name={field.name}
+                      required={field.required}
+                      placeholder={field.placeholder || "https://www.youtube.com/watch?v=... or .mp4 URL"}
+                      value={formData[field.name] || ""}
+                      onChange={handleInputChange}
+                      className="block w-full rounded-xl border border-slate-200 bg-slate-50/70 px-3.5 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:bg-white focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/10 shadow-2xs transition-all"
+                    />
+                    {curUrl && (
+                      <button
+                        type="button"
+                        onClick={() => setFormData((prev: any) => ({ ...prev, [field.name]: "" }))}
+                        title="Clear video link"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-red-500 rounded-lg transition-colors cursor-pointer"
+                      >
+                        <XMarkIcon className="h-4 w-4" />
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  /* Option 2: Upload Video (MP4 / WebM up to 20 MB) */
+                  <div className="relative">
+                    <label className={`flex flex-col items-center justify-center border-2 border-dashed ${isUploading ? "border-primary bg-primary/5 opacity-70 cursor-wait" : "border-slate-300 hover:border-primary/60 bg-slate-50/60 hover:bg-white cursor-pointer"} rounded-2xl p-5 transition-all duration-200 group text-center`}>
+                      <input
+                        type="file"
+                        disabled={isUploading}
+                        accept="video/mp4,video/webm,video/quicktime"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleFileSelected(file);
+                        }}
+                        className="hidden"
+                      />
+                      <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary group-hover:scale-105 transition-transform mb-2">
+                        {isUploading ? (
+                          <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                        ) : (
+                          <VideoCameraIcon className="h-5 w-5 stroke-[2.5]" />
+                        )}
+                      </div>
+                      <p className="text-xs font-bold text-slate-700">
+                        {isUploading ? "Uploading video to server..." : (
+                          <>Drag and drop video or <span className="text-primary underline">browse file</span></>
+                        )}
+                      </p>
+                      <p className="text-[11px] text-slate-400 mt-1">MP4 or WebM (Maximum 20 MB - fast streaming optimized)</p>
+                    </label>
+                  </div>
+                )}
+
+                {/* Live Video Preview Player */}
+                {curUrl && (
+                  <div className="rounded-2xl border border-slate-200 bg-white p-3.5 shadow-xs space-y-2.5">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-2">
+                        <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600">
+                          <VideoCameraIcon className="h-3.5 w-3.5" />
+                        </span>
+                        <span className="text-xs font-bold text-slate-800">Attached Video</span>
+                        <span className="rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 text-[10px] font-bold">Ready</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleDeleteVideo}
+                        title="Remove video"
+                        className="shrink-0 inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200/70 transition-all cursor-pointer shadow-2xs"
+                      >
+                        <TrashIcon className="h-3.5 w-3.5" />
+                        <span>Remove</span>
+                      </button>
+                    </div>
+                    <p className="text-[11px] text-slate-500 font-mono truncate">{curUrl}</p>
+                    <div className="relative aspect-video max-w-md rounded-xl overflow-hidden bg-black/90 border border-slate-200">
+                      {isYouTubeUrl(curUrl) ? (
+                        <iframe
+                          src={getYouTubeEmbedUrl(curUrl, false) || ""}
+                          title="Video Preview"
+                          className="w-full h-full border-0"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                        />
+                      ) : (
+                        <video
+                          src={curUrl}
+                          controls
+                          preload="metadata"
+                          playsInline
+                          className="w-full h-full object-contain"
+                        />
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })()
         ) : field.type === "url" ? (
           (() => {
             const curUrl = String(formData[field.name] || "").trim();
@@ -1892,8 +2060,9 @@ export default function ContentManager({
               </datalist>
             )}
           </div>
-        )}
-      </div>
+        )
+        }
+      </div >
     );
   };
 

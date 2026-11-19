@@ -13,6 +13,7 @@ import {
   AlertTriangle,
   X,
   FileImage,
+  Video,
   HardDrive,
   Layers,
   RotateCcw,
@@ -594,6 +595,14 @@ export default function MediaManagerPage() {
                       </span>
                       <span className="text-[9px] text-slate-400 mt-0.5">Preview not available</span>
                     </div>
+                  ) : ext === "MP4" || ext === "WEBM" || item.mimeType?.includes("video") ? (
+                    <video
+                      src={fullUrl}
+                      preload="metadata"
+                      controls
+                      playsInline
+                      className="w-full h-full object-cover object-center"
+                    />
                   ) : (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
@@ -747,8 +756,8 @@ export default function MediaManagerPage() {
                 <UploadCloud className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-slate-900">Upload Image</h3>
-                <p className="text-xs text-slate-500">Supported: .png, .jpg, .jpeg, .webp (Max 3 MB)</p>
+                <h3 className="text-lg font-bold text-slate-900">Upload Media</h3>
+                <p className="text-xs text-slate-500">Supported: Images (.png, .jpg, .webp ≤ 3MB) & Videos (.mp4, .webm ≤ 20MB)</p>
               </div>
             </div>
 
@@ -764,31 +773,39 @@ export default function MediaManagerPage() {
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept="image/png,image/jpeg,image/jpg,image/webp"
+                  accept="image/png,image/jpeg,image/jpg,image/webp,video/mp4,video/webm"
                   className="hidden"
                   onChange={handleFileChange}
                 />
 
                 {previewUrl ? (
                   <div className="flex flex-col items-center">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={previewUrl}
-                      alt="Upload Preview"
-                      className="max-h-40 rounded-xl object-contain shadow-xs mb-3"
-                    />
+                    {selectedFile?.type?.startsWith("video/") ? (
+                      <video
+                        src={previewUrl}
+                        controls
+                        className="max-h-40 rounded-xl object-contain shadow-xs mb-3"
+                      />
+                    ) : (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={previewUrl}
+                        alt="Upload Preview"
+                        className="max-h-40 rounded-xl object-contain shadow-xs mb-3"
+                      />
+                    )}
                     <p className="text-xs font-bold text-slate-700 truncate max-w-xs">
                       {selectedFile?.name} ({formatSize(selectedFile?.size || 0)})
                     </p>
                     <span className="text-[11px] text-[#00B05F] font-bold mt-1 hover:underline">
-                      Click to choose another image
+                      Click to choose another file
                     </span>
                   </div>
                 ) : (
                   <div className="flex flex-col items-center py-4">
                     <UploadCloud className="w-10 h-10 text-slate-400 mb-2 stroke-[1.5]" />
-                    <p className="text-sm font-bold text-slate-700">Click to browse or drop an image here</p>
-                    <p className="text-xs text-slate-400 mt-1">PNG, JPG, WEBP up to 3MB</p>
+                    <p className="text-sm font-bold text-slate-700">Click to browse or drop an image or video here</p>
+                    <p className="text-xs text-slate-400 mt-1">Images max 3MB, Videos max 20MB</p>
                   </div>
                 )}
               </div>

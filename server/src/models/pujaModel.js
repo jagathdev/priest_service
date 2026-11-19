@@ -61,6 +61,8 @@ const pujaSchema = new mongoose.Schema(
     description: { type: String, default: "" },
     imageUrl: { type: String, default: "" },
     additionalImages: [{ type: String }],
+    videoUrl: { type: String, default: '' },
+    videoTitle: { type: String, default: '' },
     location: { type: String, default: "" },
     templeVenue: { type: String, default: "" },
     templeImage: { type: String, default: "" },

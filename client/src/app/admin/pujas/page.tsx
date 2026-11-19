@@ -120,6 +120,13 @@ export default function AdminPujasPage() {
       placeholder: "https://example.com/gallery.jpg",
       section: "Media & Banners",
     },
+    {
+      name: "videoUrl",
+      label: "Puja / Homa Video (Upload max 20 MB or Video Link)",
+      type: "video",
+      placeholder: "https://example.com/video.mp4 or YouTube / Vimeo link",
+      section: "Media & Banners",
+    },
 
     // ── 3. Trust & Assurances ──
     {

@@ -30,7 +30,7 @@ const storage = multer.diskStorage({
       .replace(/-+/g, "-")
       .replace(/^-|-$/g, "");
 
-    if (!baseName) baseName = "image";
+    if (!baseName) baseName = "media";
 
     const targetFileName = `${baseName}${ext}`;
     const fileExists = fs.existsSync(path.join(uploadDir, targetFileName));
@@ -51,23 +51,27 @@ const storage = multer.diskStorage({
   },
 });
 
-// Allowed file types: PNG, JPG, JPEG, WEBP
+// Allowed file types: Images (PNG, JPG, JPEG, WEBP) & Videos (MP4, WEBM, MOV)
 const fileFilter = (_req, file, cb) => {
-  const allowed = /jpeg|jpg|png|webp/;
+  const imageAllowed = /jpeg|jpg|png|webp/;
+  const videoAllowed = /mp4|webm|quicktime|mov/;
   const ext = path.extname(file.originalname).toLowerCase().replace(".", "");
   const mime = file.mimetype.toLowerCase();
 
-  if (allowed.test(ext) && (allowed.test(mime) || mime.includes("image"))) {
+  const isImage = imageAllowed.test(ext) && (imageAllowed.test(mime) || mime.includes("image"));
+  const isVideo = videoAllowed.test(ext) || videoAllowed.test(mime) || mime.includes("video");
+
+  if (isImage || isVideo) {
     cb(null, true);
   } else {
-    cb(new Error("Only .png, .jpg, .jpeg, and .webp format files are allowed!"), false);
+    cb(new Error("Only images (.png, .jpg, .jpeg, .webp) and videos (.mp4, .webm, .mov) are allowed!"), false);
   }
 };
 
 const upload = multer({
   storage,
   fileFilter,
-  limits: { fileSize: 3 * 1024 * 1024 }, // 3MB limit
+  limits: { fileSize: 20 * 1024 * 1024 }, // Up to 20MB limit (videos max 20MB, images checked in middleware)
 });
 
 const uploadMiddleware = (req, res, next) => {
@@ -77,7 +81,7 @@ const uploadMiddleware = (req, res, next) => {
         return res.status(400).json({
           success: false,
           code: "LIMIT_FILE_SIZE",
-          message: "Max 3 MB image only allowed to upload. Please upload an image under 3 MB.",
+          message: "File exceeds size limit. Maximum allowed is 20 MB for videos and 3 MB for images.",
         });
       }
       if (err.code === "FILE_ALREADY_EXISTS" || err.message === "FILE_ALREADY_EXISTS") {
@@ -85,14 +89,46 @@ const uploadMiddleware = (req, res, next) => {
           success: false,
           code: "FILE_ALREADY_EXISTS",
           filename: err.targetFileName,
-          message: `An image with the name "${err.targetFileName}" already exists.`,
+          message: `A file with the name "${err.targetFileName}" already exists.`,
         });
       }
       return res.status(400).json({
         success: false,
-        message: err.message || "Failed to process image upload.",
+        message: err.message || "Failed to process file upload.",
       });
     }
+
+    if (req.file) {
+      const isVideo = req.file.mimetype.startsWith("video/");
+      const isImage = req.file.mimetype.startsWith("image/");
+
+      if (isImage && req.file.size > 3 * 1024 * 1024) {
+        if (fs.existsSync(req.file.path)) {
+          try {
+            fs.unlinkSync(req.file.path);
+          } catch {}
+        }
+        return res.status(400).json({
+          success: false,
+          code: "LIMIT_FILE_SIZE",
+          message: "Max 3 MB image only allowed to upload. Please upload an image under 3 MB.",
+        });
+      }
+
+      if (isVideo && req.file.size > 20 * 1024 * 1024) {
+        if (fs.existsSync(req.file.path)) {
+          try {
+            fs.unlinkSync(req.file.path);
+          } catch {}
+        }
+        return res.status(400).json({
+          success: false,
+          code: "LIMIT_FILE_SIZE",
+          message: "Max 20 MB video only allowed to upload. Please upload a video under 20 MB.",
+        });
+      }
+    }
+
     next();
   });
 };
