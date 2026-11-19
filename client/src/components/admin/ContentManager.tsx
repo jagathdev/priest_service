@@ -313,10 +313,16 @@ export default function ContentManager({
       }
 
       if (res.ok && data.url) {
-        if (options?.onSuccess) {
-          options.onSuccess(data.url);
+        // Ensure absolute URL with host is saved so Vercel does not load locally
+        let savedUrl = data.url;
+        if (savedUrl.startsWith("/")) {
+          const apiBase = getAdminBaseApiUrl();
+          savedUrl = `${apiBase}${savedUrl}`;
         }
-        return data.url;
+        if (options?.onSuccess) {
+          options.onSuccess(savedUrl);
+        }
+        return savedUrl;
       } else {
         const errorMsg =
           res.status === 413 || data.code === "LIMIT_FILE_SIZE"

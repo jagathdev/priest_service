@@ -655,14 +655,14 @@ export default function MediaManagerPage() {
                   {/* Link Bar with 1-Click Copy */}
                   <button
                     type="button"
-                    onClick={() => handleCopyLink(item.url)}
+                    onClick={() => handleCopyLink(fullUrl)}
                     className={`w-full flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${isCopied
                       ? "bg-emerald-50 border-emerald-300 text-[#00B05F]"
                       : "bg-slate-50 border-slate-200/80 hover:bg-slate-100 text-slate-700"
                       }`}
                   >
                     <span className="truncate max-w-[140px] text-[11px] font-mono text-slate-500">
-                      {item.url}
+                      {fullUrl}
                     </span>
                     <span className="shrink-0 flex items-center gap-1 font-bold">
                       {isCopied ? (

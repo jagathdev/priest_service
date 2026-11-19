@@ -16,8 +16,23 @@ if (!fs.existsSync(uploadDir)) {
 }
 
 /**
+ * Helper to determine the public server base URL
+ */
+const getPublicBaseUrl = (req) => {
+  if (process.env.PUBLIC_BASE_URL) {
+    return process.env.PUBLIC_BASE_URL.replace(/\/+$/, "");
+  }
+  const host = req.get("host") || "localhost:8564";
+  const protocol =
+    req.protocol === "https" || req.headers["x-forwarded-proto"] === "https"
+      ? "https"
+      : "http";
+  return `${protocol}://${host}`;
+};
+
+/**
  * Upload Media Controller
- * Saves uploaded file metadata into MongoDB and returns clean public URL (/assets/filename)
+ * Saves uploaded file metadata into MongoDB and returns full public URL (https://.../assets/filename)
  */
 export const uploadImage = async (req, res) => {
   try {
@@ -26,7 +41,9 @@ export const uploadImage = async (req, res) => {
     }
 
     const filename = req.file.filename;
-    const url = `/assets/${filename}`;
+    const baseUrl = getPublicBaseUrl(req);
+    const fullUrl = `${baseUrl}/assets/${filename}`;
+    const relativeUrl = `/assets/${filename}`;
 
     // Upsert in MongoDB Media collection to avoid duplicate records on overwrite
     const mediaDoc = await Media.findOneAndUpdate(
@@ -34,7 +51,7 @@ export const uploadImage = async (req, res) => {
       {
         filename,
         originalName: req.file.originalname,
-        url,
+        url: fullUrl,
         mimeType: req.file.mimetype,
         size: req.file.size,
         uploadedBy: "admin",
@@ -47,7 +64,8 @@ export const uploadImage = async (req, res) => {
       message: "Media uploaded successfully",
       data: mediaDoc,
       filename,
-      url,
+      url: fullUrl,
+      relativeUrl,
       size: req.file.size,
     });
   } catch (error) {
@@ -215,8 +233,18 @@ export const getAllMedia = async (req, res) => {
       }
     }
 
+    const baseUrl = getPublicBaseUrl(req);
     const query = { isDeleted: isTrash ? true : { $ne: true } };
-    const mediaList = await Media.find(query).sort({ createdAt: -1 });
+    const rawList = await Media.find(query).sort({ createdAt: -1 });
+
+    // Ensure all returned media URLs are normalized to full URLs
+    const mediaList = rawList.map((doc) => {
+      const obj = doc.toObject();
+      if (obj.url && obj.url.startsWith("/")) {
+        obj.url = `${baseUrl}${obj.url}`;
+      }
+      return obj;
+    });
 
     const totalActiveCount = await Media.countDocuments({ isDeleted: { $ne: true } });
     const totalTrashCount = await Media.countDocuments({ isDeleted: true });
