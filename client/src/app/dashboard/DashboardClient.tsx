@@ -77,6 +77,8 @@ export default function DashboardClient({
   const galleryScrollRef = useRef<HTMLDivElement | null>(null);
   const [isGalleryDragging, setIsGalleryDragging] = useState(false);
   const galleryStartXRef = useRef<number>(0);
+  const galleryStartYRef = useRef<number>(0);
+  const galleryDirectionRef = useRef<"horizontal" | "vertical" | null>(null);
   const galleryScrollLeftRef = useRef<number>(0);
   const galleryMovedRef = useRef<boolean>(false);
   const scrollAccumulatorRef = useRef<number>(0);
@@ -172,16 +174,40 @@ export default function DashboardClient({
   // Touch Swipe Handlers (Mobile & Tablet)
   const handleGalleryTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
     if (!galleryScrollRef.current) return;
-    pauseAutoScrollTemporarily(10000);
-    setIsGalleryDragging(true);
     galleryMovedRef.current = false;
     galleryStartXRef.current = e.touches[0].clientX;
+    galleryStartYRef.current = e.touches[0].clientY;
+    galleryDirectionRef.current = null;
     galleryScrollLeftRef.current = galleryScrollRef.current.scrollLeft;
   };
 
   const handleGalleryTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
     if (!galleryScrollRef.current) return;
     const currentX = e.touches[0].clientX;
+    const currentY = e.touches[0].clientY;
+    const deltaX = Math.abs(currentX - galleryStartXRef.current);
+    const deltaY = Math.abs(currentY - galleryStartYRef.current);
+
+    // Disambiguate gesture direction: let native vertical page scroll run uninterrupted
+    if (galleryDirectionRef.current === null) {
+      if (deltaY > deltaX && deltaY > 6) {
+        galleryDirectionRef.current = "vertical";
+        setIsGalleryDragging(false);
+        return;
+      } else if (deltaX > deltaY && deltaX > 6) {
+        galleryDirectionRef.current = "horizontal";
+        setIsGalleryDragging(true);
+        pauseAutoScrollTemporarily(10000);
+      } else {
+        return;
+      }
+    }
+
+    // If user is scrolling the page vertically, do not touch container horizontal scroll
+    if (galleryDirectionRef.current === "vertical") {
+      return;
+    }
+
     const diff = (currentX - galleryStartXRef.current) * 1.3;
     if (Math.abs(diff) > 5) {
       galleryMovedRef.current = true;
@@ -202,8 +228,11 @@ export default function DashboardClient({
   };
 
   const handleGalleryTouchEnd = () => {
+    if (galleryDirectionRef.current === "horizontal") {
+      pauseAutoScrollTemporarily(3500);
+    }
+    galleryDirectionRef.current = null;
     setIsGalleryDragging(false);
-    pauseAutoScrollTemporarily(3500);
   };
 
   const scrollGallery = (direction: "left" | "right") => {
@@ -682,11 +711,12 @@ export default function DashboardClient({
           onTouchStart={handleGalleryTouchStart}
           onTouchMove={handleGalleryTouchMove}
           onTouchEnd={handleGalleryTouchEnd}
-          className={`relative z-10 w-full pt-12 min-[375px]:pt-14 sm:pt-20 md:pt-24 pb-2 px-4 sm:px-8 overflow-x-auto overflow-y-hidden select-none no-scrollbar touch-pan-x ${isGalleryDragging ? "cursor-grabbing" : "cursor-grab"
+          className={`relative z-10 w-full pt-12 min-[375px]:pt-14 sm:pt-20 md:pt-24 pb-2 px-4 sm:px-8 overflow-x-auto select-none no-scrollbar touch-pan-y ${isGalleryDragging ? "cursor-grabbing" : "cursor-grab"
             }`}
           style={{
             scrollBehavior: "auto",
             WebkitOverflowScrolling: "touch",
+            touchAction: "pan-y",
           }}
         >
           <div className="flex gap-4 sm:gap-6 items-end w-max pb-2">
