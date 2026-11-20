@@ -666,6 +666,7 @@ export default function DashboardClient({
           {/* <div className="text-center mt-10">
             <Link
               href="/puja"
+              prefetch={true}
               className="inline-block text-[#00B05F] font-extrabold px-8 py-3 rounded-full border-2 border-[#00B05F] hover:bg-[#00B05F]/5 active:scale-95 transition-all text-base shadow-sm"
             >
               View All Pujas
@@ -979,7 +980,7 @@ function PujaCard({
 
   return (
     <div className="bg-white rounded-2xl min-[375px]:rounded-3xl border border-stone-200/90 p-2 min-[375px]:p-2.5 sm:p-3 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.12),0_2px_6px_-1px_rgba(0,0,0,0.08)] hover:shadow-[0_12px_28px_-6px_rgba(0,0,0,0.18),0_8px_10px_-6px_rgba(0,0,0,0.1)] transition-all duration-300 flex flex-col group text-left relative h-full">
-      <Link href={cardUrl} className="flex flex-col flex-1 cursor-pointer">
+      <Link href={cardUrl} prefetch={true} className="flex flex-col flex-1 cursor-pointer">
         {/* Top Banner Image Container with Subtle Space */}
         <div className="relative w-full aspect-[3/2] xl:h-[235px] rounded-xl min-[375px]:rounded-2xl overflow-hidden mb-2 sm:mb-2.5 bg-stone-100 shrink-0">
           <Image

@@ -576,6 +576,7 @@ export default function HomaClient({ initialHomas }: { initialHomas?: Homa[] }) 
                   >
                     <Link
                       href={`/homa/${homa.slug || slugify(homa.title)}`}
+                      prefetch={true}
                       className="flex flex-col flex-1 cursor-pointer"
                     >
                       <div className="relative w-full aspect-[3/2] shrink-0 overflow-hidden">

@@ -9,8 +9,8 @@ export default async function DashboardPage() {
 
     // Fetch both simultaneously for maximum performance
     const [pujasRes, bannersRes] = await Promise.all([
-      fetch(`${expressBase}/api/pujas`, { cache: 'no-store' }),
-      fetch(`${expressBase}/api/hero-banners`, { cache: 'no-store' })
+      fetch(`${expressBase}/api/pujas`, { next: { revalidate: 60 } }),
+      fetch(`${expressBase}/api/hero-banners`, { next: { revalidate: 60 } })
     ]);
 
     if (pujasRes.ok) {

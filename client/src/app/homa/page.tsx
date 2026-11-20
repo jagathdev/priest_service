@@ -6,7 +6,7 @@ export default async function HomaPageServer() {
   let initialHomas = null;
 
   try {
-    const homasRes = await fetch(`${expressBase}/api/homas`, { cache: "no-store" });
+    const homasRes = await fetch(`${expressBase}/api/homas`, { next: { revalidate: 60 } });
 
     if (homasRes.ok) {
       const homasData = await homasRes.json();

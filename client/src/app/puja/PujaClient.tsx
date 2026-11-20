@@ -577,6 +577,7 @@ export default function PujaClient({ initialPujas }: { initialPujas?: Puja[] }) 
                   >
                     <Link
                       href={`/puja/${puja.slug || slugify(puja.title)}`}
+                      prefetch={true}
                       className="flex flex-col flex-1 cursor-pointer"
                     >
                       <div className="relative w-full aspect-[3/2] shrink-0 overflow-hidden">

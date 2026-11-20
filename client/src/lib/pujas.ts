@@ -599,7 +599,7 @@ export const normalizePuja = (puja: any, offeringsMap: Record<string, any> = {})
 export async function getAllPujas() {
   try {
     const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || (process.env.NODE_ENV === 'development' ? 'http://localhost:8564' : 'https://priestservices.astroved.com');
-    const res = await fetch(`${baseUrl}/api/pujas`, { cache: 'no-store' });
+    const res = await fetch(`${baseUrl}/api/pujas`, { next: { revalidate: 60 } });
     if (res.ok) {
       const resData = await res.json();
       const list = resData?.data && Array.isArray(resData.data) ? resData.data : Array.isArray(resData) ? resData : [];

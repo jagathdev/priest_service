@@ -79,6 +79,7 @@ const AccountPanel = ({ accountOpen, setAccountOpen, user, setLoginModalOpen, ha
               <Link
                 key={item.label}
                 href={item.href}
+                prefetch={true}
                 onClick={!user ? (e) => { e.preventDefault(); setAccountOpen(false); setLoginModalOpen(true); } : undefined}
                 className="flex items-center justify-between px-3 py-3.5 rounded-xl hover:bg-gray-50 transition-colors group"
               >
@@ -105,6 +106,7 @@ const AccountPanel = ({ accountOpen, setAccountOpen, user, setLoginModalOpen, ha
               <Link
                 key={item.label}
                 href={item.href}
+                prefetch={true}
                 onClick={() => setAccountOpen(false)}
                 className="flex items-center justify-between px-3 py-3.5 rounded-xl hover:bg-gray-50 transition-colors group"
               >
@@ -251,22 +253,22 @@ export default function Navbar() {
           <nav aria-label="Main navigation" className="hidden lg:flex flex-1 justify-center">
             <ul className="flex items-center gap-10 xl:gap-12 text-base xl:text-[17px] font-bold text-[#1a1a1a] tracking-wider">
               <li>
-                <Link href="/" className={isActivePath("/") ? "text-[#00B05F] font-extrabold border-b-2 border-[#00B05F] pb-1" : "transition-colors hover:text-[#00B05F] uppercase"}>
+                <Link href="/" prefetch={true} className={isActivePath("/") ? "text-[#00B05F] font-extrabold border-b-2 border-[#00B05F] pb-1" : "transition-colors hover:text-[#00B05F] uppercase"}>
                   HOME
                 </Link>
               </li>
               <li>
-                <Link href="/puja" className={isActivePath("/puja") ? "text-[#00B05F] font-extrabold border-b-2 border-[#00B05F] pb-1" : "transition-colors hover:text-[#00B05F] uppercase"}>
+                <Link href="/puja" prefetch={true} className={isActivePath("/puja") ? "text-[#00B05F] font-extrabold border-b-2 border-[#00B05F] pb-1" : "transition-colors hover:text-[#00B05F] uppercase"}>
                   PUJA
                 </Link>
               </li>
               <li>
-                <Link href="/homa" className={isActivePath("/homa") ? "text-[#00B05F] font-extrabold border-b-2 border-[#00B05F] pb-1" : "transition-colors hover:text-[#00B05F] uppercase"}>
+                <Link href="/homa" prefetch={true} className={isActivePath("/homa") ? "text-[#00B05F] font-extrabold border-b-2 border-[#00B05F] pb-1" : "transition-colors hover:text-[#00B05F] uppercase"}>
                   HOMA
                 </Link>
               </li>
               <li>
-                <Link href="/account" className={isActivePath("/account") || isActivePath("/profile") ? "text-[#00B05F] font-extrabold border-b-2 border-[#00B05F] pb-1" : "transition-colors hover:text-[#00B05F] uppercase"}>
+                <Link href="/account" prefetch={true} className={isActivePath("/account") || isActivePath("/profile") ? "text-[#00B05F] font-extrabold border-b-2 border-[#00B05F] pb-1" : "transition-colors hover:text-[#00B05F] uppercase"}>
                   ACCOUNT
                 </Link>
               </li>
