@@ -100,13 +100,31 @@ export const generateOrderEmailHtml = (order) => {
     : [{ name: customerName, gotra: order.gotra }];
 
   const participantsRows = participants
-    .map(
-      (p, idx) => `
+    .map((p, idx) => {
+      const rawGotra = (p.gotra || (idx === 0 ? order.gotra : "") || "").trim();
+      const isDontKnow =
+        p.doesNotKnowGotra === true ||
+        p.doesNotKnowGotra === "true" ||
+        p.doesNotKnowGotra === "Yes" ||
+        p.dontKnowGotra === true ||
+        p.dontKnowGotra === "true" ||
+        p.dontKnowGotra === "Yes" ||
+        p.doNotKnowGotra === true ||
+        p.doNotKnowGotra === "true" ||
+        p.doNotKnowGotra === "Yes";
+
+      const gotraDisplay = (!isDontKnow && rawGotra)
+        ? rawGotra
+        : "Gotra not mentioned";
+
+      const devoteeName = (p.name || (idx === 0 ? customerName : "") || `Devotee ${idx + 1}`).trim();
+
+      return `
       <tr style="border-bottom: 1px solid #f1e6d4;">
-        <td style="padding: 10px 12px; font-weight: 700; color: #1a1a1a;">${idx + 1}. ${p.name || customerName}</td>
-        <td style="padding: 10px 12px; color: #78350f; font-weight: 600;">${p.doesNotKnowGotra || !p.gotra ? "Does not know Gotra (Kashyapa recited)" : p.gotra}</td>
-      </tr>`
-    )
+        <td style="padding: 10px 12px; font-weight: 700; color: #1a1a1a;">${idx + 1}. ${devoteeName}</td>
+        <td style="padding: 10px 12px; color: ${gotraDisplay === "Gotra not mentioned" ? "#9ca3af" : "#78350f"}; font-weight: 600;">${gotraDisplay}</td>
+      </tr>`;
+    })
     .join("");
 
   // Offerings list HTML
