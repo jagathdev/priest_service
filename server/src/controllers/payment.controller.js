@@ -69,7 +69,23 @@ export const createPaymentOrder = async (req, res) => {
         }
 
         const cleanParticipants = (participants || [])
-            .map((p) => ({ name: typeof p === "string" ? p.trim() : (p?.name || "").trim() }))
+            .map((p) => {
+                if (typeof p === "string") {
+                    return {
+                        name: p.trim(),
+                        gotra: doesNotKnowGotra ? "" : (gotra || "").trim(),
+                        doesNotKnowGotra: Boolean(doesNotKnowGotra),
+                    };
+                }
+                const name = (p?.name || "").trim();
+                const pDoesNotKnow = Boolean(p?.doesNotKnowGotra || p?.dontKnowGotra || p?.doNotKnowGotra);
+                const pGotra = pDoesNotKnow ? "" : (p?.gotra || "").trim();
+                return {
+                    name,
+                    gotra: pGotra,
+                    doesNotKnowGotra: pDoesNotKnow,
+                };
+            })
             .filter((p) => p.name.length > 0);
 
         if (cleanParticipants.length === 0) {

@@ -4,6 +4,7 @@ import connectDB from './config/db.js';
 import setupAdmin from './config/setupAdmin.js';
 import app from './app.js';
 import { initPujaDateScheduler } from './services/pujaDateCalculator.service.js';
+import { verifySmtpConnection } from './services/email.service.js';
 
 // 1. Validate environment variables at startup
 validateEnv();
@@ -15,6 +16,18 @@ connectDB()
     .then(async () => {
         await setupAdmin();
         initPujaDateScheduler();
+        // Verify SMTP configuration on boot
+        verifySmtpConnection()
+            .then((status) => {
+                if (status.connected) {
+                    console.log(`[SMTP] Mailer connected successfully to ${status.host} (${status.user})`);
+                } else {
+                    console.warn(`[SMTP] Mailer connection check warning: ${status.message}`);
+                }
+            })
+            .catch((err) => {
+                console.error("[SMTP] Mailer verification error:", err.message);
+            });
     })
     .catch((err) => {
         console.error("FATAL: Could not connect to Database on startup:", err);

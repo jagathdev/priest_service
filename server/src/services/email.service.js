@@ -101,7 +101,6 @@ export const generateOrderEmailHtml = (order) => {
 
   const participantsRows = participants
     .map((p, idx) => {
-      const rawGotra = (p.gotra || (idx === 0 ? order.gotra : "") || "").trim();
       const isDontKnow =
         p.doesNotKnowGotra === true ||
         p.doesNotKnowGotra === "true" ||
@@ -113,9 +112,8 @@ export const generateOrderEmailHtml = (order) => {
         p.doNotKnowGotra === "true" ||
         p.doNotKnowGotra === "Yes";
 
-      const gotraDisplay = (!isDontKnow && rawGotra)
-        ? rawGotra
-        : "Gotra not mentioned";
+      const rawGotra = (!isDontKnow && (p.gotra || order.gotra || "").trim()) || "";
+      const gotraDisplay = rawGotra ? rawGotra : "Gotra not mentioned";
 
       const devoteeName = (p.name || (idx === 0 ? customerName : "") || `Devotee ${idx + 1}`).trim();
 
@@ -324,7 +322,7 @@ export const sendOrderConfirmationEmail = async (order) => {
     const subject = `🕉️ New Order Confirmed: ${serviceName} [${orderNumber}] - ₹${Number(order.pricing?.total || 0).toLocaleString("en-IN")}`;
     const html = generateOrderEmailHtml(order);
 
-    // console.log(`[email.service] Sending order confirmation email for ${orderNumber} to: ${emailList.join(", ")}`);
+    console.log(`[email.service] 📧 Initiating order confirmation email for Order #${orderNumber} (${serviceName}). Recipients: ${emailList.join(", ")}`);
 
     // Send in parallel to all recipients via SMTP
     const results = await Promise.allSettled(
@@ -341,7 +339,15 @@ export const sendOrderConfirmationEmail = async (order) => {
     const successful = results.filter((r) => r.status === "fulfilled").length;
     const failed = results.filter((r) => r.status === "rejected").length;
 
-    // console.log(`[email.service] Order confirmation dispatch complete. Success: ${successful}, Failed: ${failed}`);
+    results.forEach((r, idx) => {
+      if (r.status === "fulfilled") {
+        console.log(`[email.service] Delivered order email`);
+      } else {
+        console.error(`[email.service] ❌ Delivery FAILED to ${emailList[idx]}:`, r.reason?.message || r.reason);
+      }
+    });
+
+    console.log(`[email.service] 📊 Order #${orderNumber} dispatch complete. Success: ${successful}, Failed: ${failed}`);
 
     return {
       success: successful > 0,
