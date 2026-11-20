@@ -158,8 +158,8 @@ export default function AboutPage() {
             <div className="mt-6 inline-block text-left bg-white border border-gray-200/80 rounded-2xl p-6 sm:p-8 shadow-sm">
               <p className="text-sm font-bold text-gray-800 uppercase tracking-wider mb-2">Corporate Office</p>
               <p className="text-sm text-gray-600 leading-relaxed">
-                4th Floor, A-Block, Prince Info Park,<br />
-                Plot No. 81-B, 2nd Main Road,<br />
+                6th Floor, B-Block, Prince Info Park,<br />
+                2nd Main Road,<br />
                 Ambattur Industrial Estate, Chennai 600058.
               </p>
               <p className="mt-4 text-sm text-gray-800 font-semibold">

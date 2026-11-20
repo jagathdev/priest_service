@@ -60,8 +60,8 @@ export default function ContactPage() {
             </h1>
             <p className="mx-auto mt-5 max-w-3xl text-lg leading-8 text-gray-700">
               AstroVed.Com Pvt. Ltd.,
-              Prince Info Park, Plot No: 81-B,
-              A-Block, 4th Floor, 2nd Main Road,
+              Prince Info Park,
+              B-Block, 6th Floor, 2nd Main Road,
               Ambattur Industrial Estate,
               Chennai 600 058
             </p>

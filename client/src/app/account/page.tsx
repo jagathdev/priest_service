@@ -1997,8 +1997,8 @@ function AccountPageContent() {
                           Corporate Office:
                         </p>
                         <p className="text-[13px] text-gray-600 leading-relaxed mb-3">
-                          4th Floor, A-Block, Prince Info Park,<br />
-                          Plot No. 81-B, 2nd Main Road,<br />
+                          6th Floor, B-Block, Prince Info Park,<br />
+                          2nd Main Road,<br />
                           Ambattur Industrial Estate, Chennai 600058.
                         </p>
                         <p className="text-[13px] text-gray-700 font-semibold leading-relaxed">

@@ -896,8 +896,8 @@ export default function DashboardClient({
           <div>
             <h4 className="text-[#1f1a17] font-bold text-sm tracking-[0.15em] uppercase mb-6">Corporate Office</h4>
             <div className="text-sm text-stone-600 font-medium leading-loose">
-              4th Floor, A-Block, Prince Info Park,<br />
-              Plot No. 81-B, 2nd Main Road,<br />
+              6th Floor, B-Block, Prince Info Park,<br />
+              2nd Main Road,<br />
               Ambattur Industrial Estate, Chennai 600058.<br /><br />
               Phone: <a href="tel:+914443419898" className="hover:text-primary transition-colors">+91-44-43419898</a>
             </div>
