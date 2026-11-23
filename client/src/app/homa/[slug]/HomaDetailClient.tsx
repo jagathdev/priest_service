@@ -724,7 +724,7 @@ export default function PujaDetailClient({
     { question: "Do I need to be physically present?", answer: "No, physical presence is not required. The pandit recites your Name and Gotra in the Sankalpam, and a full video recording is sent to your WhatsApp within 48 hours." },
   ];
 
-    const defaultHowToBookSteps = [
+  const defaultHowToBookSteps = [
     {
       stepNumber: 1,
       title: "Choose",
@@ -751,7 +751,7 @@ export default function PujaDetailClient({
     ? (homa as any).howToBook
     : defaultHowToBookSteps;
 
-    const defaultWhenToDoItems = [
+  const defaultWhenToDoItems = [
     {
       title: "Obstacles & Negative Influences",
       description: "Efforts blocked, and a feeling that something is holding you back.",
@@ -915,7 +915,7 @@ export default function PujaDetailClient({
       <Navbar />
 
       {/* ── 1. Top Hero Section ── */}
-      <section data-reveal className="bg-[#ffffff] border-b border-[#f0e4d0] py-4 sm:py-6 lg:py-4 xl:py-6">
+      <section data-reveal className="bg-[#ffffff] border-b border-[#f0e4d0] py-2.5 sm:py-3 lg:py-2.5 xl:py-3">
         <div className="max-w-[1350px] mx-auto px-4 sm:px-6 lg:px-10">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
 
@@ -1103,12 +1103,17 @@ export default function PujaDetailClient({
                 devoteesCount={(homa as any).devoteeCount || 150}
                 title="Reserve your sankalp"
                 badgeLabel="MUHURAT ENDS IN"
-                className="mb-3 lg:mb-3.5"
+                className="mb-2 lg:mb-2.5"
               />
 
               {/* Package Selection Cards Grid */}
               <div className="mb-3 lg:mb-3.5">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
+                <div className={`grid gap-2 sm:gap-2.5 ${packagesList.length === 1
+                  ? "grid-cols-1 w-full"
+                  : packagesList.length === 2
+                    ? "grid-cols-1 sm:grid-cols-2 w-full"
+                    : "grid-cols-1 sm:grid-cols-3 w-full"
+                  }`}>
                   {packagesList.map((pkg, idx) => {
                     const isSelected = selectedPackage?.id === pkg.id;
                     const displayPrice = getDisplayPrice(pkg);
@@ -1116,10 +1121,10 @@ export default function PujaDetailClient({
                     const pkgAvatar = lowerPkg.includes("family")
                       ? "/images/package_family.png"
                       : lowerPkg.includes("couple") || lowerPkg.includes("partner")
-                      ? "/images/package_couple.png"
-                      : lowerPkg.includes("individual")
-                      ? "/images/package_individual.webp"
-                      : (pkg.imageUrl || DEFAULT_PACKAGE_AVATARS[idx % DEFAULT_PACKAGE_AVATARS.length]);
+                        ? "/images/package_couple.png"
+                        : lowerPkg.includes("individual")
+                          ? "/images/package_individual.webp"
+                          : (pkg.imageUrl || DEFAULT_PACKAGE_AVATARS[idx % DEFAULT_PACKAGE_AVATARS.length]);
                     const devoteesText = pkg.devoteeCount || (pkg as any).devotees || (pkg.name?.toLowerCase().includes("family") ? "4 Devotees" : pkg.name?.toLowerCase().includes("couple") ? "2 Devotees" : idx === 0 ? "1 Devotee" : idx === 1 ? "2 Devotees" : idx === 2 ? "4 Devotees" : "Multiple Devotees");
                     const discountBadge = pkg.discountPercent ? String(pkg.discountPercent).trim() : null;
 
@@ -1214,7 +1219,7 @@ export default function PujaDetailClient({
               <button
                 ref={heroCtaRef}
                 onClick={handleAddPujaToCart}
-                className="w-full bg-[#00B05F] hover:bg-[#008F4C] active:scale-[0.98] text-white font-extrabold text-base sm:text-lg lg:text-xl py-3 sm:py-3.5 lg:py-3 px-6 sm:px-8 rounded-full shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2.5 sm:gap-3 mb-2 tracking-wide group"
+                className="w-full bg-[#00B05F] hover:bg-[#008F4C] active:scale-[0.98] text-white font-extrabold text-base sm:text-lg lg:text-xl py-2.5 sm:py-3 lg:py-2.5 xl:py-3 px-6 sm:px-8 rounded-full shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2.5 sm:gap-3 mb-2 tracking-wide group"
               >
                 {/* <span className="tabular-nums font-black">₹{priceVal.toLocaleString("en-IN")}</span> */}
                 {/* <span className="opacity-40 font-light select-none">|</span> */}
@@ -1433,7 +1438,7 @@ export default function PujaDetailClient({
             <div className="bg-[#ffffff] border border-[#f0e4d0] rounded-3xl p-6 sm:p-8 relative overflow-hidden">
               {renderAboutContent(aboutText)}
 
-                    {/* Vedic Temple Details Cards Grid (Date, Time, Venue) */}
+              {/* Vedic Temple Details Cards Grid (Date, Time, Venue) */}
               <div className="border-t border-[#f0e4d0] pt-6 mt-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   {/* Date & Occasion Card */}
