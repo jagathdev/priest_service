@@ -728,7 +728,7 @@ function SankalpContent() {
                             }
                             setFormData({ ...formData, whatsapp: val });
                           }}
-                          placeholder="96773 91109"
+                          placeholder="9677391109"
                           className="w-full text-sm font-extrabold text-stone-900 outline-none bg-transparent"
                         />
                         <div className="shrink-0 flex items-center justify-center pl-2">

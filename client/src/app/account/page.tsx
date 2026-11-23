@@ -2081,7 +2081,7 @@ function AccountPageContent() {
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
                         {/* WhatsApp */}
                         <a
-                          href="https://wa.me/9196773 91109?text=Hello%2C%20I%20need%20assistance%20with%20Priest%20Services"
+                          href="https://wa.me/919677391109?text=Hello%2C%20I%20need%20assistance%20with%20Priest%20Services"
                           target="_blank"
                           rel="noopener noreferrer"
                           className="group bg-white border border-gray-150 rounded-2xl p-5 shadow-sm hover:shadow-md transition block"
@@ -2092,7 +2092,7 @@ function AccountPageContent() {
                           <h4 className="text-[14px] font-bold text-gray-900 mb-1">WhatsApp Support</h4>
                           <p className="text-[11px] text-gray-500 mb-4">Reply within minutes</p>
                           <span className="text-primary text-[12px] font-bold flex items-center gap-1 group-hover:text-[#0f2d4a]">
-                            +91 96773 91109 <span>&rarr;</span>
+                            +91 9677391109 <span>&rarr;</span>
                           </span>
                         </a>
 

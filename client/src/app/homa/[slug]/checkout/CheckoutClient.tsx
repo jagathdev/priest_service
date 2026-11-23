@@ -116,7 +116,7 @@ export default function CheckoutClient({ homa }: { homa: any }) {
                         setDetails({ ...details, whatsapp: val });
                       }}
                       className="w-full bg-[#f9fafb] border border-gray-200 rounded-xl py-3.5 pl-28 pr-12 font-bold text-gray-900 outline-none focus:border-green-500 transition-all focus:bg-white focus:ring-4 focus:ring-green-500/10"
-                      placeholder="96773 91109"
+                      placeholder="9677391109"
                     />
                     <div className="absolute right-4 top-1/2 -translate-y-1/2 text-blue-500">
                       <i className="fa-solid fa-circle-check text-xl"></i>

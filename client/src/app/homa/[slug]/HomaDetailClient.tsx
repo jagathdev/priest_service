@@ -1193,7 +1193,7 @@ export default function PujaDetailClient({
               {/* Secondary WhatsApp & Call Buttons */}
               {/* <div className="flex flex-col sm:flex-row items-center gap-3">
                 <a
-                  href="https://wa.me/9196773 91109"
+                  href="https://wa.me/919677391109"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-full sm:flex-1 inline-flex items-center justify-center gap-2 bg-white border border-[#CBD5E1] text-[#00B05F] hover:bg-slate-50 font-extrabold text-xs sm:text-sm py-2.5 px-4 rounded-full transition-colors shadow-xs"
@@ -1887,7 +1887,7 @@ export default function PujaDetailClient({
               </p>
               <div className="mt-3 mb-1">
                 <a
-                  href="https://wa.me/9196773 91109"
+                  href="https://wa.me/919677391109"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-full bg-[#00B05F] hover:bg-[#008F4C] text-white font-extrabold text-xs sm:text-sm py-3 px-4 rounded-full transition-colors flex items-center justify-center gap-2 shadow-sm"
