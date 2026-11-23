@@ -206,11 +206,19 @@ function SankalpContent() {
   const packagesList = React.useMemo(() => {
     if (pujaData?.packages && pujaData.packages.length > 0) {
       return pujaData.packages.map((pkg: any, idx: number) => {
-        const defaultDevotees = idx === 0 ? "1 Devotee" : idx === 1 ? "2 Devotees" : idx === 2 ? "4 Devotees" : "Multiple Devotees";
+        const pName = pkg.name || `Package ${idx + 1}`;
+        const lowerName = pName.toLowerCase();
+        const defaultDevotees = lowerName.includes("family")
+          ? "4 Devotees"
+          : lowerName.includes("couple")
+          ? "2 Devotees"
+          : lowerName.includes("individual")
+          ? "1 Devotee"
+          : idx === 0 ? "1 Devotee" : idx === 1 ? "2 Devotees" : idx === 2 ? "4 Devotees" : "Multiple Devotees";
         return {
           ...pkg,
           id: pkg.id || pkg._id || `pkg-${idx + 1}`,
-          name: pkg.name || `Package ${idx + 1}`,
+          name: pName,
           devoteeCount: pkg.devoteeCount || pkg.devotees || defaultDevotees,
           priceINR: pkg.priceINR ?? pkg.price ?? (queryAmount ? Number(queryAmount) : pujaData?.price || 501),
           listPriceINR: pkg.listPriceINR ?? pkg.listPrice,

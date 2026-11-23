@@ -11,6 +11,8 @@ export type PujaPackage = {
   priceMYR?: number;
   description: string;
   imageUrl?: string;
+  devoteeCount?: string;
+  devotees?: number;
   discountPercent?: string;
 };
 
@@ -201,9 +203,24 @@ const normalizePackages = (items: unknown, fallback: PujaPackage[]) => {
           typeof pkg.description === 'string' && pkg.description.trim().length > 0
             ? pkg.description.trim()
             : `Recommended for ${name.toLowerCase()} devotees.`,
-        imageUrl: typeof pkg.imageUrl === 'string' && pkg.imageUrl.trim().length > 0
-          ? pkg.imageUrl.trim()
-          : fallback[index]?.imageUrl,
+        imageUrl: (() => {
+          const lowerName = (name || '').toLowerCase();
+          if (lowerName.includes('family')) return '/images/package_family.png';
+          if (lowerName.includes('couple') || lowerName.includes('partner')) return '/images/package_couple.png';
+          if (lowerName.includes('individual')) return '/images/package_individual.webp';
+          if (typeof pkg.imageUrl === 'string' && pkg.imageUrl.trim().length > 0 && !pkg.imageUrl.includes('partner.webp')) {
+            return pkg.imageUrl.trim();
+          }
+          return fallback[index]?.imageUrl || '/images/package_individual.webp';
+        })(),
+        devoteeCount: (() => {
+          const lowerName = (name || '').toLowerCase();
+          if ((pkg as any).devoteeCount) return String((pkg as any).devoteeCount).trim();
+          if (lowerName.includes('family')) return '4 Devotees';
+          if (lowerName.includes('couple') || lowerName.includes('partner')) return '2 Devotees';
+          if (lowerName.includes('individual')) return '1 Devotee';
+          return fallback[index]?.devoteeCount || (index === 0 ? '1 Devotee' : index === 1 ? '2 Devotees' : index === 2 ? '4 Devotees' : 'Multiple Devotees');
+        })(),
         discountPercent: (pkg as any).discountPercent ? String((pkg as any).discountPercent).trim() : undefined,
       } as PujaPackage;
     })
@@ -349,28 +366,32 @@ export const defaultPackages: PujaPackage[] = [
     name: 'Individual Package',
     price: 51,
     description: 'Best for one devotee with sankalp, mantra jaap and prasadam blessings.',
-    imageUrl: 'https://cdn.create.vista.com/api/media/small/114995436/stock-photo-indian-woman-performing-puja-indian-girl-with-pooja-thali-or-puja-thali-portrait-of-a',
+    imageUrl: '/images/package_individual.webp',
+    devoteeCount: '1 Devotee',
   },
   {
     id: 'partner-package',
     name: 'Partner Package',
     price: 81,
     description: 'For a couple or two devotees joining the puja together.',
-    imageUrl: 'https://tse2.mm.bing.net/th/id/OIP.YT0kNhRDE0kIfg6BYzurBwAAAA?cb=thfc1falcon2&pid=ImgDet&w=419&h=608&rs=1&o=7&rm=3'
+    imageUrl: '/images/package_couple.png',
+    devoteeCount: '2 Devotees',
   },
   {
     id: 'family-bhog',
     name: 'Family + Bhog',
     price: 151,
     description: 'Family sankalp with bhog offering and temple archana included.',
-    imageUrl: 'https://www.srimandir.com/_next/image?url=https%3A%2F%2Fsrm-cdn.a4b.io%2Fyoda%2F1742742465008.svg&w=640&q=75',
+    imageUrl: '/images/package_family.png',
+    devoteeCount: '4 Devotees',
   },
   {
     id: 'joint-family',
     name: 'Joint Family',
     price: 221,
     description: 'Ideal for larger families seeking collective blessings and sankalp.',
-    imageUrl: 'https://www.bing.com/th/id/OIP.qEZjsTuYnfH854fbC8ozVgHaEK?w=180&h=135&c=8&rs=1&qlt=90&o=6&dpr=1.3&pid=3.1&rm=2',
+    imageUrl: '/images/package_family.png',
+    devoteeCount: '4 Devotees',
   },
 ];
 

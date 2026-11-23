@@ -245,6 +245,12 @@ export default function AdminPujasPage() {
           placeholder: "Selling Price in INR (e.g. 2500)",
         },
         {
+          name: "imageUrl",
+          label: "Package Image (Auto-selected)",
+          type: "url",
+          placeholder: "e.g. /images/package_family.png",
+        },
+        {
           name: "listPriceINR",
           label: "List Price / MRP (INR ₹)",
           type: "number",

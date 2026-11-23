@@ -25,6 +25,8 @@ const faqSchema = new mongoose.Schema({
 
 const packageSchema = new mongoose.Schema({
   name: { type: String, default: "" },
+  imageUrl: { type: String, default: "" },
+  devoteeCount: { type: String, default: "" },
   priceINR: { type: Number, default: 0 },
   listPriceINR: { type: Number, default: 0 },
   priceUSD: { type: Number, default: 0 },

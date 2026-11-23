@@ -609,6 +609,23 @@ export default function ContentManager({
         const itemObj = { ...arr[index], [subField]: value };
 
         // Auto-calculate for array objects (e.g. packages)
+        if (fieldName === "packages" && subField === "name") {
+          const lowerName = String(value || "").toLowerCase();
+          if (lowerName.includes("family")) {
+            itemObj.imageUrl = "/images/package_family.png";
+            itemObj.devoteeCount = "4 Devotees";
+            itemObj.devotees = 4;
+          } else if (lowerName.includes("couple") || lowerName.includes("partner")) {
+            itemObj.imageUrl = "/images/package_couple.png";
+            itemObj.devoteeCount = "2 Devotees";
+            itemObj.devotees = 2;
+          } else if (lowerName.includes("individual")) {
+            itemObj.imageUrl = "/images/package_individual.webp";
+            itemObj.devoteeCount = "1 Devotee";
+            itemObj.devotees = 1;
+          }
+        }
+
         if (currencyRates && subField.endsWith("INR")) {
           const baseName = subField.replace(/INR$/, "");
           const valNum = Number(value);
@@ -629,7 +646,28 @@ export default function ContentManager({
   const addArrayItem = (fieldName: string, type: "array-string" | "array-object") => {
     setFormData((prev: any) => {
       const arr = Array.isArray(prev[fieldName]) ? [...prev[fieldName]] : [];
-      arr.push(type === "array-string" ? "" : {});
+      if (type === "array-string") {
+        arr.push("");
+      } else {
+        const newItem: any = {};
+        if (fieldName === "packages") {
+          const idx = arr.length;
+          if (idx === 0) {
+            newItem.name = "Individual Homa";
+            newItem.imageUrl = "/images/package_individual.webp";
+            newItem.devoteeCount = "1 Devotee";
+          } else if (idx === 1) {
+            newItem.name = "Couple Homa";
+            newItem.imageUrl = "/images/package_couple.png";
+            newItem.devoteeCount = "2 Devotees";
+          } else if (idx === 2) {
+            newItem.name = "Family Homa";
+            newItem.imageUrl = "/images/package_family.png";
+            newItem.devoteeCount = "4 Devotees";
+          }
+        }
+        arr.push(newItem);
+      }
       return { ...prev, [fieldName]: arr };
     });
   };

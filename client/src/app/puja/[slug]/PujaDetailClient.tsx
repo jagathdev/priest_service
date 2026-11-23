@@ -138,7 +138,7 @@ const getPujaImageUrl = (imageUrl?: string): string => {
 
 const DEFAULT_PACKAGE_AVATARS = [
   "/images/package_individual.webp",
-  "/images/partner.webp",
+  "/images/package_couple.png",
   "/images/package_family.png",
 ];
 
@@ -421,20 +421,47 @@ export default function PujaDetailClient({
       return rawName || `Package ${idx + 1}`;
     };
 
+    const getPackageDevotees = (pkgName: string, explicitDevotees?: any, idx: number = 0) => {
+      if (explicitDevotees && typeof explicitDevotees === "string" && explicitDevotees.trim()) {
+        return explicitDevotees.trim();
+      }
+      if (typeof explicitDevotees === "number" && explicitDevotees > 0) {
+        return `${explicitDevotees} Devotee${explicitDevotees > 1 ? "s" : ""}`;
+      }
+      const lower = (pkgName || "").toLowerCase();
+      if (lower.includes("family")) return "4 Devotees";
+      if (lower.includes("couple")) return "2 Devotees";
+      if (lower.includes("individual")) return "1 Devotee";
+      return idx === 0 ? "1 Devotee" : idx === 1 ? "2 Devotees" : idx === 2 ? "4 Devotees" : "Multiple Devotees";
+    };
+
+    const getPackageAvatar = (pkgName: string, explicitImage?: string, idx: number = 0) => {
+      const lower = (pkgName || "").toLowerCase();
+      if (lower.includes("family")) return "/images/package_family.png";
+      if (lower.includes("couple") || lower.includes("partner")) return "/images/package_couple.png";
+      if (lower.includes("individual")) return "/images/package_individual.webp";
+      if (explicitImage && typeof explicitImage === "string" && explicitImage.trim() && !explicitImage.includes("default") && !explicitImage.includes("partner.webp")) {
+        return explicitImage.trim();
+      }
+      return DEFAULT_PACKAGE_AVATARS[idx % DEFAULT_PACKAGE_AVATARS.length];
+    };
+
     if (puja?.packages && puja.packages.length > 0) {
       return puja.packages.map((pkg: any, idx: number) => {
         const basePrice = pkg.priceINR ?? pkg.price ?? getStartingPriceINR(puja) ?? 0;
-        const defaultDevotees = idx === 0 ? "1 Devotee" : idx === 1 ? "2 Devotees" : idx === 2 ? "4 Devotees" : "Multiple Devotees";
+        const normName = normalizePackageName(pkg.name, idx);
+        const devoteeCount = getPackageDevotees(normName, pkg.devoteeCount || pkg.devotees, idx);
+        const avatar = getPackageAvatar(normName, pkg.imageUrl, idx);
         return {
           id: pkg.id || pkg._id || `pkg-${idx + 1}`,
-          name: normalizePackageName(pkg.name, idx),
-          devoteeCount: pkg.devoteeCount || pkg.devotees || defaultDevotees,
+          name: normName,
+          devoteeCount: devoteeCount,
           priceINR: basePrice,
           listPriceINR: pkg.listPriceINR ?? pkg.listPrice,
           priceUSD: pkg.priceUSD,
           priceMYR: pkg.priceMYR,
           description: pkg.description || "Includes personalized sankalpam and video proof.",
-          imageUrl: DEFAULT_PACKAGE_AVATARS[idx % DEFAULT_PACKAGE_AVATARS.length],
+          imageUrl: avatar,
           discountPercent: pkg.discountPercent || "",
         };
       });
@@ -1029,8 +1056,15 @@ export default function PujaDetailClient({
                   {packagesList.map((pkg, idx) => {
                     const isSelected = selectedPackage?.id === pkg.id;
                     const displayPrice = getDisplayPrice(pkg);
-                    const pkgAvatar = DEFAULT_PACKAGE_AVATARS[idx % DEFAULT_PACKAGE_AVATARS.length];
-                    const devoteesText = pkg.devoteeCount || (pkg as any).devotees || (idx === 0 ? "1 Devotee" : idx === 1 ? "2 Devotees" : idx === 2 ? "4 Devotees" : "Multiple Devotees");
+                    const lowerPkg = (pkg.name || "").toLowerCase();
+                    const pkgAvatar = lowerPkg.includes("family")
+                      ? "/images/package_family.png"
+                      : lowerPkg.includes("couple") || lowerPkg.includes("partner")
+                      ? "/images/package_couple.png"
+                      : lowerPkg.includes("individual")
+                      ? "/images/package_individual.webp"
+                      : (pkg.imageUrl || DEFAULT_PACKAGE_AVATARS[idx % DEFAULT_PACKAGE_AVATARS.length]);
+                    const devoteesText = pkg.devoteeCount || (pkg as any).devotees || (pkg.name?.toLowerCase().includes("family") ? "4 Devotees" : pkg.name?.toLowerCase().includes("couple") ? "2 Devotees" : idx === 0 ? "1 Devotee" : idx === 1 ? "2 Devotees" : idx === 2 ? "4 Devotees" : "Multiple Devotees");
                     const discountBadge = pkg.discountPercent ? String(pkg.discountPercent).trim() : null;
 
                     return (
@@ -1072,7 +1106,7 @@ export default function PujaDetailClient({
                         )}
 
                         {/* Recommended Badge on Couple Package (idx === 1) - Always at Bottom */}
-                        {idx === 1 && (
+                        {(pkg.name.toLowerCase().includes("couple") || (packagesList.length > 1 && idx === 1 && !pkg.name.toLowerCase().includes("family"))) && (
                           <div className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 bg-[#00B05F] text-white text-[10.5px] sm:text-[11px] font-bold px-3 py-0.5 rounded-full shadow-xs z-10 whitespace-nowrap">
                             Recommended
                           </div>
