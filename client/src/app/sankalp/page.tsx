@@ -211,10 +211,10 @@ function SankalpContent() {
         const defaultDevotees = lowerName.includes("family")
           ? "4 Devotees"
           : lowerName.includes("couple")
-          ? "2 Devotees"
-          : lowerName.includes("individual")
-          ? "1 Devotee"
-          : idx === 0 ? "1 Devotee" : idx === 1 ? "2 Devotees" : idx === 2 ? "4 Devotees" : "Multiple Devotees";
+            ? "2 Devotees"
+            : lowerName.includes("individual")
+              ? "1 Devotee"
+              : idx === 0 ? "1 Devotee" : idx === 1 ? "2 Devotees" : idx === 2 ? "4 Devotees" : "Multiple Devotees";
         return {
           ...pkg,
           id: pkg.id || pkg._id || `pkg-${idx + 1}`,
@@ -728,7 +728,7 @@ function SankalpContent() {
                             }
                             setFormData({ ...formData, whatsapp: val });
                           }}
-                          placeholder="9566777645"
+                          placeholder="96773 91109"
                           className="w-full text-sm font-extrabold text-stone-900 outline-none bg-transparent"
                         />
                         <div className="shrink-0 flex items-center justify-center pl-2">

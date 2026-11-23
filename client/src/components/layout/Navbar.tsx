@@ -137,7 +137,7 @@ const AccountPanel = ({ accountOpen, setAccountOpen, user, setLoginModalOpen, ha
                 <Mail className="h-4 w-4 text-red-500" />
                 Email us
               </a>
-              <a href="https://wa.me/919566777645" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 py-3 rounded-xl border border-gray-100 bg-white hover:bg-gray-50 transition-colors text-[13px] font-bold text-gray-700">
+              <a href="https://wa.me/9196773 91109" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 py-3 rounded-xl border border-gray-100 bg-white hover:bg-gray-50 transition-colors text-[13px] font-bold text-gray-700">
                 <MessageCircle className="h-4 w-4 text-green-500" />
                 Whatsapp us
               </a>
@@ -280,7 +280,7 @@ export default function Navbar() {
 
             {/* Desktop / Tablet WhatsApp Button */}
             <a
-              href="https://wa.me/919566777645"
+              href="https://wa.me/9196773 91109"
               target="_blank"
               rel="noopener noreferrer"
               className="hidden sm:flex items-center justify-center gap-2.5 w-[140px] sm:w-[160px] h-10 sm:h-12 rounded-full bg-[#00B05F] hover:bg-[#008F4C] active:scale-95 text-white transition-all shadow-sm shrink-0"
@@ -295,7 +295,7 @@ export default function Navbar() {
 
             {/* Small Screen WhatsApp Icon Button (No outer border, enlarged icon) */}
             <a
-              href="https://wa.me/919566777645"
+              href="https://wa.me/9196773 91109"
               target="_blank"
               className="sm:hidden flex items-center justify-center p-1 text-white hover:opacity-90 active:scale-95 transition-all shrink-0"
               aria-label="WhatsApp Support"

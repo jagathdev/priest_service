@@ -870,7 +870,7 @@ export default function DashboardClient({
             <ul className="flex flex-col gap-4 text-sm text-stone-600 font-medium">
               <li><Link href="mailto:support@astroved.com" className="hover:text-primary transition-colors">support@astroved.com</Link></li>
               <li><Link href="/account?tab=support" className="hover:text-primary transition-colors">Contact Us</Link></li>
-              <li><Link href="https://wa.me/919566777645" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">WhatsApp: +91 9566777645</Link></li>
+              <li><Link href="https://wa.me/9196773 91109" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">WhatsApp: +91 96773 91109</Link></li>
               <li><Link href="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link></li>
               <li><Link href="/terms" className="hover:text-primary transition-colors">Terms & Conditions</Link></li>
             </ul>
