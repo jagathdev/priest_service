@@ -39,7 +39,7 @@ const menuItems = [
   { name: "Email Alerts", href: "/admin/notifications", icon: EnvelopeIcon },
   { name: "Customer Queries", href: "/admin/customer-queries", icon: ChatBubbleBottomCenterTextIcon },
   { name: "Feedbacks", href: "/admin/feedback", icon: ChatBubbleBottomCenterTextIcon },
-  { name: "Visitor Analytics", href: "/admin/visitors", icon: ChartBarIcon },
+  // { name: "Visitor Analytics", href: "/admin/visitors", icon: ChartBarIcon },
 ];
 
 export default function Sidebar() {
