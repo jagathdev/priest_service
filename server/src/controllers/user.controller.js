@@ -1,4 +1,5 @@
 import User from "../models/user.js";
+import Order from "../models/Order.js";
 
 export const getProfile = async (req, res) => {
     try {
@@ -109,6 +110,35 @@ export const updateProfile = async (req, res) => {
                 success: false,
                 message: "User not found",
             });
+        }
+
+        // When addresses are updated, also sync default/latest address to any Homa orders for this customer
+        if (Array.isArray(user.addresses) && user.addresses.length > 0) {
+            try {
+                const primaryAddr = user.addresses.find((a) => a.isDefault) || user.addresses[user.addresses.length - 1];
+                if (primaryAddr && primaryAddr.addressLine1) {
+                    await Order.updateMany(
+                        { customer: user._id },
+                        {
+                            $set: {
+                                deliveryAddress: {
+                                    fullName: primaryAddr.name || user.name || "",
+                                    phone: primaryAddr.phone || user.mobileNumber || user.whatsappNumber || "",
+                                    addressLine1: primaryAddr.addressLine1 || "",
+                                    addressLine2: primaryAddr.addressLine2 || primaryAddr.landmark || "",
+                                    city: primaryAddr.city || "",
+                                    state: primaryAddr.state || "",
+                                    pincode: primaryAddr.pincode || "",
+                                    landmark: primaryAddr.landmark || "",
+                                    submittedAt: new Date(),
+                                },
+                            },
+                        }
+                    );
+                }
+            } catch (syncErr) {
+                console.warn("[updateProfile] Warning: could not sync address to customer orders:", syncErr.message);
+            }
         }
 
         return res.status(200).json({

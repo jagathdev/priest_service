@@ -35,6 +35,7 @@ interface OrderItem {
   orderNumber: string;
   pooja?: string;
   itemName?: string;
+  serviceType?: string;
   customerName?: string;
   mobileNumber?: string;
   whatsappNumber: string;
@@ -46,6 +47,29 @@ interface OrderItem {
   scheduledDate?: string;
   bookingDate?: string;
   orderStatus: string;
+  customer?: {
+    _id?: string;
+    name?: string;
+    addresses?: Array<{
+      name?: string;
+      phone?: string;
+      addressLine1?: string;
+      city?: string;
+      state?: string;
+      pincode?: string;
+      isDefault?: boolean;
+    }>;
+  };
+  deliveryAddress?: {
+    fullName?: string;
+    phone?: string;
+    addressLine1?: string;
+    addressLine2?: string;
+    city?: string;
+    state?: string;
+    pincode?: string;
+    landmark?: string;
+  };
   createdAt: string;
 }
 
@@ -447,6 +471,36 @@ export default function AdminServiceDispatchPage() {
                             {ord.itemName}
                           </span>
                         )}
+                        {/* Homa Prasad Courier Address Badge (from order or customer profile) */}
+                        {(() => {
+                          const customerDefaultAddr = ord.customer?.addresses?.find((a) => a.isDefault) || ord.customer?.addresses?.[0];
+                          const activeAddr: any = ord.deliveryAddress?.addressLine1 ? ord.deliveryAddress : customerDefaultAddr;
+
+                          if (activeAddr && activeAddr.addressLine1) {
+                            const recipientName = activeAddr.name || activeAddr.fullName || "Devotee";
+                            return (
+                              <div className="mt-1" title={`${recipientName} - ${activeAddr.addressLine1}, ${activeAddr.city} - ${activeAddr.pincode}`}>
+                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-900 border border-amber-300">
+                                  <span>📍</span>
+                                  <span className="truncate max-w-[120px]">{activeAddr.city || "Prasad Address"} ({activeAddr.pincode})</span>
+                                </span>
+                              </div>
+                            );
+                          }
+
+                          if (ord.pooja?.toLowerCase().includes("homa") || ord.itemName?.toLowerCase().includes("homa")) {
+                            return (
+                              <div className="mt-1">
+                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9.5px] font-bold bg-gray-100 text-gray-500 border border-gray-200">
+                                  <span>📦</span>
+                                  <span>Address Pending</span>
+                                </span>
+                              </div>
+                            );
+                          }
+
+                          return null;
+                        })()}
                       </td>
 
                       {/* Devotees List for Sankalpam */}

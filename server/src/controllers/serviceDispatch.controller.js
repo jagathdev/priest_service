@@ -100,6 +100,7 @@ export const getDispatchDevotees = async (req, res) => {
 
     const [orders, totalCount] = await Promise.all([
       Order.find(query)
+        .populate("customer", "name mobileNumber whatsappNumber addresses")
         .sort({ scheduledDate: 1, createdAt: -1 })
         .skip(skip)
         .limit(limitNum)
@@ -149,6 +150,7 @@ export const exportDispatchExcel = async (req, res) => {
     const query = await buildDispatchQuery({ serviceName, serviceType, startDate, endDate, status });
 
     const orders = await Order.find(query)
+      .populate("customer", "name mobileNumber whatsappNumber addresses")
       .sort({ scheduledDate: 1, createdAt: -1 })
       .lean();
 
@@ -175,11 +177,12 @@ export const exportDispatchExcel = async (req, res) => {
       { key: "package", width: 18 },
       { key: "offerings", width: 24 },
       { key: "phone", width: 20 },
+      { key: "deliveryAddress", width: 40 },
     ];
 
     // Row 1: Title Banner
     const titleText = `${serviceName !== "All" ? serviceName.toUpperCase() : "ALL RITUALS"} - DEVOTEE SANKALPAM DISPATCH LIST`;
-    sheet.mergeCells("A1:K1");
+    sheet.mergeCells("A1:L1");
     const titleCell = sheet.getCell("A1");
     titleCell.value = titleText;
     titleCell.font = { name: "Arial", size: 14, bold: true, color: { argb: "FFFFFFFF" } };
@@ -192,7 +195,7 @@ export const exportDispatchExcel = async (req, res) => {
     sheet.getRow(1).height = 36;
 
     // Row 2: Subtitle Metadata
-    sheet.mergeCells("A2:K2");
+    sheet.mergeCells("A2:L2");
     const subCell = sheet.getCell("A2");
     const dateRangeStr = startDate || endDate ? `Filtered: ${startDate || "Earliest"} to ${endDate || "Latest"}` : "All Booking Dates";
     subCell.value = `Total Devotees: ${orders.length} | Exported on: ${new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })} | ${dateRangeStr}`;
@@ -219,6 +222,7 @@ export const exportDispatchExcel = async (req, res) => {
       "Package",
       "Special Offerings",
       "Mobile Number",
+      "Prasad Delivery Address (For Courier)",
     ];
     headerRow.height = 28;
     headerRow.eachCell((cell) => {
@@ -271,6 +275,29 @@ export const exportDispatchExcel = async (req, res) => {
       const tenDigit = digits.length > 10 && digits.startsWith("91") ? digits.slice(2) : digits;
       const phoneStr = tenDigit ? `+91 ${tenDigit}` : "-";
 
+      // Format Delivery Address for Courier Dispatch (from order or customer's profile address)
+      let deliveryAddressStr = "-";
+      const customerAddr = Array.isArray(ord.customer?.addresses) && ord.customer.addresses.length > 0
+        ? (ord.customer.addresses.find((a) => a.isDefault) || ord.customer.addresses[0])
+        : null;
+
+      const activeDeliveryAddr = (ord.deliveryAddress && ord.deliveryAddress.addressLine1)
+        ? ord.deliveryAddress
+        : customerAddr;
+
+      if (activeDeliveryAddr && activeDeliveryAddr.addressLine1) {
+        const d = activeDeliveryAddr;
+        const line2 = d.addressLine2 ? `, ${d.addressLine2}` : "";
+        const landmark = d.landmark ? ` (Landmark: ${d.landmark})` : "";
+        const country = d.country ? ` (${d.country})` : "";
+        deliveryAddressStr = `${d.fullName || d.name || ord.customer?.name || ord.customerName || "Devotee"} | Ph: ${d.phone || phoneStr}\n${d.addressLine1}${line2}\n${d.city || ""}, ${d.state || ""} - ${d.pincode || ""}${country}${landmark}`;
+      } else {
+        const isHoma = (ord.serviceType && ["homa", "Homa", "HOMA"].includes(ord.serviceType)) ||
+          (ord.itemName && ord.itemName.toLowerCase().includes("homa")) ||
+          (ord.pooja && ord.pooja.toLowerCase().includes("homa"));
+        deliveryAddressStr = isHoma ? "Pending Devotee Address" : "N/A (Temple Sankalpam)";
+      }
+
       const row = sheet.addRow({
         sno: index + 1,
         orderNumber: ord.orderNumber || "-",
@@ -283,6 +310,7 @@ export const exportDispatchExcel = async (req, res) => {
         package: ord.itemName?.includes("Package") ? ord.itemName : "Standard Devotee Sankalpam",
         offerings: offeringsStr,
         phone: phoneStr,
+        deliveryAddress: deliveryAddressStr,
       });
 
       row.height = Math.max(28, (ord.participants?.length || 1) * 16);

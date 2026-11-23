@@ -170,6 +170,18 @@ const orderSchema = new mongoose.Schema(
         referrer: { type: String, default: "", trim: true },
         landingPage: { type: String, default: "", trim: true },
         promo: { type: String, default: "", trim: true }, // Tracking query param (e.g. ?promo=instagram_bio)
+        // Prasad Delivery Address (for Homas)
+        deliveryAddress: {
+            fullName: { type: String, default: "", trim: true },
+            phone: { type: String, default: "", trim: true },
+            addressLine1: { type: String, default: "", trim: true },
+            addressLine2: { type: String, default: "", trim: true },
+            city: { type: String, default: "", trim: true },
+            state: { type: String, default: "", trim: true },
+            pincode: { type: String, default: "", trim: true },
+            landmark: { type: String, default: "", trim: true },
+            submittedAt: { type: Date, default: null },
+        },
     },
     {
         timestamps: true,

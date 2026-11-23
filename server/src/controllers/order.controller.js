@@ -222,7 +222,9 @@ export const getOrderStatus = async (req, res) => {
             });
         }
 
-        const order = await Order.findOne({ razorpayOrderId: String(razorpayOrderId).trim() }).lean();
+        const order = await Order.findOne({ razorpayOrderId: String(razorpayOrderId).trim() })
+            .populate("customer", "name mobileNumber whatsappNumber addresses")
+            .lean();
 
         if (!order) {
             return res.status(404).json({
@@ -230,6 +232,30 @@ export const getOrderStatus = async (req, res) => {
                 message: "Order not found",
             });
         }
+
+        const isHoma = (order.serviceType && ["homa", "Homa", "HOMA"].includes(order.serviceType)) ||
+            (order.itemName && order.itemName.toLowerCase().includes("homa")) ||
+            (order.pooja && order.pooja.toLowerCase().includes("homa"));
+
+        // Resolve delivery address from order or customer profile's primary/default address
+        const customerDefaultAddress = Array.isArray(order.customer?.addresses) && order.customer.addresses.length > 0
+            ? (order.customer.addresses.find((a) => a.isDefault) || order.customer.addresses[0])
+            : null;
+
+        const resolvedDeliveryAddress = order.deliveryAddress?.addressLine1
+            ? order.deliveryAddress
+            : customerDefaultAddress
+                ? {
+                    fullName: customerDefaultAddress.name || order.customer?.name || order.customerName || "",
+                    phone: customerDefaultAddress.phone || order.customer?.mobileNumber || order.mobileNumber || "",
+                    addressLine1: customerDefaultAddress.addressLine1 || "",
+                    addressLine2: customerDefaultAddress.addressLine2 || customerDefaultAddress.landmark || "",
+                    city: customerDefaultAddress.city || "",
+                    state: customerDefaultAddress.state || "",
+                    pincode: customerDefaultAddress.pincode || "",
+                    landmark: customerDefaultAddress.landmark || "",
+                }
+                : null;
 
         return res.status(200).json({
             success: true,
@@ -239,6 +265,10 @@ export const getOrderStatus = async (req, res) => {
                 orderNumber: order.orderNumber,
                 itemName: order.itemName || order.pooja || "Sacred Ritual",
                 amount: order.pricing?.total || 0,
+                serviceType: order.serviceType || (isHoma ? "Homa" : "Puja"),
+                isHoma: Boolean(isHoma),
+                deliveryAddress: resolvedDeliveryAddress,
+                hasDeliveryAddress: Boolean(resolvedDeliveryAddress?.addressLine1),
             },
         });
     } catch (error) {

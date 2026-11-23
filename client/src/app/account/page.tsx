@@ -239,6 +239,9 @@ function AccountPageContent() {
     isDefault: false
   });
   const [addressErrors, setAddressErrors] = useState<Record<string, string>>({});
+  const [citySuggestions, setCitySuggestions] = useState<Array<{ City: string; State?: string; StateorProvince?: string; Country: string }>>([]);
+  const [isLoadingCities, setIsLoadingCities] = useState(false);
+  const [showCitySuggestions, setShowCitySuggestions] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState("English");
   const [openFaq, setOpenFaq] = useState<number | null>(1);
 
@@ -758,6 +761,7 @@ function AccountPageContent() {
 
   const openEditAddressModal = (addr: Address) => {
     setAddressErrors({});
+    setShowCitySuggestions(false);
     setAddressFormData({
       _id: addr._id || "",
       type: addr.type || "Home",
@@ -777,6 +781,7 @@ function AccountPageContent() {
 
   const openAddAddressModal = () => {
     setAddressErrors({});
+    setShowCitySuggestions(false);
     setAddressFormData({
       _id: "",
       type: "Home",
@@ -791,6 +796,39 @@ function AccountPageContent() {
       isDefault: false
     });
     setShowAddressModal(true);
+  };
+
+  const handleCitySearch = async (term: string) => {
+    const cleanTerm = term.trim();
+    if (cleanTerm.length < 3) {
+      setCitySuggestions([]);
+      setShowCitySuggestions(false);
+      return;
+    }
+
+    setIsLoadingCities(true);
+    try {
+      const countryTarget = addressFormData.country || "India";
+      const res = await fetch(
+        `https://webservice.astroved.com/Api/Panchang/PopulateCityBycountry/${encodeURIComponent(
+          countryTarget
+        )}/${encodeURIComponent(cleanTerm)}`
+      );
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        setCitySuggestions(data);
+        setShowCitySuggestions(data.length > 0);
+      } else {
+        setCitySuggestions([]);
+        setShowCitySuggestions(false);
+      }
+    } catch (err) {
+      console.error("Error fetching cities from AstroVed:", err);
+      setCitySuggestions([]);
+      setShowCitySuggestions(false);
+    } finally {
+      setIsLoadingCities(false);
+    }
   };
 
   if (!isHydrated) {
@@ -1754,13 +1792,26 @@ function AccountPageContent() {
                                     </span>
                                   )}
                                 </div>
-                                <h4 className="text-[15px] font-bold text-gray-900 mb-1.5">{addr.name}</h4>
-                                <p className="text-[13px] text-gray-600 leading-relaxed mb-3 pr-4">
-                                  {addr.address}
-                                </p>
-                                <div className="flex items-center gap-2 text-[13px] text-gray-700 font-medium mb-4">
-                                  <Phone className="w-4 h-4 text-red-500" />
-                                  {addr.phone}
+                                <h4 className="text-[15px] font-bold text-gray-900 mb-1">{addr.name}</h4>
+                                <div className="flex items-center gap-2 text-[12px] sm:text-[13px] text-gray-700 font-medium mb-2.5">
+                                  <Phone className="w-3.5 h-3.5 text-red-500 shrink-0" />
+                                  <span>{addr.phone}</span>
+                                </div>
+                                <div className="text-[12px] sm:text-[13px] text-gray-600 leading-relaxed mb-4 bg-stone-50/70 p-2.5 rounded-xl border border-stone-100 space-y-1">
+                                  <p className="font-medium text-stone-800">
+                                    {addr.addressLine1 || addr.address || "Address"}
+                                    {addr.addressLine2 ? `, ${addr.addressLine2}` : ""}
+                                  </p>
+                                  {addr.landmark && (
+                                    <p className="text-[11px] text-stone-500">
+                                      <span className="font-semibold text-stone-600">Landmark:</span> {addr.landmark}
+                                    </p>
+                                  )}
+                                  <p className="text-stone-700 font-medium">
+                                    {[addr.city, addr.state].filter(Boolean).join(", ")}
+                                    {addr.pincode ? ` - ${addr.pincode}` : ""}
+                                    {addr.country ? ` (${addr.country})` : ""}
+                                  </p>
                                 </div>
                                 <hr className="border-gray-150 mb-4" />
                                 <div className="flex items-center gap-3">
@@ -2417,30 +2468,70 @@ function AccountPageContent() {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                  <div>
+                  {/* City with AstroVed Auto-suggest */}
+                  <div className="relative">
                     <label className="text-[13px] font-bold text-gray-800 block mb-1.5">
                       City <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
-                      placeholder="City"
+                      placeholder="Type 3+ letters (e.g. Chennai, Mumbai)"
                       value={addressFormData.city}
                       onChange={(e) => {
-                        const val = e.target.value.replace(/[^a-zA-Z\s]/g, "");
+                        const val = e.target.value;
                         setAddressFormData(p => ({ ...p, city: val }));
+                        handleCitySearch(val);
                         if (addressErrors.city) {
                           setAddressErrors(prev => ({ ...prev, city: "" }));
                         }
+                      }}
+                      onFocus={() => {
+                        if (citySuggestions.length > 0) setShowCitySuggestions(true);
                       }}
                       className={`w-full border rounded-xl px-4 py-2.5 text-sm text-gray-800 focus:outline-none transition ${addressErrors.city
                         ? "border-red-500 focus:border-red-500 bg-red-50/20"
                         : "border-gray-250 focus:border-primary"
                         }`}
                     />
+                    {isLoadingCities && (
+                      <div className="absolute right-3 top-[38px] text-[11px] text-stone-400 font-medium animate-pulse">
+                        Searching...
+                      </div>
+                    )}
+                    {showCitySuggestions && citySuggestions.length > 0 && (
+                      <div className="absolute left-0 right-0 top-full mt-1 bg-white border border-stone-200 rounded-xl shadow-xl z-50 max-h-48 overflow-y-auto">
+                        {citySuggestions.map((item, idx) => {
+                          const stateVal = item.StateorProvince || item.State || "";
+                          return (
+                            <div
+                              key={idx}
+                              onClick={() => {
+                                setAddressFormData(p => ({
+                                  ...p,
+                                  city: item.City,
+                                  state: stateVal || p.state,
+                                  country: item.Country || p.country || "India",
+                                }));
+                                setShowCitySuggestions(false);
+                              }}
+                              className="px-3 py-2 text-xs hover:bg-[#E8F8EE] cursor-pointer text-stone-700 font-medium flex justify-between items-center border-b border-stone-50 last:border-0 gap-2"
+                            >
+                              <span className="font-bold text-stone-800">{item.City}</span>
+                              <span className="text-stone-500 text-[11px] shrink-0">
+                                {stateVal ? `${stateVal}, ` : ""}
+                                {item.Country}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                     {addressErrors.city && (
                       <p className="text-red-500 text-xs mt-1 font-medium">{addressErrors.city}</p>
                     )}
                   </div>
+
+                  {/* State */}
                   <div>
                     <label className="text-[13px] font-bold text-gray-800 block mb-1.5">
                       State <span className="text-red-500">*</span>

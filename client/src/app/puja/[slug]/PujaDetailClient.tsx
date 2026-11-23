@@ -32,6 +32,7 @@ import {
   Calendar,
   Clock,
   MapPin,
+  Flame,
 } from "lucide-react";
 
 interface PujaPackage {
@@ -315,7 +316,7 @@ export default function PujaDetailClient({
 
   useEffect(() => {
     const handleScroll = () => {
-      const sections = ["about", "how-to-book", "video", "benefits", "process", "temple", "receive", "faqs", "gallery"];
+      const sections = ["about", "how-to-book", "when-to-do", "video", "benefits", "process", "temple", "receive", "faqs", "gallery"];
       const headerOffset = window.innerWidth < 640 ? 120 : 150;
 
       // Check if user has reached or scrolled near the bottom of the page
@@ -657,10 +658,13 @@ export default function PujaDetailClient({
     return list.filter((img) => !failedGalleryImages[img]);
   }, [puja, failedGalleryImages]);
 
+  const hasHowToBook = Boolean((puja as any)?.howToBook && Array.isArray((puja as any).howToBook) && (puja as any).howToBook.length > 0);
+  const hasWhenToDo = Boolean((puja as any)?.whenToDo && Array.isArray((puja as any).whenToDo) && (puja as any).whenToDo.length > 0);
+
   const subNavTabs = useMemo(() => [
     { id: "about", label: "About puja" },
-    { id: "how-to-book", label: "How to Book" },
-    { id: "when-to-do", label: "When to do" },
+    ...(hasHowToBook ? [{ id: "how-to-book", label: "How to Book" }] : []),
+    ...(hasWhenToDo ? [{ id: "when-to-do", label: "When to do" }] : []),
     ...(puja?.videoUrl ? [{ id: "video", label: "Puja Video" }] : []),
     { id: "benefits", label: "Puja Benefits" },
     { id: "process", label: "Puja Procedure" },
@@ -668,7 +672,7 @@ export default function PujaDetailClient({
     { id: "receive", label: "What will you receive" },
     { id: "faqs", label: "FAQs" },
     ...(galleryList.length > 0 ? [{ id: "gallery", label: "Puja Gallery" }] : []),
-  ], [galleryList.length, puja?.videoUrl]);
+  ], [galleryList.length, puja?.videoUrl, hasHowToBook, hasWhenToDo]);
 
   if (loading) {
     return (
@@ -724,55 +728,13 @@ export default function PujaDetailClient({
     { question: "Do I need to be physically present?", answer: "No, physical presence is not required. The pandit recites your Name and Gotra in the Sankalpam, and a full video recording is sent to your WhatsApp within 48 hours." },
   ];
 
-  const defaultHowToBookSteps = [
-    {
-      stepNumber: 1,
-      title: "Choose",
-      description: "Pick your package and preferred date, such as a birthday.",
-    },
-    {
-      stepNumber: 2,
-      title: "Book",
-      description: "Pay securely online and share your name, nakshatra and gotra.",
-    },
-    {
-      stepNumber: 3,
-      title: "We perform",
-      description: "Our priests perform the puja with your sankalpam at the temple.",
-    },
-    {
-      stepNumber: 4,
-      title: "You receive",
-      description: "Photos and video of the puja on WhatsApp, with prasad and sacred ash by courier.",
-    },
-  ];
-
   const howToBookList = ((puja as any)?.howToBook && Array.isArray((puja as any).howToBook) && (puja as any).howToBook.length > 0)
     ? (puja as any).howToBook
-    : defaultHowToBookSteps;
-
-  const defaultWhenToDoItems = [
-    {
-      title: "Obstacles & Negative Influences",
-      description: "Efforts blocked, and a feeling that something is holding you back.",
-    },
-    {
-      title: "Stress & Anxiety",
-      description: "A restless mind, constant worry and little peace.",
-    },
-    {
-      title: "Delayed Plans",
-      description: "Important decisions and goals that keep getting postponed.",
-    },
-    {
-      title: "Tension at Home",
-      description: "Worry about the health, harmony and peace of your family.",
-    },
-  ];
+    : [];
 
   const whenToDoList = ((puja as any)?.whenToDo && Array.isArray((puja as any).whenToDo) && (puja as any).whenToDo.length > 0)
     ? (puja as any).whenToDo
-    : defaultWhenToDoItems;
+    : [];
 
   // Resolve Admin fields with fallbacks
   const aboutText =
@@ -1491,89 +1453,102 @@ export default function PujaDetailClient({
           </section>
 
           {/* Section: How to Book (Dynamic from Admin) */}
-          <section id="how-to-book" data-reveal className="scroll-mt-36">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-6">
-              <div>
-                <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1f1a17]">
-                  How to book
-                </h2>
-                <p className="text-xs sm:text-sm text-stone-500 mt-1 font-medium">
-                  Simple 4-step authentic process from sankalpam to prasad blessings
-                </p>
+          {howToBookList.length > 0 && (
+            <section id="how-to-book" data-reveal className="scroll-mt-36">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-6">
+                <div>
+                  <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1f1a17]">
+                    How to book
+                  </h2>
+                  <p className="text-xs sm:text-sm text-stone-500 mt-1 font-medium">
+                    Simple 4-step authentic process from sankalpam to prasad blessings
+                  </p>
+                </div>
               </div>
-            </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4">
-              {howToBookList.map((step: any, idx: number) => {
-                const stepNum = step.stepNumber || idx + 1;
-                const formattedNum = String(stepNum).padStart(2, "0");
-                return (
-                  <div
-                    key={idx}
-                    className="relative bg-gradient-to-b from-[#FFFDF9] to-[#FFF9F0] border border-[#ECD9C3] rounded-3xl p-5 sm:p-5 flex flex-col justify-between shadow-2xs hover:shadow-md hover:border-[#D99B52] transition-all duration-300 group"
-                  >
-                    <div>
-                      {/* Step Header Badge */}
-                      <div className="flex items-center justify-between mb-3.5">
-                        <span className="w-9 h-9 rounded-2xl bg-gradient-to-br from-[#E65100]/15 via-[#F97316]/10 to-amber-100/60 border border-[#F0CA9E] text-[#C2410C] font-black text-sm flex items-center justify-center shadow-2xs group-hover:scale-105 transition-transform">
-                          {formattedNum}
-                        </span>
-                        <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#C2410C]/70">
-                          Step {stepNum}
-                        </span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4">
+                {howToBookList.map((step: any, idx: number) => {
+                  const stepNum = step.stepNumber || idx + 1;
+                  const formattedNum = String(stepNum).padStart(2, "0");
+                  return (
+                    <div
+                      key={idx}
+                      className="relative bg-gradient-to-b from-[#FFFDF9] to-[#FFF9F0] border border-[#ECD9C3] rounded-3xl p-5 sm:p-5 flex flex-col justify-between shadow-2xs hover:shadow-md hover:border-[#D99B52] transition-all duration-300 group"
+                    >
+                      <div>
+                        {/* Step Header Badge */}
+                        <div className="flex items-center justify-between mb-3.5">
+                          <span className="w-9 h-9 rounded-2xl bg-gradient-to-br from-[#E65100]/15 via-[#F97316]/10 to-amber-100/60 border border-[#F0CA9E] text-[#C2410C] font-black text-sm flex items-center justify-center shadow-2xs group-hover:scale-105 transition-transform">
+                            {formattedNum}
+                          </span>
+                          <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#C2410C]/70">
+                            Step {stepNum}
+                          </span>
+                        </div>
+
+                        {/* Step Title */}
+                        <h3 className="font-serif font-extrabold text-[#1f1a17] text-base sm:text-lg mb-2 leading-tight">
+                          {step.title}
+                        </h3>
+
+                        {/* Step Description */}
+                        <p className="text-stone-600 text-xs sm:text-[13px] leading-relaxed font-medium">
+                          {step.description}
+                        </p>
                       </div>
 
-                      {/* Step Title */}
-                      <h3 className="font-serif font-extrabold text-[#1f1a17] text-base sm:text-lg mb-2 leading-tight">
-                        {step.title}
-                      </h3>
-
-                      {/* Step Description */}
-                      <p className="text-stone-600 text-xs sm:text-[13px] leading-relaxed font-medium">
-                        {step.description}
-                      </p>
+                      <div className="w-full h-1 bg-gradient-to-r from-[#E65100]/20 via-[#F97316]/40 to-transparent rounded-full mt-4" />
                     </div>
-
-                    <div className="w-full h-1 bg-gradient-to-r from-[#E65100]/20 via-[#F97316]/40 to-transparent rounded-full mt-4" />
-                  </div>
-                );
-              })}
-            </div>
-          </section>
+                  );
+                })}
+              </div>
+            </section>
+          )}
 
           {/* Section: When to do this Puja? (Dynamic from Admin) */}
-          <section id="when-to-do" data-reveal className="scroll-mt-36">
-            <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1f1a17] mb-6">
-              When to do this Puja?
-            </h2>
-
-            <div className="bg-[#ffffff] border border-[#f0e4d0] rounded-3xl p-6 sm:p-8 shadow-xs relative overflow-hidden">
-              {/* Table Header */}
-              <div className="hidden sm:grid sm:grid-cols-12 gap-4 pb-3.5 mb-2 border-b border-[#f0e4d0] text-xs font-bold uppercase tracking-wider text-stone-400">
-                <div className="sm:col-span-4">Title</div>
-                <div className="sm:col-span-8">Description</div>
+          {whenToDoList.length > 0 && (
+            <section id="when-to-do" data-reveal className="scroll-mt-36">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-6">
+                <div>
+                  <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1f1a17]">
+                    When to do this Puja?
+                  </h2>
+                  <p className="text-xs sm:text-sm text-stone-500 mt-1 font-medium">
+                    Ideal times, astrological indications and life situations to perform this sacred puja
+                  </p>
+                </div>
               </div>
 
-              {/* Rows */}
-              <div className="divide-y divide-[#f5ece1]">
-                {whenToDoList.map((item: any, idx: number) => (
-                  <div
-                    key={idx}
-                    className="py-4 sm:py-5 grid grid-cols-1 sm:grid-cols-12 gap-2 sm:gap-4 items-baseline hover:bg-stone-50/60 -mx-3 px-3 sm:mx-0 sm:px-0 rounded-xl transition-colors"
-                  >
-                    <div className="sm:col-span-4 font-serif font-extrabold text-[#1f1a17] text-base sm:text-[17px] leading-snug">
-                      {item.title}
+              {/* Seamless list without separated card boxes */}
+              <div className="bg-gradient-to-b from-[#FFFDF9] via-white to-[#FFFDF9] border border-[#f0e4d0] rounded-3xl p-6 sm:p-8 shadow-xs divide-y divide-amber-100/70">
+                {whenToDoList.map((item: any, idx: number) => {
+                  return (
+                    <div
+                      key={idx}
+                      className="py-4 sm:py-5 first:pt-0 last:pb-0 flex items-start gap-3.5 sm:gap-4 transition-colors hover:bg-amber-50/40 -mx-3 px-3 sm:-mx-4 sm:px-4 rounded-xl"
+                    >
+                      {/* Sacred Flame / Diya Icon Bullet */}
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#E65100]/15 to-amber-100/80 border border-[#F0CA9E] flex items-center justify-center shrink-0 mt-0.5 text-[#C2410C] shadow-2xs">
+                        <Flame className="w-4 h-4 text-[#C2410C]" fill="#C2410C" strokeWidth={1.5} />
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        {/* Title */}
+                        <h3 className="font-serif font-bold text-stone-900 text-base sm:text-[17px] mb-1 leading-snug">
+                          {item.title}
+                        </h3>
+
+                        {/* Description */}
+                        <p className="text-stone-600 text-xs sm:text-[14px] leading-relaxed font-medium">
+                          {item.description}
+                        </p>
+                      </div>
                     </div>
-                    <div className="sm:col-span-8 text-stone-600 text-sm sm:text-[14.5px] leading-relaxed font-medium">
-                      {item.description}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
-            </div>
-          </section>
-
-
+            </section>
+          )}
 
           {/* Section: Sacred Puja Video */}
           {Boolean(puja?.videoUrl) && (

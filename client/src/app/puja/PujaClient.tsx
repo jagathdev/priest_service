@@ -665,7 +665,7 @@ export default function PujaClient({ initialPujas }: { initialPujas?: Puja[] }) 
                           </div>
                         </div>
 
-                        <div className="flex items-center justify-between gap-2.5 mt-auto pt-3 border-t border-gray-100">
+                        <div className="flex items-center justify-between gap-2 sm:gap-2.5 mt-auto pt-3 border-t border-gray-100 min-w-0">
                           <div className="shrink-0 min-w-0">
                             {/* Price display */}
                             {(() => {
@@ -674,19 +674,19 @@ export default function PujaClient({ initialPujas }: { initialPujas?: Puja[] }) 
                                 <PriceTag
                                   sellingPrice={pInfo.sellingPrice ?? formatStartingPrice(puja)}
                                   listPrice={pInfo.listPrice}
-                                  sellingPriceClassName="text-[19px] sm:text-[22px] font-black text-gray-900"
-                                  listPriceClassName="text-xs sm:text-sm font-bold text-stone-400 line-through decoration-red-500 decoration-1.5 ml-1"
+                                  sellingPriceClassName="text-[17px] sm:text-[20px] xl:text-[22px] font-black text-gray-900 leading-none"
+                                  listPriceClassName="text-[11px] sm:text-xs font-bold text-stone-400 line-through decoration-red-500 decoration-1.5 ml-1"
                                   className="flex items-baseline gap-1 flex-wrap"
                                 />
                               );
                             })()}
-                            <div className="text-[10px] sm:text-[11px] text-gray-500 font-bold uppercase tracking-wider">Per Booking</div>
+                            <div className="text-[10px] sm:text-[11px] text-gray-500 font-bold uppercase tracking-wider mt-0.5 whitespace-nowrap">Per Booking</div>
                           </div>
                           <div
-                            className="bg-[#00B05F] text-white text-xs sm:text-sm font-extrabold px-4 sm:px-5 py-2.5 sm:py-3 rounded-full hover:bg-[#008F4C] transition-all duration-200 flex items-center justify-center gap-1.5 shrink-0 whitespace-nowrap shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-95"
+                            className="bg-[#00B05F] text-white text-[11px] min-[360px]:text-xs sm:text-sm font-extrabold px-3 sm:px-4 xl:px-5 py-2 sm:py-2.5 xl:py-3 rounded-2xl sm:rounded-full hover:bg-[#008F4C] transition-all duration-200 flex items-center justify-center gap-1 sm:gap-1.5 shrink min-w-0 text-center leading-tight shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-95 cursor-pointer"
                           >
-                            <span>{puja.buttonText || "Book Now"}</span>
-                            <ChevronRight className="w-4 h-4 shrink-0" strokeWidth={2.8} />
+                            <span className="line-clamp-2 text-center">{puja.buttonText || "Book Now"}</span>
+                            <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" strokeWidth={2.8} />
                           </div>
                         </div>
                       </div>
