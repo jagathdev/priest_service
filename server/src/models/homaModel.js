@@ -27,6 +27,17 @@ const packageSchema = new mongoose.Schema({
   discountPercent: { type: String, default: "" },
 }, { _id: false });
 
+const howToBookStepSchema = new mongoose.Schema({
+  stepNumber: { type: Number, default: 1 },
+  title: { type: String, default: "" },
+  description: { type: String, default: "" },
+}, { _id: false });
+
+const whenToDoSchema = new mongoose.Schema({
+  title: { type: String, default: "" },
+  description: { type: String, default: "" },
+}, { _id: false });
+
 const offeringSchema = new mongoose.Schema({
   name: { type: String, default: "" },
   priceINR: { type: Number, default: 0 },
@@ -103,6 +114,8 @@ const homaSchema = new mongoose.Schema(
     inclusions: [{ type: String }],
     faq: [faqSchema],
     packages: [packageSchema],
+    howToBook: [howToBookStepSchema],
+    whenToDo: [whenToDoSchema],
     offerings: [offeringSchema],
     recommendedPujaIds: [{ type: String }],
     sectionOrder: [{ type: String }],

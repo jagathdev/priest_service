@@ -283,6 +283,27 @@ export default function AdminPujasPage() {
 
     // ── 6. About & Sacred Details ──
     {
+      name: "whenToDo",
+      label: "When to do this Homa / Puja? (Occasions & Signs)",
+      type: "array-object",
+      section: "About & Sacred Details",
+      objectSchema: [
+        { name: "title", label: "Title / Life Concern (e.g. Obstacles & Negative Influences)", type: "text", placeholder: "e.g. Obstacles & Negative Influences" },
+        { name: "description", label: "Description / Problem Signs", type: "textarea", placeholder: "e.g. Efforts blocked, and a feeling that something is holding you back." },
+      ],
+    },
+    {
+      name: "howToBook",
+      label: "How to Book Steps",
+      type: "array-object",
+      section: "About & Sacred Details",
+      objectSchema: [
+        { name: "stepNumber", label: "Step # (e.g. 1, 2, 3)", type: "number", placeholder: "1" },
+        { name: "title", label: "Step Title (e.g. Choose, Book)", type: "text", placeholder: "e.g. Choose" },
+        { name: "description", label: "Step Description", type: "textarea", placeholder: "Explain what happens in this step..." },
+      ],
+    },
+    {
       name: "description",
       label: "Short Description (Hero Summary)",
       type: "textarea",

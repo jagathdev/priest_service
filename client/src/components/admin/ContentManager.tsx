@@ -650,7 +650,30 @@ export default function ContentManager({
         arr.push("");
       } else {
         const newItem: any = {};
-        if (fieldName === "packages") {
+        if (fieldName === "whenToDo") {
+          const defaultItems = [
+            { title: "Obstacles & Negative Influences", description: "Efforts blocked, and a feeling that something is holding you back." },
+            { title: "Stress & Anxiety", description: "A restless mind, constant worry and little peace." },
+            { title: "Delayed Plans", description: "Important decisions and goals that keep getting postponed." },
+            { title: "Tension at Home", description: "Worry about the health, harmony and peace of your family." },
+          ];
+          const idx = arr.length;
+          const def = defaultItems[idx] || { title: `Sign / Occasion ${idx + 1}`, description: "" };
+          newItem.title = def.title;
+          newItem.description = def.description;
+        } else if (fieldName === "howToBook") {
+          const defaultSteps = [
+            { stepNumber: 1, title: "Choose", description: "Pick your package and preferred date, such as a birthday." },
+            { stepNumber: 2, title: "Book", description: "Pay securely online and share your name, nakshatra and gotra." },
+            { stepNumber: 3, title: "We perform", description: "Our priests perform the homa with your sankalpam at the temple." },
+            { stepNumber: 4, title: "You receive", description: "Photos and video of the homa on WhatsApp, with prasad and sacred ash by courier." },
+          ];
+          const idx = arr.length;
+          const def = defaultSteps[idx] || { stepNumber: idx + 1, title: `Step ${idx + 1}`, description: "" };
+          newItem.stepNumber = def.stepNumber;
+          newItem.title = def.title;
+          newItem.description = def.description;
+        } else if (fieldName === "packages") {
           const idx = arr.length;
           if (idx === 0) {
             newItem.name = "Individual Homa";

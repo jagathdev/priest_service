@@ -606,11 +606,11 @@ export default function HomaClient({ initialHomas }: { initialHomas?: Homa[] }) 
                           </div>
                         )}
 
-                        <h3 className="text-[20px] sm:text-[21px] font-serif font-extrabold text-gray-900 mb-2 leading-snug line-clamp-2">
+                        <h3 className="text-[20px] sm:text-[21px] font-serif font-extrabold text-gray-900 mb-2 leading-snug line-clamp-2 min-h-[56px] flex items-center">
                           {homa.title}
                         </h3>
 
-                        <p className="text-gray-600 text-[14px] leading-relaxed line-clamp-2 mb-5 flex-1">
+                        <p className="text-gray-600 text-[14px] leading-relaxed line-clamp-3 mb-5 overflow-hidden [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:3] min-h-[66px]">
                           {homa.description}
                         </p>
 

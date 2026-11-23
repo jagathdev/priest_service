@@ -16,6 +16,7 @@ import Image from "next/image";
 import { getYouTubeEmbedUrl, isYouTubeUrl } from "@/lib/videoUtils";
 import { getStartingPriceINR, getStartingListPriceINR } from "@/lib/pricing";
 import PriceTag from "@/components/ui/PriceTag";
+import { formatDayDateMonth } from "@/lib/dateFormatter";
 import {
   ChevronLeft,
   ChevronRight,
@@ -28,6 +29,9 @@ import {
   ShieldCheck,
   Landmark,
   Scroll,
+  Calendar,
+  Clock,
+  MapPin,
 } from "lucide-react";
 
 interface HomaPackage {
@@ -311,7 +315,7 @@ export default function PujaDetailClient({
 
   useEffect(() => {
     const handleScroll = () => {
-      const sections = ["about", "video", "benefits", "process", "temple", "receive", "faqs", "gallery"];
+      const sections = ["about", "how-to-book", "video", "benefits", "process", "temple", "receive", "faqs", "gallery"];
       const headerOffset = window.innerWidth < 640 ? 120 : 150;
 
       // Check if user has reached or scrolled near the bottom of the page
@@ -655,6 +659,8 @@ export default function PujaDetailClient({
 
   const subNavTabs = useMemo(() => [
     { id: "about", label: "About homa" },
+    { id: "how-to-book", label: "How to Book" },
+    { id: "when-to-do", label: "When to do" },
     ...(homa?.videoUrl ? [{ id: "video", label: "Homa Video" }] : []),
     { id: "benefits", label: "Homa Benefits" },
     { id: "process", label: "Homa Procedure" },
@@ -717,6 +723,56 @@ export default function PujaDetailClient({
     { question: "Who will perform the homa?", answer: "Highly experienced Vedic priests with proper initiations will conduct your sankalpam and rituals." },
     { question: "Do I need to be physically present?", answer: "No, physical presence is not required. The pandit recites your Name and Gotra in the Sankalpam, and a full video recording is sent to your WhatsApp within 48 hours." },
   ];
+
+    const defaultHowToBookSteps = [
+    {
+      stepNumber: 1,
+      title: "Choose",
+      description: "Pick your package and preferred date, such as a birthday.",
+    },
+    {
+      stepNumber: 2,
+      title: "Book",
+      description: "Pay securely online and share your name, nakshatra and gotra.",
+    },
+    {
+      stepNumber: 3,
+      title: "We perform",
+      description: "Our priests perform the homa with your sankalpam at the temple.",
+    },
+    {
+      stepNumber: 4,
+      title: "You receive",
+      description: "Photos and video of the homa on WhatsApp, with prasad and sacred ash by courier.",
+    },
+  ];
+
+  const howToBookList = ((homa as any)?.howToBook && Array.isArray((homa as any).howToBook) && (homa as any).howToBook.length > 0)
+    ? (homa as any).howToBook
+    : defaultHowToBookSteps;
+
+    const defaultWhenToDoItems = [
+    {
+      title: "Obstacles & Negative Influences",
+      description: "Efforts blocked, and a feeling that something is holding you back.",
+    },
+    {
+      title: "Stress & Anxiety",
+      description: "A restless mind, constant worry and little peace.",
+    },
+    {
+      title: "Delayed Plans",
+      description: "Important decisions and goals that keep getting postponed.",
+    },
+    {
+      title: "Tension at Home",
+      description: "Worry about the health, harmony and peace of your family.",
+    },
+  ];
+
+  const whenToDoList = ((homa as any)?.whenToDo && Array.isArray((homa as any).whenToDo) && (homa as any).whenToDo.length > 0)
+    ? (homa as any).whenToDo
+    : defaultWhenToDoItems;
 
   // Resolve Admin fields with fallbacks
   const aboutText =
@@ -1377,19 +1433,142 @@ export default function PujaDetailClient({
             <div className="bg-[#ffffff] border border-[#f0e4d0] rounded-3xl p-6 sm:p-8 relative overflow-hidden">
               {renderAboutContent(aboutText)}
 
-              <div className="flex flex-row items-center justify-around gap-6 border-t border-[#f0e4d0] pt-6 text-xs text-stone-700">
-                <div>
-                  <span className="text-stone-400 font-bold block mb-1 uppercase tracking-wider">Occasion</span>
-                  <span className="font-extrabold text-stone-900 text-sm sm:text-base">{homa.date || "Auspicious Tithis"}{homa.time ? " at " + homa.time : ""}</span>
-                </div>
-                <div className="w-px h-8 bg-[#f0e4d0]" />
-                <div>
-                  <span className="text-stone-400 font-bold block mb-1 uppercase tracking-wider">Venue</span>
-                  <span className="font-extrabold text-stone-900 text-sm sm:text-base">{templeVenueText || "Temple Yagashala"}</span>
+                    {/* Vedic Temple Details Cards Grid (Date, Time, Venue) */}
+              <div className="border-t border-[#f0e4d0] pt-6 mt-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {/* Date & Occasion Card */}
+                  <div className="flex items-center gap-3 bg-gradient-to-br from-[#FFFDF9] to-[#FFF9F0] border border-[#ECD9C3] rounded-2xl p-3 sm:p-3.5 shadow-2xs hover:border-[#D99B52] transition-all">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#E65100]/15 via-[#F97316]/10 to-amber-100/60 border border-[#F0CA9E] flex items-center justify-center shrink-0 shadow-2xs text-[#C2410C]">
+                      <Calendar className="w-5 h-5 text-[#C2410C]" strokeWidth={2.2} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <span className="block text-sm sm:text-[14.5px] font-extrabold text-[#0B1E36] tracking-tight leading-tight truncate">
+                        {formatDayDateMonth(homa.date) || homa.date || "Auspicious Date"}
+                      </span>
+                      <span className="block text-xs sm:text-[12px] text-stone-600 font-medium leading-normal truncate mt-0.5">
+                        {homa.subtitle || (homa as any).occasion || (homa as any).dateOccasion || homa.badge || "Sacred Offering"}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Auspicious Time Card */}
+                  <div className="flex items-center gap-3 bg-gradient-to-br from-[#FFFDF9] to-[#FFF9F0] border border-[#ECD9C3] rounded-2xl p-3 sm:p-3.5 shadow-2xs hover:border-[#D99B52] transition-all">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#C2410C] to-[#E65100] flex items-center justify-center shrink-0 shadow-xs text-white">
+                      <Clock className="w-5 h-5 text-amber-200" strokeWidth={2.2} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <span className="block text-sm sm:text-[14.5px] font-extrabold text-[#0B1E36] tracking-tight leading-tight truncate">
+                        {homa.time || "Auspicious Muhurat"}
+                      </span>
+                      <span className="block text-xs sm:text-[12px] text-stone-600 font-medium leading-normal truncate mt-0.5">
+                        Auspicious Muhurat Time
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Temple Venue & Location Card */}
+                  <div className="flex items-center gap-3 bg-gradient-to-br from-[#FFFDF9] to-[#FFF9F0] border border-[#ECD9C3] rounded-2xl p-3 sm:p-3.5 shadow-2xs hover:border-[#D99B52] transition-all sm:col-span-2 lg:col-span-1">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#E65100]/15 via-[#F97316]/10 to-amber-100/60 border border-[#F0CA9E] flex items-center justify-center shrink-0 shadow-2xs text-[#C2410C]">
+                      <MapPin className="w-5 h-5 text-[#C2410C]" strokeWidth={2.2} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <span className="block text-sm sm:text-[14.5px] font-extrabold text-[#0B1E36] tracking-tight leading-tight truncate">
+                        {templeVenueText || "Sacred Temple Venue"}
+                      </span>
+                      <span className="block text-xs sm:text-[12px] text-stone-600 font-medium leading-normal truncate mt-0.5">
+                        {templeLocationText && templeLocationText !== templeVenueText ? templeLocationText : homa.location || "India"}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </section>
+
+          {/* Section: How to Book (Dynamic from Admin) */}
+          <section id="how-to-book" data-reveal className="scroll-mt-36">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-6">
+              <div>
+                <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1f1a17]">
+                  How to book
+                </h2>
+                <p className="text-xs sm:text-sm text-stone-500 mt-1 font-medium">
+                  Simple 4-step authentic process from sankalpam to prasad blessings
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4">
+              {howToBookList.map((step: any, idx: number) => {
+                const stepNum = step.stepNumber || idx + 1;
+                const formattedNum = String(stepNum).padStart(2, "0");
+                return (
+                  <div
+                    key={idx}
+                    className="relative bg-gradient-to-b from-[#FFFDF9] to-[#FFF9F0] border border-[#ECD9C3] rounded-3xl p-5 sm:p-5 flex flex-col justify-between shadow-2xs hover:shadow-md hover:border-[#D99B52] transition-all duration-300 group"
+                  >
+                    <div>
+                      {/* Step Header Badge */}
+                      <div className="flex items-center justify-between mb-3.5">
+                        <span className="w-9 h-9 rounded-2xl bg-gradient-to-br from-[#E65100]/15 via-[#F97316]/10 to-amber-100/60 border border-[#F0CA9E] text-[#C2410C] font-black text-sm flex items-center justify-center shadow-2xs group-hover:scale-105 transition-transform">
+                          {formattedNum}
+                        </span>
+                        <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#C2410C]/70">
+                          Step {stepNum}
+                        </span>
+                      </div>
+
+                      {/* Step Title */}
+                      <h3 className="font-serif font-extrabold text-[#1f1a17] text-base sm:text-lg mb-2 leading-tight">
+                        {step.title}
+                      </h3>
+
+                      {/* Step Description */}
+                      <p className="text-stone-600 text-xs sm:text-[13px] leading-relaxed font-medium">
+                        {step.description}
+                      </p>
+                    </div>
+
+                    <div className="w-full h-1 bg-gradient-to-r from-[#E65100]/20 via-[#F97316]/40 to-transparent rounded-full mt-4" />
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+
+          {/* Section: When to do this Homa? (Dynamic from Admin) */}
+          <section id="when-to-do" data-reveal className="scroll-mt-36">
+            <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1f1a17] mb-6">
+              When to do this Homa?
+            </h2>
+
+            <div className="bg-[#ffffff] border border-[#f0e4d0] rounded-3xl p-6 sm:p-8 shadow-xs relative overflow-hidden">
+              {/* Table Header */}
+              <div className="hidden sm:grid sm:grid-cols-12 gap-4 pb-3.5 mb-2 border-b border-[#f0e4d0] text-xs font-bold uppercase tracking-wider text-stone-400">
+                <div className="sm:col-span-4">Title</div>
+                <div className="sm:col-span-8">Description</div>
+              </div>
+
+              {/* Rows */}
+              <div className="divide-y divide-[#f5ece1]">
+                {whenToDoList.map((item: any, idx: number) => (
+                  <div
+                    key={idx}
+                    className="py-4 sm:py-5 grid grid-cols-1 sm:grid-cols-12 gap-2 sm:gap-4 items-baseline hover:bg-stone-50/60 -mx-3 px-3 sm:mx-0 sm:px-0 rounded-xl transition-colors"
+                  >
+                    <div className="sm:col-span-4 font-serif font-extrabold text-[#1f1a17] text-base sm:text-[17px] leading-snug">
+                      {item.title}
+                    </div>
+                    <div className="sm:col-span-8 text-stone-600 text-sm sm:text-[14.5px] leading-relaxed font-medium">
+                      {item.description}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+
 
           {/* Section: Sacred Homa Video */}
           {Boolean(homa?.videoUrl) && (

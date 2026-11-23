@@ -1005,12 +1005,12 @@ function PujaCard({
           </div>
 
           {/* Card Title */}
-          <h3 className="font-serif font-bold text-[#1f1a17] text-lg sm:text-xl lg:text-2xl leading-tight sm:leading-snug tracking-tight mb-2 line-clamp-2">
+          <h3 className="font-serif font-bold text-[#1f1a17] text-lg sm:text-xl lg:text-2xl leading-tight sm:leading-snug tracking-tight mb-2 line-clamp-2 min-h-[56px] flex items-center">
             {title}
           </h3>
 
           {/* Subtitle / Description */}
-          <p className="text-stone-600 text-xs sm:text-sm font-medium leading-relaxed mb-3 line-clamp-2">
+          <p className="text-stone-600 text-xs sm:text-sm font-medium leading-relaxed mb-3 line-clamp-3 overflow-hidden [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:3] min-h-[60px]">
             {subtitle}
           </p>
 
