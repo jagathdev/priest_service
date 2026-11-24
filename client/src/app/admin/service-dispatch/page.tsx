@@ -112,14 +112,16 @@ export default function AdminServiceDispatchPage() {
     return () => document.removeEventListener("mousedown", handleOutsideClick);
   }, []);
 
-  const getAdminToken = () => {
+  const getAdminToken = (): string => {
     try {
       const match = document.cookie.match(/(?:^|;\s*)adminToken=([^;]+)/);
-      if (match) return match[1];
-      return "";
+      if (match && match[1] && match[1] !== "undefined" && match[1] !== "null") {
+        return decodeURIComponent(match[1]).trim();
+      }
     } catch {
-      return "";
+      // Cookie reading fallback
     }
+    return "";
   };
 
   const fetchDispatchData = useCallback(async () => {
@@ -139,10 +141,14 @@ export default function AdminServiceDispatchPage() {
       if (startDate) params.set("startDate", startDate);
       if (endDate) params.set("endDate", endDate);
 
+      const headers: Record<string, string> = {};
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+
       const res = await fetch(`${baseUrl}/api/admin/service-dispatch?${params.toString()}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers,
+        credentials: "include",
       });
 
       const resData = await res.json();
@@ -183,12 +189,15 @@ export default function AdminServiceDispatchPage() {
       if (startDate) params.set("startDate", startDate);
       if (endDate) params.set("endDate", endDate);
 
-      const res = await fetch(`${baseUrl}/api/admin/service-dispatch/export?${params.toString()}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const headers: Record<string, string> = {};
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
 
+      const res = await fetch(`${baseUrl}/api/admin/service-dispatch/export?${params.toString()}`, {
+        headers,
+        credentials: "include",
+      });
       if (!res.ok) {
         throw new Error("Failed to generate Excel file");
       }

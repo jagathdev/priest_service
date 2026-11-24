@@ -168,6 +168,7 @@ export const exportDispatchExcel = async (req, res) => {
     sheet.columns = [
       { key: "sno", width: 8 },
       { key: "orderNumber", width: 18 },
+      { key: "orderedDate", width: 22 },
       { key: "serviceName", width: 28 },
       { key: "scheduledDate", width: 22 },
       { key: "customerName", width: 22 },
@@ -213,6 +214,7 @@ export const exportDispatchExcel = async (req, res) => {
     headerRow.values = [
       "S.No",
       "Order ID",
+      "Booking Date",
       "Service Name",
       "Scheduled Date & Time",
       "User Name",
@@ -249,7 +251,7 @@ export const exportDispatchExcel = async (req, res) => {
         : ord.customerName || "-";
 
       // Format Gotra
-      const gotraStr = ord.gotra || (ord.doesNotKnowGotra ? "Not Provided (Shiva Gotra)" : "-");
+      const gotraStr = ord.gotra || (ord.doesNotKnowGotra ? "Not Provided" : "-");
 
       // Format Offerings
       const offeringsStr = Array.isArray(ord.offerings) && ord.offerings.length > 0
@@ -265,6 +267,20 @@ export const exportDispatchExcel = async (req, res) => {
             day: "2-digit",
             month: "short",
             year: "numeric",
+          });
+        }
+      }
+
+      // Ordered Date & Time formatted (createdAt / bookingDate)
+      let orderedDateStr = "-";
+      const orderDateRaw = ord.createdAt || ord.bookingDate || ord.date;
+      if (orderDateRaw) {
+        const d = new Date(orderDateRaw);
+        if (d) {
+          orderedDateStr = d.toLocaleDateString("en-IN", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric"
           });
         }
       }
@@ -301,6 +317,7 @@ export const exportDispatchExcel = async (req, res) => {
       const row = sheet.addRow({
         sno: index + 1,
         orderNumber: ord.orderNumber || "-",
+        orderedDate: orderedDateStr,
         serviceName: ord.pooja || ord.itemName || "-",
         scheduledDate: schedDateStr,
         customerName: ord.customerName || "-",
