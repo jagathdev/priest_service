@@ -47,6 +47,7 @@ export default function MediaManagerPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
   const [brokenImages, setBrokenImages] = useState<Record<string, boolean>>({});
+  const [dimensions, setDimensions] = useState<Record<string, { width: number; height: number }>>({});
 
   // Upload modal states
   const [isUploadOpen, setIsUploadOpen] = useState(false);
@@ -151,6 +152,24 @@ export default function MediaManagerPage() {
     if (bytes < 1024) return `${bytes} B`;
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
     return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+  };
+
+  const formatDateTime = (dateStr?: string) => {
+    if (!dateStr) return "Saved";
+    try {
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return "Saved";
+      return d.toLocaleString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      });
+    } catch {
+      return "Saved";
+    }
   };
 
   // Copy URL with instant visual feedback
@@ -605,6 +624,15 @@ export default function MediaManagerPage() {
                       controls
                       playsInline
                       className="w-full h-full object-cover object-center"
+                      onLoadedMetadata={(e) => {
+                        const vid = e.currentTarget;
+                        if (vid.videoWidth && vid.videoHeight) {
+                          setDimensions((prev) => ({
+                            ...prev,
+                            [item.filename]: { width: vid.videoWidth, height: vid.videoHeight },
+                          }));
+                        }
+                      }}
                     />
                   ) : (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -613,6 +641,15 @@ export default function MediaManagerPage() {
                       alt={item.originalName || item.filename}
                       className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300"
                       loading="lazy"
+                      onLoad={(e) => {
+                        const img = e.currentTarget;
+                        if (img.naturalWidth && img.naturalHeight) {
+                          setDimensions((prev) => ({
+                            ...prev,
+                            [item.filename]: { width: img.naturalWidth, height: img.naturalHeight },
+                          }));
+                        }
+                      }}
                       onError={() => {
                         setBrokenImages((prev) => ({ ...prev, [item.filename]: true }));
                       }}
@@ -623,6 +660,13 @@ export default function MediaManagerPage() {
                   <span className="absolute top-2.5 left-2.5 bg-black/60 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-0.5 rounded-md">
                     {ext}
                   </span>
+
+                  {/* Dimensions Pill on Thumbnail */}
+                  {dimensions[item.filename] && (
+                    <span className="absolute bottom-2.5 right-2.5 bg-black/70 backdrop-blur-xs text-white text-[10px] font-mono font-bold px-2 py-0.5 rounded-md shadow-xs">
+                      {dimensions[item.filename].width} × {dimensions[item.filename].height}
+                    </span>
+                  )}
 
                   {/* Quick Preview in New Tab */}
                   {!isBroken && (
@@ -647,9 +691,22 @@ export default function MediaManagerPage() {
                     >
                       {item.filename}
                     </p>
-                    <p className="text-[11px] text-slate-400 font-medium mt-0.5">
-                      {formatSize(item.size)} • {item.createdAt ? new Date(item.createdAt).toLocaleDateString() : "Saved"}
-                    </p>
+                    <div className="mt-1 space-y-0.5">
+                      <div className="flex items-center gap-1.5 flex-wrap text-[11px] text-slate-500 font-medium">
+                        {dimensions[item.filename] && (
+                          <>
+                            <span className="font-bold text-slate-700 bg-slate-100 border border-slate-200/60 px-1.5 py-0.2 rounded text-[10px]">
+                              {dimensions[item.filename].width} × {dimensions[item.filename].height}
+                            </span>
+                            <span className="text-slate-300">•</span>
+                          </>
+                        )}
+                        <span>{formatSize(item.size)}</span>
+                      </div>
+                      <p className="text-[10px] text-slate-400 font-medium">
+                        {formatDateTime(item.createdAt)}
+                      </p>
+                    </div>
                   </div>
 
                   {/* Link Bar with 1-Click Copy */}
