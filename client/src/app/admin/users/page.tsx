@@ -30,6 +30,9 @@ interface DevoteeUser {
   totalAmountSpent: number;
   status: "Active" | "Inactive";
   isVerified: boolean;
+  isLoggedIn?: boolean;
+  lastLoginAt?: string | null;
+  sessionExpiresAt?: string | null;
   utmSource?: string;
   utmCampaign?: string;
   createdAt: string;
@@ -40,6 +43,8 @@ interface DevoteeUser {
 interface StatsData {
   totalUsers: number;
   activeUsers: number;
+  verifiedUsers?: number;
+  currentlyLoggedIn?: number;
   trashUsers?: number;
   totalRevenue: number;
 }
@@ -490,20 +495,26 @@ export default function AdminUsersPage() {
 
       {/* Stats Cards Row */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {/* Total Users */}
+        {/* Currently Logged-in Users (Active Session within 7 days) */}
         <div className="bg-white rounded-2xl border border-gray-150 p-5 flex items-center gap-4 shadow-xs">
-          <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+          <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 relative">
             <UserGroupIcon className="w-6 h-6" />
+            <span className="absolute top-2 right-2 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white animate-pulse" />
           </div>
           <div>
-            <span className="block text-xs font-semibold text-gray-500">Active Users</span>
+            <div className="flex items-center gap-2">
+              <span className="block text-xs font-semibold text-gray-500">Currently Logged In</span>
+              <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded-full border border-emerald-200">
+                7 Days Active
+              </span>
+            </div>
             <span className="text-2xl font-black text-gray-900 tracking-tight">
-              {stats.totalUsers.toLocaleString("en-IN")}
+              {(stats.currentlyLoggedIn ?? 0).toLocaleString("en-IN")}
             </span>
           </div>
         </div>
 
-        {/* Active Verified Users */}
+        {/* Verified Users (All accounts) */}
         <div className="bg-white rounded-2xl border border-gray-150 p-5 flex items-center gap-4 shadow-xs">
           <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
             <CheckBadgeIcon className="w-6 h-6" />
@@ -511,7 +522,7 @@ export default function AdminUsersPage() {
           <div>
             <span className="block text-xs font-semibold text-gray-500">Verified Users</span>
             <span className="text-2xl font-black text-gray-900 tracking-tight">
-              {stats.activeUsers.toLocaleString("en-IN")}
+              {(stats.verifiedUsers ?? stats.activeUsers ?? stats.totalUsers ?? 0).toLocaleString("en-IN")}
             </span>
           </div>
         </div>
@@ -796,9 +807,23 @@ export default function AdminUsersPage() {
                           >
                             {initial}
                           </div>
-                          <span className="font-bold text-gray-900 truncate max-w-[170px]">
-                            {u.name || "Devotee"}
-                          </span>
+                          <div className="flex flex-col min-w-0">
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-bold text-gray-900 truncate max-w-[150px]">
+                                {u.name || "Devotee"}
+                              </span>
+                              {u.isLoggedIn ? (
+                                <span className="inline-flex items-center gap-1 text-[9px] font-extrabold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.2 rounded-full shrink-0" title="Active login session (within 7 days)">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                  Online
+                                </span>
+                              ) : (
+                                <span className="text-[9px] font-semibold text-gray-400 bg-gray-100 px-1.5 py-0.2 rounded-full shrink-0" title="Logged out / Inactive session">
+                                  Offline
+                                </span>
+                              )}
+                            </div>
+                          </div>
                         </div>
                       </td>
 

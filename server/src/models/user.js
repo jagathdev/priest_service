@@ -128,6 +128,20 @@ const userSchema = new mongoose.Schema(
             type: Date,
             default: null,
         },
+        isLoggedIn: {
+            type: Boolean,
+            default: false,
+            index: true,
+        },
+        lastLoginAt: {
+            type: Date,
+            default: null,
+        },
+        sessionExpiresAt: {
+            type: Date,
+            default: null,
+            index: true,
+        },
         utmSource: {
             type: String,
             default: "Direct",

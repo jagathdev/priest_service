@@ -192,6 +192,8 @@ export const verifyOtp = async (req, res) => {
         // CREATE USER IF NOT EXISTS
         // ==========================================
 
+        const sessionExpiryDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days active session
+
         if (!user) {
             user = await User.create({
                 mobileNumber: standardMobile,
@@ -201,6 +203,9 @@ export const verifyOtp = async (req, res) => {
                 isVerified: true,
                 walletBalance: 0,
                 addresses: [],
+                isLoggedIn: true,
+                lastLoginAt: new Date(),
+                sessionExpiresAt: sessionExpiryDate,
                 utmSource: String(utmSource || "Direct").trim(),
                 utmMedium: String(utmMedium || "").trim(),
                 utmCampaign: String(utmCampaign || "").trim(),
@@ -211,6 +216,9 @@ export const verifyOtp = async (req, res) => {
             // Existing user - ensure standard 91 format and verified status
             user.mobileNumber = standardMobile;
             user.isVerified = true;
+            user.isLoggedIn = true;
+            user.lastLoginAt = new Date();
+            user.sessionExpiresAt = sessionExpiryDate;
             if (!user.name || user.name.trim() === "") {
                 user.name = "Devotee";
             }

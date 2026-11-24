@@ -680,8 +680,21 @@ export const getAdminUsers = async (req, res) => {
       }
     });
 
+    const now = new Date();
     const totalUsersCount = await User.countDocuments({ role: "user", isDeleted: { $ne: true } });
-    const activeUsersCount = await User.countDocuments({ role: "user", isDeleted: { $ne: true }, isVerified: true });
+    const verifiedUsersCount = await User.countDocuments({ role: "user", isDeleted: { $ne: true }, isVerified: true });
+
+    // Count currently logged-in users with valid 7-day session window
+    const currentlyLoggedInCount = await User.countDocuments({
+      role: "user",
+      isDeleted: { $ne: true },
+      isLoggedIn: true,
+      $or: [
+        { sessionExpiresAt: { $gt: now } },
+        { lastLoginAt: { $gte: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000) } }
+      ]
+    });
+
     const trashUsersCount = await User.countDocuments({ role: "user", isDeleted: true });
 
     let totalRevenueAllUsers = 0;
@@ -743,6 +756,12 @@ export const getAdminUsers = async (req, res) => {
         totalAmountSpent: totalSpent,
         isVerified: u.isVerified !== false,
         status: u.isVerified !== false ? "Active" : "Inactive",
+        isLoggedIn: Boolean(u.isLoggedIn && (
+          (u.sessionExpiresAt && new Date(u.sessionExpiresAt) > now) ||
+          (u.lastLoginAt && new Date(u.lastLoginAt) >= new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000))
+        )),
+        lastLoginAt: u.lastLoginAt || null,
+        sessionExpiresAt: u.sessionExpiresAt || null,
         createdAt: u.createdAt,
         deletedAt: u.deletedAt || null,
         isDeleted: Boolean(u.isDeleted),
@@ -762,7 +781,9 @@ export const getAdminUsers = async (req, res) => {
         },
         stats: {
           totalUsers: totalUsersCount,
-          activeUsers: activeUsersCount,
+          verifiedUsers: verifiedUsersCount,
+          activeUsers: verifiedUsersCount,
+          currentlyLoggedIn: currentlyLoggedInCount,
           trashUsers: trashUsersCount,
           totalRevenue: totalRevenueAllUsers
         }
