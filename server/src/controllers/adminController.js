@@ -229,6 +229,7 @@ export const getAdminOrders = async (req, res) => {
       completedCount,
       cancelledCount,
       refundedCount,
+      revenueAgg,
     ] = await Promise.all([
       Order.countDocuments(query),
       Order.find(query)
@@ -246,7 +247,23 @@ export const getAdminOrders = async (req, res) => {
       Order.countDocuments({ ...baseStatsQuery, orderStatus: "completed" }),
       Order.countDocuments({ ...baseStatsQuery, orderStatus: "cancelled" }),
       Order.countDocuments({ ...baseStatsQuery, orderStatus: { $in: ["refunded", "refund"] } }),
+      Order.aggregate([
+        {
+          $match: {
+            ...baseStatsQuery,
+            orderStatus: { $nin: ["cancelled", "refunded", "refund"] },
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            totalRevenue: { $sum: { $ifNull: ["$pricing.total", 0] } },
+          },
+        },
+      ]),
     ]);
+
+    const totalRevenue = Array.isArray(revenueAgg) && revenueAgg.length > 0 ? revenueAgg[0].totalRevenue || 0 : 0;
 
     const formattedOrders = orders.map((ord) => ({
       ...ord.toObject(),
@@ -288,6 +305,7 @@ export const getAdminOrders = async (req, res) => {
         completed: completedCount,
         cancelled: cancelledCount,
         refunded: refundedCount,
+        totalRevenue: Math.round(totalRevenue || 0),
       },
     });
   } catch (error) {

@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   ChevronDownIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
   CheckIcon,
   CalendarDaysIcon,
   CheckCircleIcon,
@@ -143,7 +145,16 @@ interface StatsData {
   completed: number;
   cancelled: number;
   refunded: number;
+  totalRevenue?: number;
 }
+
+const formatIndianCurrency = (amount: number = 0): string => {
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 0,
+  }).format(amount);
+};
 
 export default function AdminOrdersPage() {
   const router = useRouter();
@@ -599,7 +610,28 @@ export default function AdminOrdersPage() {
       </div>
 
       {/* KPI Overview Metrics Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2.5">
+      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2.5">
+        {/* Total Revenue (Dynamic with Date Filter) */}
+        <div className={`p-3 rounded-2xl border text-left transition-all duration-150 flex flex-col justify-between ${startDate || endDate
+          ? "bg-emerald-50/70 border-emerald-400 ring-2 ring-emerald-400/40 shadow-sm"
+          : "bg-white border-gray-200 shadow-2xs"
+          }`}>
+          <div className="flex items-center justify-between text-gray-500 mb-1 w-full">
+            <span className="text-[11px] font-bold text-gray-700">Total Revenue</span>
+            <div className="w-6 h-6 rounded-lg bg-emerald-50 text-emerald-700 font-bold text-xs flex items-center justify-center shrink-0">
+              ₹
+            </div>
+          </div>
+          <div className="flex flex-col gap-0.5">
+            <span className="text-base sm:text-lg font-black text-emerald-700 tracking-tight">
+              {formatIndianCurrency(data.stats?.totalRevenue ?? 0)}
+            </span>
+            <span className="text-[9px] font-semibold text-gray-500 truncate">
+              {startDate || endDate ? "Selected Dates" : "All Paid"}
+            </span>
+          </div>
+        </div>
+
         {/* Total Bookings */}
         <button
           type="button"
@@ -1237,38 +1269,87 @@ export default function AdminOrdersPage() {
 
         {/* Pagination Footer */}
         {data.totalOrders > 0 && (
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-6 py-4 border-t border-gray-200 bg-gray-50">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-6 py-4 border-t border-gray-200 bg-white">
             <div className="text-xs text-gray-500 text-center sm:text-left">
               Showing{" "}
-              <span className="font-bold text-gray-900">
+              <span className="font-semibold text-gray-800">
                 {data.totalOrders === 0 ? 0 : (currentPage - 1) * data.limit + 1}
               </span>{" "}
               to{" "}
-              <span className="font-bold text-gray-900">
+              <span className="font-semibold text-gray-800">
                 {Math.min(currentPage * data.limit, data.totalOrders)}
               </span>{" "}
-              of <span className="font-bold text-gray-900">{data.totalOrders}</span> entries
+              of <span className="font-semibold text-gray-800">{data.totalOrders}</span> entries
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
+              {/* Previous Button */}
               <button
                 type="button"
                 disabled={currentPage === 1 || loading}
                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                className="px-3 py-1.5 rounded-lg border border-gray-300 bg-white text-gray-700 text-xs font-bold hover:bg-gray-100 disabled:opacity-40 transition cursor-pointer"
+                aria-label="Previous page"
+                className="w-8 h-8 rounded-lg border border-gray-200 bg-white text-gray-400 hover:text-gray-700 hover:border-gray-300 disabled:opacity-40 disabled:hover:border-gray-200 disabled:hover:text-gray-400 flex items-center justify-center transition cursor-pointer"
               >
-                Previous
+                <ChevronLeftIcon className="w-4 h-4" />
               </button>
-              <span className="text-xs font-bold text-gray-700 px-2">
-                {currentPage} / {data.totalPages}
-              </span>
+
+              {/* Numbered Page Buttons */}
+              {(() => {
+                const totalPages = data.totalPages;
+                let pageNumbers: (number | string)[] = [];
+
+                if (totalPages <= 7) {
+                  pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
+                } else {
+                  if (currentPage <= 4) {
+                    pageNumbers = [1, 2, 3, 4, 5, "...", totalPages];
+                  } else if (currentPage >= totalPages - 3) {
+                    pageNumbers = [1, "...", totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
+                  } else {
+                    pageNumbers = [1, "...", currentPage - 1, currentPage, currentPage + 1, "...", totalPages];
+                  }
+                }
+
+                return pageNumbers.map((page, idx) => {
+                  if (page === "...") {
+                    return (
+                      <span
+                        key={`ellipsis-${idx}`}
+                        className="w-8 h-8 flex items-center justify-center text-xs font-semibold text-gray-400 select-none"
+                      >
+                        ...
+                      </span>
+                    );
+                  }
+
+                  const isCurrent = page === currentPage;
+                  return (
+                    <button
+                      key={`page-${page}`}
+                      type="button"
+                      disabled={loading}
+                      onClick={() => setCurrentPage(page as number)}
+                      className={`w-8 h-8 rounded-lg text-xs font-bold transition flex items-center justify-center cursor-pointer ${isCurrent
+                        ? "bg-emerald-600 text-white shadow-xs"
+                        : "border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-300"
+                        }`}
+                    >
+                      {page}
+                    </button>
+                  );
+                });
+              })()}
+
+              {/* Next Button */}
               <button
                 type="button"
                 disabled={currentPage >= data.totalPages || loading}
                 onClick={() => setCurrentPage((p) => Math.min(data.totalPages, p + 1))}
-                className="px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 disabled:opacity-40 transition cursor-pointer shadow-2xs"
+                aria-label="Next page"
+                className="w-8 h-8 rounded-lg border border-gray-200 bg-white text-gray-500 hover:text-gray-800 hover:border-gray-300 disabled:opacity-40 disabled:hover:border-gray-200 disabled:hover:text-gray-500 flex items-center justify-center transition cursor-pointer"
               >
-                Next
+                <ChevronRightIcon className="w-4 h-4" />
               </button>
             </div>
           </div>

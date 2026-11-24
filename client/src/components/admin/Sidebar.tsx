@@ -19,8 +19,7 @@ import {
   ArrowDownTrayIcon,
   EnvelopeIcon,
   GlobeAltIcon,
-  ArrowTopRightOnSquareIcon,
-  ChartBarIcon,
+  ArrowTopRightOnSquareIcon
 } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
