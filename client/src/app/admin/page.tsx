@@ -212,8 +212,8 @@ export default async function AdminDashboard() {
           <Link href="/admin/orders" className="text-xs font-bold text-success hover:underline">View All →</Link>
         </div>
 
-        <div className="w-full overflow-x-hidden">
-          <table className="w-full text-left text-xs table-fixed">
+        <div className="w-full overflow-x-auto pb-2 scrollbar-thin">
+          <table className="w-full text-left text-xs min-w-[700px]">
             <thead className="bg-gray-50 text-gray-500 uppercase text-[10.5px] font-bold tracking-wider border-b border-gray-100">
               <tr>
                 <th className="py-3 px-3 w-10 text-center">#</th>

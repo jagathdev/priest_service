@@ -609,8 +609,9 @@ export default function AdminOrdersPage() {
         </div>
       </div>
 
-      {/* KPI Overview Metrics Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2.5">
+      {/* KPI Overview Metrics Cards with horizontal scroll on mobile */}
+      <div className="w-full overflow-x-auto pb-1.5 scrollbar-thin">
+        <div className="grid grid-cols-4 sm:grid-cols-4 lg:grid-cols-8 gap-2.5 min-w-[680px] sm:min-w-0">
         {/* Total Revenue (Dynamic with Date Filter) */}
         <div className={`p-3 rounded-2xl border text-left transition-all duration-150 flex flex-col justify-between ${startDate || endDate
           ? "bg-emerald-50/70 border-emerald-400 ring-2 ring-emerald-400/40 shadow-sm"
@@ -799,74 +800,77 @@ export default function AdminOrdersPage() {
             <span className="text-[9px] font-semibold text-gray-400">Delivered</span>
           </div>
         </button>
+        </div>
       </div>
 
       {/* Unified Filter & Action Toolbar */}
       <div className="bg-white rounded-2xl border border-gray-200 p-3.5 shadow-2xs flex flex-col gap-3">
         {/* Row 1: Mode Switcher Tabs (Left) & Search Box (Right) */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-          {/* Tabs */}
-          <div className="flex items-center gap-1.5 bg-gray-100/90 p-1 rounded-xl shrink-0">
-            <button
-              type="button"
-              onClick={() => {
-                setActiveTab("all");
-                setSelectedStatus("All");
-              }}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-extrabold transition-all cursor-pointer flex items-center gap-2 ${activeTab === "all"
-                ? "bg-white text-gray-900 shadow-xs"
-                : "text-gray-600 hover:text-gray-900"
-                }`}
-            >
-              <span>All Bookings</span>
-              <span
-                className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${activeTab === "all" ? "bg-blue-100 text-blue-800" : "bg-gray-200 text-gray-700"
+          {/* Tabs with Horizontal Scroll for Mobile */}
+          <div className="w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0 scrollbar-thin">
+            <div className="inline-flex items-center gap-1.5 bg-gray-100/90 p-1 rounded-xl shrink-0 min-w-max">
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab("all");
+                  setSelectedStatus("All");
+                }}
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-extrabold transition-all cursor-pointer flex items-center gap-2 whitespace-nowrap ${activeTab === "all"
+                  ? "bg-white text-gray-900 shadow-xs"
+                  : "text-gray-600 hover:text-gray-900"
                   }`}
               >
-                {data.stats?.total || data.totalOrders || 0}
-              </span>
-            </button>
+                <span>All Bookings</span>
+                <span
+                  className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${activeTab === "all" ? "bg-blue-100 text-blue-800" : "bg-gray-200 text-gray-700"
+                    }`}
+                >
+                  {data.stats?.total || data.totalOrders || 0}
+                </span>
+              </button>
 
-            <button
-              type="button"
-              onClick={() => {
-                setActiveTab("active");
-                setSelectedStatus("All");
-              }}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-extrabold transition-all cursor-pointer flex items-center gap-2 ${activeTab === "active"
-                ? "bg-white text-gray-900 shadow-xs"
-                : "text-gray-600 hover:text-gray-900"
-                }`}
-            >
-              <span>Active Bookings</span>
-              <span
-                className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${activeTab === "active" ? "bg-emerald-100 text-emerald-800" : "bg-gray-200 text-gray-700"
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab("active");
+                  setSelectedStatus("All");
+                }}
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-extrabold transition-all cursor-pointer flex items-center gap-2 whitespace-nowrap ${activeTab === "active"
+                  ? "bg-white text-gray-900 shadow-xs"
+                  : "text-gray-600 hover:text-gray-900"
                   }`}
               >
-                {(data.stats?.total || 0) - (data.stats?.completed || 0)}
-              </span>
-            </button>
+                <span>Active Bookings</span>
+                <span
+                  className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${activeTab === "active" ? "bg-emerald-100 text-emerald-800" : "bg-gray-200 text-gray-700"
+                    }`}
+                >
+                  {(data.stats?.total || 0) - (data.stats?.completed || 0)}
+                </span>
+              </button>
 
-            <button
-              type="button"
-              onClick={() => {
-                setActiveTab("completed");
-                setSelectedStatus("All");
-              }}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-extrabold transition-all cursor-pointer flex items-center gap-2 ${activeTab === "completed"
-                ? "bg-white text-emerald-800 shadow-xs"
-                : "text-gray-600 hover:text-gray-900"
-                }`}
-            >
-              <CheckIcon className="w-3.5 h-3.5 stroke-[3] text-emerald-600" />
-              <span>Completed Rituals</span>
-              <span
-                className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${activeTab === "completed" ? "bg-emerald-600 text-white" : "bg-gray-200 text-gray-700"
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab("completed");
+                  setSelectedStatus("All");
+                }}
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-extrabold transition-all cursor-pointer flex items-center gap-2 whitespace-nowrap ${activeTab === "completed"
+                  ? "bg-white text-emerald-800 shadow-xs"
+                  : "text-gray-600 hover:text-gray-900"
                   }`}
               >
-                {data.stats?.completed || 0}
-              </span>
-            </button>
+                <CheckIcon className="w-3.5 h-3.5 stroke-[3] text-emerald-600 shrink-0" />
+                <span>Completed Rituals</span>
+                <span
+                  className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${activeTab === "completed" ? "bg-emerald-600 text-white" : "bg-gray-200 text-gray-700"
+                    }`}
+                >
+                  {data.stats?.completed || 0}
+                </span>
+              </button>
+            </div>
           </div>
 
           {/* Search Box */}
