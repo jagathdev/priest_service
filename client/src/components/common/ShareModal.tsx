@@ -23,9 +23,23 @@ export default function ShareModal({ isOpen, onClose, data }: ShareModalProps) {
 
   if (!isOpen) return null;
 
-  const currentUrl =
+  const rawUrl =
     data.url ||
     (typeof window !== "undefined" ? window.location.href : "https://priestservices.astroved.com");
+
+  // Automatically append promo=shareButton to all shared URLs
+  const getShareUrlWithPromo = () => {
+    try {
+      const parsed = new URL(rawUrl, typeof window !== "undefined" ? window.location.origin : "https://priestservices.astroved.com");
+      parsed.searchParams.set("promo", "shareButton");
+      return parsed.toString();
+    } catch {
+      const separator = rawUrl.includes("?") ? "&" : "?";
+      return `${rawUrl}${separator}promo=shareButton`;
+    }
+  };
+
+  const currentUrl = getShareUrlWithPromo();
   const encodedUrl = encodeURIComponent(currentUrl);
 
   const pujaTitle = data.title || "Sacred Vedic Puja";
