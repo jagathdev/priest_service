@@ -1588,12 +1588,12 @@ export default function PujaDetailClient({
             <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1f1a17] mb-6">Puja Benefits</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
               {benefitsList.map((b, idx) => (
-                <div key={idx} data-reveal data-delay={((idx % 4) * 100).toString()} className="bg-white border border-stone-200/90 rounded-2xl p-5 flex items-start gap-4 shadow-xs hover:shadow-md transition-shadow">
-                  <div className="w-10 h-10 rounded-xl bg-[#800000] text-white flex items-center justify-center shrink-0 font-bold">
+                <div key={idx} data-reveal data-delay={((idx % 4) * 100).toString()} className="bg-white border border-stone-200/90 rounded-2xl p-4 sm:p-5 flex items-center sm:items-start gap-3.5 sm:gap-4 shadow-xs hover:shadow-md transition-shadow min-w-0">
+                  <div className="w-10 h-10 rounded-xl bg-[#800000] text-white flex items-center justify-center shrink-0 font-bold text-base shadow-xs">
                     {b.icon || "❖"}
                   </div>
-                  <div>
-                    <h3 className="font-bold text-stone-900 text-sm sm:text-base mb-1">{b.title}</h3>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-bold text-stone-900 text-sm sm:text-base mb-1 leading-snug">{b.title}</h3>
                     <p className="text-stone-600 text-xs sm:text-sm leading-relaxed">{b.description}</p>
                   </div>
                 </div>
@@ -1606,12 +1606,12 @@ export default function PujaDetailClient({
             <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1f1a17] mb-6">Puja Procedure</h2>
             <div className="space-y-4">
               {processList.map((step, idx) => (
-                <div key={idx} data-reveal data-delay={((idx % 4) * 100).toString()} className="bg-white border border-stone-200/90 rounded-2xl p-5 flex items-start gap-4 shadow-xs">
-                  <div className="w-10 h-10 rounded-xl bg-[#800000] text-white flex items-center justify-center shrink-0 font-bold text-sm">
+                <div key={idx} data-reveal data-delay={((idx % 4) * 100).toString()} className="bg-white border border-stone-200/90 rounded-2xl p-4 sm:p-5 flex items-center sm:items-start gap-3.5 sm:gap-4 shadow-xs min-w-0">
+                  <div className="w-10 h-10 rounded-xl bg-[#800000] text-white flex items-center justify-center shrink-0 font-bold text-sm shadow-xs">
                     {String(idx + 1).padStart(2, "0")}
                   </div>
-                  <div>
-                    <h3 className="font-bold text-stone-900 text-sm sm:text-base mb-1">{step.title}</h3>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-bold text-stone-900 text-sm sm:text-base mb-1 leading-snug">{step.title}</h3>
                     <p className="text-stone-600 text-xs sm:text-sm leading-relaxed">{step.description}</p>
                   </div>
                 </div>
