@@ -65,7 +65,7 @@ const slugify = (value: string) =>
     .replace(/\s+/g, "-")
     .replace(/-+/g, "-");
 
-const DEFAULT_HOMA_IMAGE = "/images/Lakshmi-Homam.jpg";
+const DEFAULT_HOMA_IMAGE = "";
 
 const getHomaImageUrl = (imageUrl?: string): string => {
   if (!imageUrl || typeof imageUrl !== "string") return DEFAULT_HOMA_IMAGE;

@@ -196,7 +196,7 @@ export default function CheckoutClient({ homa }: { homa: any }) {
 
               <div className="flex gap-4 items-start mb-6 border-b border-gray-100 pb-6">
                 <Image
-                  src={homa?.imageUrl || 'https://images.unsplash.com/photo-1601024445121-e5b82f020549'}
+                  src={homa?.imageUrl}
                   alt=""
                   width={80}
                   height={80}

@@ -847,7 +847,7 @@ export default function BookingsTab() {
               const bookingDate = formatCardDate(order.createdAt || order.bookingDate);
               const scheduledDate = order.scheduledDate ? formatCardDate(order.scheduledDate, "") : "";
               const bookingId = formatBookingId(order);
-              const serviceImg = order.image || order.serviceImage || order.imageUrl || "/images/Ganesh-Chaturthi-Mahapuja.jpg";
+              const serviceImg = order.image || order.serviceImage || order.imageUrl;
               const serviceTitle = order.itemName || order.pooja || order.serviceTitle || "Rahu Shanti Rudrabhishek";
               const templeLocation = order.temple || order.templeLocation || "Shri Rahu Temple, Paithani,";
 
@@ -874,7 +874,7 @@ export default function BookingsTab() {
                   <div className="flex items-start gap-2.5 sm:gap-4 mb-4 sm:mb-6">
                     <div className="w-20 h-14 sm:w-28 sm:h-20 bg-gray-100 rounded-lg sm:rounded-xl overflow-hidden shrink-0 relative border border-gray-100 shadow-xs flex items-center justify-center">
                       <Image
-                        src={serviceImg || "/images/Ganesh-Chaturthi-Mahapuja.jpg"}
+                        src={serviceImg}
                         alt={serviceTitle}
                         width={112}
                         height={80}

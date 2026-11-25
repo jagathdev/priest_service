@@ -4,6 +4,8 @@ import { Metadata } from 'next';
 import { getHomaBySlug } from '@/lib/homas';
 import HomaDetailClient from './HomaDetailClient';
 
+import { resolveAbsoluteImageUrl } from '@/config/images.config';
+
 type Props = {
   params: Promise<{ slug: string }>;
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -37,14 +39,10 @@ export async function generateMetadata(
   const rawImageUrl =
     homa?.imageUrl ||
     (homa as any)?.details?.heroImage ||
-    (homa as any)?.image ||
-    "https://www.priestservices.astroved.com/images/Lakshmi-Homam.jpg";
+    (homa as any)?.image;
 
-  const absoluteImageUrl = rawImageUrl.startsWith("http")
-    ? rawImageUrl
-    : `https://www.priestservices.astroved.com${rawImageUrl.startsWith("/") ? "" : "/"}${rawImageUrl}`;
-
-  const canonicalUrl = `https://www.priestservices.astroved.com/homa/${slug}`;
+  const absoluteImageUrl = resolveAbsoluteImageUrl(rawImageUrl);
+  const canonicalUrl = `https://priestservices.astroved.com/homa/${slug}`;
 
   return {
     title,

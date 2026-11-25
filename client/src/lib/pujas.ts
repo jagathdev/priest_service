@@ -88,12 +88,7 @@ export type PujaRecord = {
 
 const normalizeOfferings = (items: unknown) => {
   if (!Array.isArray(items) || items.length === 0) {
-    return [
-      { id: "e1", name: "Vastra Daan", price: 501, priceINR: 501, priceUSD: 6, priceMYR: 26, description: "Offer sacred clothes to the deity", imageUrl: "https://cdn.AstroVed.com/images/puja/vastra-daan.jpg", productId: 36 },
-      { id: "e2", name: "Anna Daan", price: 1101, priceINR: 1101, priceUSD: 14, priceMYR: 57, description: "Feed the needy in your name", imageUrl: "https://cdn.AstroVed.com/images/puja/anna-daan.jpg", productId: 36 },
-      { id: "e3", name: "Deep Daan", price: 251, priceINR: 251, priceUSD: 3, priceMYR: 13, description: "Lighting lamps for prosperity", imageUrl: "https://cdn.AstroVed.com/images/puja/deep-daan.jpg", productId: 36 },
-      { id: "e4", name: "Gau Seva", price: 501, priceINR: 501, priceUSD: 6, priceMYR: 26, description: "Feeding sacred cows", imageUrl: "https://cdn.AstroVed.com/images/puja/gau-seva.jpg", productId: 36 },
-    ];
+    return [];
   }
   return items.map((item, index) => {
     const off = item as Partial<PujaOffering> & { productId?: number; listPriceINR?: number | string; listPrice?: number | string };
@@ -108,7 +103,7 @@ const normalizeOfferings = (items: unknown) => {
       priceUSD: typeof off.priceUSD === 'number' ? off.priceUSD : Number(off.priceUSD || 0),
       priceMYR: typeof off.priceMYR === 'number' ? off.priceMYR : Number(off.priceMYR || 0),
       description: off.description || "Divine offering for the deity",
-      imageUrl: off.imageUrl || "https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&w=200&q=80",
+      imageUrl: off.imageUrl || "",
       productId: off.productId !== undefined ? off.productId : 36
     };
   });
@@ -206,9 +201,9 @@ const normalizePackages = (items: unknown, fallback: PujaPackage[]) => {
         imageUrl: (() => {
           const lowerName = (name || '').toLowerCase();
           if (lowerName.includes('family')) return '/images/package_family.png';
-          if (lowerName.includes('couple') || lowerName.includes('partner')) return '/images/package_couple.png';
+          if (lowerName.includes('couple') || lowerName.includes('partner')) return '/images/package_couple.webp';
           if (lowerName.includes('individual')) return '/images/package_individual.webp';
-          if (typeof pkg.imageUrl === 'string' && pkg.imageUrl.trim().length > 0 && !pkg.imageUrl.includes('partner.webp')) {
+          if (typeof pkg.imageUrl === 'string' && pkg.imageUrl.trim().length > 0 && !pkg.imageUrl.includes('package_couple.webp')) {
             return pkg.imageUrl.trim();
           }
           return fallback[index]?.imageUrl || '/images/package_individual.webp';
@@ -335,7 +330,7 @@ const buildOfferingsFromFlatFields = (puja: PujaRecord): PujaOffering[] | undefi
         name,
         price,
         description: description || `Recommended offering for ${name.toLowerCase()}.`,
-        imageUrl: imageUrl || "https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&w=200&q=80"
+        imageUrl: imageUrl
       });
     }
   }
@@ -374,7 +369,7 @@ export const defaultPackages: PujaPackage[] = [
     name: 'Partner Package',
     price: 81,
     description: 'For a couple or two devotees joining the puja together.',
-    imageUrl: '/images/package_couple.png',
+    imageUrl: '/images/package_couple.webp',
     devoteeCount: '2 Devotees',
   },
   {

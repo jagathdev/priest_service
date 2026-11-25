@@ -965,7 +965,7 @@ function PujaCard({
   onShare,
 }: PujaCardProps) {
   const cardUrl = slug ? `/puja/${slug}` : "/puja";
-  const srcStr = (typeof imageSrc === "string" ? imageSrc : (imageSrc as any)?.src) || "/images/Ganesh-Chaturthi-Mahapuja.jpg";
+  const srcStr = (typeof imageSrc === "string" ? imageSrc : (imageSrc as any)?.src);
   const rawImg = (() => {
     try {
       return encodeURI(decodeURI(srcStr));

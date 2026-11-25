@@ -121,31 +121,19 @@ const slugify = (value: string) =>
     .replace(/\s+/g, "-")
     .replace(/-+/g, "-");
 
+import { MEDIA_CONFIG, resolveImageUrl } from "@/config/images.config";
+
 const getPujaImageUrl = (imageUrl?: string): string => {
-  if (!imageUrl || typeof imageUrl !== "string") return "";
-  const trimmed = imageUrl.trim();
-  if (!trimmed) return "";
-  const safeEncode = (url: string) => {
-    try {
-      return encodeURI(decodeURI(url));
-    } catch {
-      return encodeURI(url);
-    }
-  };
-  if (trimmed.startsWith("http://") || trimmed.startsWith("https://") || trimmed.startsWith("data:")) {
-    return safeEncode(trimmed);
-  }
-  if (trimmed.startsWith("/")) {
-    return safeEncode(trimmed);
-  }
-  return `/${safeEncode(trimmed)}`;
+  return resolveImageUrl(imageUrl, MEDIA_CONFIG.DEFAULT_BANNER);
 };
 
 const DEFAULT_PACKAGE_AVATARS = [
-  "/images/package_individual.webp",
-  "/images/package_couple.png",
-  "/images/package_family.png",
+  MEDIA_CONFIG.PACKAGE_AVATARS.INDIVIDUAL,
+  MEDIA_CONFIG.PACKAGE_AVATARS.COUPLE,
+  MEDIA_CONFIG.PACKAGE_AVATARS.FAMILY,
 ];
+
+const DEFAULT_BANNER_IMAGE = MEDIA_CONFIG.DEFAULT_BANNER;
 
 export default function PujaDetailClient({
   initialPuja,
@@ -443,9 +431,9 @@ export default function PujaDetailClient({
     const getPackageAvatar = (pkgName: string, explicitImage?: string, idx: number = 0) => {
       const lower = (pkgName || "").toLowerCase();
       if (lower.includes("family")) return "/images/package_family.png";
-      if (lower.includes("couple") || lower.includes("partner")) return "/images/package_couple.png";
+      if (lower.includes("couple") || lower.includes("partner")) return "/images/package_couple.webp";
       if (lower.includes("individual")) return "/images/package_individual.webp";
-      if (explicitImage && typeof explicitImage === "string" && explicitImage.trim() && !explicitImage.includes("default") && !explicitImage.includes("partner.webp")) {
+      if (explicitImage && typeof explicitImage === "string" && explicitImage.trim() && !explicitImage.includes("default") && !explicitImage.includes("package_couple.webp")) {
         return explicitImage.trim();
       }
       return DEFAULT_PACKAGE_AVATARS[idx % DEFAULT_PACKAGE_AVATARS.length];
@@ -561,8 +549,6 @@ export default function PujaDetailClient({
     }
   };
 
-  const DEFAULT_BANNER_IMAGE = "/images/Navagraha-Shanti-Puja.jpg";
-
   const bannerImages: string[] = useMemo(() => {
     if (!puja) return [DEFAULT_BANNER_IMAGE];
     const list: string[] = [];
@@ -611,12 +597,6 @@ export default function PujaDetailClient({
     if (list.length === 0) {
       addUrl((puja?.details as any)?.imageUrl);
     }
-
-    // Fallback default image only if no image exists in DB at all
-    if (list.length === 0) {
-      list.push(DEFAULT_BANNER_IMAGE);
-    }
-
     return list;
   }, [puja]);
 
@@ -915,7 +895,7 @@ export default function PujaDetailClient({
                 className="relative w-full aspect-[3/2] sm:aspect-[3/2] sm:h-auto md:h-auto lg:h-[340px] xl:h-[415px] rounded-2xl min-[375px]:rounded-3xl overflow-hidden border border-stone-200/90 shadow-md group touch-pan-y bg-stone-100"
               >
                 <Image
-                  src={bannerImages[activeBannerIndex] || (puja ? getPujaImageUrl(puja.imageUrl) : "/images/Ganesh-Chaturthi-Mahapuja.jpg")}
+                  src={bannerImages[activeBannerIndex] || (puja ? getPujaImageUrl(puja.imageUrl) : "")}
                   alt={`${puja?.title || "Puja"} - Sacred Ritual Banner ${activeBannerIndex + 1}`}
                   fill
                   priority
@@ -1083,7 +1063,7 @@ export default function PujaDetailClient({
                     const pkgAvatar = lowerPkg.includes("family")
                       ? "/images/package_family.png"
                       : lowerPkg.includes("couple") || lowerPkg.includes("partner")
-                        ? "/images/package_couple.png"
+                        ? "/images/package_couple.webp"
                         : lowerPkg.includes("individual")
                           ? "/images/package_individual.webp"
                           : (pkg.imageUrl || DEFAULT_PACKAGE_AVATARS[idx % DEFAULT_PACKAGE_AVATARS.length]);
@@ -1138,7 +1118,7 @@ export default function PujaDetailClient({
                         {/* Avatar Image on the Left */}
                         <div className="relative w-11 h-11 sm:w-10 sm:h-10 lg:w-11 lg:h-11 rounded-full overflow-hidden shrink-0 border border-stone-200/90 bg-white shadow-2xs mr-3.5 sm:mr-2.5 lg:mr-3">
                           <Image
-                            src={pkgAvatar || "/images/Ganesh-Chaturthi-Mahapuja.jpg"}
+                            src={pkgAvatar}
                             alt={`${pkg.name || "Package"} - ${puja?.title || "Puja"}`}
                             width={56}
                             height={56}

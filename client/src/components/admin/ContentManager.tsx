@@ -616,7 +616,7 @@ export default function ContentManager({
             itemObj.devoteeCount = "4 Devotees";
             itemObj.devotees = 4;
           } else if (lowerName.includes("couple") || lowerName.includes("partner")) {
-            itemObj.imageUrl = "/images/package_couple.png";
+            itemObj.imageUrl = "/images/package_couple.webp";
             itemObj.devoteeCount = "2 Devotees";
             itemObj.devotees = 2;
           } else if (lowerName.includes("individual")) {
@@ -681,7 +681,7 @@ export default function ContentManager({
             newItem.devoteeCount = "1 Devotee";
           } else if (idx === 1) {
             newItem.name = "Couple Homa";
-            newItem.imageUrl = "/images/package_couple.png";
+            newItem.imageUrl = "/images/package_couple.webp";
             newItem.devoteeCount = "2 Devotees";
           } else if (idx === 2) {
             newItem.name = "Family Homa";

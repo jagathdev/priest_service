@@ -182,7 +182,7 @@ function SankalpContent() {
             setPujaData({
               _id: targetId,
               title: queryTitle || (itemType === "homa" ? "Vedic Homa Ritual" : "Sacred Vedic Puja"),
-              imageUrl: "/images/Ganesh-Chaturthi-Mahapuja.jpg",
+              imageUrl: "",
               packages: [],
             });
           }
@@ -192,7 +192,7 @@ function SankalpContent() {
         setPujaData({
           _id: targetId,
           title: queryTitle || "Sacred Vedic Ritual",
-          imageUrl: "/images/Ganesh-Chaturthi-Mahapuja.jpg",
+          imageUrl: "",
           packages: [],
         });
       } finally {
@@ -1001,7 +1001,7 @@ function SankalpContent() {
                   {/* Puja Item */}
                   <div className="flex gap-4 items-center mb-6">
                     <Image
-                      src={pujaData?.imageUrl || "/images/Ganesh-Chaturthi-Mahapuja.jpg"}
+                      src={pujaData?.imageUrl}
                       alt={pujaData?.title || queryTitle || "Puja"}
                       width={84}
                       height={64}

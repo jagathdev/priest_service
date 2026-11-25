@@ -4,6 +4,8 @@ import { Metadata } from 'next';
 import { getPujaBySlug } from '@/lib/pujas';
 import PujaDetailClient from './PujaDetailClient';
 
+import { resolveAbsoluteImageUrl } from '@/config/images.config';
+
 type Props = {
   params: Promise<{ slug: string }>;
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -37,14 +39,10 @@ export async function generateMetadata(
   const rawImageUrl =
     puja?.imageUrl ||
     (puja as any)?.details?.heroImage ||
-    (puja as any)?.image ||
-    "https://www.priestservices.astroved.com/images/navagraga_puja.png";
+    (puja as any)?.image;
 
-  const absoluteImageUrl = rawImageUrl.startsWith("http")
-    ? rawImageUrl
-    : `https://www.priestservices.astroved.com${rawImageUrl.startsWith("/") ? "" : "/"}${rawImageUrl}`;
-
-  const canonicalUrl = `https://www.priestservices.astroved.com/puja/${slug}`;
+  const absoluteImageUrl = resolveAbsoluteImageUrl(rawImageUrl);
+  const canonicalUrl = `https://priestservices.astroved.com/puja/${slug}`;
 
   return {
     title,
