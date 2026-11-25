@@ -892,7 +892,7 @@ export default function PujaDetailClient({
                   heroTouchStartY.current = null;
                   heroTouchEndY.current = null;
                 }}
-                className="relative w-full aspect-[3/2] sm:aspect-[3/2] sm:h-auto md:h-auto lg:h-[340px] xl:h-[415px] rounded-2xl min-[375px]:rounded-3xl overflow-hidden border border-stone-200/90 shadow-md group touch-pan-y bg-stone-100"
+                className="relative w-full min-h-[230px] sm:min-h-[300px] md:min-h-[360px] aspect-[3/2] sm:h-auto md:h-auto lg:h-[340px] xl:h-[415px] rounded-2xl min-[375px]:rounded-3xl overflow-hidden border border-stone-200/90 shadow-md group touch-pan-y bg-stone-100"
               >
                 <Image
                   src={bannerImages[activeBannerIndex] || (puja ? getPujaImageUrl(puja.imageUrl) : "")}

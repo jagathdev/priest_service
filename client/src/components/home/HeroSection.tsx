@@ -365,7 +365,7 @@ export default function HeroSection({ initialBanners }: { initialBanners?: any[]
           {/* Carousel Viewport Container with Overlapping Navigation Arrows */}
           <div className="relative w-full">
             {/* Smooth Fade Carousel Viewport */}
-            <div className="relative w-full aspect-[3/2] sm:aspect-[3/2] sm:h-auto md:h-auto lg:h-[340px] xl:h-[415px] rounded-2xl min-[375px]:rounded-3xl overflow-hidden shadow-2xl border border-stone-200/80 bg-stone-100 group/carousel">
+            <div className="relative w-full min-h-[230px] sm:min-h-[300px] md:min-h-[360px] aspect-[3/2] sm:h-auto md:h-auto lg:h-[340px] xl:h-[415px] rounded-2xl min-[375px]:rounded-3xl overflow-hidden shadow-2xl border border-stone-200/80 bg-stone-100 group/carousel">
               {bannerSlides.map((slide, idx) => {
                 const isActive = idx === currentSafeSlideIndex;
                 return (

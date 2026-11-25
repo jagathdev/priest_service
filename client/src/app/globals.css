@@ -49,6 +49,30 @@ img:not([class*="h-full"]):not([class*="absolute"]) {
   height: auto;
 }
 
+/* Fallback for iOS 14 / Safari <15 which lack CSS aspect-ratio support */
+@supports not (aspect-ratio: 1 / 1) {
+  [class*="aspect-\[3\/2\]"] {
+    min-height: 220px;
+    height: auto;
+  }
+  @media (min-width: 640px) {
+    [class*="aspect-\[3\/2\]"] {
+      min-height: 280px;
+    }
+  }
+  @media (min-width: 1024px) {
+    [class*="aspect-\[3\/2\]"] {
+      min-height: 340px;
+    }
+  }
+  [class*="aspect-\[4\/3\]"] {
+    min-height: 240px;
+  }
+  [class*="aspect-\[16\/9\]"] {
+    min-height: 200px;
+  }
+}
+
 body {
   background: #ffffff;
   color: var(--brand-ink);
