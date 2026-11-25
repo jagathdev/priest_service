@@ -245,10 +245,23 @@ export const exportDispatchExcel = async (req, res) => {
 
     // Populate rows (Row 4 onwards)
     orders.forEach((ord, index) => {
+      const isTarpanam = Boolean(
+        ord.isTarpanam ||
+        ord.pooja?.toLowerCase().includes("tharpanam") ||
+        ord.pooja?.toLowerCase().includes("tarpanam") ||
+        ord.itemName?.toLowerCase().includes("tharpanam") ||
+        ord.itemName?.toLowerCase().includes("tarpanam")
+      );
+
       // Format Participants List
       const participantsStr = Array.isArray(ord.participants) && ord.participants.length > 0
-        ? ord.participants.map((p, i) => `${i + 1}. ${p.name || ""}${p.gotra ? ` (${p.gotra})` : ""}`).join("\n")
-        : ord.customerName || "-";
+        ? ord.participants.map((p, i) => {
+            const isAncestor = isTarpanam ? (p.isAncestor || p.role === "ancestor" || i > 0) : false;
+            const tag = isTarpanam ? (isAncestor ? " (ancestor)" : " (devotee)") : "";
+            const gotraPart = p.gotra ? ` (${p.gotra})` : "";
+            return `${i + 1}. ${p.name || ""}${tag}${gotraPart}`;
+          }).join("\n")
+        : (isTarpanam && ord.customerName ? `${ord.customerName} (devotee)` : (ord.customerName || "-"));
 
       // Format Gotra
       const gotraStr = ord.gotra || (ord.doesNotKnowGotra ? "Not Provided" : "-");

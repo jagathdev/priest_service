@@ -4,7 +4,6 @@ import { validatePromoCode } from "./promoCode.service.js";
 import { normalizeServiceType } from "../utils/serviceType.js";
 
 const DEFAULT_EXTRA_PARTICIPANT_PRICE = 300;
-const DEFAULT_BASE_PRICE = 1251;
 
 
 export const calculateServicePrice = ({
@@ -16,12 +15,17 @@ export const calculateServicePrice = ({
         service.basePrice ||
         service.packages?.[0]?.priceINR ||
         service.packages?.[0]?.price ||
-        service.price ||
-        DEFAULT_BASE_PRICE;
+        service.price;
 
     // Extra participants
+    const serviceTitle = String(service.title || service.name || "").toLowerCase();
+    const serviceSlug = String(service.slug || "").toLowerCase();
+    const isTarpanam = serviceTitle.includes("tharpanam") || serviceTitle.includes("tarpanam") ||
+        serviceSlug.includes("tharpanam") || serviceSlug.includes("tarpanam");
+    const baseIncludedCount = isTarpanam ? 2 : 1;
+
     const extraParticipantCount = Math.max(
-        participantCount - 1,
+        participantCount - baseIncludedCount,
         0
     );
 
@@ -145,7 +149,15 @@ export const computeServerPrice = async ({ serviceId, serviceType, packageId, pa
 
     // Default devotees calculation
     let defaultDevotees = 1;
-    if (selectedPackage) {
+    const serviceTitle = String(service.title || service.name || "").toLowerCase();
+    const serviceSlug = String(service.slug || "").toLowerCase();
+    const isTarpanam = serviceTitle.includes("tharpanam") || serviceTitle.includes("tarpanam") ||
+        serviceSlug.includes("tharpanam") || serviceSlug.includes("tarpanam");
+
+    if (isTarpanam) {
+        // Tarpanam base includes 1 Karta (Devotee) + 1 Ancestor = 2 participants
+        defaultDevotees = 2;
+    } else if (selectedPackage) {
         const pkgName = String(selectedPackage.name || "").toLowerCase();
         const devoteeStr = String(selectedPackage.devoteeCount || selectedPackage.devotees || "");
         if (pkgName.includes("family") || devoteeStr.includes("4")) {
@@ -235,4 +247,4 @@ export const computeServerPrice = async ({ serviceId, serviceType, packageId, pa
         finalAmount,
         promoCodeId,
     };
-};
+};

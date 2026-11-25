@@ -39,7 +39,8 @@ interface OrderItem {
   customerName?: string;
   mobileNumber?: string;
   whatsappNumber: string;
-  participants: Array<{ name: string; gotra?: string; doesNotKnowGotra?: boolean }>;
+  isTarpanam?: boolean;
+  participants: Array<{ name: string; gotra?: string; doesNotKnowGotra?: boolean; role?: string; isAncestor?: boolean }>;
   gotra?: string;
   doesNotKnowGotra?: boolean;
   wish?: string;
@@ -469,7 +470,7 @@ export default function AdminServiceDispatchPage() {
                           {ord.orderNumber}
                         </span>
                       </td>
-
+          
                       {/* Service / Puja */}
                       <td className="py-3 px-3 align-middle overflow-hidden">
                         <span className="font-extrabold text-gray-900 block truncate" title={ord.pooja || ord.itemName}>
@@ -514,25 +515,50 @@ export default function AdminServiceDispatchPage() {
 
                       {/* Devotees List for Sankalpam */}
                       <td className="py-3 px-3 align-middle overflow-hidden">
-                        <div className="space-y-1">
-                          {Array.isArray(ord.participants) && ord.participants.length > 0 ? (
-                            ord.participants.map((p, pIdx) => (
-                              <div key={pIdx} className="flex items-center gap-1.5 text-xs text-gray-900 font-bold truncate">
-                                <span className="w-4 h-4 rounded-full bg-emerald-100 text-emerald-800 text-[10px] flex items-center justify-center shrink-0">
-                                  {pIdx + 1}
-                                </span>
-                                <span className="truncate">{p.name}</span>
-                                {p.gotra && (
-                                  <span className="text-[10px] font-normal text-gray-500">
-                                    ({p.gotra})
-                                  </span>
-                                )}
-                              </div>
-                            ))
-                          ) : (
-                            <span className="font-bold text-gray-900">{ord.customerName}</span>
-                          )}
-                        </div>
+                        {(() => {
+                          const isTarpanam = Boolean(
+                            ord.isTarpanam ||
+                            ord.pooja?.toLowerCase().includes("tharpanam") ||
+                            ord.pooja?.toLowerCase().includes("tarpanam") ||
+                            ord.itemName?.toLowerCase().includes("tharpanam") ||
+                            ord.itemName?.toLowerCase().includes("tarpanam")
+                          );
+
+                          return (
+                            <div className="space-y-1">
+                              {Array.isArray(ord.participants) && ord.participants.length > 0 ? (
+                                ord.participants.map((p, pIdx) => {
+                                  const isAncestor = isTarpanam ? (p.isAncestor || p.role === "ancestor" || pIdx > 0) : false;
+                                  return (
+                                    <div key={pIdx} className="flex items-center gap-1.5 text-xs text-gray-900 font-bold truncate">
+                                      <span className={`w-4 h-4 rounded-full text-[10px] flex items-center justify-center shrink-0 ${isAncestor
+                                        ? "bg-amber-100 text-amber-900 border border-amber-300"
+                                        : "bg-emerald-100 text-emerald-800"
+                                        }`}>
+                                        {pIdx + 1}
+                                      </span>
+                                      <span className="truncate">
+                                        {p.name}
+                                        {isTarpanam && (
+                                          <span className={`text-[10px] font-semibold ml-1 ${isAncestor ? "text-amber-700" : "text-emerald-700"}`}>
+                                            ({isAncestor ? "ancestor" : "devotee"})
+                                          </span>
+                                        )}
+                                      </span>
+                                      {p.gotra && (
+                                        <span className="text-[10px] font-normal text-gray-500">
+                                          ({p.gotra})
+                                        </span>
+                                      )}
+                                    </div>
+                                  );
+                                })
+                              ) : (
+                                <span className="font-bold text-gray-900">{ord.customerName}</span>
+                              )}
+                            </div>
+                          );
+                        })()}
                       </td>
 
                       {/* Gotra & Wish */}

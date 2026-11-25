@@ -17,6 +17,15 @@ const participantSchema = new mongoose.Schema(
             type: Boolean,
             default: false,
         },
+        role: {
+            type: String,
+            enum: ["devotee", "karta", "ancestor", "participant"],
+            default: "participant",
+        },
+        isAncestor: {
+            type: Boolean,
+            default: false,
+        },
     },
     {
         _id: false,
@@ -95,10 +104,16 @@ const orderSchema = new mongoose.Schema(
                 imageUrl: { type: String, default: "" },
             },
         ],
+        isTarpanam: {
+            type: Boolean,
+            default: false,
+        },
         pricing: {
             basePrice: { type: Number, default: 0 },
             extraParticipantCount: { type: Number, default: 0 },
             extraParticipantAmount: { type: Number, default: 0 },
+            extraAncestorCount: { type: Number, default: 0 },
+            extraAncestorAmount: { type: Number, default: 0 },
             offeringsAmount: { type: Number, default: 0 },
             convenienceFee: { type: Number, default: 0 },
             panditFee: { type: Number, default: 0 },

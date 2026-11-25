@@ -271,13 +271,22 @@ function SankalpContent() {
     return 1;
   }, [selectedPackage]);
 
+  // Exclusively detect Rameswaram Tarpanam ritual
+  const isTarpanam = React.useMemo(() => {
+    const s = String(slug || "").toLowerCase();
+    const t = String(pujaData?.title || queryTitle || "").toLowerCase();
+    return s.includes("tharpanam") || s.includes("tarpanam") || t.includes("tharpanam") || t.includes("tarpanam");
+  }, [slug, pujaData?.title, queryTitle]);
+
+  const targetParticipantCount = isTarpanam ? 2 : defaultParticipantCount;
+
   useEffect(() => {
     setFormData(prev => {
       // Only set default if user hasn't typed anything yet
-      if (prev.participants.every(p => !p.name.trim() && !p.gotra.trim()) && prev.participants.length !== defaultParticipantCount) {
+      if (prev.participants.every(p => !p.name.trim() && !p.gotra.trim()) && prev.participants.length !== targetParticipantCount) {
         return {
           ...prev,
-          participants: Array.from({ length: defaultParticipantCount }, () => ({
+          participants: Array.from({ length: targetParticipantCount }, () => ({
             name: "",
             gotra: "",
             dontKnowGotra: false
@@ -286,7 +295,7 @@ function SankalpContent() {
       }
       return prev;
     });
-  }, [defaultParticipantCount]);
+  }, [targetParticipantCount]);
 
   const offeringsList = React.useMemo(() => {
     return pujaData?.offerings && pujaData.offerings.length > 0 ? pujaData.offerings : [];
@@ -294,7 +303,7 @@ function SankalpContent() {
 
   const packageName = selectedPackage?.name || "Standard Seva Package";
   const basePrice = selectedPackage?.priceINR ?? selectedPackage?.price ?? (queryAmount ? Number(queryAmount) : getStartingPriceINR(pujaData) ?? 0);
-  const extraParticipantCount = Math.max(0, formData.participants.length - defaultParticipantCount);
+  const extraParticipantCount = Math.max(0, formData.participants.length - (isTarpanam ? 2 : defaultParticipantCount));
   const extraParticipantFee = extraParticipantCount * 300;
   const offeringsTotal = selectedOfferings.reduce((sum, item) => sum + (Number(item.priceINR ?? item.price) || 0), 0);
   const finalPrice = basePrice + extraParticipantFee + offeringsTotal;
@@ -409,11 +418,23 @@ function SankalpContent() {
         whatsappNumber: formattedWa,
         participants: formData.participants
           .filter((p) => p.name.trim())
-          .map((p) => ({
+          .map((p, pIdx) => ({
             name: p.name.trim(),
             gotra: p.dontKnowGotra ? "" : p.gotra.trim(),
-            doesNotKnowGotra: !!p.dontKnowGotra
+            doesNotKnowGotra: !!p.dontKnowGotra,
+            role: isTarpanam ? (pIdx === 0 ? "karta" : "ancestor") : "participant",
+            isAncestor: isTarpanam && pIdx > 0,
           })),
+        isTarpanam: isTarpanam,
+        pricing: {
+          basePrice: basePrice,
+          extraParticipantCount: !isTarpanam ? extraParticipantCount : 0,
+          extraParticipantAmount: !isTarpanam ? extraParticipantFee : 0,
+          extraAncestorCount: isTarpanam ? extraParticipantCount : 0,
+          extraAncestorAmount: isTarpanam ? extraParticipantFee : 0,
+          offeringsAmount: offeringsTotal,
+          total: paidAmount,
+        },
         gotra: formData.participants[0]?.dontKnowGotra ? "" : (formData.participants[0]?.gotra.trim() || formData.gotra.trim()),
         doesNotKnowGotra: formData.participants[0]?.dontKnowGotra || formData.dontKnowGotra,
         wish: formData.wish,
@@ -423,13 +444,6 @@ function SankalpContent() {
         offerings: offeringsPayload,
         originalAmount: finalPrice,
         discountAmount: discountAmt,
-        pricing: {
-          basePrice: basePrice,
-          extraParticipantCount: extraParticipantCount,
-          extraParticipantAmount: extraParticipantFee,
-          offeringsAmount: offeringsTotal,
-          total: paidAmount
-        },
         ...storedAttribution,
         promo: trackingPromoParam,
       };
@@ -750,8 +764,20 @@ function SankalpContent() {
                       </p>
                     </div>
 
-                    {/* Devotees List */}
+                    {/* Devotees / Ancestors List */}
                     <div className="space-y-4">
+                      {isTarpanam && (
+                        <div className="bg-amber-50/80 border border-amber-200 rounded-2xl p-3.5 sm:p-4 text-xs text-amber-900 flex items-start gap-2.5">
+                          <span className="text-base leading-none">🕊️</span>
+                          <div>
+                            <span className="font-bold block">Sacred Rameswaram Tharpanam Sankalpam</span>
+                            <span className="text-[11px] text-amber-800">
+                              Please enter the living devotee (Karta) performing the ritual and the departed family member (Ancestor) name(s) to receive the sacred offerings.
+                            </span>
+                          </div>
+                        </div>
+                      )}
+
                       {formData.participants.map((p, idx) => {
                         const isNameEmpty = !p.name.trim();
                         const isNameValidLetters = /^[a-zA-Z\s]+$/.test(p.name.trim());
@@ -762,17 +788,20 @@ function SankalpContent() {
                             key={idx}
                             className="bg-white rounded-2xl border border-stone-200 p-4 sm:p-5 shadow-xs transition-shadow hover:shadow-sm"
                           >
-                            {/* Card Header with Participant Badge */}
+                            {/* Card Header with Participant / Ancestor Badge */}
                             <div className="flex items-center justify-between mb-4">
                               <div className="flex items-center gap-2.5">
-                                <span className="w-6 h-6 rounded-full bg-stone-100 border border-stone-400 text-stone-700 text-xs font-bold flex items-center justify-center">
+                                <span className={`w-6 h-6 rounded-full border text-xs font-bold flex items-center justify-center ${isTarpanam && idx > 0
+                                  ? "bg-amber-100 border-amber-400 text-amber-800"
+                                  : "bg-stone-100 border-stone-400 text-stone-700"
+                                  }`}>
                                   {idx + 1}
                                 </span>
                                 <span className="text-sm font-bold text-stone-800">
-                                  Participant {idx + 1}
+                                  {isTarpanam ? (idx === 0 ? "Devotee Name" : `Ancestor ${idx} (Departed Soul)`) : `Participant ${idx + 1}`}
                                 </span>
                               </div>
-                              {formData.participants.length > defaultParticipantCount && (
+                              {formData.participants.length > (isTarpanam ? 2 : defaultParticipantCount) && idx > 0 && (
                                 <button
                                   type="button"
                                   onClick={() => {
@@ -786,12 +815,12 @@ function SankalpContent() {
                               )}
                             </div>
 
-                            {/* Participant Inputs Grid: Name & Gotra */}
+                            {/* Participant / Ancestor Inputs Grid: Name & Gotra */}
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                              {/* Participant Name */}
+                              {/* Name Input */}
                               <div>
                                 <label className="block text-stone-800 font-semibold text-xs mb-2">
-                                  Participant Name <span className="text-red-500">*</span>
+                                  {isTarpanam ? (idx === 0 ? "Devotee Name" : "Ancestor Name") : "Participant Name"} <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -802,7 +831,7 @@ function SankalpContent() {
                                     newP[idx] = { ...newP[idx], name: sanitized };
                                     setFormData({ ...formData, participants: newP });
                                   }}
-                                  placeholder="Enter devotee name"
+                                  placeholder={isTarpanam ? (idx === 0 ? "Enter devotee/karta name" : "Enter departed ancestor name") : "Enter devotee name"}
                                   className={`w-full border rounded-xl px-4 py-2.5 text-sm font-medium outline-none transition ${hasNameError
                                     ? "border-red-400 bg-red-50/20"
                                     : "border-stone-600 focus:border-[#00B05F] bg-white"
@@ -810,15 +839,17 @@ function SankalpContent() {
                                 />
                                 {hasNameError && (
                                   <p className="text-[10px] sm:text-[11px] text-red-500 mt-1.5 font-semibold">
-                                    {isNameEmpty ? "Please provide a name." : "Participant name must contain characters only."}
+                                    {isNameEmpty
+                                      ? (isTarpanam && idx > 0 ? "Please provide ancestor name." : "Please provide a name.")
+                                      : (isTarpanam && idx > 0 ? "Ancestor name must contain characters only." : "Participant name must contain characters only.")}
                                   </p>
                                 )}
                               </div>
 
-                              {/* Participant Gotra */}
+                              {/* Gotra Input */}
                               <div>
                                 <label className="block text-stone-800 font-semibold text-xs mb-2">
-                                  Gotra
+                                  {isTarpanam && idx > 0 ? "Ancestor Gotra (Optional)" : "Gotra"}
                                 </label>
                                 <input
                                   type="text"
@@ -861,7 +892,7 @@ function SankalpContent() {
                         );
                       })}
 
-                      {/* Add Participant Button */}
+                      {/* Add Participant / Extra Ancestor Button */}
                       <div className="pt-1">
                         <button
                           type="button"
@@ -876,11 +907,13 @@ function SankalpContent() {
                           }
                           className="text-sm font-bold text-[#00B05F] bg-white border border-dashed border-[#00B05F] rounded-full px-5 py-2.5 flex items-center gap-1.5 hover:bg-[#00B05F]/5 transition-colors shadow-2xs"
                         >
-                          <span>+ Add participant</span>
+                          <span>{isTarpanam ? "+ Add Extra Ancestor" : "+ Add participant"}</span>
                           <span className="font-extrabold">+₹300</span>
                         </button>
                         <p className="text-[11px] text-stone-500 mt-2.5 font-medium">
-                          These names will be included in the sacred sankalpam during the puja.
+                          {isTarpanam
+                            ? "Ancestor names will be chanted with reverence during the coastal Rameswaram Tharpanam ritual."
+                            : "These names will be included in the sacred sankalpam during the puja."}
                         </p>
                       </div>
                     </div>
@@ -1038,7 +1071,9 @@ function SankalpContent() {
                     </div>
                     {extraParticipantCount > 0 && (
                       <div className="flex justify-between items-center">
-                        <span className="font-medium">Extra Participants ({extraParticipantCount})</span>
+                        <span className="font-medium">
+                          {isTarpanam ? `Extra Ancestors (${extraParticipantCount})` : `Extra Participants (${extraParticipantCount})`}
+                        </span>
                         <span className="font-extrabold text-[#980000]">+₹{extraParticipantFee}</span>
                       </div>
                     )}

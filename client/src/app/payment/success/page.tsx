@@ -11,6 +11,7 @@ import {
   PlayCircle,
   Gift,
   MapPin,
+  Calendar,
   X,
   Phone,
   User,
@@ -688,11 +689,11 @@ function SuccessContent() {
         <div className="pt-4 flex flex-col items-center space-y-4 w-full">
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-2.5 sm:gap-4 w-full max-w-md sm:max-w-none px-2 sm:px-0">
             <Link
-              href="/account?tab=address"
+              href="/account?tab=bookings"
               className="bg-success hover:bg-[#009644] text-white font-extrabold text-xs sm:text-sm px-4 sm:px-8 py-3 sm:py-3.5 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 text-center"
             >
-              <MapPin className="w-4 h-4 shrink-0" />
-              <span>View Saved Addresses</span>
+              <Calendar className="w-4 h-4 shrink-0" />
+              <span>View Bookings</span>
             </Link>
             <Link
               href="/"

@@ -630,61 +630,96 @@ export default function AdminOrderDetailPage({ params }: { params: Promise<{ id:
         </div>
       </div>
 
-      {/* Row 3: Participants Details Table */}
-      <div className="bg-white rounded-2xl border border-gray-150 shadow-xs overflow-hidden">
-        <div className="p-4 sm:px-6 sm:py-3.5 border-b border-gray-100 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <UserIcon className="w-4 h-4 text-blue-600" />
-            <h3 className="text-xs sm:text-sm font-bold text-gray-900">Participants Details</h3>
-          </div>
-          <span className="text-[11px] font-bold bg-emerald-50 text-emerald-700 px-2.5 py-0.5 rounded-full border border-emerald-200">
-            {order.participants?.length || 1} Participant{(order.participants?.length || 1) > 1 ? "s" : ""}
-          </span>
-        </div>
+      {/* Row 3: Participants / Ancestors Details Table */}
+      {(() => {
+        const isOrderTarpanam = Boolean(
+          order.isTarpanam ||
+          order.pooja?.toLowerCase().includes("tharpanam") ||
+          order.pooja?.toLowerCase().includes("tarpanam") ||
+          order.itemName?.toLowerCase().includes("tharpanam") ||
+          order.itemName?.toLowerCase().includes("tarpanam")
+        );
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-gray-50/70 border-b border-gray-150 text-[11px] font-bold text-gray-500 uppercase tracking-wider">
-              <tr>
-                <th className="py-3 pl-6 pr-3 w-12">#</th>
-                <th className="py-3 px-4">Name</th>
-                <th className="py-3 px-4">Gotra</th>
-                <th className="py-3 px-4">Do Not Know Gotra</th>
-                <th className="py-3 px-4">Gender</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100 font-medium text-gray-700">
-              {order.participants && order.participants.length > 0 ? (
-                order.participants.map((p: any, idx: number) => (
-                  <tr key={idx} className="hover:bg-gray-50/60 transition">
-                    <td className="py-3.5 pl-6 pr-3 font-bold text-gray-400">{idx + 1}</td>
-                    <td className="py-3.5 px-4 font-bold text-gray-900">{p.name}</td>
-                    <td className="py-3.5 px-4 font-semibold text-gray-800">
-                      {p.doesNotKnowGotra ? "–" : (p.gotra || order.gotra || "Not specified")}
-                    </td>
-                    <td className="py-3.5 px-4">
-                      {p.doesNotKnowGotra ? (
-                        <span className="text-amber-700 font-bold bg-amber-50 px-2 py-0.5 rounded-md">Yes</span>
-                      ) : (
-                        <span className="text-gray-500">No</span>
-                      )}
-                    </td>
-                    <td className="py-3.5 px-4 text-gray-600">Male</td>
+        return (
+          <div className="bg-white rounded-2xl border border-gray-150 shadow-xs overflow-hidden">
+            <div className="p-4 sm:px-6 sm:py-3.5 border-b border-gray-100 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <UserIcon className="w-4 h-4 text-blue-600" />
+                <h3 className="text-xs sm:text-sm font-bold text-gray-900">
+                  {isOrderTarpanam ? "Sankalpam: Devotee (Karta) & Ancestors (Pitrus)" : "Participants Details"}
+                </h3>
+              </div>
+              <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${isOrderTarpanam
+                ? "bg-amber-50 text-amber-800 border-amber-200"
+                : "bg-emerald-50 text-emerald-700 border-emerald-200"
+                }`}>
+                {isOrderTarpanam ? "🕊️ Rameswaram Tharpanam" : `${order.participants?.length || 1} Participant${(order.participants?.length || 1) > 1 ? "s" : ""}`}
+              </span>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-gray-50/70 border-b border-gray-150 text-[11px] font-bold text-gray-500 uppercase tracking-wider">
+                  <tr>
+                    <th className="py-3 pl-6 pr-3 w-12">#</th>
+                    <th className="py-3 px-4">{isOrderTarpanam ? "Role" : "Type"}</th>
+                    <th className="py-3 px-4">Name</th>
+                    <th className="py-3 px-4">Gotra</th>
+                    <th className="py-3 px-4">Do Not Know Gotra</th>
                   </tr>
-                ))
-              ) : (
-                <tr className="hover:bg-gray-50/60 transition">
-                  <td className="py-3.5 pl-6 pr-3 font-bold text-gray-400">1</td>
-                  <td className="py-3.5 px-4 font-bold text-gray-900">{devoteeName}</td>
-                  <td className="py-3.5 px-4 font-semibold text-gray-800">{order.gotra || "–"}</td>
-                  <td className="py-3.5 px-4">{order.doesNotKnowGotra ? "Yes" : "No"}</td>
-                  <td className="py-3.5 px-4 text-gray-600">Male</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                </thead>
+                <tbody className="divide-y divide-gray-100 font-medium text-gray-700">
+                  {order.participants && order.participants.length > 0 ? (
+                    order.participants.map((p: any, idx: number) => {
+                      const isAncestor = isOrderTarpanam ? (p.isAncestor || p.role === "ancestor" || idx > 0) : false;
+                      const roleLabel = isOrderTarpanam
+                        ? (isAncestor ? (idx === 1 ? "Primary Ancestor" : `Extra Ancestor ${idx - 1}`) : "Devotee (Karta)")
+                        : "Participant";
+
+                      return (
+                        <tr key={idx} className={`transition ${isAncestor ? "bg-amber-50/30 hover:bg-amber-50/50" : "hover:bg-gray-50/60"}`}>
+                          <td className="py-3.5 pl-6 pr-3 font-bold text-gray-400">{idx + 1}</td>
+                          <td className="py-3.5 px-4">
+                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${isAncestor
+                              ? "bg-amber-100 text-amber-800 border-amber-300"
+                              : "bg-blue-50 text-blue-800 border-blue-200"
+                              }`}>
+                              {roleLabel}
+                            </span>
+                          </td>
+                          <td className="py-3.5 px-4 font-bold text-gray-900">{p.name}</td>
+                          <td className="py-3.5 px-4 font-semibold text-gray-800">
+                            {p.doesNotKnowGotra ? "–" : (p.gotra || order.gotra || "Not specified")}
+                          </td>
+                          <td className="py-3.5 px-4">
+                            {p.doesNotKnowGotra ? (
+                              <span className="text-amber-700 font-bold bg-amber-50 px-2 py-0.5 rounded-md">Yes</span>
+                            ) : (
+                              <span className="text-gray-500">No</span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })
+                  ) : (
+                    <tr className="hover:bg-gray-50/60 transition">
+                      <td className="py-3.5 pl-6 pr-3 font-bold text-gray-400">1</td>
+                      <td className="py-3.5 px-4">
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-800 border border-blue-200">
+                          {isOrderTarpanam ? "Devotee (Karta)" : "Participant"}
+                        </span>
+                      </td>
+                      <td className="py-3.5 px-4 font-bold text-gray-900">{devoteeName}</td>
+                      <td className="py-3.5 px-4 font-semibold text-gray-800">{order.gotra || "–"}</td>
+                      <td className="py-3.5 px-4">{order.doesNotKnowGotra ? "Yes" : "No"}</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Sankalpam Prayer Wish Card (Displayed cleanly below Participants & Gotra) */}
       <div className="bg-white rounded-2xl border border-amber-200/80 bg-gradient-to-r from-amber-50/40 via-white to-white p-4 sm:p-5 shadow-xs">
