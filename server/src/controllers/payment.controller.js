@@ -48,6 +48,7 @@ export const createPaymentOrder = async (req, res) => {
             utmContent,
             referrer,
             landingPage,
+            isTarpanam,
         } = orderDetails;
 
         if (!whatsappNumber || !String(whatsappNumber).trim()) {
@@ -115,6 +116,7 @@ export const createPaymentOrder = async (req, res) => {
                 offerings,
                 promoCode,
                 userId: authenticatedUserId,
+                isTarpanam: Boolean(isTarpanam || (pooja && String(pooja).toLowerCase().includes("tharpanam")) || (itemName && String(itemName).toLowerCase().includes("tharpanam"))),
             });
         } catch (priceErr) {
             return res.status(priceErr.statusCode || 400).json({

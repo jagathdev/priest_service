@@ -112,8 +112,14 @@ export default function CustomSingleDatePicker({
     for (let d = 1; d <= totalDays; d++) {
       const dateStr = `${viewYear}-${String(viewMonth + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
       const isSelected = value === dateStr;
-      const isToday =
-        new Date().toISOString().split("T")[0] === dateStr;
+      const todayStr = (() => {
+        const now = new Date();
+        const y = now.getFullYear();
+        const m = String(now.getMonth() + 1).padStart(2, "0");
+        const day = String(now.getDate()).padStart(2, "0");
+        return `${y}-${m}-${day}`;
+      })();
+      const isToday = todayStr === dateStr;
 
       cells.push(
         <button
@@ -123,15 +129,18 @@ export default function CustomSingleDatePicker({
             onChange(dateStr);
             setIsOpen(false);
           }}
-          className={`w-8 h-8 text-xs font-semibold rounded-xl flex items-center justify-center transition-all cursor-pointer ${
+          className={`relative w-8 h-8 text-xs font-semibold rounded-xl flex items-center justify-center transition-all cursor-pointer ${
             isSelected
               ? "bg-emerald-600 text-white font-extrabold shadow-sm scale-105"
               : isToday
-              ? "bg-emerald-50 text-emerald-800 font-bold hover:bg-emerald-100"
+              ? "bg-emerald-50 text-emerald-800 font-extrabold ring-2 ring-emerald-500 hover:bg-emerald-100"
               : "text-gray-700 hover:bg-gray-100"
           }`}
         >
-          {d}
+          <span>{d}</span>
+          {isToday && !isSelected && (
+            <span className="absolute bottom-0.5 w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+          )}
         </button>
       );
     }

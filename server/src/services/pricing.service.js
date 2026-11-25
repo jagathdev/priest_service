@@ -84,7 +84,7 @@ export const calculateServicePrice = ({
  * Computes exact package and extra participant pricing on the server,
  * mirroring client calculations in sankalp/page.tsx.
  */
-export const computeServerPrice = async ({ serviceId, serviceType, packageId, participantsCount, offerings, promoCode, userId }) => {
+export const computeServerPrice = async ({ serviceId, serviceType, packageId, participantsCount, offerings, promoCode, userId, isTarpanam: isTarpanamParam }) => {
     let service = null;
     const normalizedType = normalizeServiceType(serviceType);
 
@@ -151,7 +151,8 @@ export const computeServerPrice = async ({ serviceId, serviceType, packageId, pa
     let defaultDevotees = 1;
     const serviceTitle = String(service.title || service.name || "").toLowerCase();
     const serviceSlug = String(service.slug || "").toLowerCase();
-    const isTarpanam = serviceTitle.includes("tharpanam") || serviceTitle.includes("tarpanam") ||
+    const isTarpanam = Boolean(isTarpanamParam) ||
+        serviceTitle.includes("tharpanam") || serviceTitle.includes("tarpanam") ||
         serviceSlug.includes("tharpanam") || serviceSlug.includes("tarpanam");
 
     if (isTarpanam) {

@@ -260,6 +260,14 @@ export default function CustomDateRangePicker({
                 const isStart = item.dateStr === startDate;
                 const isEnd = item.dateStr === endDate;
                 const inRange = isBetween(item.dateStr);
+                const todayStr = (() => {
+                  const now = new Date();
+                  const y = now.getFullYear();
+                  const m = String(now.getMonth() + 1).padStart(2, "0");
+                  const d = String(now.getDate()).padStart(2, "0");
+                  return `${y}-${m}-${d}`;
+                })();
+                const isToday = item.dateStr === todayStr;
 
                 return (
                   <button
@@ -268,14 +276,19 @@ export default function CustomDateRangePicker({
                     onClick={() => handleDateClick(item.dateStr)}
                     onMouseEnter={() => setHoverDate(item.dateStr)}
                     onMouseLeave={() => setHoverDate(null)}
-                    className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg text-xs font-bold transition-all flex items-center justify-center cursor-pointer ${isStart || isEnd
+                    className={`relative w-7 h-7 sm:w-8 sm:h-8 rounded-lg text-xs font-bold transition-all flex items-center justify-center cursor-pointer ${isStart || isEnd
                       ? "bg-emerald-600 text-white font-black shadow-sm"
                       : inRange
                         ? "bg-emerald-50 text-emerald-800 rounded-none first:rounded-l-lg last:rounded-r-lg font-bold"
-                        : "text-gray-700 hover:bg-gray-100"
+                        : isToday
+                          ? "bg-emerald-50 text-emerald-800 font-extrabold ring-2 ring-emerald-500 hover:bg-emerald-100"
+                          : "text-gray-700 hover:bg-gray-100"
                       }`}
                   >
-                    {item.dayNum}
+                    <span>{item.dayNum}</span>
+                    {isToday && !isStart && !isEnd && (
+                      <span className="absolute bottom-0.5 w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                    )}
                   </button>
                 );
               })}
