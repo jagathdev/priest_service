@@ -29,7 +29,7 @@ import ShareModal, { ShareData } from "@/components/common/ShareModal";
 import GalleryLightboxModal from "@/components/common/GalleryLightboxModal";
 import { formatStartingPrice, getPriceComparison } from "@/lib/pricing";
 import PriceTag from "@/components/ui/PriceTag";
-import priestservicesLogo from "../../../public/images/priest-services-logo.png";
+import priestservicesLogo from "../../../public/images/priest-services-logo.webp";
 
 const getSafeImageUrl = (imageUrl?: string): string => {
   if (!imageUrl || typeof imageUrl !== "string") return "";

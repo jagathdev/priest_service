@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import LoginModal from "@/components/auth/LoginModal";
 import { useUser } from "@/contexts/UserContext";
-import priestServiceLogo from "../../../public/images/priest-services-logo.png";
+import priestServiceLogo from "../../../public/images/priest-services-logo.webp";
 
 const AccountPanel = ({ accountOpen, setAccountOpen, user, setLoginModalOpen, handleLogout }: any) => {
   if (!accountOpen) return null;

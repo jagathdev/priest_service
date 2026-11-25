@@ -20,7 +20,7 @@ export const MEDIA_CONFIG = {
   /**
    * Official Brand & System Assets
    */
-  BRAND_LOGO: "/images/admin/priest-services-logo.png",
+  BRAND_LOGO: "/images/admin/priest-services-logo.webp",
   FAVICON: "/icons/Fav-Icon.png",
 
   /**

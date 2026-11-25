@@ -97,7 +97,7 @@ export default function AdminLoginPage() {
           <div className="relative z-10 flex items-center justify-between gap-3 mb-2 md:mb-0">
             <div className="bg-white/95 backdrop-blur-md px-3.5 py-1.5 rounded-xl shadow-xs border border-white/40 flex items-center">
               <Image
-                src="/images/priest-services-logo.png"
+                src="/images/priest-services-logo.webp"
                 alt="Priest Services Logo"
                 width={190}
                 height={45}
