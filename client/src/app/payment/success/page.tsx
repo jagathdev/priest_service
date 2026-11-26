@@ -389,10 +389,10 @@ function SuccessContent() {
         setOrderData((prev) =>
           prev
             ? {
-                ...prev,
-                deliveryAddress: newAddressItem,
-                hasDeliveryAddress: true,
-              }
+              ...prev,
+              deliveryAddress: newAddressItem,
+              hasDeliveryAddress: true,
+            }
             : null
         );
 
@@ -543,7 +543,7 @@ function SuccessContent() {
                 <div>
                   <div className="flex items-center gap-2">
                     <h3 className="font-serif font-black text-stone-900 text-base sm:text-lg">
-                      Sacred Prasad &amp; Raksha Ash Delivery
+                      Sacred Prasad &amp; Energized sacred Ash Delivery
                     </h3>
                     <span className="bg-emerald-100 text-emerald-800 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">
                       Included
@@ -628,7 +628,7 @@ function SuccessContent() {
               {isHoma ? (
                 <li className="flex items-start gap-2.5 text-sm text-stone-600 font-medium">
                   <span className="text-[#f15a29] mt-1 shrink-0 text-xs">◆</span>
-                  Sanctified Homa Raksha and blessed Prasadam couriered to your home.
+                  Sanctified Homa energized sacred ash and blessed Prasadam couriered to your home.
                 </li>
               ) : (
                 <li className="flex items-start gap-2.5 text-sm text-stone-600 font-medium">
@@ -737,7 +737,7 @@ function SuccessContent() {
                     Prasad Delivery Address
                   </h3>
                   <span className="text-[10px] sm:text-[11px] text-amber-100 font-semibold uppercase tracking-wider block">
-                    Sacred Homa Raksha &amp; Prasad
+                    Sacred Homa Ash &amp; Prasad
                   </span>
                 </div>
               </div>
