@@ -22,6 +22,7 @@ import {
   ExclamationCircleIcon,
   VideoCameraIcon,
 } from "@heroicons/react/24/outline";
+import CustomAdminDateTimePicker from "./CustomAdminDateTimePicker";
 
 export const getAdminBaseApiUrl = (): string => {
   if (typeof window !== "undefined") {
@@ -32,22 +33,6 @@ export const getAdminBaseApiUrl = (): string => {
   }
   return process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
 };
-
-/** Puja card date stored as DD-MM-YYYY; native date input uses YYYY-MM-DD */
-function ddmmyyyyToIso(value: string): string {
-  const m = String(value).trim().match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
-  if (!m) return "";
-  const d = m[1].padStart(2, "0");
-  const mo = m[2].padStart(2, "0");
-  const y = m[3];
-  return `${y}-${mo}-${d}`;
-}
-
-function isoToDdmmyyyy(iso: string): string {
-  if (!iso || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) return "";
-  const [y, mo, d] = iso.split("-");
-  return `${d}-${mo}-${y}`;
-}
 
 function getSectionIcon(section: string): string {
   switch (section) {
@@ -1048,33 +1033,40 @@ export default function ContentManager({
           )}
         </div>
 
-        {field.type === "date-ddmmyyyy" ? (
-          <input
-            type="date"
-            id={field.name}
-            name={field.name}
-            required={field.required}
-            value={ddmmyyyyToIso(String(formData[field.name] ?? ""))}
-            onChange={(e) => {
-              const iso = e.target.value;
-              setFormData((prev: Record<string, unknown>) => ({
-                ...prev,
-                [field.name]: iso ? isoToDdmmyyyy(iso) : "",
-              }));
-            }}
-            className="block w-full rounded-xl border border-slate-200 bg-slate-50/70 px-3.5 py-2.5 text-sm text-gray-900 focus:bg-white focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/10 shadow-2xs transition-all"
-          />
+        {field.type === "date-ddmmyyyy" || field.type === "date" ? (
+          <div>
+            <CustomAdminDateTimePicker
+              mode="date"
+              id={field.name}
+              name={field.name}
+              required={field.required}
+              placeholder={field.placeholder || "Select Date"}
+              value={formData[field.name] || ""}
+              onChange={(newVal) => {
+                setFormData((prev: Record<string, unknown>) => ({
+                  ...prev,
+                  [field.name]: newVal,
+                }));
+              }}
+            />
+          </div>
         ) : field.type === "datetime-local" ? (
-          <input
-            type="datetime-local"
-            id={field.name}
-            name={field.name}
-            required={field.required}
-            placeholder={field.placeholder}
-            value={formData[field.name] || ""}
-            onChange={handleInputChange}
-            className="block w-full rounded-xl border border-slate-200 bg-slate-50/70 px-3.5 py-2.5 text-sm text-gray-900 focus:bg-white focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/10 shadow-2xs transition-all"
-          />
+          <div>
+            <CustomAdminDateTimePicker
+              mode="datetime"
+              id={field.name}
+              name={field.name}
+              required={field.required}
+              placeholder={field.placeholder || "Select Date & Time"}
+              value={formData[field.name] || ""}
+              onChange={(newVal) => {
+                setFormData((prev: Record<string, unknown>) => ({
+                  ...prev,
+                  [field.name]: newVal,
+                }));
+              }}
+            />
+          </div>
         ) : field.type === "reference-array" ? (
           <div className="space-y-2">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">

@@ -766,17 +766,6 @@ function SankalpContent() {
 
                     {/* Devotees / Ancestors List */}
                     <div className="space-y-4">
-                      {isTarpanam && (
-                        <div className="bg-amber-50/80 border border-amber-200 rounded-2xl p-3.5 sm:p-4 text-xs text-amber-900 flex items-start gap-2.5">
-                          <span className="text-base leading-none">🕊️</span>
-                          <div>
-                            <span className="font-bold block">Sacred Rameswaram Tharpanam Sankalpam</span>
-                            <span className="text-[11px] text-amber-800">
-                              Please enter the living devotee (Karta) performing the ritual and the departed family member (Ancestor) name(s) to receive the sacred offerings.
-                            </span>
-                          </div>
-                        </div>
-                      )}
 
                       {formData.participants.map((p, idx) => {
                         const isNameEmpty = !p.name.trim();
@@ -797,9 +786,18 @@ function SankalpContent() {
                                   }`}>
                                   {idx + 1}
                                 </span>
-                                <span className="text-sm font-bold text-stone-800">
-                                  {isTarpanam ? (idx === 0 ? "Devotee Name" : `Ancestor ${idx} (Departed Soul)`) : `Participant ${idx + 1}`}
-                                </span>
+                                <div>
+                                  <span className="text-sm font-bold text-stone-800 block leading-tight">
+                                    {isTarpanam ? (idx === 0 ? "Devotee Name (Participant Name)" : `Ancestor ${idx} (Departed Soul)`) : `Participant ${idx + 1}`}
+                                  </span>
+                                  {isTarpanam && (
+                                    <span className="text-[11px] text-stone-500 font-medium block mt-0.5">
+                                      {idx === 0
+                                        ? "Enter the name of the person offering Tharpanam."
+                                        : "Enter the name of the departed loved one."}
+                                    </span>
+                                  )}
+                                </div>
                               </div>
                               {formData.participants.length > (isTarpanam ? 2 : defaultParticipantCount) && idx > 0 && (
                                 <button
@@ -816,11 +814,11 @@ function SankalpContent() {
                             </div>
 
                             {/* Participant / Ancestor Inputs Grid: Name & Gotra */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
                               {/* Name Input */}
                               <div>
                                 <label className="block text-stone-800 font-semibold text-xs mb-2">
-                                  {isTarpanam ? (idx === 0 ? "Devotee Name" : "Ancestor Name") : "Participant Name"} <span className="text-red-500">*</span>
+                                  {isTarpanam ? (idx === 0 ? "Devotee Name (Participant Name)" : "Ancestor Name") : "Participant Name"} <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -831,7 +829,7 @@ function SankalpContent() {
                                     newP[idx] = { ...newP[idx], name: sanitized };
                                     setFormData({ ...formData, participants: newP });
                                   }}
-                                  placeholder={isTarpanam ? (idx === 0 ? "Enter devotee/karta name" : "Enter departed ancestor name") : "Enter devotee name"}
+                                  placeholder={isTarpanam ? (idx === 0 ? "Enter devotee name" : "Enter departed ancestor name") : "Enter devotee name"}
                                   className={`w-full border rounded-xl px-4 py-2.5 text-sm font-medium outline-none transition ${hasNameError
                                     ? "border-red-400 bg-red-50/20"
                                     : "border-stone-600 focus:border-[#00B05F] bg-white"
