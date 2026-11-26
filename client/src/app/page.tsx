@@ -5,7 +5,6 @@ import HowPujaPerformed from "@/components/home/HowPujaPerformed";
 import PujaListing from "@/components/home/PujaListing";
 import PujaGallery from "@/components/home/PujaGallery";
 import FaqSection from "@/components/home/FaqSection";
-import Footer from "@/components/layout/Footer";
 
 export default async function HomePage() {
   const expressBase = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
@@ -60,7 +59,6 @@ export default async function HomePage() {
       <PujaListing initialPujas={initialPujas || []} />
       <PujaGallery initialPujas={initialPujas || []} initialHomas={initialHomas || []} />
       <FaqSection />
-      <Footer />
     </main>
   );
 }
