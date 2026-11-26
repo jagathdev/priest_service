@@ -718,7 +718,7 @@ export default function AdminUsersPage() {
 
         {/* Users Table */}
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse min-w-[900px]">
+          <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-gray-50/70 border-b border-gray-150 text-[11px] font-bold text-gray-500 uppercase tracking-wider">
                 {/* Select All Checkbox */}
@@ -735,16 +735,16 @@ export default function AdminUsersPage() {
                   />
                 </th>
                 <th className="py-3.5 px-2 w-10 text-center">#</th>
-                <th className="py-3.5 px-4">User Name</th>
-                <th className="py-3.5 px-4">Email</th>
-                <th className="py-3.5 px-4 whitespace-nowrap min-w-[140px]">Mobile Number</th>
-                <th className="py-3.5 px-4 whitespace-nowrap">Source / Campaign</th>
-                <th className="py-3.5 px-4">Total Amount Spent</th>
+                <th className="py-3.5 px-3">User Name</th>
+                <th className="py-3.5 px-3">Email</th>
+                <th className="py-3.5 px-3 whitespace-nowrap">Mobile Number</th>
+                <th className="py-3.5 px-3 whitespace-nowrap">Source / Campaign</th>
+                <th className="py-3.5 px-3 whitespace-nowrap">Total Spent</th>
                 {/* <th className="py-3.5 px-4">Status</th> */}
-                <th className="py-3.5 px-4">
-                  {activeTab === "trash" ? "Deleted On (Date & Time)" : "Joined On (Date & Time)"}
+                <th className="py-3.5 px-3 whitespace-nowrap">
+                  {activeTab === "trash" ? "Deleted On" : "Joined On"}
                 </th>
-                <th className="py-3.5 pr-6 pl-4 text-center w-28">Actions</th>
+                <th className="py-3.5 pr-6 pl-3 text-center w-24">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 text-xs font-medium text-gray-700">
@@ -800,16 +800,19 @@ export default function AdminUsersPage() {
                       </td>
 
                       {/* Name with Avatar */}
-                      <td className="py-4 px-4">
-                        <div className="flex items-center gap-3">
+                      <td className="py-4 px-3">
+                        <div className="flex items-center gap-2.5">
                           <div
                             className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-extrabold shrink-0 ${avatarColor}`}
                           >
                             {initial}
                           </div>
-                          <div className="flex flex-col min-w-0">
-                            <div className="flex items-center gap-1.5">
-                              <span className="font-bold text-gray-900 truncate max-w-[150px]">
+                          <div className="flex flex-col min-w-0 max-w-[180px]">
+                            <div className="flex items-start gap-1.5 flex-wrap">
+                              <span
+                                className="font-bold text-gray-900 leading-snug break-words line-clamp-2"
+                                title={u.name || "Devotee"}
+                              >
                                 {u.name || "Devotee"}
                               </span>
                               {u.isLoggedIn ? (
@@ -828,12 +831,16 @@ export default function AdminUsersPage() {
                       </td>
 
                       {/* Email */}
-                      <td className="py-4 px-4 text-gray-600">
-                        {u.email && u.email !== "N/A" ? u.email : <span className="text-gray-400 italic">Not Provided</span>}
+                      <td className="py-4 px-3 text-gray-600 break-words max-w-[170px]">
+                        {u.email && u.email !== "N/A" ? (
+                          <span className="break-all leading-tight">{u.email}</span>
+                        ) : (
+                          <span className="text-gray-400 italic">Not Provided</span>
+                        )}
                       </td>
 
                       {/* Mobile & WhatsApp */}
-                      <td className="py-4 px-4 whitespace-nowrap min-w-[140px]">
+                      <td className="py-4 px-3 whitespace-nowrap">
                         <div className="font-semibold text-gray-800 whitespace-nowrap">
                           {u.mobileNumber && u.mobileNumber !== "N/A"
                             ? formatIndianPhoneNumber(u.mobileNumber)
@@ -859,7 +866,7 @@ export default function AdminUsersPage() {
                       </td>
 
                       {/* Source / Campaign */}
-                      <td className="py-4 px-4 whitespace-nowrap">
+                      <td className="py-4 px-3 whitespace-nowrap">
                         {(() => {
                           const src = u.utmSource || "Direct";
                           const lower = src.toLowerCase();
@@ -886,24 +893,12 @@ export default function AdminUsersPage() {
                       </td>
 
                       {/* Total Amount Spent */}
-                      <td className="py-4 px-4 font-extrabold text-gray-900">
+                      <td className="py-4 px-3 font-extrabold text-gray-900 whitespace-nowrap">
                         ₹ {u.totalAmountSpent.toLocaleString("en-IN")}
                       </td>
 
-                      {/* Status */}
-                      {/* <td className="py-4 px-4">
-                        <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold ${u.status === "Active"
-                            ? "bg-emerald-50 text-emerald-700"
-                            : "bg-red-50 text-red-600"
-                            }`}
-                        >
-                          {u.status}
-                        </span>
-                      </td> */}
-
                       {/* Joined or Deleted Date & Time */}
-                      <td className="py-4 px-4 text-gray-500 font-medium">
+                      <td className="py-4 px-3 text-gray-500 font-medium whitespace-nowrap">
                         {(() => {
                           const timeInfo = formatDate(activeTab === "trash" ? u.deletedAt || u.createdAt : u.createdAt);
                           return (
@@ -924,7 +919,7 @@ export default function AdminUsersPage() {
                       </td>
 
                       {/* Actions */}
-                      <td className="py-4 pr-6 pl-4 text-center">
+                      <td className="py-4 pr-6 pl-3 text-center">
                         {activeTab === "active" ? (
                           <div className="inline-flex items-center gap-2">
                             {/* Edit Button */}

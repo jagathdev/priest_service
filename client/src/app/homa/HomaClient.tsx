@@ -579,17 +579,17 @@ export default function HomaClient({ initialHomas }: { initialHomas?: Homa[] }) 
                       prefetch={true}
                       className="flex flex-col flex-1 cursor-pointer"
                     >
-                      <div className="relative w-full min-h-[220px] sm:min-h-[240px] aspect-[3/2] shrink-0 overflow-hidden">
+                      <div className="relative w-full aspect-[16/10] sm:aspect-[3/2] sm:min-h-[240px] shrink-0 overflow-hidden">
                         <Image
                           src={getHomaImageUrl(homa.imageUrl)}
                           alt={homa.title}
                           fill
                           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                           unoptimized
-                          className="w-full h-full object-cover object-left transition-transform duration-700"
+                          className="w-full h-full object-cover object-center sm:object-left transition-transform duration-700"
                         />
                         {homa.badge && (
-                          <div className="absolute top-4 left-0 bg-[#d92b2b] text-white text-[12px] font-extrabold px-3.5 py-1.5 shadow-md rounded-r-lg uppercase tracking-wider">
+                          <div className="absolute top-3 sm:top-4 left-0 bg-[#d92b2b] text-white text-[11px] sm:text-[12px] font-extrabold px-2.5 sm:px-3.5 py-1 sm:py-1.5 shadow-md rounded-r-lg uppercase tracking-wider">
                             {homa.badge}
                           </div>
                         )}
@@ -691,7 +691,7 @@ export default function HomaClient({ initialHomas }: { initialHomas?: Homa[] }) 
                     </Link>
 
                     {/* Floating Actions Overlay */}
-                    <div className="absolute top-4 right-4 flex flex-col gap-2 z-10" onClick={(e) => e.stopPropagation()}>
+                    <div className="absolute top-2.5 right-2.5 sm:top-4 sm:right-4 flex flex-col gap-1.5 sm:gap-2 z-10" onClick={(e) => e.stopPropagation()}>
                       <WishlistButton itemId={homa._id} />
                       <button
                         onClick={(e) => {
@@ -704,9 +704,9 @@ export default function HomaClient({ initialHomas }: { initialHomas?: Homa[] }) 
                             url: fullUrl,
                           });
                         }}
-                        className="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-sm text-gray-600 hover:text-[#d95a2b] transition-colors cursor-pointer"
+                        className="w-7 h-7 sm:w-8 sm:h-8 bg-white/95 backdrop-blur-xs rounded-full flex items-center justify-center shadow-xs text-gray-600 hover:text-[#d95a2b] transition-colors cursor-pointer"
                       >
-                        <Share2 className="w-4 h-4" />
+                        <Share2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                       </button>
                     </div>
                   </div>
