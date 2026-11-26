@@ -617,18 +617,20 @@ function SankalpContent() {
 
       <main className="min-h-screen bg-white pb-32 lg:pb-20 font-sans">
         {/* Header Bar */}
-        <header className="bg-white py-3 sm:py-5 px-3 sm:px-12 flex items-center justify-between border-b border-stone-150 sticky top-[57px] sm:top-[65px] lg:top-[73px] z-30 mb-3 shadow-xs">
-          <button
-            onClick={() => router.back()}
-            className="flex items-center gap-1 sm:gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full border border-stone-200 text-stone-600 hover:bg-stone-50 hover:text-stone-900 transition-colors bg-white shadow-sm text-xs sm:text-sm font-bold shrink-0"
-          >
-            <ArrowLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            Back
-          </button>
-          <h1 className="text-base sm:text-2xl lg:text-3xl font-serif font-bold text-stone-800 text-center flex-1 px-2 line-clamp-1">
+        <header className="bg-white py-2.5 sm:py-5 px-3 sm:px-12 flex items-center justify-between border-b border-stone-150 sticky top-[57px] sm:top-[65px] lg:top-[73px] z-30 mb-3 shadow-xs">
+          <div className="w-16 sm:w-24 flex justify-start shrink-0">
+            <button
+              onClick={() => router.back()}
+              className="flex items-center gap-1 sm:gap-1.5 px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-full border border-stone-200 text-stone-600 hover:bg-stone-50 hover:text-stone-900 transition-colors bg-white shadow-sm text-xs sm:text-sm font-bold"
+            >
+              <ArrowLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              Back
+            </button>
+          </div>
+          <h1 className="text-sm min-[390px]:text-base sm:text-2xl lg:text-3xl font-serif font-bold text-stone-800 text-center flex-1 px-1 truncate">
             Fill your details for Puja
           </h1>
-          <div className="w-[60px] sm:w-[88px] shrink-0" /> {/* Spacer to balance the header */}
+          <div className="w-16 sm:w-24 shrink-0" /> {/* Balanced spacer matching the left back button container */}
         </header>
 
         <div className="max-w-5xl mx-auto px-4 sm:px-6 mt-2">
