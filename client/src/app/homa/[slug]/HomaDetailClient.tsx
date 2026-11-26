@@ -1279,8 +1279,8 @@ export default function PujaDetailClient({
 
         return (
           <div data-reveal className="w-full bg-[#F1F5F9] border-y border-slate-200 py-3.5 sm:py-4.5 overflow-hidden">
-            {/* Continuous Marquee on all screens below 1440px */}
-            <div className="badge-marquee-below-1440 min-[1440px]:hidden overflow-hidden w-full relative">
+            {/* Continuous Marquee on all screens */}
+            <div className="overflow-hidden w-full relative">
               <div className="flex animate-marquee">
                 <div className="flex shrink-0 items-center gap-8 sm:gap-12 pr-8 sm:pr-12 text-xs sm:text-sm font-bold text-[#00B05F]">
                   {trackBadges.map((b, idx) => (
@@ -1297,15 +1297,6 @@ export default function PujaDetailClient({
                   ))}
                 </div>
               </div>
-            </div>
-
-            {/* Static spread layout on 1440px and wider desktop screens (>= 1440px) */}
-            <div className="badge-static-1440 hidden min-[1440px]:flex max-w-[1350px] mx-auto items-center justify-around gap-6 px-4 text-xs sm:text-sm font-bold text-[#00B05F] whitespace-nowrap">
-              {badgeList.map((b, idx) => (
-                <span key={idx} className="flex items-center gap-2">
-                  <span className="bg-white text-[#00B05F] shadow-2xs rounded-full p-1.5 flex items-center justify-center shrink-0">{b.icon}</span> {b.text}
-                </span>
-              ))}
             </div>
           </div>
         );
