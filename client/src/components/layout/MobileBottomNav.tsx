@@ -64,7 +64,7 @@ export default function MobileBottomNav() {
 
   if (shouldHide) return null;
 
-  const isHomeActive = pathname === "/" || pathname === "/dashboard";
+  const isHomeActive = pathname === "/";
   const isPujaActive = pathname?.startsWith("/puja");
   const isHomaActive = pathname?.startsWith("/homa");
   const isAccountActive = pathname?.startsWith("/account") || pathname?.startsWith("/profile");
