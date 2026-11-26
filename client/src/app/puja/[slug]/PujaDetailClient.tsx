@@ -960,7 +960,7 @@ export default function PujaDetailClient({
                   {/* Stat 1: Poojas Performed */}
                   <div className="text-center flex-1 px-0.5 xl:px-1">
                     <span className="block text-sm lg:text-[14px] xl:text-base 2xl:text-lg font-extrabold text-[#1f1a17] leading-tight whitespace-nowrap">10M+</span>
-                    <span className="text-[10px] xl:text-[11px] 2xl:text-xs text-stone-500 font-medium block mt-0.5 leading-tight">poojas performed</span>
+                    <span className="text-[10px] xl:text-[11px] 2xl:text-xs text-stone-500 font-medium block mt-0.5 leading-tight">pujas performed</span>
                   </div>
 
                   <div className="w-[1px] h-5 xl:h-6 bg-stone-300/80 shrink-0" />
@@ -1295,7 +1295,7 @@ export default function PujaDetailClient({
           {/* Stat 1 */}
           <div className="flex-1 flex flex-col items-center justify-center text-center">
             <span className="block text-base font-extrabold text-[#1f1a17] leading-tight">10M+</span>
-            <span className="text-xs text-stone-500 font-medium block mt-0.5 leading-tight">poojas performed</span>
+            <span className="text-xs text-stone-500 font-medium block mt-0.5 leading-tight">pujas performed</span>
           </div>
           <div className="w-[1px] h-7 bg-stone-200 shrink-0" />
           {/* Stat 2 */}
