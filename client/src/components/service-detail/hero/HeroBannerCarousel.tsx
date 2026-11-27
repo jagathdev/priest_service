@@ -60,7 +60,8 @@ export default function HeroBannerCarousel({
   return (
     <div className="w-full relative lg:sticky lg:top-24 flex flex-col items-center">
       <div
-        className="relative w-full aspect-[4/3] sm:aspect-[16/10] lg:aspect-[4/3] rounded-2xl sm:rounded-3xl overflow-hidden shadow-md border border-[#F0CA9E]/60 bg-stone-100 group select-none"
+        style={{ aspectRatio: "3 / 2" }}
+        className="relative w-full aspect-[3/2] rounded-2xl min-[375px]:rounded-3xl overflow-hidden shadow-md border border-[#F0CA9E]/60 bg-[#3b0808] group select-none"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}

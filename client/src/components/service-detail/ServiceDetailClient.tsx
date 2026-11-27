@@ -4,7 +4,6 @@ import { useEffect, useState, useMemo, useRef } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
 import LoginModal from "@/components/auth/LoginModal";
 import { checkAuthStatus } from "@/lib/authCheck";
 import { XMarkIcon } from "@heroicons/react/24/solid";
@@ -923,16 +922,17 @@ export default function ServiceDetailClient({
                   heroTouchStartY.current = null;
                   heroTouchEndY.current = null;
                 }}
-                className="relative w-full min-h-[230px] sm:min-h-[300px] md:min-h-[360px] aspect-[3/2] sm:h-auto md:h-auto lg:h-[340px] xl:h-[415px] rounded-2xl min-[375px]:rounded-3xl overflow-hidden border border-stone-200/90 shadow-md group touch-pan-y bg-stone-100"
+                style={{ aspectRatio: "3 / 2" }}
+                className="relative w-full aspect-[3/2] rounded-2xl min-[375px]:rounded-3xl overflow-hidden border border-stone-200/90 shadow-md group touch-pan-y bg-[#3b0808]"
               >
                 <Image
                   src={bannerImages[activeBannerIndex] || (puja ? getPujaImageUrl(puja.imageUrl) : "")}
                   alt={`${puja?.title || "Puja"} - Sacred Ritual Banner ${activeBannerIndex + 1}`}
                   fill
                   priority
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, (max-width: 1280px) 50vw, 650px"
+                  sizes="(max-width: 640px) 100vw, (max-width: 1279px) 100vw, (max-width: 1536px) 50vw, 650px"
                   unoptimized
-                  className="w-full h-full object-cover object-left transition-all duration-300 cursor-pointer"
+                  className="w-full h-full object-cover object-center transition-all duration-300 cursor-pointer -webkit-backface-visibility-hidden"
                   onClick={handleAddPujaToCart}
                 />
               </div>

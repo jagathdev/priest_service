@@ -12,12 +12,6 @@ import {
   Share2,
 } from "lucide-react";
 import WishlistButton from "@/components/common/WishlistButton";
-import PujaFilterModal, {
-  FilterState,
-  defaultFilters,
-  extractDynamicFilterGroups,
-  matchesPujaFilters,
-} from "@/components/common/PujaFilterModal";
 import ShareModal, { ShareData } from "@/components/common/ShareModal";
 import { formatDayDateMonth } from "@/lib/dateFormatter";
 import { formatStartingPrice, getPriceComparison } from "@/lib/pricing";
@@ -25,13 +19,11 @@ import PriceTag from "@/components/ui/PriceTag";
 
 interface PujaListingProps {
   initialPujas?: any[];
+  limit?: number;
 }
 
-export default function PujaListing({ initialPujas }: PujaListingProps) {
+export default function PujaListing({ initialPujas, limit = 3 }: PujaListingProps) {
   const [allPujas, setAllPujas] = useState<any[]>(initialPujas || []);
-  const [filters, setFilters] = useState<FilterState>(defaultFilters);
-  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
-  const [filterModalInitialTab, setFilterModalInitialTab] = useState("");
   const [fetchedPujas, setFetchedPujas] = useState(Boolean(initialPujas && initialPujas.length > 0));
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [shareData, setShareData] = useState<ShareData>({});
@@ -62,106 +54,30 @@ export default function PujaListing({ initialPujas }: PujaListingProps) {
     fetchData();
   }, [initialPujas]);
 
-  // Compute dynamic filter groups for home page
-  const dynamicFilterGroups = React.useMemo(() => {
-    return extractDynamicFilterGroups(allPujas);
-  }, [allPujas]);
-
-  const hasActiveFilters = Object.values(filters).some((arr) => arr && arr.length > 0);
-
-  const openFilterModal = (tabLabel?: string) => {
-    setFilterModalInitialTab(tabLabel || "");
-    setIsFilterModalOpen(true);
-  };
-
-  const clearFilters = () => setFilters(defaultFilters);
-  const applyFilters = (nextFilters: FilterState) => {
-    setFilters(nextFilters);
-    setIsFilterModalOpen(false);
-  };
-
-  // Filter pujas based on selected modal filters
-  const filteredPujas = React.useMemo(() => {
-    if (!hasActiveFilters) {
-      return allPujas.slice(0, 6);
-    }
-    return allPujas
-      .filter((p) => matchesPujaFilters(p, filters, "", dynamicFilterGroups))
-      .slice(0, 6);
-  }, [allPujas, filters, hasActiveFilters, dynamicFilterGroups]);
+  // Display customizable number of pujas on the home page (minimum 3 if not specified)
+  const count = typeof limit === "number" ? Math.max(3, limit) : 3;
+  const displayedPujas = React.useMemo(() => {
+    return allPujas.slice(0, count);
+  }, [allPujas, count]);
 
   return (
     <section className="py-12 bg-white">
       <div className="max-w-[1350px] mx-auto px-3 min-[360px]:px-4 sm:px-6 lg:px-10">
-        {/* Header Row & Category Filters */}
+        {/* Header Row */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
           <h2 className="text-3xl sm:text-4xl font-bold text-[#221f20] font-serif">
             Our <span className="text-accent">Pujas</span>
           </h2>
-
-          {/* Filter Pills */}
-          <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap">
-            <button
-              type="button"
-              onClick={clearFilters}
-              className={`font-bold px-4 sm:px-5 py-2 rounded-full text-xs sm:text-sm transition-all whitespace-nowrap cursor-pointer ${
-                !hasActiveFilters
-                  ? "bg-[#00B05F] text-white shadow-sm hover:bg-[#008F4C]"
-                  : "bg-white border border-stone-200 text-stone-700 hover:border-stone-400 font-semibold px-3.5 sm:px-4"
-              }`}
-            >
-              All
-            </button>
-
-            {dynamicFilterGroups.map((group) => {
-              const selectedCount = (filters[group.label] || []).length;
-              const isSelected = selectedCount > 0;
-              return (
-                <button
-                  key={group.label}
-                  type="button"
-                  onClick={() => openFilterModal(group.label)}
-                  className={`font-bold px-3.5 sm:px-4 py-2 rounded-full text-xs sm:text-sm transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 ${
-                    isSelected
-                      ? "bg-[#00B05F] text-white shadow-sm hover:bg-[#008F4C]"
-                      : "bg-white border border-stone-200 text-stone-700 hover:border-stone-400 font-semibold"
-                  }`}
-                >
-                  <span>{group.label === "Benefits" ? "Benefit" : group.label}</span>
-                  {selectedCount > 0 && (
-                    <span className="w-4 h-4 rounded-full bg-white text-[#00B05F] text-[10px] font-extrabold flex items-center justify-center shrink-0">
-                      {selectedCount}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-
-            {hasActiveFilters && (
-              <button
-                type="button"
-                onClick={clearFilters}
-                className="text-xs sm:text-sm font-semibold text-red-500 hover:text-red-700 underline px-2 py-1 cursor-pointer"
-              >
-                Clear All
-              </button>
-            )}
-          </div>
+          <Link
+            href="/puja"
+            className="text-xs sm:text-sm font-bold text-[#00B05F] hover:text-[#008F4C] flex items-center gap-1 transition-colors"
+          >
+            <span>View All Pujas</span>
+            <ChevronRight className="w-4 h-4" />
+          </Link>
         </div>
 
-        {/* Filter Modal */}
-        {isFilterModalOpen && dynamicFilterGroups.length > 0 && (
-          <PujaFilterModal
-            filters={filters}
-            filterGroups={dynamicFilterGroups}
-            initialTab={filterModalInitialTab}
-            onClose={() => setIsFilterModalOpen(false)}
-            onApply={applyFilters}
-            onClear={clearFilters}
-          />
-        )}
-
-        {/* Puja Cards Grid (Maximum 6 active Pujas loaded from Express API) */}
+        {/* Puja Cards Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 sm:gap-8 w-full max-w-full xl:max-w-none mx-auto">
           {!fetchedPujas ? (
             Array.from({ length: 3 }).map((_, i) => (
@@ -169,7 +85,7 @@ export default function PujaListing({ initialPujas }: PujaListingProps) {
                 key={`skeleton-${i}`}
                 className="bg-white rounded-3xl h-[450px] animate-pulse border border-stone-200 p-3 shadow-sm flex flex-col"
               >
-                <div className="w-full aspect-[4/3] xl:aspect-auto xl:h-[235px] bg-stone-100 rounded-xl min-[375px]:rounded-2xl mb-4 flex items-center justify-center">
+                <div className="w-full aspect-[3/2] bg-stone-100 rounded-xl min-[375px]:rounded-2xl mb-4 flex items-center justify-center">
                   <Loader2 className="w-8 h-8 text-stone-300 animate-spin" />
                 </div>
                 <div className="w-1/3 h-3 bg-stone-200 rounded-full mx-auto mb-4" />
@@ -181,22 +97,22 @@ export default function PujaListing({ initialPujas }: PujaListingProps) {
                 </div>
               </div>
             ))
-          ) : filteredPujas.length === 0 ? (
+          ) : displayedPujas.length === 0 ? (
             <div className="col-span-full py-12 text-center text-stone-400 font-medium">
-              No active Pujas found for selected filters.
+              No active Pujas available at this moment.
             </div>
           ) : (
-            filteredPujas.map((p) => {
+            displayedPujas.map((p) => {
               const priceVal = formatStartingPrice(p);
               const priceInfo = getPriceComparison(p);
               const slugVal =
                 p.slug ||
                 (p.title
                   ? p.title
-                      .toLowerCase()
-                      .trim()
-                      .replace(/[^a-z0-9\s-]/g, "")
-                      .replace(/\s+/g, "-")
+                    .toLowerCase()
+                    .trim()
+                    .replace(/[^a-z0-9\s-]/g, "")
+                    .replace(/\s+/g, "-")
                   : "");
               const topTagVal = p.badge || p.shortTitle || p.subtitle;
               const descriptionVal = p.description || p.subtitle;
@@ -303,15 +219,18 @@ function PujaCard({
   return (
     <div className="bg-white rounded-2xl min-[375px]:rounded-3xl border border-stone-200/90 p-2 min-[375px]:p-2.5 sm:p-3 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.12),0_2px_6px_-1px_rgba(0,0,0,0.08)] hover:shadow-[0_12px_28px_-6px_rgba(0,0,0,0.18),0_8px_10px_-6px_rgba(0,0,0,0.1)] transition-all duration-300 flex flex-col group text-left relative h-full">
       <Link href={cardUrl} prefetch={true} className="flex flex-col flex-1 cursor-pointer">
-        {/* Top Banner Image Container */}
-        <div className="relative w-full min-h-[210px] aspect-[3/2] xl:h-[235px] rounded-xl min-[375px]:rounded-2xl overflow-hidden mb-2 sm:mb-2.5 bg-stone-100 shrink-0">
+        {/* Top Banner Image Container: 100% full uncropped natural 3:2 ratio on all screens including 320px mobile */}
+        <div
+          style={{ aspectRatio: "3 / 2" }}
+          className="relative w-full aspect-[3/2] rounded-xl min-[375px]:rounded-2xl overflow-hidden mb-2 sm:mb-2.5 bg-[#3b0808] shrink-0"
+        >
           <Image
             src={rawImg}
             alt={title}
             fill
             unoptimized
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
-            className="w-full h-full object-cover object-left"
+            className="w-full h-full object-cover object-center -webkit-backface-visibility-hidden"
           />
         </div>
 
@@ -430,7 +349,7 @@ function PujaCard({
               url: window.location.origin + cardUrl,
             });
           }}
-          className="w-8 h-8 rounded-full bg-white/95 text-stone-700 hover:text-success flex items-center justify-center shadow-md backdrop-blur-sm transition-transform active:scale-95 hover:bg-white"
+          className="w-8 h-8 rounded-full bg-white/95 text-stone-700 hover:text-success flex items-center justify-center shadow-md backdrop-blur-sm transition-transform active:scale-95 hover:bg-white cursor-pointer"
         >
           <Share2 className="w-4 h-4" strokeWidth={2} />
         </button>

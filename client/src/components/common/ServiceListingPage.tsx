@@ -477,8 +477,11 @@ export default function ServiceListingPage({
                     className="bg-white rounded-2xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.12),0_2px_6px_-1px_rgba(0,0,0,0.08)] border border-gray-200/90 flex flex-col overflow-hidden group hover:shadow-[0_14px_30px_-6px_rgba(0,0,0,0.18),0_10px_12px_-6px_rgba(0,0,0,0.1)] hover:-translate-y-1 transition-all duration-300 relative"
                   >
                     <Link href={targetUrl} prefetch={true} className="flex flex-col flex-1 cursor-pointer">
-                      {/* Image Container: Adaptive aspect ratio so the entire banner (text + sacred ritual) fits cleanly at 320px+ */}
-                      <div className="relative w-full aspect-[16/10] sm:aspect-[3/2] sm:min-h-[240px] shrink-0 overflow-hidden bg-stone-100">
+                      {/* Image Container: 100% full uncropped natural 3:2 ratio on all screens including 320px mobile */}
+                      <div
+                        style={{ aspectRatio: "3 / 2" }}
+                        className="relative w-full aspect-[3/2] shrink-0 overflow-hidden bg-[#3b0808]"
+                      >
                         {rawImg ? (
                           <Image
                             src={rawImg}
@@ -486,7 +489,7 @@ export default function ServiceListingPage({
                             fill
                             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                             unoptimized
-                            className="w-full h-full object-cover object-center sm:object-left transition-transform duration-700"
+                            className="w-full h-full object-cover object-center transition-transform duration-700 -webkit-backface-visibility-hidden"
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center bg-stone-100 text-stone-400">

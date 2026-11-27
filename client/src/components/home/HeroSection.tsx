@@ -365,7 +365,10 @@ export default function HeroSection({
           {/* Carousel Viewport Container with Overlapping Navigation Arrows */}
           <div className="relative w-full">
             {/* Smooth Fade Carousel Viewport */}
-            <div className="relative w-full min-h-[230px] sm:min-h-[300px] md:min-h-[360px] aspect-[3/2] sm:h-auto md:h-auto lg:h-[340px] xl:h-[415px] rounded-2xl min-[375px]:rounded-3xl overflow-hidden shadow-2xl border border-stone-200/80 bg-stone-100 group/carousel">
+            <div
+              style={{ aspectRatio: "3 / 2" }}
+              className="relative w-full aspect-[3/2] rounded-2xl min-[375px]:rounded-3xl overflow-hidden shadow-2xl border border-stone-200/80 bg-[#3b0808] group/carousel"
+            >
               {bannerSlides.map((slide, idx) => {
                 const isActive = idx === currentSafeSlideIndex;
                 return (
@@ -377,14 +380,14 @@ export default function HeroSection({
                       href={slide.ctaLink}
                       className="w-full h-full block relative cursor-pointer"
                     >
-                      {/* Full-bleed Banner Image with 1024 Specific Media Query */}
+                      {/* Full-bleed Banner Image with natural 3:2 scaling and centered alignment */}
                       <Image
                         src={slide.image}
                         alt={slide.title}
                         fill
                         unoptimized
                         priority={idx === 0}
-                        className="w-full h-full object-cover object-left transition-all duration-300"
+                        className="w-full h-full object-cover object-center transition-all duration-300 -webkit-backface-visibility-hidden"
                       />
                     </Link>
                   </div>

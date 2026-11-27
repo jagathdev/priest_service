@@ -3,6 +3,7 @@ import HeroSection from "@/components/home/HeroSection";
 import TrustStrip from "@/components/home/TrustStrip";
 import HowPujaPerformed from "@/components/home/HowPujaPerformed";
 import PujaListing from "@/components/home/PujaListing";
+import HomaListing from "@/components/home/HomaListing";
 import PujaGallery from "@/components/home/PujaGallery";
 import FaqSection from "@/components/home/FaqSection";
 
@@ -56,7 +57,8 @@ export default async function HomePage() {
       <HeroSection initialBanners={initialHeroBanners || []} />
       <TrustStrip />
       <HowPujaPerformed />
-      <PujaListing initialPujas={initialPujas || []} />
+      <PujaListing initialPujas={initialPujas || []} limit={2} />
+      <HomaListing initialHomas={initialHomas || []} limit={3} />
       <PujaGallery initialPujas={initialPujas || []} initialHomas={initialHomas || []} />
       <FaqSection />
     </main>

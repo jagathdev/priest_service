@@ -580,14 +580,17 @@ export default function PujaClient({ initialPujas }: { initialPujas?: Puja[] }) 
                       prefetch={true}
                       className="flex flex-col flex-1 cursor-pointer"
                     >
-                      <div className="relative w-full aspect-[16/10] sm:aspect-[3/2] sm:min-h-[240px] shrink-0 overflow-hidden">
+                      <div
+                        style={{ aspectRatio: "3 / 2" }}
+                        className="relative w-full aspect-[3/2] shrink-0 overflow-hidden bg-[#3b0808]"
+                      >
                         <Image
                           src={getPujaImageUrl(puja.imageUrl)}
                           alt={puja.title}
                           fill
                           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                           unoptimized
-                          className="w-full h-full object-cover object-center sm:object-left transition-transform duration-700"
+                          className="w-full h-full object-cover object-center transition-transform duration-700 -webkit-backface-visibility-hidden"
                         />
                         {puja.badge && (
                           <div className="absolute top-3 sm:top-4 left-0 bg-[#d92b2b] text-white text-[11px] sm:text-[12px] font-extrabold px-2.5 sm:px-3.5 py-1 sm:py-1.5 shadow-md rounded-r-lg uppercase tracking-wider">
