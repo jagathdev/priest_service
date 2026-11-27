@@ -1,5 +1,4 @@
-import React from "react";
-import HomaClient from "./HomaClient";
+import ServiceListingPage from "@/components/common/ServiceListingPage";
 
 export default async function HomaPageServer() {
   const expressBase = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
@@ -15,12 +14,26 @@ export default async function HomaPageServer() {
         : Array.isArray(homasData)
           ? homasData
           : [];
-      const activeList = rawList.filter((item: any) => !item.status || item.status === "active");
-      initialHomas = activeList;
+      initialHomas = rawList.filter((item: any) => !item.status || item.status === "active");
     }
   } catch (err) {
     console.error("Error prefetching homas for Homa page:", err);
   }
 
-  return <HomaClient initialHomas={initialHomas || []} />;
+  return (
+    <ServiceListingPage
+      serviceType="homa"
+      initialItems={initialHomas || []}
+      heroTitle={{
+        heading: "Book Powerful",
+        highlight: "Sacred Homas",
+        trailing: "Online",
+      }}
+      heroSubtitle="Invoking divine energies through Vedic fire rituals performed by experienced Vedic Priests. Experience transformative spiritual blessings, health, prosperity, and obstacle removal."
+      searchPlaceholder="What homa are you looking for?"
+      sectionTitle="Upcoming Online Homas"
+      defaultButtonText="Book My Homa"
+      apiEndpoint="/api/homas"
+    />
+  );
 }

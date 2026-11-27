@@ -2,7 +2,6 @@ export const revalidate = 60;
 
 import { Metadata } from 'next';
 import { getPujaBySlug } from '@/lib/pujas';
-import PujaDetailClient from './PujaDetailClient';
 
 import { resolveAbsoluteImageUrl } from '@/config/images.config';
 
@@ -42,7 +41,7 @@ export async function generateMetadata(
     (puja as any)?.image;
 
   const absoluteImageUrl = resolveAbsoluteImageUrl(rawImageUrl);
-  const canonicalUrl = `https://priestservices.astroved.com/puja/${slug}`;
+  const canonicalUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}puja/${slug}`;
 
   return {
     title,
@@ -75,17 +74,19 @@ export async function generateMetadata(
   };
 }
 
-import { getAllHomas } from '@/lib/homas';
+import ServiceDetailClient from '@/components/service-detail/ServiceDetailClient';
 
 export default async function PujaDetailPage({ params }: Props) {
   const resolvedParams = await params;
   const slug = resolvedParams.slug;
   const puja = slug ? await getPujaBySlug(slug) : null;
-  const allHomas = await getAllHomas();
-  const recommendations = allHomas.filter((h: { _id?: string | number | undefined }) => {
-    const recommendedIds = (puja as { recommendedHomaIds?: string[] } | null)?.recommendedHomaIds;
-    return recommendedIds?.includes(String(h._id));
-  });
+  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || '';
 
-  return <PujaDetailClient initialPuja={puja as React.ComponentProps<typeof PujaDetailClient>['initialPuja']} recommendations={recommendations} />;
+  return (
+    <ServiceDetailClient
+      serviceType="puja"
+      initialItem={puja as any}
+      apiEndpoint={`${baseUrl}/api/pujas`}
+    />
+  );
 }

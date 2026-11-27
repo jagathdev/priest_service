@@ -404,7 +404,7 @@ export default function AdminPujasPage() {
       name: "recommendedHomaIds",
       label: "Recommended Homas",
       type: "reference-array",
-      referenceEndpoint: "https://priestservices.astroved.com/api/homas",
+      referenceEndpoint: `${process.env.NEXT_PUBLIC_API_BASE_URL || ""}/api/homas`,
       referenceLabelField: "title",
       section: "FAQs & Layout",
     },

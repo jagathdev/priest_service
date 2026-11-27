@@ -2012,7 +2012,7 @@ export default function ContentManager({
                       id={field.name}
                       name={field.name}
                       required={field.required}
-                      placeholder={field.placeholder || "https://priestservices.astroved.com/images/example.jpg"}
+                      placeholder={field.placeholder}
                       value={formData[field.name] || ""}
                       onChange={handleInputChange}
                       className="block w-full rounded-xl border border-slate-200 bg-slate-50/70 px-3.5 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:bg-white focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/10 shadow-2xs transition-all"

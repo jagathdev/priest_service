@@ -17,11 +17,14 @@ export default function GlobalChrome() {
   const shouldHideOnCheckout = pathname?.startsWith("/sankalp") || pathname?.startsWith("/payment") || false;
   const shouldHide = shouldHideOnAuth || shouldHideOnAdminPanel || shouldHideOnCheckout;
 
+  // Show footer strictly on the home page ("/") only
+  const isHomePage = pathname === "/";
+
   return (
     <>
       <LoginModal isOpen={isLoginModalOpen} onClose={closeLoginModal} />
       {!shouldHide && <MobileBottomNav />}
-      {!shouldHide && <Footer />}
+      {!shouldHide && isHomePage && <Footer />}
     </>
   );
 }

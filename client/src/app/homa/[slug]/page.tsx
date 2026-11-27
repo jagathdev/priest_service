@@ -2,7 +2,6 @@ export const revalidate = 60;
 
 import { Metadata } from 'next';
 import { getHomaBySlug } from '@/lib/homas';
-import HomaDetailClient from './HomaDetailClient';
 
 import { resolveAbsoluteImageUrl } from '@/config/images.config';
 
@@ -42,7 +41,7 @@ export async function generateMetadata(
     (homa as any)?.image;
 
   const absoluteImageUrl = resolveAbsoluteImageUrl(rawImageUrl);
-  const canonicalUrl = `https://priestservices.astroved.com/homa/${slug}`;
+  const canonicalUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}homa/${slug}`;
 
   return {
     title,
@@ -75,15 +74,19 @@ export async function generateMetadata(
   };
 }
 
-import { getAllPujas } from '@/lib/pujas';
-import React from 'react';
+import ServiceDetailClient from '@/components/service-detail/ServiceDetailClient';
 
 export default async function HomaDetailPage({ params }: Props) {
   const resolvedParams = await params;
   const slug = resolvedParams.slug;
   const homa = slug ? await getHomaBySlug(slug) : null;
-  const allPujas = await getAllPujas();
-  const recommendations = allPujas.filter((p: any) => (homa as { recommendedPujaIds?: string[] } | null)?.recommendedPujaIds?.includes(String(p._id)));
+  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || '';
 
-  return <HomaDetailClient initialHoma={homa as React.ComponentProps<typeof HomaDetailClient>['initialHoma']} recommendations={recommendations} />;
+  return (
+    <ServiceDetailClient
+      serviceType="homa"
+      initialItem={homa as any}
+      apiEndpoint={`${baseUrl}/api/homas`}
+    />
+  );
 }

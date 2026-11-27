@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
 import PromoCodeInput from "@/components/PromoCodeInput";
 import LoginModal from "@/components/auth/LoginModal";
 import { checkAuthStatus } from "@/lib/authCheck";
@@ -1198,8 +1197,6 @@ function SankalpContent() {
           window.scrollTo({ top: 0, behavior: "smooth" });
         }}
       />
-
-      <Footer />
     </>
   );
 }

@@ -1,0 +1,2054 @@
+"use client";
+
+import { useEffect, useState, useMemo, useRef } from "react";
+import { useParams } from "next/navigation";
+import Link from "next/link";
+import Navbar from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
+import LoginModal from "@/components/auth/LoginModal";
+import { checkAuthStatus } from "@/lib/authCheck";
+import { XMarkIcon } from "@heroicons/react/24/solid";
+import WishlistButton from "@/components/common/WishlistButton";
+import PujaCountdownCard from "@/components/common/PujaCountdownCard";
+import ShareModal from "@/components/common/ShareModal";
+import GalleryLightboxModal from "@/components/common/GalleryLightboxModal";
+import Image from "next/image";
+import { getYouTubeEmbedUrl, isYouTubeUrl } from "@/lib/videoUtils";
+import { getStartingPriceINR, getStartingListPriceINR } from "@/lib/pricing";
+import PriceTag from "@/components/ui/PriceTag";
+import { formatDayDateMonth } from "@/lib/dateFormatter";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ZoomIn,
+  Share2,
+  Check,
+  Sparkles,
+  ArrowRight,
+  Video,
+  ShieldCheck,
+  Landmark,
+  Scroll,
+  Calendar,
+  Clock,
+  MapPin,
+  Flame,
+} from "lucide-react";
+
+interface PujaPackage {
+  id: string;
+  name: string;
+  priceINR?: number;
+  listPriceINR?: number;
+  priceUSD?: number;
+  priceMYR?: number;
+  price?: number;
+  description?: string;
+  imageUrl?: string;
+  discountPercent?: string;
+}
+
+interface PujaOffering {
+  id: string;
+  name: string;
+  priceINR?: number;
+  priceUSD?: number;
+  priceMYR?: number;
+  price?: number;
+  description?: string;
+  badge?: string;
+  imageUrl?: string;
+  productId?: number;
+}
+
+interface Puja {
+  _id: string;
+  title: string;
+  subtitle?: string;
+  description?: string;
+  imageUrl: string;
+  additionalImages?: string[];
+  videoUrl?: string;
+  videoTitle?: string;
+  badge?: string;
+  shortTitle?: string;
+  location?: string;
+  templeVenue?: string;
+  templeNote?: string;
+  templeLocation?: string;
+  heroTitle?: string;
+  heroSubtitle?: string;
+  about?: string;
+  strengthFor?: string;
+  ritualSummary?: string;
+  date?: string;
+  time?: string;
+  eventDateTime?: string;
+  showTimer?: boolean;
+  buttonText?: string;
+  trustBadges?: string[];
+  slug: string;
+  price?: number;
+  productId?: number;
+  benefits?: { title: string; description: string; icon?: string }[];
+  process?: { title: string; description: string }[];
+  inclusions?: (string | { title: string; description?: string })[];
+  faq?: { question: string; answer: string }[];
+  packages?: PujaPackage[];
+  offerings?: PujaOffering[];
+  gallery?: string[];
+  templeImage?: string;
+  details?: {
+    heroTitle?: string;
+    heroSubtitle?: string;
+    about?: string;
+    templeName?: string;
+    templeLocation?: string;
+    templeNote?: string;
+    templeImage?: string;
+    benefits?: { title: string; description: string; icon?: string }[];
+    process?: { title: string; description: string }[];
+    inclusions?: string[];
+    faq?: { question: string; answer: string }[];
+  };
+}
+
+const slugify = (value: string) =>
+  value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-");
+
+import { MEDIA_CONFIG, resolveImageUrl } from "@/config/images.config";
+
+const getPujaImageUrl = (imageUrl?: string): string => {
+  return resolveImageUrl(imageUrl, MEDIA_CONFIG.DEFAULT_BANNER);
+};
+
+const DEFAULT_PACKAGE_AVATARS = [
+  MEDIA_CONFIG.PACKAGE_AVATARS.INDIVIDUAL,
+  MEDIA_CONFIG.PACKAGE_AVATARS.COUPLE,
+  MEDIA_CONFIG.PACKAGE_AVATARS.FAMILY,
+];
+
+const DEFAULT_BANNER_IMAGE = MEDIA_CONFIG.DEFAULT_BANNER;
+
+export interface ServiceDetailClientProps {
+  serviceType?: "puja" | "homa";
+  initialItem?: any;
+  initialPuja?: any;
+  initialHoma?: any;
+  recommendations?: any[];
+  apiEndpoint?: string;
+}
+
+export default function ServiceDetailClient({
+  serviceType = "puja",
+  initialItem,
+  initialPuja,
+  initialHoma,
+  recommendations,
+  apiEndpoint,
+}: ServiceDetailClientProps) {
+  const params = useParams<{ slug: string }>();
+  const slugParam = params?.slug;
+  const slug = Array.isArray(slugParam) ? slugParam[0] : slugParam;
+  const currency = "INR";
+
+  const initialData = initialItem || (serviceType === "homa" ? (initialHoma || initialPuja) : (initialPuja || initialHoma));
+  const [puja, setPuja] = useState<Puja | null>(initialData);
+  const [loading, setLoading] = useState(!initialData);
+  const [selectedPackageId, setSelectedPackageId] = useState<string | null>(null);
+  const [showPackageModal, setShowPackageModal] = useState(false);
+  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
+  const [activeTab, setActiveTab] = useState("about");
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [pendingSankalpUrl, setPendingSankalpUrl] = useState<string | null>(null);
+  const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [showStickyBar, setShowStickyBar] = useState(false);
+  const [isNearFooter, setIsNearFooter] = useState(false);
+
+  useEffect(() => {
+    const footerEl = document.querySelector("footer");
+    if (!footerEl) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsNearFooter(entry.isIntersecting);
+      },
+      { rootMargin: "0px 0px 80px 0px", threshold: 0 }
+    );
+
+    observer.observe(footerEl);
+    return () => observer.disconnect();
+  }, []);
+
+
+  const [activeBannerIndex, setActiveBannerIndex] = useState(0);
+  const [galleryCarouselIdx, setGalleryCarouselIdx] = useState(0);
+  const [galleryLightboxOpen, setGalleryLightboxOpen] = useState(false);
+  const [lightboxImageIdx, setLightboxImageIdx] = useState(0);
+  const [failedGalleryImages, setFailedGalleryImages] = useState<Record<string, boolean>>({});
+  const [isDescExpanded, setIsDescExpanded] = useState(false);
+  const [_isDescClamped, setIsDescClamped] = useState(false);
+  const descRef = useRef<HTMLParagraphElement | null>(null);
+  const heroCtaRef = useRef<HTMLButtonElement | null>(null);
+  const tabsContainerRef = useRef<HTMLDivElement | null>(null);
+
+  // Touch Swipe state for Hero Banner Carousel
+  const heroTouchStartX = useRef<number | null>(null);
+  const heroTouchEndX = useRef<number | null>(null);
+  const heroTouchStartY = useRef<number | null>(null);
+  const heroTouchEndY = useRef<number | null>(null);
+
+  // Touch Swipe state for Gallery Carousel
+  const galleryTouchStartX = useRef<number | null>(null);
+  const galleryTouchEndX = useRef<number | null>(null);
+  const galleryTouchStartY = useRef<number | null>(null);
+  const galleryTouchEndY = useRef<number | null>(null);
+
+  // Check if description text actually exceeds 3 lines in the rendered DOM
+  useEffect(() => {
+    if (loading || !puja) return;
+    const el = descRef.current;
+    if (!el) return;
+    const checkClamp = () => {
+      if (!isDescExpanded) {
+        setIsDescClamped(el.scrollHeight > el.clientHeight + 2);
+      }
+    };
+    checkClamp();
+    window.addEventListener("resize", checkClamp, { passive: true });
+    return () => window.removeEventListener("resize", checkClamp);
+  }, [loading, puja, isDescExpanded]);
+
+  useEffect(() => {
+    if (tabsContainerRef.current) {
+      const activeEl = tabsContainerRef.current.querySelector(`[data-tab-id="${activeTab}"]`) as HTMLElement;
+      if (activeEl) {
+        const container = tabsContainerRef.current;
+        const left = activeEl.offsetLeft - (container.offsetWidth / 2) + (activeEl.offsetWidth / 2);
+        container.scrollTo({ left: Math.max(0, left), behavior: "smooth" });
+      }
+    }
+  }, [activeTab]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      // If user is near the top (in hero), NEVER show the sticky bar
+      if (window.scrollY < 350) {
+        setShowStickyBar(false);
+        return;
+      }
+
+      const aboutSec = document.getElementById("about");
+      const heroCta = heroCtaRef.current;
+
+      // If the hero CTA button is still on screen, do not show sticky bar yet
+      if (heroCta) {
+        const ctaRect = heroCta.getBoundingClientRect();
+        if (ctaRect.bottom > 40) {
+          setShowStickyBar(false);
+          return;
+        }
+      }
+
+      if (aboutSec) {
+        const aboutRect = aboutSec.getBoundingClientRect();
+        // Only show once user is actively viewing/scrolling the below sections
+        setShowStickyBar(aboutRect.top <= 140);
+      } else {
+        setShowStickyBar(window.scrollY > 600);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [loading]);
+
+  // Fetch Puja details by slug
+  useEffect(() => {
+    if (initialPuja) {
+      setPuja(initialPuja);
+      setLoading(false);
+      return;
+    }
+
+    const loadPuja = async () => {
+      try {
+        if (!slug) {
+          setPuja(null);
+          return;
+        }
+
+        const rawBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || (typeof window !== "undefined" && window.location.origin.includes("localhost") ? "http://localhost:8564" : "https://priestservices.astroved.com");
+        const isClient = typeof window !== "undefined";
+        const isLanMobile = isClient && window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1" && rawBaseUrl.includes("localhost");
+        const backendUrl = isLanMobile ? "" : rawBaseUrl;
+        const apiPath = serviceType === "homa" ? "/api/homas" : "/api/pujas";
+        const res = await fetch(`${backendUrl}${apiPath}`);
+        if (!res.ok) {
+          setPuja(null);
+          return;
+        }
+
+        const resData = await res.json();
+        const list: Puja[] = resData?.data && Array.isArray(resData.data)
+          ? resData.data
+          : Array.isArray(resData)
+            ? resData
+            : [];
+
+        const match = list.find(
+          (p: Puja) => p.slug === slug || slugify(p.title) === slug || p._id === slug
+        );
+
+        if (match) {
+          setPuja(match);
+        } else {
+          setPuja(null);
+        }
+      } catch {
+        setPuja(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadPuja();
+  }, [slug, initialPuja]);
+
+  // Handle Tab Scroll Listener (Accurate getBoundingClientRect viewport detection for iOS & Desktop)
+  useEffect(() => {
+    if (tabsContainerRef.current) {
+      const activeEl = tabsContainerRef.current.querySelector(`[data-tab-id="${activeTab}"]`) as HTMLElement;
+      if (activeEl) {
+        const container = tabsContainerRef.current;
+        const left = activeEl.offsetLeft - (container.offsetWidth / 2) + (activeEl.offsetWidth / 2);
+        container.scrollTo({ left: Math.max(0, left), behavior: "smooth" });
+      }
+    }
+  }, [activeTab]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const sections = ["about", "how-to-book", "when-to-do", "video", "benefits", "process", "temple", "receive", "faqs", "gallery"];
+      const headerOffset = window.innerWidth < 640 ? 120 : 150;
+
+      // Check if user has reached or scrolled near the bottom of the page
+      const scrollBottom = window.innerHeight + window.pageYOffset;
+      const docHeight = Math.max(
+        document.body.scrollHeight,
+        document.documentElement.scrollHeight,
+        document.body.offsetHeight,
+        document.documentElement.offsetHeight
+      );
+      const isAtBottom = scrollBottom >= docHeight - 120;
+
+      if (isAtBottom && document.getElementById("gallery")) {
+        setActiveTab("gallery");
+        return;
+      }
+
+      let currentSection = sections[0];
+      for (const sectionId of sections) {
+        const el = document.getElementById(sectionId);
+        if (el) {
+          const rect = el.getBoundingClientRect();
+          // If the top of the section is at or past the sticky header threshold
+          if (rect.top <= headerOffset + 50) {
+            currentSection = sectionId;
+          }
+        }
+      }
+
+      setActiveTab((prev) => (prev !== currentSection ? currentSection : prev));
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Scroll-triggered viewport reveal observer (only appears when element enters viewport for the first time)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const revealEl = (el: HTMLElement) => {
+      el.setAttribute("data-revealed", "true");
+      el.classList.add("is-revealed");
+    };
+
+    const checkAndReveal = () => {
+      const windowHeight = window.innerHeight || document.documentElement.clientHeight;
+      const elements = document.querySelectorAll<HTMLElement>("[data-reveal]:not([data-revealed='true'])");
+      elements.forEach((el) => {
+        const rect = el.getBoundingClientRect();
+        if (rect.top <= windowHeight - 30) {
+          revealEl(el);
+        }
+      });
+    };
+
+    let observer: IntersectionObserver | null = null;
+    if (typeof IntersectionObserver !== "undefined") {
+      observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              revealEl(entry.target as HTMLElement);
+              observer?.unobserve(entry.target);
+            }
+          });
+        },
+        {
+          threshold: 0,
+          rootMargin: "0px 0px -30px 0px",
+        }
+      );
+
+      const elements = document.querySelectorAll<HTMLElement>("[data-reveal]:not([data-revealed='true'])");
+      elements.forEach((el) => observer?.observe(el));
+    }
+
+    checkAndReveal();
+    window.addEventListener("scroll", checkAndReveal, { passive: true });
+    window.addEventListener("resize", checkAndReveal, { passive: true });
+
+    const timer1 = setTimeout(checkAndReveal, 100);
+    const timer2 = setTimeout(checkAndReveal, 350);
+
+    return () => {
+      observer?.disconnect();
+      window.removeEventListener("scroll", checkAndReveal);
+      window.removeEventListener("resize", checkAndReveal);
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+    };
+  }, [loading, puja]);
+
+
+
+  // Compute normalized package list from Admin data or defaults
+  const packagesList = useMemo(() => {
+    const normalizePackageName = (rawName: string, idx: number) => {
+      const lower = (rawName || "").toLowerCase();
+      if (lower.includes("individual")) return "Individual";
+      if (lower.includes("couple")) return "Couple";
+      if (lower.includes("family")) return "Family";
+      if (idx === 0) return "Individual";
+      if (idx === 1) return "Couple";
+      if (idx === 2) return "Family";
+      return rawName || `Package ${idx + 1}`;
+    };
+
+    const getPackageDevotees = (pkgName: string, explicitDevotees?: any, idx: number = 0) => {
+      if (explicitDevotees && typeof explicitDevotees === "string" && explicitDevotees.trim()) {
+        return explicitDevotees.trim();
+      }
+      if (typeof explicitDevotees === "number" && explicitDevotees > 0) {
+        return `${explicitDevotees} Devotee${explicitDevotees > 1 ? "s" : ""}`;
+      }
+      const lower = (pkgName || "").toLowerCase();
+      if (lower.includes("family")) return "4 Devotees";
+      if (lower.includes("couple")) return "2 Devotees";
+      if (lower.includes("individual")) return "1 Devotee";
+      return idx === 0 ? "1 Devotee" : idx === 1 ? "2 Devotees" : idx === 2 ? "4 Devotees" : "Multiple Devotees";
+    };
+
+    const getPackageAvatar = (pkgName: string, explicitImage?: string, idx: number = 0) => {
+      const lower = (pkgName || "").toLowerCase();
+      if (lower.includes("family")) return "/images/package_family.png";
+      if (lower.includes("couple") || lower.includes("partner")) return "/images/package_couple.webp";
+      if (lower.includes("individual")) return "/images/package_individual.webp";
+      if (explicitImage && typeof explicitImage === "string" && explicitImage.trim() && !explicitImage.includes("default") && !explicitImage.includes("package_couple.webp")) {
+        return explicitImage.trim();
+      }
+      return DEFAULT_PACKAGE_AVATARS[idx % DEFAULT_PACKAGE_AVATARS.length];
+    };
+
+    if (puja?.packages && puja.packages.length > 0) {
+      return puja.packages.map((pkg: any, idx: number) => {
+        const basePrice = pkg.priceINR ?? pkg.price ?? getStartingPriceINR(puja) ?? 0;
+        const normName = normalizePackageName(pkg.name, idx);
+        const devoteeCount = getPackageDevotees(normName, pkg.devoteeCount || pkg.devotees, idx);
+        const avatar = getPackageAvatar(normName, pkg.imageUrl, idx);
+        return {
+          id: pkg.id || pkg._id || `pkg-${idx + 1}`,
+          name: normName,
+          devoteeCount: devoteeCount,
+          priceINR: basePrice,
+          listPriceINR: pkg.listPriceINR ?? pkg.listPrice,
+          priceUSD: pkg.priceUSD,
+          priceMYR: pkg.priceMYR,
+          description: pkg.description || "Includes personalized sankalpam and video proof.",
+          imageUrl: avatar,
+          discountPercent: pkg.discountPercent || "",
+        };
+      });
+    }
+
+    const basePrice = getStartingPriceINR(puja) ?? 0;
+    return [
+      {
+        id: "pkg-1",
+        name: "Individual",
+        devoteeCount: "1 Devotee",
+        priceINR: basePrice,
+        listPriceINR: undefined as number | undefined,
+        priceUSD: undefined as number | undefined,
+        priceMYR: undefined as number | undefined,
+        description: "Personalized Sankalpam for 1 Person with video recording.",
+        imageUrl: DEFAULT_PACKAGE_AVATARS[0],
+        discountPercent: "",
+      },
+      {
+        id: "pkg-2",
+        name: "Couple",
+        devoteeCount: "2 Devotees",
+        priceINR: basePrice + 200,
+        listPriceINR: undefined as number | undefined,
+        priceUSD: undefined as number | undefined,
+        priceMYR: undefined as number | undefined,
+        description: "Personalized Sankalpam for Couple / 2 Devotees.",
+        imageUrl: DEFAULT_PACKAGE_AVATARS[1],
+        discountPercent: "",
+      },
+      {
+        id: "pkg-3",
+        name: "Family",
+        devoteeCount: "4 Devotees",
+        priceINR: basePrice + 400,
+        listPriceINR: undefined as number | undefined,
+        priceUSD: undefined as number | undefined,
+        priceMYR: undefined as number | undefined,
+        description: "Personalized Sankalpam for 4 Family Members.",
+        imageUrl: DEFAULT_PACKAGE_AVATARS[2],
+        discountPercent: "",
+      },
+    ];
+  }, [puja]);
+
+  // Auto-select first package if none selected
+  useEffect(() => {
+    if (packagesList.length > 0 && !selectedPackageId) {
+      setSelectedPackageId(packagesList[0].id);
+    }
+  }, [packagesList, selectedPackageId]);
+
+  const getDisplayPrice = (item: any) => {
+    return item?.[`price${currency}`] ?? item?.priceINR ?? item?.price ?? getStartingPriceINR(item) ?? 0;
+  };
+
+  const getDisplayListPrice = (item: any) => {
+    return item?.[`listPrice${currency}`] ?? item?.listPriceINR ?? item?.listPrice ?? getStartingListPriceINR(item) ?? 0;
+  };
+
+  const selectedPackage = useMemo(() => {
+    return (
+      packagesList.find((pkg) => pkg.id === selectedPackageId) ??
+      packagesList[0] ??
+      null
+    );
+  }, [packagesList, selectedPackageId]);
+
+  const priceVal = selectedPackage
+    ? getDisplayPrice(selectedPackage)
+    : getStartingPriceINR(puja) ?? 0;
+
+  const handleAddPujaToCart = async () => {
+    try {
+      const { is_user } = await checkAuthStatus();
+      const actualPujaId = puja?._id || (puja as any)?.id || slug;
+      const totalAmount = priceVal;
+
+      const sankalpUrl = `/sankalp?pujaId=${encodeURIComponent(actualPujaId)}&amount=${totalAmount}&type=puja&pkg=${selectedPackageId || ""}&title=${encodeURIComponent(puja?.title || "")}&slug=${encodeURIComponent(
+        slug || ""
+      )}`;
+
+      if (!is_user) {
+        setPendingSankalpUrl(sankalpUrl);
+        setShowLoginModal(true);
+        return;
+      }
+      window.location.href = sankalpUrl;
+    } catch (err: any) {
+      console.error("Error booking puja:", err);
+    }
+  };
+
+  const bannerImages: string[] = useMemo(() => {
+    if (!puja) return [DEFAULT_BANNER_IMAGE];
+    const list: string[] = [];
+
+    const addUrl = (val: any) => {
+      if (!val) return;
+      if (typeof val === "string") {
+        const parts = val.split(/[\n,]+/);
+        for (const p of parts) {
+          const trimmed = p.trim();
+          if (trimmed) {
+            const formatted = getPujaImageUrl(trimmed);
+            if (formatted) {
+              list.push(formatted);
+            }
+          }
+        }
+      } else if (Array.isArray(val)) {
+        for (const item of val) {
+          addUrl(item);
+        }
+      }
+    };
+
+    // 1. Primary main image directly from DB
+    if (puja.imageUrl && typeof puja.imageUrl === "string" && puja.imageUrl.trim()) {
+      addUrl(puja.imageUrl);
+    }
+
+    // 2. Additional carousel images directly from DB
+    const addImgs = puja.additionalImages || (puja as any).additionalImageUrls;
+    const hasAdditional =
+      (Array.isArray(addImgs) && addImgs.length > 0) ||
+      (typeof addImgs === "string" && Boolean((addImgs as string).trim()));
+
+    if (hasAdditional) {
+      addUrl(addImgs);
+    } else {
+      // 3. Gallery images from DB if no additionalImages provided
+      addUrl(puja.gallery);
+      addUrl((puja as any).galleryUrl);
+      addUrl((puja as any).details?.gallery);
+    }
+
+    // 4. Details sub-object main image from DB
+    if (list.length === 0) {
+      addUrl((puja?.details as any)?.imageUrl);
+    }
+    return list;
+  }, [puja]);
+
+  // Auto-advance banner every 5 seconds
+  useEffect(() => {
+    if (bannerImages.length <= 1) return;
+    const interval = setInterval(() => {
+      setActiveBannerIndex((prev) => (prev + 1) % bannerImages.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [bannerImages.length]);
+
+  const galleryList = useMemo(() => {
+    if (!puja) return [];
+    const list: string[] = [];
+    const addImg = (val: any) => {
+      if (!val) return;
+      if (typeof val === "string") {
+        const parts = val.split(/[\n,]+/);
+        for (const p of parts) {
+          const trimmed = p.trim();
+          if (trimmed) {
+            const formatted = getPujaImageUrl(trimmed);
+            if (formatted && !list.includes(formatted)) {
+              list.push(formatted);
+            }
+          }
+        }
+      } else if (Array.isArray(val)) {
+        for (const item of val) {
+          addImg(item);
+        }
+      }
+    };
+
+    addImg(puja.gallery);
+    addImg((puja as any).galleryUrl);
+    if ((puja as any).details?.gallery) addImg((puja as any).details.gallery);
+    return list.filter((img) => !failedGalleryImages[img]);
+  }, [puja, failedGalleryImages]);
+
+  const hasHowToBook = Boolean((puja as any)?.howToBook && Array.isArray((puja as any).howToBook) && (puja as any).howToBook.length > 0);
+  const hasWhenToDo = Boolean((puja as any)?.whenToDo && Array.isArray((puja as any).whenToDo) && (puja as any).whenToDo.length > 0);
+
+  const subNavTabs = useMemo(() => [
+    { id: "about", label: `About ${serviceType}` },
+    ...(hasHowToBook ? [{ id: "how-to-book", label: "How to Book" }] : []),
+    ...(hasWhenToDo ? [{ id: "when-to-do", label: "When to do" }] : []),
+    ...(puja?.videoUrl ? [{ id: "video", label: "Puja Video" }] : []),
+    { id: "benefits", label: `${serviceType === "homa" ? "Homa" : "Puja"} Benefits` },
+    { id: "process", label: `${serviceType === "homa" ? "Homa" : "Puja"} Procedure` },
+    { id: "temple", label: "Temple Details" },
+    { id: "receive", label: "What will you receive" },
+    { id: "faqs", label: "FAQs" },
+    ...(galleryList.length > 0 ? [{ id: "gallery", label: `${serviceType === "homa" ? "Homa" : "Puja"} Gallery` }] : []),
+  ], [galleryList.length, puja?.videoUrl, hasHowToBook, hasWhenToDo]);
+
+  if (loading) {
+    return (
+      <>
+        <Navbar />
+        <div className="min-h-[60vh] flex items-center justify-center text-[#1f1f1f] font-serif font-bold text-lg">
+          Loading sacred puja details...
+        </div>
+        {/* Footer rendered globally by GlobalChrome */}
+      </>
+    );
+  }
+
+  if (!puja) {
+    return (
+      <>
+        <Navbar />
+        <div className="min-h-[60vh] flex flex-col items-center justify-center text-center px-4">
+          <h1 className="text-3xl font-serif font-bold text-[#221f20] mb-4">Puja Not Found</h1>
+          <p className="text-stone-600 mb-6">The requested puja offering could not be found.</p>
+          <Link
+            href="/puja"
+            className="bg-[#00B05F] text-white font-extrabold px-8 py-3 rounded-full hover:bg-[#008F4C] transition-colors"
+          >
+            Explore All Pujas
+          </Link>
+        </div>
+        {/* Footer rendered globally by GlobalChrome */}
+      </>
+    );
+  }
+
+  // Fallback structures if admin data is not provided
+  const defaultBenefits = [
+    { title: "Divine Grace & Protection", description: "Invocational blessing to grant strength, peace, and protection.", icon: "🛡️" },
+    { title: "Success & Obstacle Removal", description: "Divine support for overcoming difficulties and achieving success.", icon: "🎯" },
+    { title: "Prosperity & Abundance", description: "Auspicious sacred rituals bringing prosperity and family wellbeing.", icon: "✨" },
+    { title: "Positive Energy & Peace", description: "Strengthen focus, harmony, and positive vibrations at home.", icon: "⚡" },
+    { title: "Family Wellbeing", description: "Harmony, happiness, and health for all family members.", icon: "🏡" },
+  ];
+
+  const defaultProcess = [
+    { title: "Sankalpam", description: "Offering devotee's names and gotram during the sacred ritual by learned priests." },
+    { title: "Ganapati Puja & Invocation", description: "Invoking Lord Ganesha for obstruction-free Puja and divine harmony." },
+    { title: "Sacred Archana & Chanting", description: "Chanting sacred vedic mantras and 108 names for fulfillment of noble desires." },
+    { title: "Mangalarathi & Prasad", description: "Offering final mangalarathi and receiving divine prasad blessings." },
+  ];
+
+  const defaultFaqs = [
+    { question: "Where is this puja being performed?", answer: "This puja is performed at sacred temples by verified, experienced Vedic pandits following authentic rites." },
+    { question: "Why is this puja performed?", answer: "It is performed to seek divine blessings, remove difficulties, and fulfill specific prayers for health, career, and family." },
+    { question: "Who will perform the puja?", answer: "Highly experienced Vedic priests with proper initiations will conduct your sankalpam and rituals." },
+    { question: "Do I need to be physically present?", answer: "No, physical presence is not required. The pandit recites your Name and Gotra in the Sankalpam, and a full video recording is sent to your WhatsApp within 48 hours." },
+  ];
+
+  const howToBookList = ((puja as any)?.howToBook && Array.isArray((puja as any).howToBook) && (puja as any).howToBook.length > 0)
+    ? (puja as any).howToBook
+    : [];
+
+  const whenToDoList = ((puja as any)?.whenToDo && Array.isArray((puja as any).whenToDo) && (puja as any).whenToDo.length > 0)
+    ? (puja as any).whenToDo
+    : [];
+
+  // Resolve Admin fields with fallbacks
+  const aboutText =
+    puja.about ||
+    puja.details?.about ||
+    puja.description ||
+    puja.subtitle ||
+    puja.heroSubtitle ||
+    puja.details?.heroSubtitle ||
+    `Perform sacred ${puja.title} with authentic Vedic rituals to seek divine grace, peace, and fulfillment of prayers.`;
+
+  const badgeText =
+    puja.badge ||
+    puja.shortTitle ||
+    puja.subtitle ||
+    puja.heroTitle ||
+    puja.details?.heroTitle ||
+    "SPECIAL SANKALPAM";
+
+  const descriptionText =
+    puja.description ||
+    puja.subtitle ||
+    puja.heroSubtitle ||
+    puja.details?.heroSubtitle ||
+    "A special sacred ritual for devotees seeking courage, prosperity, and fulfillment of noble wishes.";
+
+
+
+  const templeVenueText =
+    puja.templeVenue ||
+    puja.details?.templeName ||
+    (puja as any).templeName ||
+    "Sacred Temple Venue";
+
+  const templeLocationText =
+    puja.templeLocation ||
+    puja.details?.templeLocation ||
+    puja.location ||
+    "Sacred Temple Venue, India";
+
+  const templeNoteText =
+    puja.templeNote ||
+    puja.details?.templeNote ||
+    "This sacred temple is renowned for authentic Vedic rituals, powerful divine vibrations, and traditional archana services.";
+
+  const benefitsList =
+    puja.benefits && puja.benefits.length > 0
+      ? puja.benefits
+      : puja.details?.benefits && puja.details.benefits.length > 0
+        ? puja.details.benefits
+        : defaultBenefits;
+
+  const processList =
+    puja.process && puja.process.length > 0
+      ? puja.process
+      : puja.details?.process && puja.details.process.length > 0
+        ? puja.details.process
+        : defaultProcess;
+
+  const faqList =
+    puja.faq && puja.faq.length > 0
+      ? puja.faq
+      : puja.details?.faq && puja.details.faq.length > 0
+        ? puja.details.faq
+        : defaultFaqs;
+
+  const inclusionsList =
+    puja.inclusions && puja.inclusions.length > 0
+      ? puja.inclusions
+      : puja.details?.inclusions && puja.details.inclusions.length > 0
+        ? puja.details.inclusions
+        : [
+          { title: "Special Invocational Sankalpam", description: "Performed with your name, gotra, and specific prayer request by learned priests." },
+          { title: "Full Puja Video Recording", description: "Delivered directly to your WhatsApp number within 48 hours of ritual completion." },
+        ];
+
+  const templeImage =
+    (typeof (puja as any).templeImageUrl === "string" && (puja as any).templeImageUrl.trim()) ||
+    (typeof puja.templeImage === "string" && puja.templeImage.trim()) ||
+    (typeof (puja as any).details?.templeImageUrl === "string" && (puja as any).details.templeImageUrl.trim()) ||
+    (typeof puja.details?.templeImage === "string" && puja.details.templeImage.trim()) ||
+    "";
+  const renderAboutContent = (text: string) => {
+    if (!text) return null;
+
+    let blocks: string[] = [];
+    if (text.includes("\n")) {
+      blocks = text
+        .split("\n")
+        .map((p) => p.trim())
+        .filter(Boolean);
+    } else {
+      const sentences = text.match(/[^.!?]+[.!?]+(\s|$)/g);
+      if (sentences && sentences.length > 1) {
+        blocks = sentences.map((s) => s.trim()).filter(Boolean);
+      } else {
+        blocks = [text];
+      }
+    }
+
+    if (blocks.length <= 1) {
+      return (
+        <p className="text-stone-700 text-sm sm:text-base leading-relaxed font-medium mb-6">
+          {text}
+        </p>
+      );
+    }
+
+    const [lead, ...details] = blocks;
+
+    return (
+      <div className="space-y-4 mb-6">
+        <div className="bg-[#faf6f0] border-l-4 border-[#F47820] rounded-r-2xl p-4 sm:p-5 shadow-2xs">
+          <p className="text-stone-800 text-sm sm:text-[15px] font-semibold leading-relaxed">
+            {lead}
+          </p>
+        </div>
+
+        <div className="space-y-2.5 pt-1">
+          {details.map((point, idx) => (
+            <div
+              key={idx}
+              className="flex items-start gap-3 bg-white/90 border border-[#f0e4d0] rounded-xl p-3 sm:p-3.5 hover:shadow-xs transition-all"
+            >
+              <span className="w-5 h-5 rounded-full bg-amber-100 text-[#F47820] flex items-center justify-center shrink-0 text-xs font-bold mt-0.5 shadow-2xs">
+                ✦
+              </span>
+              <p className="text-stone-700 text-xs sm:text-sm leading-relaxed font-medium">
+                {point}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <main className="min-h-screen bg-white text-[#1f1f1f] font-sans">
+      <Navbar />
+
+      {/* ── 1. Top Hero Section ── */}
+      <section data-reveal className="bg-[#ffffff] border-b border-[#f0e4d0] py-2.5 sm:py-3 lg:py-2.5 xl:py-3">
+        <div className="max-w-[1350px] mx-auto px-4 sm:px-6 lg:px-10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+
+            {/* Left 6 Cols: Main Banner Image (Slightly Increased Width) */}
+            <div className="lg:col-span-6 flex flex-col relative">
+              <div
+                onTouchStart={(e) => {
+                  heroTouchStartX.current = e.touches[0].clientX;
+                  heroTouchStartY.current = e.touches[0].clientY;
+                }}
+                onTouchMove={(e) => {
+                  heroTouchEndX.current = e.touches[0].clientX;
+                  heroTouchEndY.current = e.touches[0].clientY;
+                }}
+                onTouchEnd={() => {
+                  if (heroTouchStartX.current === null || heroTouchEndX.current === null) return;
+                  const deltaX = heroTouchStartX.current - heroTouchEndX.current;
+                  const deltaY = (heroTouchStartY.current ?? 0) - (heroTouchEndY.current ?? 0);
+
+                  // Trigger only if horizontal swipe exceeds 40px and is predominantly horizontal
+                  if (Math.abs(deltaX) > 40 && Math.abs(deltaX) > Math.abs(deltaY)) {
+                    if (deltaX > 0) {
+                      // Swiped Left -> Next Image
+                      setActiveBannerIndex((prev) => (prev + 1) % bannerImages.length);
+                    } else {
+                      // Swiped Right -> Previous Image
+                      setActiveBannerIndex((prev) => (prev - 1 + bannerImages.length) % bannerImages.length);
+                    }
+                  }
+                  heroTouchStartX.current = null;
+                  heroTouchEndX.current = null;
+                  heroTouchStartY.current = null;
+                  heroTouchEndY.current = null;
+                }}
+                className="relative w-full min-h-[230px] sm:min-h-[300px] md:min-h-[360px] aspect-[3/2] sm:h-auto md:h-auto lg:h-[340px] xl:h-[415px] rounded-2xl min-[375px]:rounded-3xl overflow-hidden border border-stone-200/90 shadow-md group touch-pan-y bg-stone-100"
+              >
+                <Image
+                  src={bannerImages[activeBannerIndex] || (puja ? getPujaImageUrl(puja.imageUrl) : "")}
+                  alt={`${puja?.title || "Puja"} - Sacred Ritual Banner ${activeBannerIndex + 1}`}
+                  fill
+                  priority
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, (max-width: 1280px) 50vw, 650px"
+                  unoptimized
+                  className="w-full h-full object-cover object-left transition-all duration-300 cursor-pointer"
+                  onClick={handleAddPujaToCart}
+                />
+              </div>
+
+              {/* Navigation Arrows: Outside image card on Tablet & Laptop/Desktop (hidden on mobile < sm) */}
+              {bannerImages.length > 1 && (
+                <>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setActiveBannerIndex((prev) => (prev - 1 + bannerImages.length) % bannerImages.length);
+                    }}
+                    aria-label="Previous banner image"
+                    className="absolute -left-3 sm:-left-3.5 md:-left-4 lg:left-3 xl:-left-6 top-[calc(50%-18px)] -translate-y-1/2 z-30 hidden sm:flex h-9 w-9 xl:h-11 xl:w-11 items-center justify-center rounded-full bg-white/95 hover:bg-white text-stone-800 border border-stone-200/90 shadow-xl transition-all duration-200 active:scale-95 cursor-pointer hover:scale-110 backdrop-blur-sm"
+                  >
+                    <ChevronLeft className="w-5 h-5 xl:w-6 xl:h-6 text-stone-800" strokeWidth={2.5} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setActiveBannerIndex((prev) => (prev + 1) % bannerImages.length);
+                    }}
+                    aria-label="Next banner image"
+                    className="absolute -right-3 sm:-right-3.5 md:-right-4 lg:right-3 xl:-right-6 top-[calc(50%-18px)] -translate-y-1/2 z-30 hidden sm:flex h-9 w-9 xl:h-11 xl:w-11 items-center justify-center rounded-full bg-white/95 hover:bg-white text-stone-800 border border-stone-200/90 shadow-xl transition-all duration-200 active:scale-95 cursor-pointer hover:scale-110 backdrop-blur-sm"
+                  >
+                    <ChevronRight className="w-5 h-5 xl:w-6 xl:h-6 text-stone-800" strokeWidth={2.5} />
+                  </button>
+                </>
+              )}
+
+              {/* Carousel Dots (Shown ONLY when > 1 image, rendering exact length of bannerImages) */}
+              {bannerImages.length > 1 && (
+                <div className="flex items-center justify-center gap-2 mt-3 mb-1">
+                  {bannerImages.map((_, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => setActiveBannerIndex(idx)}
+                      aria-label={`Go to slide ${idx + 1}`}
+                      className={
+                        idx === activeBannerIndex
+                          ? "w-7 h-2 bg-[#00B05F] rounded-full transition-all cursor-pointer"
+                          : "w-2.5 h-2.5 bg-stone-300 hover:bg-stone-400 rounded-full transition-all cursor-pointer"
+                      }
+                    />
+                  ))}
+                </div>
+              )}
+
+              {/* Desktop Only (>=1024px): Frameless Ratings / Stat & Action Strip Under Image */}
+              <div className="hidden lg:flex flex-row items-center justify-between gap-2 xl:gap-3 mt-3 w-full">
+                {/* Stats Container */}
+                <div className="flex items-center justify-between flex-1 py-0 px-0">
+                  {/* Stat 1: Poojas Performed */}
+                  <div className="text-center flex-1 px-0.5 xl:px-1">
+                    <span className="block text-sm lg:text-[14px] xl:text-base 2xl:text-lg font-extrabold text-[#1f1a17] leading-tight whitespace-nowrap">10M+</span>
+                    <span className="text-[10px] xl:text-[11px] 2xl:text-xs text-stone-500 font-medium block mt-0.5 leading-tight">poojas performed</span>
+                  </div>
+
+                  <div className="w-[1px] h-5 xl:h-6 bg-stone-300/80 shrink-0" />
+
+                  {/* Stat 2: Scholars and Priests */}
+                  <div className="text-center flex-1 px-0.5 xl:px-1">
+                    <span className="block text-sm lg:text-[14px] xl:text-base 2xl:text-lg font-extrabold text-[#1f1a17] leading-tight whitespace-nowrap">180+</span>
+                    <span className="text-[10px] xl:text-[11px] 2xl:text-xs text-stone-500 font-medium block mt-0.5 leading-tight">scholars and priests</span>
+                  </div>
+
+                  <div className="w-[1px] h-5 xl:h-6 bg-stone-300/80 shrink-0" />
+
+                  {/* Stat 3: Years of Vedic Expertise */}
+                  <div className="text-center flex-1 px-0.5 xl:px-1">
+                    <span className="block text-sm lg:text-[14px] xl:text-base 2xl:text-lg font-extrabold text-[#1f1a17] leading-tight whitespace-nowrap">25+ years</span>
+                    <span className="text-[10px] xl:text-[11px] 2xl:text-xs text-stone-500 font-medium block mt-0.5 leading-tight">of Vedic expertise</span>
+                  </div>
+                </div>
+
+                {/* Action Buttons: Wishlist & Share */}
+                <div className="flex items-center justify-end gap-1.5 xl:gap-2 shrink-0">
+                  <WishlistButton
+                    itemId={puja._id}
+                    text="Wishlist"
+                    className="flex-initial border border-stone-300 hover:border-stone-500 bg-white text-stone-800 font-medium text-xs xl:text-sm px-3 xl:px-4 py-1.5 rounded-full flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-xs"
+                    iconClassName="w-3.5 h-3.5 xl:w-4 xl:h-4"
+                  />
+
+                  <button
+                    type="button"
+                    aria-label="Share puja"
+                    onClick={() => setShareModalOpen(true)}
+                    className="flex-initial border border-stone-300 hover:border-stone-500 bg-white text-stone-800 font-medium text-xs xl:text-sm px-3 xl:px-4 py-1.5 rounded-full flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-xs"
+                  >
+                    <Share2 className="w-3.5 h-3.5 xl:w-4 xl:h-4 text-stone-800" />
+                    <span>Share</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Right 6 Cols: Details & CTA */}
+            <div className="lg:col-span-6 flex flex-col lg:pl-[10px]">
+              {/* Filigree Subtag */}
+              <div className="flex items-center justify-center lg:justify-start gap-2 mb-1 lg:mb-1.5 w-full max-w-full overflow-hidden">
+                <span className="text-[#E65100] hover:text-[#C2410C] font-serif font-extrabold text-xs sm:text-[13px] tracking-wider uppercase flex items-center justify-center text-center gap-1.5 flex-wrap">
+                  <span className="text-center">{badgeText}</span>
+                </span>
+              </div>
+
+              {/* Title */}
+              <h1 className="font-serif font-bold text-[#1f1a17] text-xl sm:text-2xl lg:text-3xl leading-tight mb-1.5 lg:mb-2 text-center lg:text-left">
+                {puja.title}
+              </h1>
+
+              {/* Subtitle / Description with Read More / Read Less option */}
+              <div className="mb-2.5 text-center lg:text-left">
+                <p className="text-stone-600 text-xs sm:text-[13px] font-medium leading-relaxed transition-all inline">
+                  {descriptionText && descriptionText.length > 180 && !isDescExpanded
+                    ? `${descriptionText.slice(0, 180).trim()}...`
+                    : descriptionText}
+                </p>
+                {descriptionText && descriptionText.length > 180 && (
+                  <button
+                    type="button"
+                    onClick={() => setIsDescExpanded((prev) => !prev)}
+                    className="ml-1.5 text-xs sm:text-[13px] font-bold text-[#E65100] hover:text-[#C2410C] hover:underline cursor-pointer inline-flex items-center gap-0.5 whitespace-nowrap"
+                  >
+                    {isDescExpanded ? "Read Less" : "Read More"}
+                  </button>
+                )}
+              </div>
+
+              {/* Dynamic Countdown & Temple Card fetched from Dashboard */}
+              <PujaCountdownCard
+                templeVenue={templeVenueText || "Sacred Temple Venue"}
+                location={templeLocationText !== templeVenueText ? templeLocationText : puja.location || "India"}
+                dateText={`${puja.date || "Saturday, 10 October"}${puja.time ? " at " + puja.time : ""}`}
+                occasionText={puja.subtitle || (puja as any).occasion || (puja as any).dateOccasion || puja.badge || (puja as any).tithis || "Mahalaya Amavasya"}
+                eventDateTime={puja.eventDateTime}
+                showTimer={puja.showTimer}
+                devoteesCount={(puja as any).devoteeCount || 150}
+                title="Reserve your sankalp"
+                badgeLabel="MUHURAT ENDS IN"
+                className="mb-2 lg:mb-2.5"
+              />
+
+              {/* Package Selection Cards Grid */}
+              <div className="mb-3 lg:mb-3.5">
+                <div className={`grid gap-2 sm:gap-2.5 ${packagesList.length === 1
+                  ? "grid-cols-1 w-full"
+                  : packagesList.length === 2
+                    ? "grid-cols-1 sm:grid-cols-2 w-full"
+                    : "grid-cols-1 sm:grid-cols-3 w-full"
+                  }`}>
+                  {packagesList.map((pkg, idx) => {
+                    const isSelected = selectedPackage?.id === pkg.id;
+                    const displayPrice = getDisplayPrice(pkg);
+                    const lowerPkg = (pkg.name || "").toLowerCase();
+                    const pkgAvatar = lowerPkg.includes("family")
+                      ? "/images/package_family.png"
+                      : lowerPkg.includes("couple") || lowerPkg.includes("partner")
+                        ? "/images/package_couple.webp"
+                        : lowerPkg.includes("individual")
+                          ? "/images/package_individual.webp"
+                          : (pkg.imageUrl || DEFAULT_PACKAGE_AVATARS[idx % DEFAULT_PACKAGE_AVATARS.length]);
+                    const devoteesText = pkg.devoteeCount || (pkg as any).devotees || (pkg.name?.toLowerCase().includes("family") ? "4 Devotees" : pkg.name?.toLowerCase().includes("couple") ? "2 Devotees" : idx === 0 ? "1 Devotee" : idx === 1 ? "2 Devotees" : idx === 2 ? "4 Devotees" : "Multiple Devotees");
+                    const discountBadge = pkg.discountPercent ? String(pkg.discountPercent).trim() : null;
+
+                    return (
+                      <div
+                        key={pkg.id}
+                        onClick={() => setSelectedPackageId(pkg.id)}
+                        className={`relative border-2 rounded-2xl p-3.5 sm:p-2.5 lg:p-3 cursor-pointer transition-all flex flex-row items-center justify-start min-h-[80px] sm:min-h-[72px] lg:min-h-[74px] hover:shadow-xs ${isSelected
+                          ? "border-[#00B05F] bg-[#F1F5F9] shadow-xs"
+                          : "border-stone-200 hover:border-stone-300 bg-white"
+                          }`}
+                      >
+                        {/* Bookmark Ribbon on Mobile & Large Desktop / Sleek Corner Pill on Tablet (1024px lg:max-xl) */}
+                        {discountBadge && (
+                          <>
+                            {/* Tablet / 1024px Screen Style: Elegant Floating Top-Right Corner Pill */}
+                            <div className="hidden lg:flex xl:hidden absolute -top-2.5 right-1 z-20 pointer-events-none items-center shadow-xs">
+                              <span className="bg-gradient-to-r from-rose-600 to-rose-700 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full border border-white shadow-xs tracking-wider flex items-center gap-0.5 leading-none">
+                                <span>{discountBadge.replace(/off/i, "").trim()}</span>
+                                <span className="text-[7px] text-amber-300">OFF</span>
+                              </span>
+                            </div>
+
+                            {/* Mobile, sm, and xl+ Screens: Classic Ribbon Bookmark */}
+                            <div className="flex lg:hidden xl:flex absolute -top-2.5 right-1.5 sm:right-2 z-20 pointer-events-none">
+                              <div className="relative bg-gradient-to-b from-rose-600 via-rose-700 to-rose-800 text-white px-1.5 sm:px-2 pt-1 pb-1.5 rounded-t-md shadow-md flex flex-col items-center leading-none min-w-[34px] sm:min-w-[38px] border-t border-rose-400/30">
+                                <span className="text-[10px] sm:text-[11px] font-black tracking-tight text-white drop-shadow-xs">
+                                  {discountBadge.replace(/off/i, "").trim()}
+                                </span>
+                                <span className="text-[8px] sm:text-[8.5px] font-black text-amber-300 tracking-wider uppercase mt-0.5">
+                                  OFF
+                                </span>
+                                {/* Bottom ribbon notch cutout */}
+                                <div className="absolute -bottom-1 left-0 right-0 flex justify-center">
+                                  <div className="w-0 h-0 border-l-[17px] sm:border-l-[19px] border-l-rose-800 border-r-[17px] sm:border-r-[19px] border-r-rose-800 border-b-[4px] border-b-transparent" />
+                                </div>
+                              </div>
+                            </div>
+                          </>
+                        )}
+
+                        {/* Recommended Badge on Couple Package (idx === 1) - Always at Bottom */}
+                        {(pkg.name.toLowerCase().includes("couple") || (packagesList.length > 1 && idx === 1 && !pkg.name.toLowerCase().includes("family"))) && (
+                          <div className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 bg-[#00B05F] text-white text-[10.5px] sm:text-[11px] font-bold px-3 py-0.5 rounded-full shadow-xs z-10 whitespace-nowrap">
+                            Recommended
+                          </div>
+                        )}
+
+                        {/* Avatar Image on the Left */}
+                        <div className="relative w-11 h-11 sm:w-10 sm:h-10 lg:w-11 lg:h-11 rounded-full overflow-hidden shrink-0 border border-stone-200/90 bg-white shadow-2xs mr-3.5 sm:mr-2.5 lg:mr-3">
+                          <Image
+                            src={pkgAvatar}
+                            alt={`${pkg.name || "Package"} - ${puja?.title || "Puja"}`}
+                            width={56}
+                            height={56}
+                            unoptimized
+                            className="w-full h-full object-cover object-center"
+                          />
+                        </div>
+
+                        {/* Details on the Right */}
+                        <div className="flex-1 min-w-0 text-left space-y-0.5 sm:space-y-0.5 pr-6 sm:pr-0">
+                          <h4 className="font-extrabold text-stone-900 text-sm sm:text-xs lg:text-[13px] leading-tight truncate">
+                            {pkg.name}
+                          </h4>
+                          <span className="text-xs sm:text-[11px] font-medium text-stone-500 block leading-tight truncate">
+                            {devoteesText}
+                          </span>
+                          <div className="flex items-center justify-between mt-1 sm:mt-0.5">
+                            <PriceTag
+                              sellingPrice={displayPrice}
+                              listPrice={getDisplayListPrice(pkg)}
+                              sellingPriceClassName={`font-extrabold text-base sm:text-sm lg:text-base ${isSelected ? "text-[#00B05F]" : "text-stone-900"}`}
+                              listPriceClassName="text-xs font-bold text-stone-400 line-through decoration-red-500 decoration-1.5 mr-1"
+                              className="flex items-baseline gap-1 flex-wrap"
+                            />
+                            {/* Checkmark Badge on Selected Package */}
+                            {isSelected && (
+                              <div className="w-5 h-5 rounded-full bg-[#00B05F] text-white flex items-center justify-center shrink-0 shadow-xs ml-1">
+                                <Check className="w-3 h-3 text-white" strokeWidth={3.5} />
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Primary Participate / Book Now CTA Button */}
+              <button
+                ref={heroCtaRef}
+                onClick={handleAddPujaToCart}
+                className="w-full bg-[#00B05F] hover:bg-[#008F4C] active:scale-[0.98] text-white font-extrabold text-base sm:text-lg lg:text-xl py-2.5 sm:py-3 lg:py-2.5 xl:py-3 px-6 sm:px-8 rounded-full shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2.5 sm:gap-3 mb-2 tracking-wide group"
+              >
+                {/* <span className="tabular-nums font-black">₹{priceVal.toLocaleString("en-IN")}</span> */}
+                {/* <span className="opacity-40 font-light select-none">|</span> */}
+                <span className="flex items-center gap-2">
+                  {puja.buttonText || "Book My Puja"}
+                </span>
+              </button>
+
+              {/* Secondary WhatsApp & Call Buttons */}
+              {/* <div className="flex flex-col sm:flex-row items-center gap-3">
+                <a
+                  href="https://wa.me/919677391109"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full sm:flex-1 inline-flex items-center justify-center gap-2 bg-white border border-[#CBD5E1] text-[#00B05F] hover:bg-slate-50 font-extrabold text-xs sm:text-sm py-2.5 px-4 rounded-full transition-colors shadow-xs"
+                >
+                  <i className="fa-brands fa-whatsapp text-lg text-[#25D366]"></i>
+                  <span>Book via WhatsApp</span>
+                </a>
+                <a
+                  href="tel:+919677391108"
+                  className="w-full sm:flex-1 inline-flex items-center justify-center gap-2 bg-white border border-[#CBD5E1] text-[#1E293B] hover:bg-slate-50 font-extrabold text-xs sm:text-sm py-2.5 px-4 rounded-full transition-colors shadow-xs"
+                >
+                  <Phone className="w-4 h-4 min-w-[16px] min-h-[16px] text-[#00B05F]" />
+                  <span>Book via Call</span>
+                </a>
+              </div> */}
+
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* ── 2. Trust Strip Badges ── */}
+      {(() => {
+        const defaultBadges = [
+          { icon: <Video className="w-3.5 h-3.5" />, text: "Puja Video Delivered Within 48 hours" },
+          { icon: <ShieldCheck className="w-3.5 h-3.5" />, text: "Verified & Experienced Pandits" },
+          { icon: <Landmark className="w-3.5 h-3.5" />, text: "Puja Performed in Sacred Temples" },
+          { icon: <Scroll className="w-3.5 h-3.5" />, text: "100% Authentic Vedic Rituals" },
+        ];
+        const icons = [
+          <Video key="v" className="w-3.5 h-3.5" />,
+          <ShieldCheck key="s" className="w-3.5 h-3.5" />,
+          <Landmark key="l" className="w-3.5 h-3.5" />,
+          <Scroll key="sc" className="w-3.5 h-3.5" />,
+          <Sparkles key="sp" className="w-3.5 h-3.5" />,
+          <Check key="c" className="w-3.5 h-3.5" />
+        ];
+        const badgeList = (Array.isArray(puja.trustBadges) && puja.trustBadges.length > 0)
+          ? puja.trustBadges.map((text, i) => ({ icon: icons[i % icons.length], text }))
+          : defaultBadges;
+
+        // Two identical tracks with badges repeated twice each, separated with pr-8 sm:pr-12 for 100% seamless infinite loop without blank gaps below 1440px
+        const trackBadges = [...badgeList, ...badgeList];
+
+        return (
+          <div data-reveal className="w-full bg-[#F1F5F9] border-y border-slate-200 py-3.5 sm:py-4.5 overflow-hidden">
+            {/* Continuous Marquee on all screens below 1440px */}
+            <div className="badge-marquee-below-1440 min-[1440px]:hidden overflow-hidden w-full relative">
+              <div className="flex animate-marquee">
+                <div className="flex shrink-0 items-center gap-8 sm:gap-12 pr-8 sm:pr-12 text-xs sm:text-sm font-bold text-[#00B05F]">
+                  {trackBadges.map((b, idx) => (
+                    <span key={`t1-${idx}`} className="flex items-center gap-2 shrink-0 whitespace-nowrap">
+                      <span className="bg-white text-[#00B05F] shadow-2xs rounded-full p-1.5 flex items-center justify-center shrink-0">{b.icon}</span> {b.text}
+                    </span>
+                  ))}
+                </div>
+                <div className="flex shrink-0 items-center gap-8 sm:gap-12 pr-8 sm:pr-12 text-xs sm:text-sm font-bold text-[#00B05F]" aria-hidden="true">
+                  {trackBadges.map((b, idx) => (
+                    <span key={`t2-${idx}`} className="flex items-center gap-2 shrink-0 whitespace-nowrap">
+                      <span className="bg-white text-[#00B05F] shadow-2xs rounded-full p-1.5 flex items-center justify-center shrink-0">{b.icon}</span> {b.text}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Static spread layout on 1440px and wider desktop screens (>= 1440px) */}
+            <div className="badge-static-1440 hidden min-[1440px]:flex max-w-[1350px] mx-auto items-center justify-around gap-6 px-4 text-xs sm:text-sm font-bold text-[#00B05F] whitespace-nowrap">
+              {badgeList.map((b, idx) => (
+                <span key={idx} className="flex items-center gap-2">
+                  <span className="bg-white text-[#00B05F] shadow-2xs rounded-full p-1.5 flex items-center justify-center shrink-0">{b.icon}</span> {b.text}
+                </span>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* ── 2b. Ratings Stats & Action Strip (Wishlist & Share) Above Nav Tabs (Below 1000px only) ── */}
+      <div data-reveal className="lg:hidden w-full bg-white border-b border-stone-200/90 py-3 sm:py-3.5">
+        {/* Mobile layout: stats and buttons cleanly proportioned */}
+        <div className="md:hidden w-full px-2.5 sm:px-4 flex items-center justify-between gap-1.5 sm:gap-2.5">
+          <div className="flex items-center justify-between flex-1 min-w-0 pr-1">
+            <div className="text-center flex-1 min-w-0 px-0.5">
+              <span className="block text-[11px] font-extrabold text-[#1f1a17] leading-tight whitespace-nowrap">10M+</span>
+              <span className="text-[9px] text-stone-500 font-medium block mt-0.5 leading-tight truncate">Pujas</span>
+            </div>
+            <div className="w-[1px] h-5 bg-stone-200 shrink-0 mx-0.5" />
+            <div className="text-center flex-1 min-w-0 px-0.5">
+              <span className="block text-[11px] font-extrabold text-[#1f1a17] leading-tight whitespace-nowrap">180+</span>
+              <span className="text-[9px] text-stone-500 font-medium block mt-0.5 leading-tight truncate">Pandits</span>
+            </div>
+            <div className="w-[1px] h-5 bg-stone-200 shrink-0 mx-0.5" />
+            <div className="text-center flex-1 min-w-0 px-0.5">
+              <span className="block text-[11px] font-extrabold text-[#1f1a17] leading-tight whitespace-nowrap">25+ Yrs</span>
+              <span className="text-[9px] text-stone-500 font-medium block mt-0.5 leading-tight truncate">Vedic Seva</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-1.5 shrink-0 pl-1 border-l border-stone-200/80">
+            <WishlistButton
+              itemId={puja._id}
+              className="w-8 h-8 rounded-full border border-stone-300 hover:border-stone-500 bg-white flex items-center justify-center text-stone-700 shadow-2xs hover:bg-stone-50 transition-all active:scale-95"
+              iconClassName="w-3.5 h-3.5"
+            />
+            <button
+              type="button"
+              aria-label="Share puja"
+              onClick={() => setShareModalOpen(true)}
+              className="w-8 h-8 rounded-full border border-stone-300 hover:border-stone-500 bg-white flex items-center justify-center text-stone-700 shadow-2xs hover:bg-stone-50 transition-all active:scale-95 cursor-pointer"
+            >
+              <Share2 className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+
+        {/* Tablet layout (md=768px): all 5 items equal space */}
+        <div className="hidden md:flex lg:hidden w-full px-6 md:px-8 items-center">
+          {/* Stat 1 */}
+          <div className="flex-1 flex flex-col items-center justify-center text-center">
+            <span className="block text-base font-extrabold text-[#1f1a17] leading-tight">10M+</span>
+            <span className="text-xs text-stone-500 font-medium block mt-0.5 leading-tight">poojas performed</span>
+          </div>
+          <div className="w-[1px] h-7 bg-stone-200 shrink-0" />
+          {/* Stat 2 */}
+          <div className="flex-1 flex flex-col items-center justify-center text-center">
+            <span className="block text-base font-extrabold text-[#1f1a17] leading-tight">180+</span>
+            <span className="text-xs text-stone-500 font-medium block mt-0.5 leading-tight">scholars and priests</span>
+          </div>
+          <div className="w-[1px] h-7 bg-stone-200 shrink-0" />
+          {/* Stat 3 */}
+          <div className="flex-1 flex flex-col items-center justify-center text-center">
+            <span className="block text-base font-extrabold text-[#1f1a17] leading-tight">25+ years</span>
+            <span className="text-xs text-stone-500 font-medium block mt-0.5 leading-tight">of Vedic expertise</span>
+          </div>
+          <div className="w-[1px] h-7 bg-stone-200 shrink-0" />
+          {/* Wishlist */}
+          <div className="flex-1 flex items-center justify-center">
+            <WishlistButton
+              itemId={puja._id}
+              className="w-10 h-10 rounded-full border border-stone-300 hover:border-stone-500 bg-white flex items-center justify-center text-stone-700 shadow-2xs hover:bg-stone-50 transition-all active:scale-95"
+              iconClassName="w-5 h-5"
+            />
+          </div>
+          <div className="w-[1px] h-7 bg-stone-200 shrink-0" />
+          {/* Share */}
+          <div className="flex-1 flex items-center justify-center">
+            <button
+              type="button"
+              aria-label="Share puja"
+              onClick={() => setShareModalOpen(true)}
+              className="w-10 h-10 rounded-full border border-stone-300 hover:border-stone-500 bg-white flex items-center justify-center text-stone-700 shadow-2xs hover:bg-stone-50 transition-all active:scale-95"
+            >
+              <Share2 className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* ── 3. Sticky Sub-navigation Tabs Bar ── */}
+      <div className="sticky top-[60px] sm:top-[68px] lg:top-[70px] xl:top-[76px] z-30 bg-white/95 backdrop-blur-md border-b border-stone-200/90 shadow-xs pt-1 sm:pt-2 w-full">
+        <div className="max-w-[1350px] mx-auto px-4 sm:px-6 lg:px-10">
+          <div
+            ref={tabsContainerRef}
+            className="w-full flex items-center justify-start lg:justify-between overflow-x-auto no-scrollbar gap-7 sm:gap-6 lg:gap-8 text-xs sm:text-sm font-bold text-stone-600 scroll-smooth px-3 sm:px-1"
+          >
+            {subNavTabs.map((tab) => (
+              <a
+                key={tab.id}
+                href={`#${tab.id}`}
+                data-tab-id={tab.id}
+                onClick={(e) => {
+                  e.preventDefault();
+                  setActiveTab(tab.id);
+                  const el = document.getElementById(tab.id);
+                  if (el) {
+                    const headerHeight = window.innerWidth < 640 ? 110 : window.innerWidth < 1024 ? 120 : 130;
+                    const y = el.getBoundingClientRect().top + window.pageYOffset - headerHeight;
+                    window.scrollTo({ top: y, behavior: "smooth" });
+                  }
+                }}
+                className={`py-3 sm:py-3.5 px-1 border-b-2 transition-colors whitespace-nowrap shrink-0 ${activeTab === tab.id
+                  ? "border-[#00B05F] text-[#00B05F]"
+                  : "border-transparent hover:text-stone-900"
+                  }`}
+              >
+                {tab.label}
+              </a>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ── 4. Main 2-Column Body Layout ── */}
+      <div className="max-w-[1350px] mx-auto px-4 sm:px-6 lg:px-10 pt-6 pb-20 sm:pb-24 lg:pb-36 grid grid-cols-1 lg:grid-cols-12 gap-y-8 lg:gap-10">
+
+        {/* Left Column (8 cols) */}
+        <div className="lg:col-span-8 space-y-12">
+
+          {/* Section: About Puja */}
+          <section id="about" data-reveal className="scroll-mt-36">
+            <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1f1a17] mb-6">{serviceType === "homa" ? "About homa" : "About puja"}</h2>
+
+            <div className="bg-[#ffffff] border border-[#f0e4d0] rounded-3xl p-6 sm:p-8 relative overflow-hidden">
+              {renderAboutContent(aboutText)}
+
+              {/* Vedic Temple Details Cards Grid (Date, Time, Venue) */}
+              <div className="border-t border-[#f0e4d0] pt-6 mt-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {/* Date & Occasion Card */}
+                  <div className="flex items-center gap-3 bg-gradient-to-br from-[#FFFDF9] to-[#FFF9F0] border border-[#ECD9C3] rounded-2xl p-3 sm:p-3.5 shadow-2xs hover:border-[#D99B52] transition-all">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#E65100]/15 via-[#F97316]/10 to-amber-100/60 border border-[#F0CA9E] flex items-center justify-center shrink-0 shadow-2xs text-[#C2410C]">
+                      <Calendar className="w-5 h-5 text-[#C2410C]" strokeWidth={2.2} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <span className="block text-sm sm:text-[14.5px] font-extrabold text-[#0B1E36] tracking-tight leading-tight truncate">
+                        {formatDayDateMonth(puja.date) || puja.date || "Auspicious Date"}
+                      </span>
+                      <span className="block text-xs sm:text-[12px] text-stone-600 font-medium leading-normal truncate mt-0.5">
+                        {puja.subtitle || (puja as any).occasion || (puja as any).dateOccasion || puja.badge || "Sacred Offering"}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Auspicious Time Card */}
+                  <div className="flex items-center gap-3 bg-gradient-to-br from-[#FFFDF9] to-[#FFF9F0] border border-[#ECD9C3] rounded-2xl p-3 sm:p-3.5 shadow-2xs hover:border-[#D99B52] transition-all">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#C2410C] to-[#E65100] flex items-center justify-center shrink-0 shadow-xs text-white">
+                      <Clock className="w-5 h-5 text-amber-200" strokeWidth={2.2} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <span className="block text-sm sm:text-[14.5px] font-extrabold text-[#0B1E36] tracking-tight leading-tight truncate">
+                        {puja.time || "Auspicious Muhurat"}
+                      </span>
+                      <span className="block text-xs sm:text-[12px] text-stone-600 font-medium leading-normal truncate mt-0.5">
+                        Auspicious Muhurat Time
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Temple Venue & Location Card */}
+                  <div className="flex items-center gap-3 bg-gradient-to-br from-[#FFFDF9] to-[#FFF9F0] border border-[#ECD9C3] rounded-2xl p-3 sm:p-3.5 shadow-2xs hover:border-[#D99B52] transition-all sm:col-span-2 lg:col-span-1">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#E65100]/15 via-[#F97316]/10 to-amber-100/60 border border-[#F0CA9E] flex items-center justify-center shrink-0 shadow-2xs text-[#C2410C]">
+                      <MapPin className="w-5 h-5 text-[#C2410C]" strokeWidth={2.2} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <span className="block text-sm sm:text-[14.5px] font-extrabold text-[#0B1E36] tracking-tight leading-tight truncate">
+                        {templeVenueText || "Sacred Temple Venue"}
+                      </span>
+                      <span className="block text-xs sm:text-[12px] text-stone-600 font-medium leading-normal truncate mt-0.5">
+                        {templeLocationText && templeLocationText !== templeVenueText ? templeLocationText : puja.location || "India"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Section: How to Book (Dynamic from Admin) */}
+          {howToBookList.length > 0 && (
+            <section id="how-to-book" data-reveal className="scroll-mt-36">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-6">
+                <div>
+                  <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1f1a17]">
+                    How to book
+                  </h2>
+                  <p className="text-xs sm:text-sm text-stone-500 mt-1 font-medium">
+                    Simple 4-step authentic process from sankalpam to prasad blessings
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4">
+                {howToBookList.map((step: any, idx: number) => {
+                  const stepNum = step.stepNumber || idx + 1;
+                  const formattedNum = String(stepNum).padStart(2, "0");
+                  return (
+                    <div
+                      key={idx}
+                      className="relative bg-gradient-to-b from-[#FFFDF9] to-[#FFF9F0] border border-[#ECD9C3] rounded-3xl p-5 sm:p-5 flex flex-col justify-between shadow-2xs hover:shadow-md hover:border-[#D99B52] transition-all duration-300 group"
+                    >
+                      <div>
+                        {/* Step Header Badge */}
+                        <div className="flex items-center justify-between mb-3.5">
+                          <span className="w-9 h-9 rounded-2xl bg-gradient-to-br from-[#E65100]/15 via-[#F97316]/10 to-amber-100/60 border border-[#F0CA9E] text-[#C2410C] font-black text-sm flex items-center justify-center shadow-2xs group-hover:scale-105 transition-transform">
+                            {formattedNum}
+                          </span>
+                          <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#C2410C]/70">
+                            Step {stepNum}
+                          </span>
+                        </div>
+
+                        {/* Step Title */}
+                        <h3 className="font-serif font-extrabold text-[#1f1a17] text-base sm:text-lg mb-2 leading-tight">
+                          {step.title}
+                        </h3>
+
+                        {/* Step Description */}
+                        <p className="text-stone-600 text-xs sm:text-[13px] leading-relaxed font-medium">
+                          {step.description}
+                        </p>
+                      </div>
+
+                      <div className="w-full h-1 bg-gradient-to-r from-[#E65100]/20 via-[#F97316]/40 to-transparent rounded-full mt-4" />
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          )}
+
+          {/* Section: When to do this Puja? (Dynamic from Admin) */}
+          {whenToDoList.length > 0 && (
+            <section id="when-to-do" data-reveal className="scroll-mt-36">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-6">
+                <div>
+                  <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1f1a17]">
+                    When to do this Puja?
+                  </h2>
+                  <p className="text-xs sm:text-sm text-stone-500 mt-1 font-medium">
+                    Ideal times, astrological indications and life situations to perform this sacred puja
+                  </p>
+                </div>
+              </div>
+
+              {/* Seamless list without separated card boxes */}
+              <div className="bg-gradient-to-b from-[#FFFDF9] via-white to-[#FFFDF9] border border-[#f0e4d0] rounded-3xl p-6 sm:p-8 shadow-xs divide-y divide-amber-100/70">
+                {whenToDoList.map((item: any, idx: number) => {
+                  return (
+                    <div
+                      key={idx}
+                      className="py-4 sm:py-5 first:pt-0 last:pb-0 flex items-start gap-3.5 sm:gap-4 transition-colors hover:bg-amber-50/40 -mx-3 px-3 sm:-mx-4 sm:px-4 rounded-xl"
+                    >
+                      {/* Sacred Flame / Diya Icon Bullet */}
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#E65100]/15 to-amber-100/80 border border-[#F0CA9E] flex items-center justify-center shrink-0 mt-0.5 text-[#C2410C] shadow-2xs">
+                        <Flame className="w-4 h-4 text-[#C2410C]" fill="#C2410C" strokeWidth={1.5} />
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        {/* Title */}
+                        <h3 className="font-serif font-bold text-stone-900 text-base sm:text-[17px] mb-1 leading-snug">
+                          {item.title}
+                        </h3>
+
+                        {/* Description */}
+                        <p className="text-stone-600 text-xs sm:text-[14px] leading-relaxed font-medium">
+                          {item.description}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          )}
+
+          {/* Section: Sacred Puja Video */}
+          {Boolean(puja?.videoUrl) && (
+            <section id="video" data-reveal className="scroll-mt-36">
+              <div className="flex items-center justify-between mb-4 sm:mb-6">
+                <div>
+                  <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1f1a17]">
+                    Puja Video
+                  </h2>
+                  <p className="text-xs sm:text-sm text-stone-500 mt-1">
+                    Watch sacred glimpses and authentic Vedic rituals performed with devotion
+                  </p>
+                </div>
+                <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold">
+                  <Video className="w-3.5 h-3.5" />
+                  <span>Recorded Stream</span>
+                </div>
+              </div>
+
+              <div className="rounded-3xl border border-[#f0e4d0] bg-white overflow-hidden shadow-xs p-3 sm:p-5">
+                <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-black/95 shadow-md flex items-center justify-center">
+                  {isYouTubeUrl(puja?.videoUrl) ? (
+                    <iframe
+                      src={getYouTubeEmbedUrl(puja?.videoUrl || "", true) || ""}
+                      title="Puja Ritual Video"
+                      loading="lazy"
+                      className="w-full h-full border-0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      allowFullScreen
+                    />
+                  ) : (
+                    <video
+                      src={puja?.videoUrl}
+                      controls
+                      autoPlay
+                      muted
+                      preload="metadata"
+                      playsInline
+                      poster={puja?.imageUrl}
+                      className="w-full h-full object-contain"
+                    >
+                      Your browser does not support the video tag.
+                    </video>
+                  )}
+                </div>
+                {puja?.videoTitle && (
+                  <p className="mt-3 text-xs sm:text-sm font-semibold text-stone-700 text-center">
+                    {puja.videoTitle}
+                  </p>
+                )}
+              </div>
+            </section>
+          )}
+
+          {/* Section: Puja Benefits */}
+          <section id="benefits" data-reveal className="scroll-mt-36">
+            <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1f1a17] mb-6">{serviceType === "homa" ? "Homa Benefits" : "Puja Benefits"}</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+              {benefitsList.map((b, idx) => (
+                <div key={idx} data-reveal data-delay={((idx % 4) * 100).toString()} className="bg-white border border-stone-200/90 rounded-2xl p-4 sm:p-5 flex items-center sm:items-start gap-3.5 sm:gap-4 shadow-xs hover:shadow-md transition-shadow min-w-0">
+                  <div className="w-10 h-10 rounded-xl bg-[#800000] text-white flex items-center justify-center shrink-0 font-bold text-base shadow-xs">
+                    {b.icon || "❖"}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-bold text-stone-900 text-sm sm:text-base mb-1 leading-snug">{b.title}</h3>
+                    <p className="text-stone-600 text-xs sm:text-sm leading-relaxed">{b.description}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* Section: Puja Procedure */}
+          <section id="process" data-reveal className="scroll-mt-36">
+            <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1f1a17] mb-6">{serviceType === "homa" ? "Homa Procedure" : "Puja Procedure"}</h2>
+            <div className="space-y-4">
+              {processList.map((step, idx) => (
+                <div key={idx} data-reveal data-delay={((idx % 4) * 100).toString()} className="bg-white border border-stone-200/90 rounded-2xl p-4 sm:p-5 flex items-center sm:items-start gap-3.5 sm:gap-4 shadow-xs min-w-0">
+                  <div className="w-10 h-10 rounded-xl bg-[#800000] text-white flex items-center justify-center shrink-0 font-bold text-sm shadow-xs">
+                    {String(idx + 1).padStart(2, "0")}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-bold text-stone-900 text-sm sm:text-base mb-1 leading-snug">{step.title}</h3>
+                    <p className="text-stone-600 text-xs sm:text-sm leading-relaxed">{step.description}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* Section: Temple Details */}
+          <section id="temple" data-reveal className="scroll-mt-36">
+            <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1f1a17] mb-6">Temple Details</h2>
+            <div className="bg-white border border-stone-200/90 rounded-3xl flex flex-col md:flex-row gap-6 items-center shadow-xs overflow-hidden">
+              {templeImage && (
+                <div className="w-full md:w-1/3 h-48 rounded-2xl overflow-hidden bg-stone-100 shrink-0 relative">
+                  <Image
+                    src={templeImage}
+                    alt={`${templeVenueText || "Temple"} - ${templeLocationText || "Sacred Temple Venue"}`}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 33vw"
+                    unoptimized
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
+              <div className="flex-1 p-5 text-center sm:text-left">
+                <h3 className="font-serif font-bold text-stone-900 text-xl mb-2">{templeVenueText}</h3>
+                <p className="text-stone-600 text-xs sm:text-sm leading-relaxed font-medium mb-4">
+                  {templeNoteText}
+                </p>
+                <span className="inline-flex items-center justify-center sm:justify-start gap-1.5 text-xs font-bold text-[#F47820]">
+                  📍 {templeLocationText}
+                </span>
+              </div>
+            </div>
+          </section>
+
+          {/* Section: What will you receive */}
+          <section id="receive" data-reveal className="scroll-mt-36">
+            <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1f1a17] mb-6">What will you receive</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+              {inclusionsList.map((inc: any, idx: number) => {
+                const title = typeof inc === "string" ? inc : inc.title || inc.name || `Inclusion ${idx + 1}`;
+                const desc = typeof inc === "string" ? "Included in your sacred booking." : inc.description || "Included in your sacred booking.";
+                return (
+                  <div key={idx} data-reveal data-delay={((idx % 4) * 100).toString()} className="bg-white border border-stone-200/90 rounded-2xl p-5 flex items-start gap-4 shadow-xs">
+                    <div className="w-10 h-10 rounded-xl bg-[#800000] text-white flex items-center justify-center shrink-0 font-bold text-sm">
+                      {String(idx + 1).padStart(2, "0")}
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-stone-900 text-sm sm:text-base mb-1">{title}</h3>
+                      {desc && <p className="text-stone-600 text-xs sm:text-sm leading-relaxed">{desc}</p>}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+
+          {/* Section: Frequently Asked Questions (FAQs) */}
+          <section id="faqs" data-reveal className="scroll-mt-36">
+            <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1f1a17] mb-6">Frequently Asked Questions (FAQs)</h2>
+            <div className="space-y-3">
+              {faqList.map((faq, idx) => (
+                <div
+                  key={idx}
+                  onClick={() => setOpenFaqIndex(openFaqIndex === idx ? null : idx)}
+                  className={`border rounded-2xl px-5 py-4 transition-all duration-300 cursor-pointer select-none ${openFaqIndex === idx ? 'border-[#00B05F] bg-white shadow-xs' : 'border-stone-200 bg-[#faf9f6]'}`}
+                >
+                  <div className="flex justify-between items-center">
+                    <h4 className="text-sm sm:text-base font-bold text-stone-800">{faq.question}</h4>
+                    <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ml-4 ${openFaqIndex === idx ? 'bg-[#00B05F] text-white' : 'bg-stone-200 text-stone-600'}`}>
+                      {openFaqIndex === idx ? '−' : '+'}
+                    </div>
+                  </div>
+                  {openFaqIndex === idx && (
+                    <div className="mt-3 text-xs sm:text-sm text-stone-600 leading-relaxed border-t border-stone-100 pt-3">
+                      {faq.answer}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* Section: Puja Gallery */}
+          {galleryList.length > 0 && (
+            <section id="gallery" data-reveal className="scroll-mt-36 pb-32 sm:pb-36 lg:pb-44">
+              <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1f1a17] mb-6">{serviceType === "homa" ? "Homa Gallery" : "Puja Gallery"}</h2>
+
+              {/* Mobile: Carousel */}
+              <div className="sm:hidden relative">
+                <div
+                  onTouchStart={(e) => {
+                    galleryTouchStartX.current = e.touches[0].clientX;
+                    galleryTouchStartY.current = e.touches[0].clientY;
+                  }}
+                  onTouchMove={(e) => {
+                    galleryTouchEndX.current = e.touches[0].clientX;
+                    galleryTouchEndY.current = e.touches[0].clientY;
+                  }}
+                  onTouchEnd={() => {
+                    if (galleryTouchStartX.current === null || galleryTouchEndX.current === null) return;
+                    const deltaX = galleryTouchStartX.current - galleryTouchEndX.current;
+                    const deltaY = (galleryTouchStartY.current ?? 0) - (galleryTouchEndY.current ?? 0);
+
+                    // Swipe trigger if horizontal swipe > 40px
+                    if (Math.abs(deltaX) > 40 && Math.abs(deltaX) > Math.abs(deltaY)) {
+                      if (deltaX > 0) {
+                        // Swiped Left -> Next Image
+                        setGalleryCarouselIdx((prev) => (prev + 1) % galleryList.length);
+                      } else {
+                        // Swiped Right -> Previous Image
+                        setGalleryCarouselIdx((prev) => (prev - 1 + galleryList.length) % galleryList.length);
+                      }
+                    }
+                    galleryTouchStartX.current = null;
+                    galleryTouchEndX.current = null;
+                    galleryTouchStartY.current = null;
+                    galleryTouchEndY.current = null;
+                  }}
+                  onClick={() => {
+                    setLightboxImageIdx(galleryCarouselIdx);
+                    setGalleryLightboxOpen(true);
+                  }}
+                  className="relative h-64 rounded-2xl overflow-hidden border border-stone-200 shadow-xs cursor-pointer group touch-pan-y"
+                >
+                  {/* Full Image */}
+                  <Image
+                    src={galleryList[galleryCarouselIdx] as string}
+                    alt={`${puja?.title || "Puja"} - Sacred Ritual Photo ${galleryCarouselIdx + 1}`}
+                    fill
+                    sizes="100vw"
+                    unoptimized
+                    className="w-full h-full object-cover transition-all duration-300"
+                    onError={() => {
+                      const brokenImg = galleryList[galleryCarouselIdx] as string;
+                      if (brokenImg) {
+                        setFailedGalleryImages((prev) => ({ ...prev, [brokenImg]: true }));
+                      }
+                    }}
+                  />
+                  <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-full bg-black/40 text-white flex items-center justify-center backdrop-blur-xs">
+                      <ZoomIn className="w-5 h-5" strokeWidth={2} />
+                    </div>
+                  </div>
+                  {galleryList.length > 1 && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setGalleryCarouselIdx((prev) => (prev - 1 + galleryList.length) % galleryList.length);
+                        }}
+                        aria-label="Previous gallery image"
+                        className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center backdrop-blur-sm transition-all shadow-md z-10"
+                      >
+                        <ChevronLeft className="w-5 h-5 text-white" strokeWidth={2.5} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setGalleryCarouselIdx((prev) => (prev + 1) % galleryList.length);
+                        }}
+                        aria-label="Next gallery image"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center backdrop-blur-sm transition-all shadow-md z-10"
+                      >
+                        <ChevronRight className="w-5 h-5 text-white" strokeWidth={2.5} />
+                      </button>
+                    </>
+                  )}
+                </div>
+                {galleryList.length > 1 && (
+                  <div className="flex items-center justify-center gap-2 mt-3">
+                    {galleryList.map((_: string, idx: number) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => setGalleryCarouselIdx(idx)}
+                        aria-label={`Go to gallery image ${idx + 1}`}
+                        className={idx === galleryCarouselIdx ? "w-6 h-2 bg-[#00B05F] rounded-full transition-all" : "w-2 h-2 bg-stone-300 hover:bg-stone-400 rounded-full transition-all"}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* sm+ : Grid */}
+              <div className="hidden sm:grid grid-cols-2 sm:grid-cols-3 gap-4">
+                {galleryList.map((img: string, idx: number) => (
+                  <div
+                    key={idx}
+                    onClick={() => {
+                      setLightboxImageIdx(idx);
+                      setGalleryLightboxOpen(true);
+                    }}
+                    className="h-48 rounded-2xl overflow-hidden border border-stone-200 shadow-xs relative cursor-pointer group"
+                  >
+                    {/* Full Image */}
+                    <Image
+                      src={img}
+                      alt={`${puja?.title || "Puja"} - Sacred Ritual Photo ${idx + 1}`}
+                      fill
+                      sizes="(max-width: 640px) 50vw, 33vw"
+                      unoptimized
+                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                      onError={() => {
+                        setFailedGalleryImages((prev) => ({ ...prev, [img]: true }));
+                      }}
+                    />
+                    <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
+                      <div className="w-10 h-10 rounded-full bg-white/90 text-stone-800 flex items-center justify-center shadow-lg transform scale-90 group-hover:scale-100 transition-transform">
+                        <ZoomIn className="w-5 h-5 text-stone-900" strokeWidth={2} />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+        </div>
+
+        {/* Right Sidebar Column (4 cols) */}
+        <div className="lg:col-span-4 space-y-6 pt-0 pb-16 sm:pb-20 lg:pb-36">
+
+          {/* Dedicated Vedic Puja Sticky Card */}
+          <div data-reveal className="bg-[#ffffff] border border-[#f0e4d0] rounded-3xl p-5 sm:p-6 pb-6 sm:pb-8 shadow-xs static lg:sticky lg:top-[140px] xl:top-[144px] space-y-4 sm:space-y-5 mb-0 lg:mb-28">
+            <div className="flex items-center gap-3">
+
+              <div>
+                <h3 className="font-serif font-bold text-stone-900 text-base">{serviceType === "homa" ? "Dedicated Vedic Homa" : "Dedicated Vedic Puja"}</h3>
+                <span className="text-xs text-stone-500 font-semibold">100% Authentic Rituals</span>
+              </div>
+            </div>
+
+            <div className="space-y-2.5 text-xs sm:text-sm text-stone-700 font-medium">
+              <div className="flex items-start gap-2.5">
+                <Check className="w-4 h-4 text-[#00B05F] shrink-0 mt-0.5" strokeWidth={3} />
+                <span>Personalized Sankalpam performed with your Name, Gotra &amp; Wish</span>
+              </div>
+              <div className="flex items-start gap-2.5">
+                <Check className="w-4 h-4 text-[#00B05F] shrink-0 mt-0.5" strokeWidth={3} />
+                <span>Full Puja Video Recording delivered on WhatsApp within 48 hours</span>
+              </div>
+            </div>
+
+            {/* WhatsApp Agent Container with Dedicated Margin & Padding */}
+            <div className="border-t border-[#f0e4d0] pt-5 mt-4 mb-2 pb-1">
+              <h4 className="font-bold text-stone-900 text-sm mb-1.5">{serviceType === "homa" ? "Unsure which homa to book?" : "Unsure which puja to book?"}</h4>
+              <p className="text-stone-600 text-xs mb-3.5 leading-relaxed font-medium">
+                Our devotee care team is available 24/7. Reach them on WhatsApp.
+              </p>
+              <div className="mt-3 mb-1">
+                <a
+                  href="https://wa.me/919677391109"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full bg-[#00B05F] hover:bg-[#008F4C] text-white font-extrabold text-xs sm:text-sm py-3 px-4 rounded-full transition-colors flex items-center justify-center gap-2 shadow-sm"
+                >
+                  <i className="fa-brands fa-whatsapp text-lg text-white"></i>
+                  <span>{serviceType === "homa" ? "Get Free Homa Guidance" : "Get Free Puja Guidance"}</span>
+                </a>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      {/* ── 5. Sticky Floating Action Bar at Bottom ── */}
+      <div
+        style={{
+          bottom: "calc(74px + env(safe-area-inset-bottom, 0px))",
+        }}
+        className={`fixed lg:!bottom-6 left-1/2 -translate-x-1/2 z-40 w-[94%] max-w-[1250px] transition-all duration-300 transform ${(showStickyBar && !isNearFooter)
+          ? "translate-y-0 opacity-100 pointer-events-auto"
+          : "translate-y-12 opacity-0 pointer-events-none"
+          }`}
+      >
+        <div className="bg-[#00B05F] text-white rounded-2xl sm:rounded-3xl p-2.5 sm:py-3.5 sm:px-6 flex items-center justify-between gap-2 sm:gap-4 shadow-2xl shadow-slate-950/30 border border-slate-700/30 backdrop-blur-md">
+          {/* Left Column: Lotus Icon + Uppercase Title + Price */}
+          <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
+            <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-white text-[#00B05F] flex items-center justify-center shrink-0 shadow-sm">
+              <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-[#00B05F]" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <span className="text-[10px] sm:text-xs font-extrabold text-slate-200 tracking-wider uppercase block truncate max-w-[120px] sm:max-w-none">
+                {puja.title}
+              </span>
+              <PriceTag
+                sellingPrice={priceVal}
+                listPrice={selectedPackage ? getDisplayListPrice(selectedPackage) : getStartingListPriceINR(puja)}
+                sellingPriceClassName="text-base sm:text-2xl font-black text-white block leading-tight whitespace-nowrap"
+                listPriceClassName="text-xs sm:text-sm font-semibold text-slate-300 line-through decoration-red-400 decoration-1.5 mr-1.5 whitespace-nowrap"
+                className="flex items-baseline gap-1.5 flex-wrap mt-0.5"
+              />
+            </div>
+          </div>
+
+          {/* Right Column: White Pill Button with Navy Circle Arrow */}
+          <button
+            onClick={handleAddPujaToCart}
+            className="bg-white hover:bg-slate-100 active:scale-95 text-[#00B05F] font-extrabold text-xs sm:text-sm px-3 sm:px-6 py-2 sm:py-2.5 rounded-full shadow-md transition-all flex items-center gap-1.5 sm:gap-2 shrink-0 whitespace-nowrap cursor-pointer"
+          >
+            <span className="max-w-[125px] sm:max-w-none truncate">{puja.buttonText || "Book Now"}</span>
+            <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-[#00B05F] text-white flex items-center justify-center shrink-0">
+              <ArrowRight className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-white" strokeWidth={3} />
+            </div>
+          </button>
+        </div>
+      </div>
+
+      {/* ── 6. Package Selection Modal ── */}
+      {showPackageModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 pb-[90px] md:pb-4 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl w-full max-w-2xl p-6 sm:p-8 shadow-2xl relative max-h-[85vh] md:max-h-[90vh] overflow-y-auto">
+            <button
+              onClick={() => setShowPackageModal(false)}
+              className="absolute top-4 right-4 text-stone-400 hover:text-stone-700 p-2"
+            >
+              <XMarkIcon className="w-6 h-6" />
+            </button>
+
+            <h3 className="text-2xl font-serif font-bold text-stone-900 mb-2">Select Package</h3>
+            <p className="text-stone-600 text-xs sm:text-sm mb-6">Choose your desired package for sacred ritual participation.</p>
+
+            <div className="space-y-4 mb-6">
+              {packagesList.map((pkg) => {
+                const isSelected = selectedPackage?.id === pkg.id;
+                return (
+                  <div
+                    key={pkg.id}
+                    onClick={() => setSelectedPackageId(pkg.id)}
+                    className={`border-2 rounded-2xl p-4 cursor-pointer transition-all flex items-center justify-between ${isSelected
+                      ? "border-[#00B05F] bg-[#F1F5F9] shadow-xs"
+                      : "border-stone-200 hover:border-stone-400 bg-white"
+                      }`}
+                  >
+                    <div>
+                      <h4 className="font-bold text-stone-900 text-base">{pkg.name}</h4>
+                      <p className="text-stone-600 text-xs mt-1">{pkg.description || "Includes personalized sankalpam and video proof."}</p>
+                    </div>
+                    <div className="text-right">
+                      <PriceTag
+                        sellingPrice={getDisplayPrice(pkg)}
+                        listPrice={getDisplayListPrice(pkg)}
+                        sellingPriceClassName="font-extrabold text-lg text-stone-900 block"
+                        listPriceClassName="text-xs font-bold text-stone-400 line-through decoration-red-500 decoration-1.5 mr-1"
+                        className="flex items-baseline gap-1 flex-wrap justify-end"
+                      />
+                      <span className="text-[10px] font-bold text-[#00B05F] uppercase">{isSelected ? "Selected ✓" : "Select"}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <button
+              onClick={() => {
+                setShowPackageModal(false);
+                handleAddPujaToCart();
+              }}
+              className="w-full bg-[#00B05F] hover:bg-[#008F4C] text-white font-extrabold text-base py-3.5 rounded-full shadow-md transition-all"
+            >
+              Proceed to Details
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── 8. Login Modal ── */}
+      <LoginModal
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        onSuccess={() => {
+          setShowLoginModal(false);
+          if (pendingSankalpUrl) {
+            window.location.href = pendingSankalpUrl;
+          }
+        }}
+      />
+
+      {/* ── 9. Dynamic Share Modal ── */}
+      <ShareModal
+        isOpen={shareModalOpen}
+        onClose={() => setShareModalOpen(false)}
+        data={{
+          title: puja.title,
+          description: puja.heroSubtitle || puja.subtitle || puja.description || puja.about,
+          templeVenue: puja.templeVenue,
+          location: puja.location || puja.templeLocation,
+          url: typeof window !== "undefined" ? window.location.href : undefined,
+        }}
+      />
+
+      {/* ── 10. Sacred Puja Gallery Lightbox ── */}
+      <GalleryLightboxModal
+        isOpen={galleryLightboxOpen}
+        onClose={() => setGalleryLightboxOpen(false)}
+        images={galleryList}
+        initialIndex={lightboxImageIdx}
+      />
+
+      {/* Footer rendered globally by GlobalChrome */}
+    </main>
+  );
+}

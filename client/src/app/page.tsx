@@ -1,4 +1,10 @@
-import DashboardPage from "./dashboard/DashboardClient";
+import Navbar from "@/components/layout/Navbar";
+import HeroSection from "@/components/home/HeroSection";
+import TrustStrip from "@/components/home/TrustStrip";
+import HowPujaPerformed from "@/components/home/HowPujaPerformed";
+import PujaListing from "@/components/home/PujaListing";
+import PujaGallery from "@/components/home/PujaGallery";
+import FaqSection from "@/components/home/FaqSection";
 
 export default async function HomePage() {
   const expressBase = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
@@ -45,10 +51,14 @@ export default async function HomePage() {
   }
 
   return (
-    <DashboardPage
-      initialHeroBanners={initialHeroBanners || []}
-      initialPujas={initialPujas || []}
-      initialHomas={initialHomas || []}
-    />
+    <main className="min-h-screen bg-white text-ink font-sans">
+      <Navbar />
+      <HeroSection initialBanners={initialHeroBanners || []} />
+      <TrustStrip />
+      <HowPujaPerformed />
+      <PujaListing initialPujas={initialPujas || []} />
+      <PujaGallery initialPujas={initialPujas || []} initialHomas={initialHomas || []} />
+      <FaqSection />
+    </main>
   );
 }
