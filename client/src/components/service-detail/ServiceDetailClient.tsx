@@ -1413,17 +1413,17 @@ export default function ServiceDetailClient({
 
               {/* Vedic Temple Details Cards Grid (Date, Time, Venue) */}
               <div className="border-t border-[#f0e4d0] pt-6 mt-6">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3.5">
                   {/* Date & Occasion Card */}
                   <div className="flex items-center gap-3 bg-gradient-to-br from-[#FFFDF9] to-[#FFF9F0] border border-[#ECD9C3] rounded-2xl p-3 sm:p-3.5 shadow-2xs hover:border-[#D99B52] transition-all">
                     <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#E65100]/15 via-[#F97316]/10 to-amber-100/60 border border-[#F0CA9E] flex items-center justify-center shrink-0 shadow-2xs text-[#C2410C]">
                       <Calendar className="w-5 h-5 text-[#C2410C]" strokeWidth={2.2} />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <span className="block text-sm sm:text-[14.5px] font-extrabold text-[#0B1E36] tracking-tight leading-tight truncate">
+                      <span className="block text-sm sm:text-[14.5px] font-extrabold text-[#0B1E36] tracking-tight leading-snug break-words">
                         {formatDayDateMonth(puja.date) || puja.date || "Auspicious Date"}
                       </span>
-                      <span className="block text-xs sm:text-[12px] text-stone-600 font-medium leading-normal truncate mt-0.5">
+                      <span className="block text-xs sm:text-[12px] text-stone-600 font-medium leading-normal break-words mt-0.5">
                         {puja.subtitle || (puja as any).occasion || (puja as any).dateOccasion || puja.badge || "Sacred Offering"}
                       </span>
                     </div>
@@ -1435,25 +1435,25 @@ export default function ServiceDetailClient({
                       <Clock className="w-5 h-5 text-amber-200" strokeWidth={2.2} />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <span className="block text-sm sm:text-[14.5px] font-extrabold text-[#0B1E36] tracking-tight leading-tight truncate">
+                      <span className="block text-sm sm:text-[14.5px] font-extrabold text-[#0B1E36] tracking-tight leading-snug break-words">
                         {puja.time || "Auspicious Muhurat"}
                       </span>
-                      <span className="block text-xs sm:text-[12px] text-stone-600 font-medium leading-normal truncate mt-0.5">
+                      <span className="block text-xs sm:text-[12px] text-stone-600 font-medium leading-normal break-words mt-0.5">
                         Auspicious Muhurat Time
                       </span>
                     </div>
                   </div>
 
                   {/* Temple Venue & Location Card */}
-                  <div className="flex items-center gap-3 bg-gradient-to-br from-[#FFFDF9] to-[#FFF9F0] border border-[#ECD9C3] rounded-2xl p-3 sm:p-3.5 shadow-2xs hover:border-[#D99B52] transition-all sm:col-span-2 lg:col-span-1">
+                  <div className="flex items-center gap-3 bg-gradient-to-br from-[#FFFDF9] to-[#FFF9F0] border border-[#ECD9C3] rounded-2xl p-3 sm:p-3.5 shadow-2xs hover:border-[#D99B52] transition-all sm:col-span-2 xl:col-span-1">
                     <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#E65100]/15 via-[#F97316]/10 to-amber-100/60 border border-[#F0CA9E] flex items-center justify-center shrink-0 shadow-2xs text-[#C2410C]">
                       <MapPin className="w-5 h-5 text-[#C2410C]" strokeWidth={2.2} />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <span className="block text-sm sm:text-[14.5px] font-extrabold text-[#0B1E36] tracking-tight leading-tight truncate">
+                      <span className="block text-sm sm:text-[14.5px] font-extrabold text-[#0B1E36] tracking-tight leading-snug break-words">
                         {templeVenueText || "Sacred Temple Venue"}
                       </span>
-                      <span className="block text-xs sm:text-[12px] text-stone-600 font-medium leading-normal truncate mt-0.5">
+                      <span className="block text-xs sm:text-[12px] text-stone-600 font-medium leading-normal break-words mt-0.5">
                         {templeLocationText && templeLocationText !== templeVenueText ? templeLocationText : puja.location || "India"}
                       </span>
                     </div>

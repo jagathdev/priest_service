@@ -74,19 +74,16 @@ export async function generateMetadata(
   };
 }
 
-import ServiceDetailClient from '@/components/service-detail/ServiceDetailClient';
+import { getAllPujas } from '@/lib/pujas';
+import React from 'react';
+import HomaDetailClient from './HomaDetailClient';
 
 export default async function HomaDetailPage({ params }: Props) {
   const resolvedParams = await params;
   const slug = resolvedParams.slug;
   const homa = slug ? await getHomaBySlug(slug) : null;
-  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || '';
+  const allPujas = await getAllPujas();
+  const recommendations = allPujas.filter((p: any) => (homa as { recommendedPujaIds?: string[] } | null)?.recommendedPujaIds?.includes(String(p._id)));
 
-  return (
-    <ServiceDetailClient
-      serviceType="homa"
-      initialItem={homa as any}
-      apiEndpoint={`${baseUrl}/api/homas`}
-    />
-  );
+  return <HomaDetailClient initialHoma={homa as React.ComponentProps<typeof HomaDetailClient>['initialHoma']} recommendations={recommendations} />;
 }

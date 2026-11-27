@@ -74,19 +74,19 @@ export async function generateMetadata(
   };
 }
 
-import ServiceDetailClient from '@/components/service-detail/ServiceDetailClient';
+import { getAllHomas } from '@/lib/homas';
+import React from 'react';
+import PujaDetailClient from './PujaDetailClient';
 
 export default async function PujaDetailPage({ params }: Props) {
   const resolvedParams = await params;
   const slug = resolvedParams.slug;
   const puja = slug ? await getPujaBySlug(slug) : null;
-  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || '';
+  const allHomas = await getAllHomas();
+  const recommendations = allHomas.filter((h: { _id?: string | number | undefined }) => {
+    const recommendedIds = (puja as { recommendedHomaIds?: string[] } | null)?.recommendedHomaIds;
+    return recommendedIds?.includes(String(h._id));
+  });
 
-  return (
-    <ServiceDetailClient
-      serviceType="puja"
-      initialItem={puja as any}
-      apiEndpoint={`${baseUrl}/api/pujas`}
-    />
-  );
+  return <PujaDetailClient initialPuja={puja as React.ComponentProps<typeof PujaDetailClient>['initialPuja']} recommendations={recommendations} />;
 }
