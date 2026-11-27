@@ -4,7 +4,6 @@ import { useEffect, useState, useMemo, useRef } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
 import LoginModal from "@/components/auth/LoginModal";
 import { checkAuthStatus } from "@/lib/authCheck";
 import { XMarkIcon } from "@heroicons/react/24/solid";
@@ -719,7 +718,6 @@ export default function PujaDetailClient({
             </div>
           </div>
         </main>
-        <Footer />
       </div>
     );
   }
@@ -738,7 +736,6 @@ export default function PujaDetailClient({
             Explore All Pujas
           </Link>
         </div>
-        <Footer />
       </>
     );
   }
@@ -2066,8 +2063,6 @@ export default function PujaDetailClient({
         images={galleryList}
         initialIndex={lightboxImageIdx}
       />
-
-      <Footer />
     </main>
   );
 }

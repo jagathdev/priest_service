@@ -4,7 +4,6 @@ import { useEffect, useState, useMemo, useRef } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
 import LoginModal from "@/components/auth/LoginModal";
 import { checkAuthStatus } from "@/lib/authCheck";
 import { XMarkIcon } from "@heroicons/react/24/solid";
@@ -661,7 +660,6 @@ export default function PujaDetailClient({
         <div className="min-h-[60vh] flex items-center justify-center text-[#1f1f1f] font-serif font-bold text-lg">
           Loading sacred puja details...
         </div>
-        <Footer />
       </>
     );
   }
@@ -680,7 +678,6 @@ export default function PujaDetailClient({
             Explore All Pujas
           </Link>
         </div>
-        <Footer />
       </>
     );
   }
@@ -2008,8 +2005,6 @@ export default function PujaDetailClient({
         images={galleryList}
         initialIndex={lightboxImageIdx}
       />
-
-      <Footer />
     </main>
   );
 }
