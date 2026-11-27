@@ -123,6 +123,8 @@ export const computeServerPrice = async ({ serviceId, serviceType, packageId, pa
             return pId === cleanPkgId || `pkg-${idx + 1}` === cleanPkgId;
         }) || packages.find((p) => {
             const pName = String(p.name || "").toLowerCase();
+            if (cleanPkgId === pName) return true;
+            if (cleanPkgId.includes("group") && pName.includes("group")) return true;
             if (cleanPkgId.includes("couple") && pName.includes("couple")) return true;
             if (cleanPkgId.includes("family") && pName.includes("family")) return true;
             if (cleanPkgId.includes("individual") && pName.includes("individual")) return true;
@@ -159,12 +161,23 @@ export const computeServerPrice = async ({ serviceId, serviceType, packageId, pa
         // Tarpanam base includes 1 Karta (Devotee) + 1 Ancestor = 2 participants
         defaultDevotees = 2;
     } else if (selectedPackage) {
-        const pkgName = String(selectedPackage.name || "").toLowerCase();
-        const devoteeStr = String(selectedPackage.devoteeCount || selectedPackage.devotees || "");
-        if (pkgName.includes("family") || devoteeStr.includes("4")) {
-            defaultDevotees = 4;
-        } else if (pkgName.includes("couple") || devoteeStr.includes("2")) {
-            defaultDevotees = 2;
+        const rawDevotees = selectedPackage.devoteeCount ?? selectedPackage.devotees;
+        if (rawDevotees !== undefined && rawDevotees !== null && String(rawDevotees).trim() !== "") {
+            const parsed = parseInt(String(rawDevotees).replace(/\D/g, ""), 10);
+            if (!isNaN(parsed) && parsed > 0) {
+                defaultDevotees = parsed;
+            }
+        } else {
+            const pkgName = String(selectedPackage.name || "").toLowerCase();
+            if (pkgName.includes("family")) {
+                defaultDevotees = 4;
+            } else if (pkgName.includes("couple") || pkgName.includes("partner")) {
+                defaultDevotees = 2;
+            } else if (pkgName.includes("individual")) {
+                defaultDevotees = 1;
+            } else if (pkgName.includes("group")) {
+                defaultDevotees = 1;
+            }
         }
     }
 

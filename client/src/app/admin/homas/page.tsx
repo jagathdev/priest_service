@@ -229,6 +229,7 @@ export default function AdminHomasPage() {
           label: "Package Name",
           type: "select",
           options: [
+            "Group Homa",
             "Individual Homa",
             "Couple Homa",
             "Partner Homa",
@@ -236,6 +237,12 @@ export default function AdminHomasPage() {
             "Family + Bhog",
             "Joint Family + Bhog",
           ],
+        },
+        {
+          name: "devoteeCount",
+          label: "Devotee Count (e.g. 1, 2, 3, 4)",
+          type: "number",
+          placeholder: "e.g. 3 (number of participant inputs)",
         },
 
         {

@@ -207,18 +207,28 @@ function SankalpContent() {
       return pujaData.packages.map((pkg: any, idx: number) => {
         const pName = pkg.name || `Package ${idx + 1}`;
         const lowerName = pName.toLowerCase();
-        const defaultDevotees = lowerName.includes("family")
-          ? "4 Devotees"
-          : lowerName.includes("couple")
-            ? "2 Devotees"
-            : lowerName.includes("individual")
-              ? "1 Devotee"
-              : idx === 0 ? "1 Devotee" : idx === 1 ? "2 Devotees" : idx === 2 ? "4 Devotees" : "Multiple Devotees";
+        let defaultDevotees = "1 Devotee";
+        if (pkg.devoteeCount !== undefined && pkg.devoteeCount !== null) {
+          const num = parseInt(String(pkg.devoteeCount), 10);
+          if (!isNaN(num) && num > 0) {
+            defaultDevotees = `${num} Devotee${num > 1 ? "s" : ""}`;
+          }
+        } else if (lowerName.includes("family")) {
+          defaultDevotees = "4 Devotees";
+        } else if (lowerName.includes("couple")) {
+          defaultDevotees = "2 Devotees";
+        } else if (lowerName.includes("individual")) {
+          defaultDevotees = "1 Devotee";
+        } else if (lowerName.includes("group")) {
+          defaultDevotees = "1 Devotee";
+        } else {
+          defaultDevotees = idx === 0 ? "1 Devotee" : idx === 1 ? "2 Devotees" : idx === 2 ? "4 Devotees" : "Multiple Devotees";
+        }
         return {
           ...pkg,
           id: pkg.id || pkg._id || `pkg-${idx + 1}`,
           name: pName,
-          devoteeCount: pkg.devoteeCount || pkg.devotees || defaultDevotees,
+          devoteeCount: pkg.devoteeCount ? (typeof pkg.devoteeCount === "number" ? `${pkg.devoteeCount} Devotee${pkg.devoteeCount > 1 ? "s" : ""}` : String(pkg.devoteeCount)) : (pkg.devotees || defaultDevotees),
           priceINR: pkg.priceINR ?? pkg.price ?? (queryAmount ? Number(queryAmount) : pujaData?.price || 501),
           listPriceINR: pkg.listPriceINR ?? pkg.listPrice,
         };
@@ -255,20 +265,38 @@ function SankalpContent() {
       if (cleanPkgId.includes("couple") && pName.includes("couple")) return true;
       if (cleanPkgId.includes("family") && pName.includes("family")) return true;
       if (cleanPkgId.includes("individual") && pName.includes("individual")) return true;
+      if (cleanPkgId.includes("group") && pName.includes("group")) return true;
       return pName.includes(cleanPkgId);
     });
 
     return nameMatch || packagesList[0];
   }, [packagesList, pkgId]);
 
+  const queryDevotees = React.useMemo(() => {
+    const raw = searchParams?.get("devotees");
+    if (!raw) return null;
+    const num = parseInt(raw, 10);
+    return !isNaN(num) && num > 0 ? num : null;
+  }, [searchParams]);
+
   const defaultParticipantCount = React.useMemo(() => {
+    // 1. If explicit devoteeCount was set in query param from detail page
+    if (queryDevotees && queryDevotees > 0) return queryDevotees;
+
     if (!selectedPackage) return 1;
+    // 2. If explicit devoteeCount was set by admin (e.g. 3, 4, etc.)
+    const rawDevotees = selectedPackage.devoteeCount ?? selectedPackage.devotees;
+    if (rawDevotees !== undefined && rawDevotees !== null) {
+      const parsed = parseInt(String(rawDevotees).replace(/\D/g, ""), 10);
+      if (!isNaN(parsed) && parsed > 0) return parsed;
+    }
     const name = selectedPackage.name?.toLowerCase() || "";
-    const devoteeCount = String(selectedPackage.devoteeCount || selectedPackage.devotees || "");
-    if (name.includes("family") || devoteeCount.includes("4")) return 4;
-    if (name.includes("couple") || devoteeCount.includes("2")) return 2;
+    if (name.includes("family")) return 4;
+    if (name.includes("couple") || name.includes("partner")) return 2;
+    if (name.includes("individual")) return 1;
+    if (name.includes("group")) return 1;
     return 1;
-  }, [selectedPackage]);
+  }, [selectedPackage, queryDevotees]);
 
   // Exclusively detect Rameswaram Tarpanam ritual
   const isTarpanam = React.useMemo(() => {
@@ -281,8 +309,22 @@ function SankalpContent() {
 
   useEffect(() => {
     setFormData(prev => {
-      // Only set default if user hasn't typed anything yet
-      if (prev.participants.every(p => !p.name.trim() && !p.gotra.trim()) && prev.participants.length !== targetParticipantCount) {
+      const currentParticipants = prev.participants || [];
+      // If count already matches, do nothing
+      if (currentParticipants.length === targetParticipantCount) return prev;
+
+      // When resizing (e.g. user selected package with 3 devotees), preserve existing entered names
+      if (currentParticipants.length < targetParticipantCount) {
+        const padded = [...currentParticipants];
+        while (padded.length < targetParticipantCount) {
+          padded.push({ name: "", gotra: "", dontKnowGotra: false });
+        }
+        return { ...prev, participants: padded };
+      }
+
+      // If user had empty default boxes and target is fewer (or only default empty values), trim
+      const allEmpty = currentParticipants.every(p => !p.name.trim() && !p.gotra.trim());
+      if (allEmpty) {
         return {
           ...prev,
           participants: Array.from({ length: targetParticipantCount }, () => ({
@@ -410,6 +452,7 @@ function SankalpContent() {
         pooja: itemName,
         serviceId: pujaData?._id || pujaData?.id,
         serviceType: itemType === 'homa' ? 'Homa' : 'Pooja',
+        packageName: packageName,
         customer: mongoUserId,
         customerName: userName,
         itemName: itemName,
@@ -439,7 +482,7 @@ function SankalpContent() {
         wish: formData.wish,
         promoCode: discountCouponCode,
         promoCodeId: appliedPromo?.promoId || null,
-        packageId: selectedPackage?.id || pkgId,
+        packageId: selectedPackage?.id || selectedPackage?._id || selectedPackage?.name || pkgId,
         offerings: offeringsPayload,
         originalAmount: finalPrice,
         discountAmount: discountAmt,
@@ -627,7 +670,7 @@ function SankalpContent() {
             </button>
           </div>
           <h1 className="text-sm min-[390px]:text-base sm:text-2xl lg:text-3xl font-serif font-bold text-stone-800 text-center flex-1 px-1 truncate">
-            Fill your details for Puja
+            Fill your details for {itemType === "homa" || slug.toLowerCase().includes("homa") || (pujaData?.title && /homa|havan|fire/i.test(pujaData.title)) ? "Homa" : "Puja"}
           </h1>
           <div className="w-16 sm:w-24 shrink-0" /> {/* Balanced spacer matching the left back button container */}
         </header>

@@ -9,7 +9,7 @@ interface DedicatedVedicCardProps {
 
 export default function DedicatedVedicCard({ serviceType }: DedicatedVedicCardProps) {
   const isHoma = serviceType === "homa";
-  const title = isHoma ? "Dedicated Vedic Homa" : "Dedicated Vedic Puja";
+  const title = isHoma ? "Shared Vedic Homa" : "Dedicated Vedic Puja";
   const buttonText = isHoma ? "Get Free Homa Guidance" : "Get Free Puja Guidance";
 
   return (
@@ -35,7 +35,7 @@ export default function DedicatedVedicCard({ serviceType }: DedicatedVedicCardPr
           <div className="w-4 h-4 rounded-full bg-[#00B05F]/15 text-[#00B05F] flex items-center justify-center shrink-0 mt-0.5">
             <Check className="w-2.5 h-2.5 stroke-[3]" />
           </div>
-          <span>Personalized Sankalpam performed with your Name, Gotra & Wish</span>
+          <span>Group Homa with personal sankalpam performed with your Name, Gotra & Wish</span>
         </div>
 
         <div className="flex items-start gap-2.5 text-xs sm:text-[13px] text-stone-700 leading-snug">

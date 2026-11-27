@@ -307,6 +307,7 @@ function PujaCard({
                 )}
               </div>
             </div>
+
           </div>
 
           {/* Bottom Footer Row: Price + Participate Button */}

@@ -404,37 +404,44 @@ export default function PujaDetailClient({
   const packagesList = useMemo(() => {
     const normalizePackageName = (rawName: string, idx: number) => {
       const lower = (rawName || "").toLowerCase();
+      if (lower.includes("group")) return rawName.trim();
       if (lower.includes("individual")) return "Individual";
       if (lower.includes("couple")) return "Couple";
       if (lower.includes("family")) return "Family";
-      if (idx === 0) return "Individual";
-      if (idx === 1) return "Couple";
-      if (idx === 2) return "Family";
+      if (idx === 0) return rawName || "Individual";
+      if (idx === 1) return rawName || "Couple";
+      if (idx === 2) return rawName || "Family";
       return rawName || `Package ${idx + 1}`;
     };
 
     const getPackageDevotees = (pkgName: string, explicitDevotees?: any, idx: number = 0) => {
-      if (explicitDevotees && typeof explicitDevotees === "string" && explicitDevotees.trim()) {
-        return explicitDevotees.trim();
-      }
-      if (typeof explicitDevotees === "number" && explicitDevotees > 0) {
-        return `${explicitDevotees} Devotee${explicitDevotees > 1 ? "s" : ""}`;
+      if (explicitDevotees !== undefined && explicitDevotees !== null) {
+        if (typeof explicitDevotees === "string" && explicitDevotees.trim()) {
+          const num = parseInt(explicitDevotees, 10);
+          if (!isNaN(num) && num > 0) return `${num} Devotee${num > 1 ? "s" : ""}`;
+          return explicitDevotees.trim();
+        }
+        if (typeof explicitDevotees === "number" && explicitDevotees > 0) {
+          return `${explicitDevotees} Devotee${explicitDevotees > 1 ? "s" : ""}`;
+        }
       }
       const lower = (pkgName || "").toLowerCase();
       if (lower.includes("family")) return "4 Devotees";
       if (lower.includes("couple")) return "2 Devotees";
       if (lower.includes("individual")) return "1 Devotee";
+      if (lower.includes("group")) return "1 Devotee";
       return idx === 0 ? "1 Devotee" : idx === 1 ? "2 Devotees" : idx === 2 ? "4 Devotees" : "Multiple Devotees";
     };
 
     const getPackageAvatar = (pkgName: string, explicitImage?: string, idx: number = 0) => {
+      if (explicitImage && typeof explicitImage === "string" && explicitImage.trim() && !explicitImage.includes("default")) {
+        return explicitImage.trim();
+      }
       const lower = (pkgName || "").toLowerCase();
       if (lower.includes("family")) return "/images/package_family.png";
       if (lower.includes("couple") || lower.includes("partner")) return "/images/package_couple.webp";
       if (lower.includes("individual")) return "/images/package_individual.webp";
-      if (explicitImage && typeof explicitImage === "string" && explicitImage.trim() && !explicitImage.includes("default") && !explicitImage.includes("package_couple.webp")) {
-        return explicitImage.trim();
-      }
+      if (lower.includes("group")) return "/images/package_family.png";
       return DEFAULT_PACKAGE_AVATARS[idx % DEFAULT_PACKAGE_AVATARS.length];
     };
 
@@ -533,7 +540,8 @@ export default function PujaDetailClient({
       const actualPujaId = homa?._id || (homa as any)?.id || slug;
       const totalAmount = priceVal;
 
-      const sankalpUrl = `/sankalp?pujaId=${encodeURIComponent(actualPujaId)}&amount=${totalAmount}&type=homa&pkg=${selectedPackageId || ""}&title=${encodeURIComponent(homa?.title || "")}&slug=${encodeURIComponent(
+      const devoteeCountNum = parseInt(String(selectedPackage?.devoteeCount || "").replace(/\D/g, ""), 10) || 1;
+      const sankalpUrl = `/sankalp?pujaId=${encodeURIComponent(actualPujaId)}&amount=${totalAmount}&type=homa&pkg=${encodeURIComponent(selectedPackageId || "")}&pkgName=${encodeURIComponent(selectedPackage?.name || "")}&devotees=${devoteeCountNum}&title=${encodeURIComponent(homa?.title || "")}&slug=${encodeURIComponent(
         slug || ""
       )}`;
 
@@ -1116,14 +1124,18 @@ export default function PujaDetailClient({
                     const isSelected = selectedPackage?.id === pkg.id;
                     const displayPrice = getDisplayPrice(pkg);
                     const lowerPkg = (pkg.name || "").toLowerCase();
-                    const pkgAvatar = lowerPkg.includes("family")
-                      ? "/images/package_family.png"
-                      : lowerPkg.includes("couple") || lowerPkg.includes("partner")
-                        ? "/images/package_couple.webp"
-                        : lowerPkg.includes("individual")
-                          ? "/images/package_individual.webp"
-                          : (pkg.imageUrl || DEFAULT_PACKAGE_AVATARS[idx % DEFAULT_PACKAGE_AVATARS.length]);
-                    const devoteesText = pkg.devoteeCount || (pkg as any).devotees || (pkg.name?.toLowerCase().includes("family") ? "4 Devotees" : pkg.name?.toLowerCase().includes("couple") ? "2 Devotees" : idx === 0 ? "1 Devotee" : idx === 1 ? "2 Devotees" : idx === 2 ? "4 Devotees" : "Multiple Devotees");
+                    const pkgAvatar = (pkg.imageUrl && typeof pkg.imageUrl === "string" && pkg.imageUrl.trim() && !pkg.imageUrl.includes("default"))
+                      ? pkg.imageUrl.trim()
+                      : lowerPkg.includes("family")
+                        ? "/images/package_family.png"
+                        : lowerPkg.includes("couple") || lowerPkg.includes("partner")
+                          ? "/images/package_couple.webp"
+                          : lowerPkg.includes("individual")
+                            ? "/images/package_individual.webp"
+                            : lowerPkg.includes("group")
+                              ? "/images/package_family.png"
+                              : DEFAULT_PACKAGE_AVATARS[idx % DEFAULT_PACKAGE_AVATARS.length];
+                    const devoteesText = pkg.devoteeCount || (pkg as any).devotees || (pkg.name?.toLowerCase().includes("group") ? "1 Devotee" : pkg.name?.toLowerCase().includes("family") ? "4 Devotees" : pkg.name?.toLowerCase().includes("couple") ? "2 Devotees" : idx === 0 ? "1 Devotee" : idx === 1 ? "2 Devotees" : idx === 2 ? "4 Devotees" : "Multiple Devotees");
                     const discountBadge = pkg.discountPercent ? String(pkg.discountPercent).trim() : null;
 
                     return (
@@ -1885,12 +1897,12 @@ export default function PujaDetailClient({
         {/* Right Sidebar Column (4 cols) */}
         <div className="lg:col-span-4 space-y-6 pt-0 pb-16 sm:pb-20 lg:pb-36">
 
-          {/* Dedicated Vedic Homa Sticky Card */}
+          {/* Shared Vedic Homa Sticky Card */}
           <div data-reveal className="bg-[#ffffff] border border-[#f0e4d0] rounded-3xl p-5 sm:p-6 pb-6 sm:pb-8 shadow-xs static lg:sticky lg:top-[140px] xl:top-[144px] space-y-4 sm:space-y-5 mb-0 lg:mb-28">
             <div className="flex items-center gap-3">
 
               <div>
-                <h3 className="font-serif font-bold text-stone-900 text-base">Dedicated Vedic Homa</h3>
+                <h3 className="font-serif font-bold text-stone-900 text-base">Shared Vedic Homa</h3>
                 <span className="text-xs text-stone-500 font-semibold">100% Authentic Rituals</span>
               </div>
             </div>
@@ -1898,7 +1910,7 @@ export default function PujaDetailClient({
             <div className="space-y-2.5 text-xs sm:text-sm text-stone-700 font-medium">
               <div className="flex items-start gap-2.5">
                 <Check className="w-4 h-4 text-[#00B05F] shrink-0 mt-0.5" strokeWidth={3} />
-                <span>Personalized Sankalpam performed with your Name, Gotra &amp; Wish</span>
+                <span>Group Homa with personal sankalpam performed with your Name, Gotra & Wish</span>
               </div>
               <div className="flex items-start gap-2.5">
                 <Check className="w-4 h-4 text-[#00B05F] shrink-0 mt-0.5" strokeWidth={3} />

@@ -1874,7 +1874,7 @@ export default function ServiceDetailClient({
             <div className="flex items-center gap-3">
 
               <div>
-                <h3 className="font-serif font-bold text-stone-900 text-base">{serviceType === "homa" ? "Dedicated Vedic Homa" : "Dedicated Vedic Puja"}</h3>
+                <h3 className="font-serif font-bold text-stone-900 text-base">{serviceType === "homa" ? "Shared Vedic Homa" : "Dedicated Vedic Puja"}</h3>
                 <span className="text-xs text-stone-500 font-semibold">100% Authentic Rituals</span>
               </div>
             </div>
