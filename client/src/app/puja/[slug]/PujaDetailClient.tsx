@@ -857,12 +857,12 @@ export default function PujaDetailClient({
       <Navbar />
 
       {/* ── 1. Top Hero Section ── */}
-      <section data-reveal className="bg-[#ffffff] border-b border-[#f0e4d0] py-2.5 sm:py-3 lg:py-2.5 xl:py-3">
-        <div className="max-w-[1350px] mx-auto px-4 sm:px-6 lg:px-10">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+      <section data-reveal className="bg-[#ffffff] border-b border-[#f0e4d0] py-2.5 sm:py-3 xl:py-3">
+        <div className="max-w-[1350px] mx-auto px-4 sm:px-6 xl:px-10">
+          <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 xl:gap-8 items-start">
 
-            {/* Left 6 Cols: Main Banner Image (Slightly Increased Width) */}
-            <div className="lg:col-span-6 flex flex-col relative">
+            {/* Left 6 Cols on Desktop (>= 1280px) / Full Width on Tablet (768px-1279px) & Mobile */}
+            <div className="w-full xl:col-span-6 flex flex-col relative">
               <div
                 onTouchStart={(e) => {
                   heroTouchStartX.current = e.touches[0].clientX;
@@ -892,16 +892,17 @@ export default function PujaDetailClient({
                   heroTouchStartY.current = null;
                   heroTouchEndY.current = null;
                 }}
-                className="relative w-full aspect-[16/10] sm:aspect-[3/2] sm:min-h-[300px] md:min-h-[360px] sm:h-auto md:h-auto lg:h-[340px] xl:h-[415px] rounded-2xl min-[375px]:rounded-3xl overflow-hidden border border-stone-200/90 shadow-md group touch-pan-y bg-stone-100"
+                style={{ aspectRatio: "3 / 2" }}
+                className="relative w-full aspect-[3/2] rounded-2xl min-[375px]:rounded-3xl overflow-hidden border border-stone-200/90 shadow-md group touch-pan-y bg-[#3b0808]"
               >
                 <Image
                   src={bannerImages[activeBannerIndex] || (puja ? getPujaImageUrl(puja.imageUrl) : "")}
                   alt={`${puja?.title || "Puja"} - Sacred Ritual Banner ${activeBannerIndex + 1}`}
                   fill
                   priority
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, (max-width: 1280px) 50vw, 650px"
+                  sizes="(max-width: 640px) 100vw, (max-width: 1279px) 100vw, (max-width: 1536px) 50vw, 650px"
                   unoptimized
-                  className="w-full h-full object-cover object-center sm:object-left transition-all duration-300 cursor-pointer"
+                  className="w-full h-full object-cover object-center transition-all duration-300 cursor-pointer -webkit-backface-visibility-hidden"
                   onClick={handleAddPujaToCart}
                 />
               </div>
@@ -953,8 +954,8 @@ export default function PujaDetailClient({
                 </div>
               )}
 
-              {/* Desktop Only (>=1024px): Frameless Ratings / Stat & Action Strip Under Image */}
-              <div className="hidden lg:flex flex-row items-center justify-between gap-2 xl:gap-3 mt-3 w-full">
+              {/* Desktop Only (>=1280px): Frameless Ratings / Stat & Action Strip Under Image */}
+              <div className="hidden xl:flex flex-row items-center justify-between gap-2 xl:gap-3 mt-3 w-full">
                 {/* Stats Container */}
                 <div className="flex items-center justify-between flex-1 py-0 px-0">
                   {/* Stat 1: Poojas Performed */}
@@ -1002,22 +1003,22 @@ export default function PujaDetailClient({
               </div>
             </div>
 
-            {/* Right 6 Cols: Details & CTA */}
-            <div className="lg:col-span-6 flex flex-col lg:pl-[10px]">
+            {/* Right 6 Cols on Desktop (>= 1280px) / Full Width on Tablet & Mobile */}
+            <div className="w-full xl:col-span-6 flex flex-col xl:pl-[10px]">
               {/* Filigree Subtag */}
-              <div className="flex items-center justify-center lg:justify-start gap-2 mb-1 lg:mb-1.5 w-full max-w-full overflow-hidden">
+              <div className="flex items-center justify-center xl:justify-start gap-2 mb-1 lg:mb-1.5 w-full max-w-full overflow-hidden">
                 <span className="text-[#E65100] hover:text-[#C2410C] font-serif font-extrabold text-xs sm:text-[13px] tracking-wider uppercase flex items-center justify-center text-center gap-1.5 flex-wrap">
                   <span className="text-center">{badgeText}</span>
                 </span>
               </div>
 
               {/* Title */}
-              <h1 className="font-serif font-bold text-[#1f1a17] text-xl sm:text-2xl lg:text-3xl leading-tight mb-1.5 lg:mb-2 text-center lg:text-left">
+              <h1 className="font-serif font-bold text-[#1f1a17] text-xl sm:text-2xl lg:text-3xl leading-tight mb-1.5 lg:mb-2 text-center xl:text-left">
                 {puja.title}
               </h1>
 
               {/* Subtitle / Description with Read More / Read Less option */}
-              <div className="mb-2.5 text-center lg:text-left">
+              <div className="mb-2.5 text-center xl:text-left">
                 <p className="text-stone-600 text-xs sm:text-[13px] font-medium leading-relaxed transition-all inline">
                   {descriptionText && descriptionText.length > 180 && !isDescExpanded
                     ? `${descriptionText.slice(0, 180).trim()}...`
@@ -1244,8 +1245,8 @@ export default function PujaDetailClient({
         );
       })()}
 
-      {/* ── 2b. Ratings Stats & Action Strip (Wishlist & Share) Above Nav Tabs (Below 1000px only) ── */}
-      <div data-reveal className="lg:hidden w-full bg-white border-b border-stone-200/90 py-3 sm:py-3.5">
+      {/* ── 2b. Ratings Stats & Action Strip (Wishlist & Share) Above Nav Tabs (Below 1280px) ── */}
+      <div data-reveal className="xl:hidden w-full bg-white border-b border-stone-200/90 py-3 sm:py-3.5">
         {/* Mobile layout: stats and buttons cleanly proportioned */}
         <div className="md:hidden w-full px-2.5 sm:px-4 flex items-center justify-between gap-1.5 sm:gap-2.5">
           <div className="flex items-center justify-between flex-1 min-w-0 pr-1">
@@ -1281,8 +1282,8 @@ export default function PujaDetailClient({
           </div>
         </div>
 
-        {/* Tablet layout (md=768px): all 5 items equal space */}
-        <div className="hidden md:flex lg:hidden w-full px-6 md:px-8 items-center">
+        {/* Tablet layout (768px - 1279px): all 5 items equal space */}
+        <div className="hidden md:flex xl:hidden w-full px-6 md:px-8 items-center max-w-[1350px] mx-auto">
           {/* Stat 1 */}
           <div className="flex-1 flex flex-col items-center justify-center text-center">
             <span className="block text-base font-extrabold text-[#1f1a17] leading-tight">10M+</span>
@@ -1373,7 +1374,7 @@ export default function PujaDetailClient({
 
               {/* Vedic Temple Details Cards Grid (Date, Time, Venue) */}
               <div className="border-t border-[#f0e4d0] pt-6 mt-6">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {/* Date & Occasion Card */}
                   <div className="flex items-center gap-3 bg-gradient-to-br from-[#FFFDF9] to-[#FFF9F0] border border-[#ECD9C3] rounded-2xl p-3 sm:p-3.5 shadow-2xs hover:border-[#D99B52] transition-all">
                     <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#E65100]/15 via-[#F97316]/10 to-amber-100/60 border border-[#F0CA9E] flex items-center justify-center shrink-0 shadow-2xs text-[#C2410C]">

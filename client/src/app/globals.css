@@ -49,27 +49,27 @@ img:not([class*="h-full"]):not([class*="absolute"]) {
   height: auto;
 }
 
-/* Fallback for iOS 14 / Safari <15 which lack CSS aspect-ratio support */
+/* Force Safari / WebKit to honor aspect-ratio and prevent 0-height collapses or aspect-ratio distortion */
+[class*="aspect-\[3\/2\]"],
+[class*="aspect-\[3/2\]"] {
+  aspect-ratio: 3 / 2 !important;
+}
+
+/* Fallback for legacy iOS / Safari which lack CSS aspect-ratio support */
 @supports not (aspect-ratio: 1 / 1) {
-  [class*="aspect-\[3\/2\]"] {
-    min-height: 220px;
-    height: auto;
+  [class*="aspect-\[3\/2\]"],
+  [class*="aspect-\[3/2\]"] {
+    position: relative;
+    padding-top: 66.6667%; /* Exactly 3:2 ratio */
+    height: 0;
   }
   @media (min-width: 640px) {
-    [class*="aspect-\[3\/2\]"] {
+    [class*="aspect-\[3\/2\]"],
+    [class*="aspect-\[3/2\]"] {
       min-height: 280px;
+      height: auto;
+      padding-top: 0;
     }
-  }
-  @media (min-width: 1024px) {
-    [class*="aspect-\[3\/2\]"] {
-      min-height: 340px;
-    }
-  }
-  [class*="aspect-\[4\/3\]"] {
-    min-height: 240px;
-  }
-  [class*="aspect-\[16\/9\]"] {
-    min-height: 200px;
   }
 }
 
