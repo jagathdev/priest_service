@@ -25,7 +25,8 @@ import {
   restoreAdminUser,
   bulkRestoreUsers,
   permanentDeleteAdminUser,
-  bulkPermanentDeleteUsers
+  bulkPermanentDeleteUsers,
+  getAdminUserById,
 } from "../controllers/adminController.js";
 import {
   getAdminCustomerQueries,
@@ -91,6 +92,7 @@ router.get("/service-dispatch/export", exportDispatchExcel);
 
 // User routes & bulk/trash operations
 router.get("/users", getAdminUsers);
+router.get("/users/:id", getAdminUserById);
 router.post("/users/bulk-delete", bulkSoftDeleteUsers);
 router.post("/users/bulk-restore", bulkRestoreUsers);
 router.post("/users/bulk-permanent-delete", bulkPermanentDeleteUsers);

@@ -158,6 +158,20 @@ const userSchema = new mongoose.Schema(
             default: "",
             trim: true,
         },
+        referrer: {
+            type: String,
+            default: "",
+            trim: true,
+        },
+        landingPage: {
+            type: String,
+            default: "",
+            trim: true,
+        },
+        firstVisitedAt: {
+            type: Date,
+            default: null,
+        },
     },
     {
         timestamps: true,

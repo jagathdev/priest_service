@@ -23,6 +23,7 @@ interface ProfileTabProps {
   loadingWishlist: boolean;
   addressesCount: number;
   loadingAddresses: boolean;
+  onLogout?: () => void;
 }
 
 export default function ProfileTab({

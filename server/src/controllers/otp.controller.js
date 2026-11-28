@@ -58,6 +58,9 @@ export const verifyOtp = async (req, res) => {
             utmSource,
             utmMedium,
             utmCampaign,
+            referrer,
+            landingPage,
+            firstVisitedAt,
         } = req.body;
 
         // Check required fields
@@ -209,6 +212,9 @@ export const verifyOtp = async (req, res) => {
                 utmSource: String(utmSource || "Direct").trim(),
                 utmMedium: String(utmMedium || "").trim(),
                 utmCampaign: String(utmCampaign || "").trim(),
+                referrer: String(referrer || "").trim(),
+                landingPage: String(landingPage || "").trim(),
+                firstVisitedAt: firstVisitedAt ? new Date(firstVisitedAt) : new Date(),
             });
 
             isNewUser = true;
@@ -229,6 +235,15 @@ export const verifyOtp = async (req, res) => {
                 user.utmSource = String(utmSource).trim();
                 if (utmMedium) user.utmMedium = String(utmMedium).trim();
                 if (utmCampaign) user.utmCampaign = String(utmCampaign).trim();
+            }
+            if (referrer && (!user.referrer || user.referrer === "")) {
+                user.referrer = String(referrer).trim();
+            }
+            if (landingPage && (!user.landingPage || user.landingPage === "")) {
+                user.landingPage = String(landingPage).trim();
+            }
+            if (firstVisitedAt && !user.firstVisitedAt) {
+                user.firstVisitedAt = new Date(firstVisitedAt);
             }
 
             await user.save();

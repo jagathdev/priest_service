@@ -217,6 +217,19 @@ export default function Navbar() {
     pathname === path || (path !== "/" && pathname?.startsWith(path + "/"));
 
   const handleLogout = async () => {
+    try {
+      const token = typeof localStorage !== "undefined" ? localStorage.getItem("token") : "";
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "";
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+      await fetch(`${baseUrl}/api/users/logout`, {
+        method: "POST",
+        headers,
+        credentials: "include",
+      });
+    } catch {
+      // Ignore
+    }
     document.cookie = "userLogin=false; path=/; max-age=0;";
     localStorage.removeItem("token");
     localStorage.removeItem("mockUser");

@@ -166,3 +166,27 @@ export const updateProfile = async (req, res) => {
         });
     }
 };
+
+export const logoutUser = async (req, res) => {
+    try {
+        const userId = req.user?.id || req.user?._id || req.body?.userId;
+        if (userId) {
+            await User.findByIdAndUpdate(userId, {
+                $set: {
+                    isLoggedIn: false,
+                    sessionExpiresAt: null,
+                },
+            });
+        }
+        return res.status(200).json({
+            success: true,
+            message: "Logged out successfully",
+        });
+    } catch (error) {
+        console.error("Logout Error:", error.message);
+        return res.status(200).json({
+            success: true,
+            message: "Logged out",
+        });
+    }
+};

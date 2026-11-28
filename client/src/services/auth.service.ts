@@ -1,4 +1,5 @@
 import { apiClient } from './api';
+import { getStoredUtmDetails } from '@/lib/utmTracker';
 import type {
   AuthApiResponse,
   AuthUser,
@@ -13,7 +14,7 @@ async function requestAuth<T>(path: string, init?: RequestInit): Promise<AuthApi
     ...init,
     headers: {
       "Content-Type": "application/json",
-      ...init?.headers, 
+      ...init?.headers,
     },
   });
 
@@ -23,7 +24,7 @@ async function requestAuth<T>(path: string, init?: RequestInit): Promise<AuthApi
   try {
     payload = JSON.parse(raw) as AuthApiResponse<T>;
   } catch {
-    throw new Error(  
+    throw new Error(
       response.ok
         ? "Invalid response from server"
         : `Request failed (${response.status}). Confirm MONGODB_URI and redeploy if this is production.`
@@ -38,7 +39,7 @@ async function requestAuth<T>(path: string, init?: RequestInit): Promise<AuthApi
 }
 
 export const authService = {
-  loginWithEmail(payload: EmailLoginPayload) { 
+  loginWithEmail(payload: EmailLoginPayload) {
     return requestAuth<AuthUser>("/api/auth/login", {
       method: "POST",
       body: JSON.stringify(payload),
@@ -51,10 +52,10 @@ export const authService = {
       body: JSON.stringify(payload),
     });
   },
-  
+
   resendOtp(payload: OtpPayload) {
     return requestAuth<{ expiresIn: number }>("/api/auth/otp/resend", {
-      method: "POST", 
+      method: "POST",
       body: JSON.stringify(payload),
     });
   },
@@ -74,8 +75,14 @@ export const authService = {
   },
 
   logoutUser() {
-    return requestAuth("/api/auth/logout", {
+    const token = typeof localStorage !== "undefined" ? localStorage.getItem("token") : "";
+    const headers: Record<string, string> = {};
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+    return apiClient("/api/users/logout", {
       method: "POST",
+      headers,
+    }).catch(() => {
+      // Fallback
     });
   },
 
@@ -104,12 +111,16 @@ export const authService = {
 
   verifyOtpLegacy(payload: VerifyOtpPayload) {
     const raw = payload as any;
+    const storedUtm = getStoredUtmDetails();
     const backendPayload = {
       mobileNumber: payload.number || raw.mobileNumber,
       otp: payload.otp,
-      utmSource: raw.utmSource || "Direct",
-      utmMedium: raw.utmMedium || "",
-      utmCampaign: raw.utmCampaign || "",
+      utmSource: raw.utmSource || storedUtm.utmSource || "Direct",
+      utmMedium: raw.utmMedium || storedUtm.utmMedium || "",
+      utmCampaign: raw.utmCampaign || storedUtm.utmCampaign || "",
+      referrer: raw.referrer || storedUtm.referrer || "",
+      landingPage: raw.landingPage || storedUtm.landingPage || "",
+      firstVisitedAt: raw.firstVisitedAt || storedUtm.firstVisitedAt || "",
     };
     return apiClient('/api/otp/verifyOtp', {
       method: 'POST',

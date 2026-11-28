@@ -599,7 +599,7 @@ export default function AdminOrderDetailPage({ params }: { params: Promise<{ id:
             <div className="flex justify-between items-center">
               <span className="text-gray-500">Traffic / UTM Source</span>
               <span className="font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded text-[11px] border border-emerald-200">
-                {order.utmSource || "Direct"}
+                {order.utmSource || "-"}
               </span>
             </div>
             {order.utmCampaign && (
@@ -618,14 +618,29 @@ export default function AdminOrderDetailPage({ params }: { params: Promise<{ id:
                 </span>
               </div>
             )}
-            {order.referrer && (
-              <div className="flex justify-between items-center gap-2">
-                <span className="text-gray-500 shrink-0">Referrer</span>
-                <span className="text-gray-600 text-[10px] truncate max-w-[170px]" title={order.referrer}>
-                  {order.referrer}
-                </span>
-              </div>
-            )}
+            <div className="flex justify-between items-center gap-2">
+              <span className="text-gray-500 shrink-0">Referral Source</span>
+              <span className="font-semibold text-gray-700 text-[11px] truncate max-w-[170px]" title={order.referrer || "No referrer recorded"}>
+                {order.referrer || "-"}
+              </span>
+            </div>
+            <div className="flex flex-col gap-1 sm:flex-row sm:justify-between sm:items-start pt-1 border-t border-gray-100">
+              <span className="text-gray-500 shrink-0 text-xs mt-0.5">Initial Landing Page</span>
+              {order.landingPage && order.landingPage !== "-" ? (
+                <a
+                  href={order.landingPage}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-mono text-emerald-800 text-[11px] font-semibold bg-emerald-50 hover:bg-emerald-100 px-2 py-1 rounded border border-emerald-200 break-all text-left transition inline-flex items-center gap-1.5"
+                  title="Click to preview landing page in new tab"
+                >
+                  <span className="break-all">{order.landingPage}</span>
+                  <ArrowTopRightOnSquareIcon className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                </a>
+              ) : (
+                <span className="text-gray-400 font-bold text-xs">-</span>
+              )}
+            </div>
           </div>
         </div>
       </div>

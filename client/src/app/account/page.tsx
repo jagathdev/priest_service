@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { Menu } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import { useUser } from "@/contexts/UserContext";
 import { apiClient, getAuthToken } from "@/services/api";
@@ -127,10 +128,15 @@ function AccountPageContent() {
 
   const handleLogout = async () => {
     try {
-      await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com"}/api/auth/logout`,
-        { method: "POST" }
-      );
+      const token = typeof localStorage !== "undefined" ? localStorage.getItem("token") : "";
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "";
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+      await fetch(`${baseUrl}/api/users/logout`, {
+        method: "POST",
+        headers,
+        credentials: "include",
+      });
     } catch {
       // ignore
     }
@@ -216,14 +222,15 @@ function AccountPageContent() {
               )}
             </div>
 
-            {/* Mobile menu trigger */}
+            {/* Mobile menu trigger - 3 lines (hamburger icon) */}
             {user && (
               <button
                 type="button"
                 onClick={() => setIsDrawerOpen(true)}
-                className="lg:hidden text-xs font-bold text-primary flex items-center gap-1 border border-primary/20 bg-primary/5 px-2.5 py-1 rounded-full cursor-pointer"
+                className="lg:hidden p-1.5 -mr-1 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition cursor-pointer"
+                aria-label="Open Account Menu"
               >
-                <span>Menu</span>
+                <Menu className="w-5 h-5 text-gray-800" strokeWidth={2.2} />
               </button>
             )}
           </div>
@@ -247,12 +254,12 @@ function AccountPageContent() {
 
               {/* Mobile Drawer */}
               {isDrawerOpen && (
-                <div className="fixed inset-0 z-50 lg:hidden">
+                <div className="fixed inset-0 z-[70] lg:hidden">
                   <div
-                    className="fixed inset-0 bg-black/40 backdrop-blur-xs"
+                    className="fixed inset-0 bg-black/50 backdrop-blur-xs"
                     onClick={() => setIsDrawerOpen(false)}
                   />
-                  <div className="fixed inset-y-0 left-0 max-w-xs w-full bg-white shadow-xl p-5 z-10 flex flex-col">
+                  <div className="fixed inset-y-0 left-0 max-w-[280px] sm:max-w-xs w-full bg-white shadow-2xl p-4 sm:p-5 z-10 flex flex-col h-full overflow-hidden">
                     <AccountSidebar
                       user={user}
                       activeTab={activeTab}
@@ -276,6 +283,7 @@ function AccountPageContent() {
                     loadingWishlist={loadingWishlist}
                     addressesCount={addresses.length}
                     loadingAddresses={loadingAddresses}
+                    onLogout={handleLogout}
                   />
                 )}
 

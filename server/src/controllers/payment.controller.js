@@ -267,6 +267,12 @@ export const createPaymentOrder = async (req, res) => {
                     userUpdate.utmSource = utmSource;
                     if (utmCampaign) userUpdate.utmCampaign = utmCampaign;
                 }
+                if (referrer) {
+                    userUpdate.referrer = referrer;
+                }
+                if (landingPage) {
+                    userUpdate.landingPage = landingPage;
+                }
                 if (Object.keys(userUpdate).length > 0) {
                     await User.findByIdAndUpdate(authenticatedUserId, { $set: userUpdate });
                 }

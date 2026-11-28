@@ -723,7 +723,7 @@ export const getAdminUsers = async (req, res) => {
     const userIds = users.map((u) => u._id);
     const orderSources = await Order.find({ customer: { $in: userIds } })
       .sort({ createdAt: 1 })
-      .select("customer utmSource utmCampaign")
+      .select("customer utmSource utmCampaign referrer landingPage")
       .lean();
 
     const userSourceMap = new Map();
@@ -731,7 +731,9 @@ export const getAdminUsers = async (req, res) => {
       if (ord.customer && !userSourceMap.has(String(ord.customer))) {
         userSourceMap.set(String(ord.customer), {
           utmSource: ord.utmSource || "Direct",
-          utmCampaign: ord.utmCampaign || ""
+          utmCampaign: ord.utmCampaign || "",
+          referrer: ord.referrer || "",
+          landingPage: ord.landingPage || "",
         });
       }
     });
@@ -744,6 +746,14 @@ export const getAdminUsers = async (req, res) => {
         ? u.utmSource
         : (fallbackSource?.utmSource || u.utmSource || "Direct");
       const resolvedCampaign = u.utmCampaign || fallbackSource?.utmCampaign || "";
+      const resolvedReferrer = u.referrer || fallbackSource?.referrer || "";
+      const resolvedLandingPage = u.landingPage || fallbackSource?.landingPage || "";
+
+      const isSessionActive = Boolean(
+        u.isLoggedIn &&
+        u.sessionExpiresAt &&
+        new Date(u.sessionExpiresAt) > now
+      );
 
       return {
         _id: u._id,
@@ -751,15 +761,16 @@ export const getAdminUsers = async (req, res) => {
         email: u.email || "N/A",
         mobileNumber: u.mobileNumber || "N/A",
         whatsappNumber: u.whatsappNumber || "",
-        utmSource: resolvedSource,
+        utmSource: resolvedSource && resolvedSource !== "Direct" ? resolvedSource : (resolvedSource === "Direct" ? "Direct" : "-"),
         utmCampaign: resolvedCampaign,
+        referrer: resolvedReferrer || "-",
+        landingPage: resolvedLandingPage || "-",
+        firstVisitedAt: u.firstVisitedAt || u.createdAt,
         totalAmountSpent: totalSpent,
         isVerified: u.isVerified !== false,
         status: u.isVerified !== false ? "Active" : "Inactive",
-        isLoggedIn: Boolean(u.isLoggedIn && (
-          (u.sessionExpiresAt && new Date(u.sessionExpiresAt) > now) ||
-          (u.lastLoginAt && new Date(u.lastLoginAt) >= new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000))
-        )),
+        isLoggedIn: isSessionActive,
+        sessionStatus: isSessionActive ? "Active" : "Offline",
         lastLoginAt: u.lastLoginAt || null,
         sessionExpiresAt: u.sessionExpiresAt || null,
         createdAt: u.createdAt,
@@ -969,5 +980,60 @@ export const bulkPermanentDeleteUsers = async (req, res) => {
   } catch (error) {
     console.error("Error in bulkPermanentDeleteUsers:", error);
     return res.status(500).json({ success: false, message: "Failed to permanently delete users" });
+  }
+};
+
+// Fetch comprehensive user profile details and recent orders for Admin drawer
+export const getAdminUserById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findById(id).select("-password").lean();
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    const orders = await Order.find({ customer: user._id })
+      .sort({ createdAt: -1 })
+      .select("orderNumber itemName pooja serviceType pricing orderStatus paymentStatus createdAt bookingDate")
+      .lean();
+
+    const totalSpent = orders.reduce((sum, ord) => {
+      if (ord.paymentStatus !== "failed" && !["cancelled", "refunded"].includes(ord.orderStatus)) {
+        return sum + (ord.pricing?.total || 0);
+      }
+      return sum;
+    }, 0);
+
+    const now = new Date();
+    const isSessionActive = Boolean(
+      user.isLoggedIn &&
+      user.sessionExpiresAt &&
+      new Date(user.sessionExpiresAt) > now
+    );
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        ...user,
+        isLoggedIn: isSessionActive,
+        sessionStatus: isSessionActive ? "Active" : "Offline",
+        totalAmountSpent: totalSpent,
+        totalOrdersCount: orders.length,
+        orders: orders.map((o) => ({
+          _id: o._id,
+          orderNumber: o.orderNumber,
+          serviceName: o.itemName || o.pooja || "Sacred Ritual",
+          serviceType: o.serviceType || "Puja",
+          amount: o.pricing?.total || 0,
+          orderStatus: o.orderStatus,
+          paymentStatus: o.paymentStatus,
+          createdAt: o.createdAt,
+          bookingDate: o.bookingDate,
+        })),
+      },
+    });
+  } catch (error) {
+    console.error("Error in getAdminUserById:", error);
+    return res.status(500).json({ success: false, message: "Failed to fetch user details" });
   }
 };

@@ -98,14 +98,14 @@ export default function AccountSidebar({
   onCloseDrawer,
 }: AccountSidebarProps) {
   const content = (
-    <div className="flex flex-col h-full space-y-4">
+    <div className="flex flex-col h-full overflow-hidden">
       {/* Drawer Header (if drawer) */}
       {isDrawer && (
-        <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+        <div className="flex items-center justify-between pb-3 mb-3 border-b border-gray-100 shrink-0">
           <span className="font-bold text-gray-800 text-sm">Account Menu</span>
           <button
             onClick={onCloseDrawer}
-            className="p-1 rounded-full hover:bg-gray-100 text-gray-500"
+            className="p-1 rounded-full hover:bg-gray-100 text-gray-500 transition cursor-pointer"
             aria-label="Close menu"
           >
             <X className="w-5 h-5" />
@@ -114,7 +114,7 @@ export default function AccountSidebar({
       )}
 
       {/* Top User Summary */}
-      <div className="flex items-center gap-3 pb-3 border-b border-gray-100">
+      <div className="flex items-center gap-3 pb-3 mb-2 border-b border-gray-100 shrink-0">
         <div className="w-10 h-10 rounded-full bg-[#F47820] flex items-center justify-center shrink-0">
           <UserIcon className="w-5 h-5 text-white" />
         </div>
@@ -128,8 +128,8 @@ export default function AccountSidebar({
         </div>
       </div>
 
-      {/* Navigation Tabs List */}
-      <div className="flex flex-col gap-1 flex-1">
+      {/* Navigation Tabs List - Scrollable if screen is short */}
+      <div className="flex flex-col gap-1 flex-1 overflow-y-auto min-h-0 pr-1 py-1">
         {ACCOUNT_TABS.map((tab) => (
           <button
             key={tab.id}
@@ -138,11 +138,10 @@ export default function AccountSidebar({
               onSelectTab(tab.id);
               if (isDrawer && onCloseDrawer) onCloseDrawer();
             }}
-            className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm transition cursor-pointer ${
-              activeTab === tab.id
-                ? "bg-primary text-white font-bold shadow-xs"
-                : "text-gray-700 font-medium hover:bg-gray-50"
-            }`}
+            className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm transition cursor-pointer shrink-0 ${activeTab === tab.id
+              ? "bg-primary text-white font-bold shadow-xs"
+              : "text-gray-700 font-medium hover:bg-gray-50"
+              }`}
           >
             {tab.icon(activeTab === tab.id)}
             <span>{tab.label}</span>
@@ -150,17 +149,17 @@ export default function AccountSidebar({
         ))}
       </div>
 
-      {/* Bottom Logout Button */}
-      <div className="pt-2 mt-auto">
+      {/* Bottom Logout Button - Always visible & pinned at the bottom */}
+      <div className="pt-3 border-t border-gray-100 shrink-0 mt-auto bg-white">
         <button
           type="button"
           onClick={() => {
             onLogout();
             if (isDrawer && onCloseDrawer) onCloseDrawer();
           }}
-          className="border border-primary text-primary hover:bg-slate-50 font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 text-xs sm:text-sm transition w-full cursor-pointer"
+          className="border border-red-200 text-red-600 bg-red-50/50 hover:bg-red-100/70 font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 text-xs sm:text-sm transition w-full cursor-pointer shadow-2xs"
         >
-          <LogOut className="w-4 h-4 text-primary" />
+          <LogOut className="w-4 h-4 text-red-600" />
           <span>Logout</span>
         </button>
       </div>

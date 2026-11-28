@@ -135,6 +135,8 @@ interface OrderData {
   utmSource?: string;
   utmMedium?: string;
   utmCampaign?: string;
+  referrer?: string;
+  landingPage?: string;
 }
 
 interface StatsData {
@@ -575,6 +577,16 @@ export default function AdminOrdersPage() {
     return { datePart, timePart };
   };
 
+  const formatReferrerDomain = (ref?: string): string => {
+    if (!ref || ref === "-" || ref === "Direct") return "-";
+    try {
+      const url = new URL(ref);
+      return url.hostname.replace(/^www\./, "");
+    } catch {
+      return ref.replace(/^https?:\/\//, "").replace(/^www\./, "").split("/")[0] || "-";
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Toast Alert */}
@@ -612,194 +624,194 @@ export default function AdminOrdersPage() {
       {/* KPI Overview Metrics Cards with horizontal scroll on mobile */}
       <div className="w-full overflow-x-auto pb-1.5 scrollbar-thin">
         <div className="grid grid-cols-4 sm:grid-cols-4 lg:grid-cols-8 gap-2.5 min-w-[680px] sm:min-w-0">
-        {/* Total Revenue (Dynamic with Date Filter) */}
-        <div className={`p-3 rounded-2xl border text-left transition-all duration-150 flex flex-col justify-between ${startDate || endDate
-          ? "bg-emerald-50/70 border-emerald-400 ring-2 ring-emerald-400/40 shadow-sm"
-          : "bg-white border-gray-200 shadow-2xs"
-          }`}>
-          <div className="flex items-center justify-between text-gray-500 mb-1 w-full">
-            <span className="text-[11px] font-bold text-gray-700">Total Revenue</span>
-            <div className="w-6 h-6 rounded-lg bg-emerald-50 text-emerald-700 font-bold text-xs flex items-center justify-center shrink-0">
-              ₹
+          {/* Total Revenue (Dynamic with Date Filter) */}
+          <div className={`p-3 rounded-2xl border text-left transition-all duration-150 flex flex-col justify-between ${startDate || endDate
+            ? "bg-emerald-50/70 border-emerald-400 ring-2 ring-emerald-400/40 shadow-sm"
+            : "bg-white border-gray-200 shadow-2xs"
+            }`}>
+            <div className="flex items-center justify-between text-gray-500 mb-1 w-full">
+              <span className="text-[11px] font-bold text-gray-700">Total Revenue</span>
+              <div className="w-6 h-6 rounded-lg bg-emerald-50 text-emerald-700 font-bold text-xs flex items-center justify-center shrink-0">
+                ₹
+              </div>
+            </div>
+            <div className="flex flex-col gap-0.5">
+              <span className="text-base sm:text-lg font-black text-emerald-700 tracking-tight">
+                {formatIndianCurrency(data.stats?.totalRevenue ?? 0)}
+              </span>
+              <span className="text-[9px] font-semibold text-gray-500 truncate">
+                {startDate || endDate ? "Selected Dates" : "All Paid"}
+              </span>
             </div>
           </div>
-          <div className="flex flex-col gap-0.5">
-            <span className="text-base sm:text-lg font-black text-emerald-700 tracking-tight">
-              {formatIndianCurrency(data.stats?.totalRevenue ?? 0)}
-            </span>
-            <span className="text-[9px] font-semibold text-gray-500 truncate">
-              {startDate || endDate ? "Selected Dates" : "All Paid"}
-            </span>
-          </div>
-        </div>
 
-        {/* Total Bookings */}
-        <button
-          type="button"
-          onClick={() => {
-            setActiveTab("all");
-            setSelectedStatus("All");
-          }}
-          className={`p-3 rounded-2xl border text-left transition-all duration-150 flex flex-col justify-between cursor-pointer ${activeTab === "all" && (selectedStatus === "All" || !selectedStatus)
-            ? "bg-blue-50/70 border-blue-400 shadow-sm ring-2 ring-blue-400/40"
-            : "bg-white border-gray-200 hover:border-gray-300 hover:shadow-2xs shadow-2xs"
-            }`}
-        >
-          <div className="flex items-center justify-between text-gray-500 mb-1 w-full">
-            <span className="text-[11px] font-bold text-gray-700">Total Bookings</span>
-            <div className="w-6 h-6 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
-              <CalendarDaysIcon className="w-3.5 h-3.5" />
+          {/* Total Bookings */}
+          <button
+            type="button"
+            onClick={() => {
+              setActiveTab("all");
+              setSelectedStatus("All");
+            }}
+            className={`p-3 rounded-2xl border text-left transition-all duration-150 flex flex-col justify-between cursor-pointer ${activeTab === "all" && (selectedStatus === "All" || !selectedStatus)
+              ? "bg-blue-50/70 border-blue-400 shadow-sm ring-2 ring-blue-400/40"
+              : "bg-white border-gray-200 hover:border-gray-300 hover:shadow-2xs shadow-2xs"
+              }`}
+          >
+            <div className="flex items-center justify-between text-gray-500 mb-1 w-full">
+              <span className="text-[11px] font-bold text-gray-700">Total Bookings</span>
+              <div className="w-6 h-6 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                <CalendarDaysIcon className="w-3.5 h-3.5" />
+              </div>
             </div>
-          </div>
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-lg sm:text-xl font-black text-gray-900">{data.stats?.total ?? data.totalOrders}</span>
-            <span className="text-[9px] font-extrabold text-emerald-600 bg-emerald-50 px-1 py-0.2 rounded">All</span>
-          </div>
-        </button>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-lg sm:text-xl font-black text-gray-900">{data.stats?.total ?? data.totalOrders}</span>
+              <span className="text-[9px] font-extrabold text-emerald-600 bg-emerald-50 px-1 py-0.2 rounded">All</span>
+            </div>
+          </button>
 
-        {/* Scheduled */}
-        <button
-          type="button"
-          onClick={() => {
-            setActiveTab("active");
-            setSelectedStatus("scheduled");
-          }}
-          className={`p-3 rounded-2xl border text-left transition-all duration-150 flex flex-col justify-between cursor-pointer ${activeTab === "active" && selectedStatus.toLowerCase() === "scheduled"
-            ? "bg-amber-50/70 border-amber-500 shadow-sm ring-2 ring-amber-400/50"
-            : "bg-white border-gray-200 hover:border-amber-300 hover:shadow-2xs shadow-2xs"
-            }`}
-        >
-          <div className="flex items-center justify-between text-gray-500 mb-1 w-full">
-            <span className="text-[11px] font-bold text-gray-700">Scheduled</span>
-            <div className="w-6 h-6 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
-              <ClockIcon className="w-3.5 h-3.5" />
+          {/* Scheduled */}
+          <button
+            type="button"
+            onClick={() => {
+              setActiveTab("active");
+              setSelectedStatus("scheduled");
+            }}
+            className={`p-3 rounded-2xl border text-left transition-all duration-150 flex flex-col justify-between cursor-pointer ${activeTab === "active" && selectedStatus.toLowerCase() === "scheduled"
+              ? "bg-amber-50/70 border-amber-500 shadow-sm ring-2 ring-amber-400/50"
+              : "bg-white border-gray-200 hover:border-amber-300 hover:shadow-2xs shadow-2xs"
+              }`}
+          >
+            <div className="flex items-center justify-between text-gray-500 mb-1 w-full">
+              <span className="text-[11px] font-bold text-gray-700">Scheduled</span>
+              <div className="w-6 h-6 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+                <ClockIcon className="w-3.5 h-3.5" />
+              </div>
             </div>
-          </div>
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-lg sm:text-xl font-black text-amber-700">{data.stats?.scheduled ?? 0}</span>
-            <span className="text-[9px] font-semibold text-gray-400">Rituals</span>
-          </div>
-        </button>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-lg sm:text-xl font-black text-amber-700">{data.stats?.scheduled ?? 0}</span>
+              <span className="text-[9px] font-semibold text-gray-400">Rituals</span>
+            </div>
+          </button>
 
-        {/* Confirmed */}
-        <button
-          type="button"
-          onClick={() => {
-            setActiveTab("active");
-            setSelectedStatus("confirmed");
-          }}
-          className={`p-3 rounded-2xl border text-left transition-all duration-150 flex flex-col justify-between cursor-pointer ${activeTab === "active" && selectedStatus.toLowerCase() === "confirmed"
-            ? "bg-sky-50/70 border-sky-500 shadow-sm ring-2 ring-sky-400/50"
-            : "bg-white border-gray-200 hover:border-sky-300 hover:shadow-2xs shadow-2xs"
-            }`}
-        >
-          <div className="flex items-center justify-between text-gray-500 mb-1 w-full">
-            <span className="text-[11px] font-bold text-gray-700">Confirmed</span>
-            <div className="w-6 h-6 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center shrink-0">
-              <CheckCircleIcon className="w-3.5 h-3.5" />
+          {/* Confirmed */}
+          <button
+            type="button"
+            onClick={() => {
+              setActiveTab("active");
+              setSelectedStatus("confirmed");
+            }}
+            className={`p-3 rounded-2xl border text-left transition-all duration-150 flex flex-col justify-between cursor-pointer ${activeTab === "active" && selectedStatus.toLowerCase() === "confirmed"
+              ? "bg-sky-50/70 border-sky-500 shadow-sm ring-2 ring-sky-400/50"
+              : "bg-white border-gray-200 hover:border-sky-300 hover:shadow-2xs shadow-2xs"
+              }`}
+          >
+            <div className="flex items-center justify-between text-gray-500 mb-1 w-full">
+              <span className="text-[11px] font-bold text-gray-700">Confirmed</span>
+              <div className="w-6 h-6 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center shrink-0">
+                <CheckCircleIcon className="w-3.5 h-3.5" />
+              </div>
             </div>
-          </div>
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-lg sm:text-xl font-black text-sky-700">{data.stats?.confirmed ?? 0}</span>
-            <span className="text-[9px] font-semibold text-gray-400">Ready</span>
-          </div>
-        </button>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-lg sm:text-xl font-black text-sky-700">{data.stats?.confirmed ?? 0}</span>
+              <span className="text-[9px] font-semibold text-gray-400">Ready</span>
+            </div>
+          </button>
 
-        {/* Performed */}
-        <button
-          type="button"
-          onClick={() => {
-            setActiveTab("active");
-            setSelectedStatus("performed");
-          }}
-          className={`p-3 rounded-2xl border text-left transition-all duration-150 flex flex-col justify-between cursor-pointer ${activeTab === "active" && selectedStatus.toLowerCase() === "performed"
-            ? "bg-indigo-50/70 border-indigo-500 shadow-sm ring-2 ring-indigo-400/50"
-            : "bg-white border-gray-200 hover:border-indigo-300 hover:shadow-2xs shadow-2xs"
-            }`}
-        >
-          <div className="flex items-center justify-between text-gray-500 mb-1 w-full">
-            <span className="text-[11px] font-bold text-gray-700">Performed</span>
-            <div className="w-6 h-6 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
-              <SparklesIcon className="w-3.5 h-3.5" />
+          {/* Performed */}
+          <button
+            type="button"
+            onClick={() => {
+              setActiveTab("active");
+              setSelectedStatus("performed");
+            }}
+            className={`p-3 rounded-2xl border text-left transition-all duration-150 flex flex-col justify-between cursor-pointer ${activeTab === "active" && selectedStatus.toLowerCase() === "performed"
+              ? "bg-indigo-50/70 border-indigo-500 shadow-sm ring-2 ring-indigo-400/50"
+              : "bg-white border-gray-200 hover:border-indigo-300 hover:shadow-2xs shadow-2xs"
+              }`}
+          >
+            <div className="flex items-center justify-between text-gray-500 mb-1 w-full">
+              <span className="text-[11px] font-bold text-gray-700">Performed</span>
+              <div className="w-6 h-6 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+                <SparklesIcon className="w-3.5 h-3.5" />
+              </div>
             </div>
-          </div>
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-lg sm:text-xl font-black text-indigo-700">{data.stats?.performed ?? 0}</span>
-            <span className="text-[9px] font-semibold text-gray-400">Done</span>
-          </div>
-        </button>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-lg sm:text-xl font-black text-indigo-700">{data.stats?.performed ?? 0}</span>
+              <span className="text-[9px] font-semibold text-gray-400">Done</span>
+            </div>
+          </button>
 
-        {/* Cancelled */}
-        <button
-          type="button"
-          onClick={() => {
-            setActiveTab("active");
-            setSelectedStatus("cancelled");
-          }}
-          className={`p-3 rounded-2xl border text-left transition-all duration-150 flex flex-col justify-between cursor-pointer ${activeTab === "active" && selectedStatus.toLowerCase() === "cancelled"
-            ? "bg-rose-50/70 border-rose-500 shadow-sm ring-2 ring-rose-400/50"
-            : "bg-white border-gray-200 hover:border-rose-300 hover:shadow-2xs shadow-2xs"
-            }`}
-        >
-          <div className="flex items-center justify-between text-gray-500 mb-1 w-full">
-            <span className="text-[11px] font-bold text-gray-700">Cancelled</span>
-            <div className="w-6 h-6 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
-              <XMarkIcon className="w-3.5 h-3.5" />
+          {/* Cancelled */}
+          <button
+            type="button"
+            onClick={() => {
+              setActiveTab("active");
+              setSelectedStatus("cancelled");
+            }}
+            className={`p-3 rounded-2xl border text-left transition-all duration-150 flex flex-col justify-between cursor-pointer ${activeTab === "active" && selectedStatus.toLowerCase() === "cancelled"
+              ? "bg-rose-50/70 border-rose-500 shadow-sm ring-2 ring-rose-400/50"
+              : "bg-white border-gray-200 hover:border-rose-300 hover:shadow-2xs shadow-2xs"
+              }`}
+          >
+            <div className="flex items-center justify-between text-gray-500 mb-1 w-full">
+              <span className="text-[11px] font-bold text-gray-700">Cancelled</span>
+              <div className="w-6 h-6 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
+                <XMarkIcon className="w-3.5 h-3.5" />
+              </div>
             </div>
-          </div>
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-lg sm:text-xl font-black text-rose-700">{data.stats?.cancelled ?? 0}</span>
-            <span className="text-[9px] font-semibold text-gray-400">Voided</span>
-          </div>
-        </button>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-lg sm:text-xl font-black text-rose-700">{data.stats?.cancelled ?? 0}</span>
+              <span className="text-[9px] font-semibold text-gray-400">Voided</span>
+            </div>
+          </button>
 
-        {/* Refunded */}
-        <button
-          type="button"
-          onClick={() => {
-            setActiveTab("active");
-            setSelectedStatus("refunded");
-          }}
-          className={`p-3 rounded-2xl border text-left transition-all duration-150 flex flex-col justify-between cursor-pointer ${activeTab === "active" && selectedStatus.toLowerCase() === "refunded"
-            ? "bg-purple-50/70 border-purple-500 shadow-sm ring-2 ring-purple-400/50"
-            : "bg-white border-gray-200 hover:border-purple-300 hover:shadow-2xs shadow-2xs"
-            }`}
-        >
-          <div className="flex items-center justify-between text-gray-500 mb-1 w-full">
-            <span className="text-[11px] font-bold text-gray-700">Refunded</span>
-            <div className="w-6 h-6 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
-              <ArrowPathIcon className="w-3.5 h-3.5" />
+          {/* Refunded */}
+          <button
+            type="button"
+            onClick={() => {
+              setActiveTab("active");
+              setSelectedStatus("refunded");
+            }}
+            className={`p-3 rounded-2xl border text-left transition-all duration-150 flex flex-col justify-between cursor-pointer ${activeTab === "active" && selectedStatus.toLowerCase() === "refunded"
+              ? "bg-purple-50/70 border-purple-500 shadow-sm ring-2 ring-purple-400/50"
+              : "bg-white border-gray-200 hover:border-purple-300 hover:shadow-2xs shadow-2xs"
+              }`}
+          >
+            <div className="flex items-center justify-between text-gray-500 mb-1 w-full">
+              <span className="text-[11px] font-bold text-gray-700">Refunded</span>
+              <div className="w-6 h-6 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
+                <ArrowPathIcon className="w-3.5 h-3.5" />
+              </div>
             </div>
-          </div>
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-lg sm:text-xl font-black text-purple-700">{data.stats?.refunded ?? 0}</span>
-            <span className="text-[9px] font-semibold text-gray-400">Reversed</span>
-          </div>
-        </button>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-lg sm:text-xl font-black text-purple-700">{data.stats?.refunded ?? 0}</span>
+              <span className="text-[9px] font-semibold text-gray-400">Reversed</span>
+            </div>
+          </button>
 
-        {/* Completed */}
-        <button
-          type="button"
-          onClick={() => {
-            setActiveTab("completed");
-            setSelectedStatus("All");
-          }}
-          className={`p-3 rounded-2xl border text-left transition-all duration-150 flex flex-col justify-between cursor-pointer ${activeTab === "completed"
-            ? "bg-emerald-50/70 border-emerald-500 shadow-sm ring-2 ring-emerald-400/50"
-            : "bg-white border-gray-200 hover:border-emerald-300 hover:shadow-2xs shadow-2xs"
-            }`}
-        >
-          <div className="flex items-center justify-between text-gray-500 mb-1 w-full">
-            <span className="text-[11px] font-bold text-gray-700">Completed</span>
-            <div className="w-6 h-6 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-              <CheckIcon className="w-3.5 h-3.5 stroke-[3]" />
+          {/* Completed */}
+          <button
+            type="button"
+            onClick={() => {
+              setActiveTab("completed");
+              setSelectedStatus("All");
+            }}
+            className={`p-3 rounded-2xl border text-left transition-all duration-150 flex flex-col justify-between cursor-pointer ${activeTab === "completed"
+              ? "bg-emerald-50/70 border-emerald-500 shadow-sm ring-2 ring-emerald-400/50"
+              : "bg-white border-gray-200 hover:border-emerald-300 hover:shadow-2xs shadow-2xs"
+              }`}
+          >
+            <div className="flex items-center justify-between text-gray-500 mb-1 w-full">
+              <span className="text-[11px] font-bold text-gray-700">Completed</span>
+              <div className="w-6 h-6 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                <CheckIcon className="w-3.5 h-3.5 stroke-[3]" />
+              </div>
             </div>
-          </div>
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-lg sm:text-xl font-black text-emerald-700">{data.stats?.completed ?? 0}</span>
-            <span className="text-[9px] font-semibold text-gray-400">Delivered</span>
-          </div>
-        </button>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-lg sm:text-xl font-black text-emerald-700">{data.stats?.completed ?? 0}</span>
+              <span className="text-[9px] font-semibold text-gray-400">Delivered</span>
+            </div>
+          </button>
         </div>
       </div>
 
@@ -1171,26 +1183,58 @@ export default function AdminOrdersPage() {
                         </span>
                       </td>
 
-                      {/* 4. Marketing Source / Full Campaign Name */}
+                      {/* 4. Marketing Source / Referrer / Landing Page */}
                       <td className="px-3 py-3">
                         {(() => {
-                          const src = ord.utmSource || "Direct";
-                          const lower = src.toLowerCase();
+                          const src = ord.utmSource && ord.utmSource !== "-" ? ord.utmSource : "";
+                          const refDomain = formatReferrerDomain(ord.referrer);
+                          const landing = ord.landingPage && ord.landingPage !== "-" ? ord.landingPage : "";
+
                           let badgeStyle = "bg-gray-100 text-gray-700 border-gray-200";
-                          if (lower.includes("google")) badgeStyle = "bg-blue-50 text-blue-700 border-blue-200";
-                          else if (lower.includes("facebook") || lower.includes("fb")) badgeStyle = "bg-indigo-50 text-indigo-700 border-indigo-200";
-                          else if (lower.includes("instagram")) badgeStyle = "bg-pink-50 text-pink-700 border-pink-200";
-                          else if (lower.includes("whatsapp")) badgeStyle = "bg-emerald-50 text-emerald-700 border-emerald-200";
-                          else if (lower.includes("youtube")) badgeStyle = "bg-red-50 text-red-700 border-red-200";
+                          if (src) {
+                            const lower = src.toLowerCase();
+                            if (lower.includes("google")) badgeStyle = "bg-blue-50 text-blue-700 border-blue-200";
+                            else if (lower.includes("facebook") || lower.includes("fb")) badgeStyle = "bg-indigo-50 text-indigo-700 border-indigo-200";
+                            else if (lower.includes("instagram")) badgeStyle = "bg-pink-50 text-pink-700 border-pink-200";
+                            else if (lower.includes("whatsapp")) badgeStyle = "bg-emerald-50 text-emerald-700 border-emerald-200";
+                            else if (lower.includes("youtube")) badgeStyle = "bg-red-50 text-red-700 border-red-200";
+                          }
 
                           return (
-                            <div className="space-y-1">
-                              <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10.5px] font-bold border ${badgeStyle}`}>
-                                {src}
-                              </span>
+                            <div className="space-y-1 max-w-[190px]">
+                              {/* Source Badge */}
+                              <div className="flex items-center gap-1.5">
+                                {src ? (
+                                  <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10.5px] font-bold border ${badgeStyle}`}>
+                                    {src}
+                                  </span>
+                                ) : (
+                                  <span className="text-gray-400 font-bold text-xs">-</span>
+                                )}
+                              </div>
+
+                              {/* Referral Source */}
+                              <div className="flex items-center gap-1 text-[10.5px] text-gray-500" title={ord.referrer && ord.referrer !== "-" ? ord.referrer : "No referrer"}>
+                                <span className="text-gray-400 font-medium">Ref:</span>
+                                {refDomain !== "-" ? (
+                                  <span className="font-semibold text-gray-700 truncate max-w-[130px]">{refDomain}</span>
+                                ) : (
+                                  <span className="text-gray-400">-</span>
+                                )}
+                              </div>
+
+                              {/* First Landing Page */}
+                              {landing ? (
+                                <div className="text-[10px] text-gray-500 font-mono break-all leading-tight" title={landing}>
+                                  <span className="text-gray-400 font-sans font-medium mr-1">Page:</span>
+                                  <span>{landing}</span>
+                                </div>
+                              ) : null}
+
+                              {/* UTM Campaign */}
                               {ord.utmCampaign && (
                                 <div
-                                  className="text-[11px] font-semibold text-gray-800 break-words leading-tight"
+                                  className="text-[10.5px] font-semibold text-gray-800 break-words leading-tight"
                                   title={ord.utmCampaign}
                                 >
                                   {ord.utmCampaign}

@@ -3,14 +3,21 @@
  *
  * Rules:
  * 1. Cookie-Only Storage:
- *    - All UTM attribution data is stored STRICTLY in browser cookies.
+ *    - All UTM and referral attribution data is stored STRICTLY in browser cookies.
  *    - NO localStorage or sessionStorage is used. Any legacy keys are cleaned up.
  * 2. 7-Day Expiry:
  *    - Cookies are saved with max-age = 7 days (604,800 seconds).
- * 3. Overwriting:
- *    - When a user enters with new UTM tags or ?promo=..., the new values immediately
- *      overwrite the existing cookies and reset the 7-day timer.
- * 4. Cleanup on Order Conversion:
+ * 3. First-Visit Capture:
+ *    - When a user enters the webpage, captures:
+ *      • document.referrer (e.g. https://www.google.com/ or social platform)
+ *      • landingPage (the entry URL path)
+ *      • firstVisitedAt (ISO timestamp)
+ *      • utmSource / utmCampaign / promo (if provided in URL or detected from organic referrer)
+ *    - Internal navigation within the website does not overwrite the initial external referrer/landing page.
+ * 4. Overwriting:
+ *    - When a user enters with new explicit UTM tags or ?promo=..., the campaign values
+ *      overwrite existing cookies and reset the 7-day timer.
+ * 5. Cleanup on Order Conversion:
  *    - Once an order is completed/paid, `clearUtmAttribution()` deletes the cookies.
  */
 
@@ -22,10 +29,19 @@ export interface UtmDetails {
   utmContent?: string;
   promo?: string; // Query string promo parameter (?promo=...)
   landingPage?: string;
+  referrer?: string;
+  firstVisitedAt?: string;
   capturedAt?: string;
 }
 
 const STORAGE_KEY = "ps_utm_attribution";
+const COOKIE_SOURCE = "ps_utm_source";
+const COOKIE_MEDIUM = "ps_utm_medium";
+const COOKIE_CAMPAIGN = "ps_utm_campaign";
+const COOKIE_REFERRER = "ps_referrer";
+const COOKIE_LANDING_PAGE = "ps_landing_page";
+const COOKIE_FIRST_VISITED_AT = "ps_first_visited_at";
+
 const SEVEN_DAYS_SECONDS = 7 * 24 * 60 * 60; // 604,800 seconds (7 days)
 
 /**
@@ -54,8 +70,49 @@ const deleteCookie = (name: string): void => {
 };
 
 /**
- * Parses the current window URL and records UTM parameters ONLY if explicitly present in the query string.
- * Stores STRICTLY in Cookies with a 7-day expiration. Overwrites any previous UTM cookies.
+ * Detects organic search or social source from a raw referrer URL
+ */
+const detectOrganicSource = (referrerUrl: string): string => {
+  if (!referrerUrl) return "";
+  try {
+    const parsed = new URL(referrerUrl);
+    const host = parsed.hostname.toLowerCase();
+
+    if (host.includes("google.")) return "Google Search";
+    if (host.includes("bing.")) return "Bing Search";
+    if (host.includes("yahoo.")) return "Yahoo Search";
+    if (host.includes("duckduckgo.")) return "DuckDuckGo";
+    if (host.includes("youtube.")) return "YouTube";
+    if (host.includes("instagram.")) return "Instagram";
+    if (host.includes("facebook.") || host.includes("fb.me")) return "Facebook";
+    if (host.includes("twitter.") || host.includes("t.co") || host.includes("x.com")) return "Twitter / X";
+    if (host.includes("linkedin.")) return "LinkedIn";
+    if (host.includes("pinterest.")) return "Pinterest";
+    if (host.includes("whatsapp.")) return "WhatsApp";
+
+    return host.replace(/^www\./, "");
+  } catch {
+    return "";
+  }
+};
+
+/**
+ * Checks if a referrer is an internal link on the same domain
+ */
+const isInternalReferrer = (referrerUrl: string): boolean => {
+  if (!referrerUrl || typeof window === "undefined") return false;
+  try {
+    const refHost = new URL(referrerUrl).hostname.toLowerCase();
+    const currentHost = window.location.hostname.toLowerCase();
+    return refHost === currentHost;
+  } catch {
+    return false;
+  }
+};
+
+/**
+ * Parses the current window URL and records UTM parameters and initial landing page/referrer.
+ * Stores STRICTLY in Cookies with a 7-day expiration.
  */
 export const captureUtmFromUrl = (): UtmDetails | null => {
   if (typeof window === "undefined") return null;
@@ -69,8 +126,41 @@ export const captureUtmFromUrl = (): UtmDetails | null => {
       // Ignore
     }
 
-    const urlParams = new URLSearchParams(window.location.search);
+    const currentPath = window.location.pathname + window.location.search;
+    const rawReferrer = typeof document !== "undefined" ? document.referrer || "" : "";
+    const isInternal = isInternalReferrer(rawReferrer);
 
+    // Existing stored values
+    const existingReferrer = getCookie(COOKIE_REFERRER);
+    let existingLandingPage = getCookie(COOKIE_LANDING_PAGE);
+    let existingFirstVisitedAt = getCookie(COOKIE_FIRST_VISITED_AT);
+
+    // 1. First-visit Landing Page & Timestamp:
+    // If user first landed on generic root "/" and navigates to a specific ritual/page,
+    // upgrade the landing page to the specific ritual (e.g. /puja/navagraha-shanti-puja)
+    // so we know which specific puja or homa the user is interested in.
+    const isSpecializedPage = currentPath !== "/" && !currentPath.startsWith("/admin") && !currentPath.startsWith("/api");
+    const shouldUpgradeLanding = (!existingLandingPage || existingLandingPage === "/") && isSpecializedPage;
+
+    if (!existingLandingPage || shouldUpgradeLanding) {
+      existingLandingPage = currentPath;
+      setCookie(COOKIE_LANDING_PAGE, existingLandingPage, SEVEN_DAYS_SECONDS);
+    }
+
+    if (!existingFirstVisitedAt) {
+      existingFirstVisitedAt = new Date().toISOString();
+      setCookie(COOKIE_FIRST_VISITED_AT, existingFirstVisitedAt, SEVEN_DAYS_SECONDS);
+    }
+
+    // 2. Referrer: capture external referrer on entry; do NOT overwrite with internal navigation
+    let effectiveReferrer = existingReferrer;
+    if (!existingReferrer && rawReferrer && !isInternal) {
+      effectiveReferrer = rawReferrer;
+      setCookie(COOKIE_REFERRER, effectiveReferrer, SEVEN_DAYS_SECONDS);
+    }
+
+    // 3. UTM Parameters from Query string
+    const urlParams = new URLSearchParams(window.location.search);
     const utmSource = urlParams.get("utm_source") || urlParams.get("source");
     const utmMedium = urlParams.get("utm_medium") || urlParams.get("medium");
     const utmCampaign = urlParams.get("utm_campaign") || urlParams.get("campaign");
@@ -78,7 +168,6 @@ export const captureUtmFromUrl = (): UtmDetails | null => {
     const utmContent = urlParams.get("utm_content") || urlParams.get("content");
     const promoParam = urlParams.get("promo");
 
-    // ONLY capture if explicit UTM or promo query parameter is present in URL
     const hasExplicitUtm = !!(
       utmSource ||
       utmMedium ||
@@ -88,30 +177,51 @@ export const captureUtmFromUrl = (): UtmDetails | null => {
       promoParam
     );
 
-    if (hasExplicitUtm) {
+    // If no explicit UTM, check if we can detect an organic source from external referrer
+    const organicSource = (!hasExplicitUtm && !isInternal && rawReferrer) ? detectOrganicSource(rawReferrer) : "";
+
+    const needsCookieUpdate = hasExplicitUtm || organicSource || !getCookie(STORAGE_KEY) || shouldUpgradeLanding;
+
+    if (needsCookieUpdate) {
+      const existingDetails = getStoredUtmDetails();
+
+      const resolvedSource = utmSource || (hasExplicitUtm ? "" : (organicSource || existingDetails.utmSource || ""));
+      const resolvedMedium = utmMedium || (organicSource && !utmMedium ? "organic" : (existingDetails.utmMedium || ""));
+      const resolvedCampaign = utmCampaign || existingDetails.utmCampaign || "";
+      const resolvedTerm = utmTerm || existingDetails.utmTerm || "";
+      const resolvedContent = utmContent || existingDetails.utmContent || "";
+      const resolvedPromo = promoParam || existingDetails.promo || "";
+
       const details: UtmDetails = {
-        utmSource: utmSource || "",
-        utmMedium: utmMedium || "",
-        utmCampaign: utmCampaign || "",
-        utmTerm: utmTerm || "",
-        utmContent: utmContent || "",
-        promo: promoParam || "",
-        landingPage: window.location.pathname + window.location.search,
+        utmSource: resolvedSource,
+        utmMedium: resolvedMedium,
+        utmCampaign: resolvedCampaign,
+        utmTerm: resolvedTerm,
+        utmContent: resolvedContent,
+        promo: resolvedPromo,
+        landingPage: existingLandingPage || currentPath,
+        referrer: effectiveReferrer || (rawReferrer && !isInternal ? rawReferrer : ""),
+        firstVisitedAt: existingFirstVisitedAt || new Date().toISOString(),
         capturedAt: new Date().toISOString(),
       };
 
       try {
         const serialized = JSON.stringify(details);
-        // Overwrite cookie with 7-day expiry
         setCookie(STORAGE_KEY, serialized, SEVEN_DAYS_SECONDS);
         if (details.utmSource) {
-          setCookie("ps_utm_source", details.utmSource, SEVEN_DAYS_SECONDS);
+          setCookie(COOKIE_SOURCE, details.utmSource, SEVEN_DAYS_SECONDS);
         }
         if (details.utmMedium) {
-          setCookie("ps_utm_medium", details.utmMedium, SEVEN_DAYS_SECONDS);
+          setCookie(COOKIE_MEDIUM, details.utmMedium, SEVEN_DAYS_SECONDS);
         }
         if (details.utmCampaign) {
-          setCookie("ps_utm_campaign", details.utmCampaign, SEVEN_DAYS_SECONDS);
+          setCookie(COOKIE_CAMPAIGN, details.utmCampaign, SEVEN_DAYS_SECONDS);
+        }
+        if (details.referrer) {
+          setCookie(COOKIE_REFERRER, details.referrer, SEVEN_DAYS_SECONDS);
+        }
+        if (details.landingPage) {
+          setCookie(COOKIE_LANDING_PAGE, details.landingPage, SEVEN_DAYS_SECONDS);
         }
       } catch {
         // Storage restricted
@@ -127,7 +237,7 @@ export const captureUtmFromUrl = (): UtmDetails | null => {
 };
 
 /**
- * Retrieves the stored UTM details STRICTLY from cookies.
+ * Retrieves the stored UTM & referrer details STRICTLY from cookies.
  * Does not check localStorage or sessionStorage.
  * Returns empty object if no UTM cookie exists.
  */
@@ -138,29 +248,27 @@ export const getStoredUtmDetails = (): UtmDetails => {
 
   try {
     const raw = getCookie(STORAGE_KEY);
+    let details: UtmDetails = {};
 
     if (raw) {
       const parsed = JSON.parse(raw);
       if (parsed && typeof parsed === "object") {
-        return parsed;
+        details = parsed;
       }
     }
 
-    const cookieSource = getCookie("ps_utm_source");
-    const cookieMedium = getCookie("ps_utm_medium");
-    const cookieCampaign = getCookie("ps_utm_campaign");
-    if (cookieSource || cookieMedium || cookieCampaign) {
-      return {
-        utmSource: cookieSource,
-        utmMedium: cookieMedium,
-        utmCampaign: cookieCampaign,
-      };
-    }
-  } catch {
-    // Ignore parse error
-  }
+    // Fill in from separate individual cookies if missing
+    if (!details.utmSource) details.utmSource = getCookie(COOKIE_SOURCE);
+    if (!details.utmMedium) details.utmMedium = getCookie(COOKIE_MEDIUM);
+    if (!details.utmCampaign) details.utmCampaign = getCookie(COOKIE_CAMPAIGN);
+    if (!details.referrer) details.referrer = getCookie(COOKIE_REFERRER);
+    if (!details.landingPage) details.landingPage = getCookie(COOKIE_LANDING_PAGE);
+    if (!details.firstVisitedAt) details.firstVisitedAt = getCookie(COOKIE_FIRST_VISITED_AT);
 
-  return {};
+    return details;
+  } catch {
+    return {};
+  }
 };
 
 /**
@@ -251,8 +359,8 @@ export const recordVisitorHit = async (landingPath?: string): Promise<void> => {
       utmTerm: utm.utmTerm || "",
       utmContent: utm.utmContent || "",
       promo: utm.promo || "",
-      landingPage: currentPath + (window.location.search || ""),
-      referrer: typeof document !== "undefined" ? document.referrer || "" : "",
+      landingPage: utm.landingPage || currentPath + (window.location.search || ""),
+      referrer: utm.referrer || (typeof document !== "undefined" ? document.referrer || "" : ""),
     };
 
     fetch(`${baseUrl}/api/analytics/track-visitor`, {
@@ -279,9 +387,12 @@ export const clearUtmAttribution = (): void => {
 
   try {
     deleteCookie(STORAGE_KEY);
-    deleteCookie("ps_utm_source");
-    deleteCookie("ps_utm_medium");
-    deleteCookie("ps_utm_campaign");
+    deleteCookie(COOKIE_SOURCE);
+    deleteCookie(COOKIE_MEDIUM);
+    deleteCookie(COOKIE_CAMPAIGN);
+    deleteCookie(COOKIE_REFERRER);
+    deleteCookie(COOKIE_LANDING_PAGE);
+    deleteCookie(COOKIE_FIRST_VISITED_AT);
 
     // Also clean any legacy storage keys if they exist
     localStorage.removeItem(STORAGE_KEY);

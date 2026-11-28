@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import {
   UserGroupIcon,
   CheckBadgeIcon,
@@ -28,16 +29,24 @@ interface DevoteeUser {
   mobileNumber: string;
   whatsappNumber?: string;
   totalAmountSpent: number;
+  totalOrdersCount?: number;
   status: "Active" | "Inactive";
   isVerified: boolean;
   isLoggedIn?: boolean;
+  sessionStatus?: "Active" | "Offline";
   lastLoginAt?: string | null;
   sessionExpiresAt?: string | null;
+  firstLoginAt?: string | null;
   utmSource?: string;
   utmCampaign?: string;
+  referrer?: string;
+  landingPage?: string;
+  firstVisitedAt?: string | null;
   createdAt: string;
   deletedAt?: string | null;
   isDeleted?: boolean;
+  addresses?: any[];
+  orders?: any[];
 }
 
 interface StatsData {
@@ -50,6 +59,7 @@ interface StatsData {
 }
 
 export default function AdminUsersPage() {
+  const router = useRouter();
   const [users, setUsers] = useState<DevoteeUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -392,6 +402,16 @@ export default function AdminUsersPage() {
       hour12: true,
     }).toLowerCase();
     return { datePart, timePart };
+  };
+
+  const formatReferrerDomain = (ref?: string): string => {
+    if (!ref || ref === "-" || ref === "Direct") return "-";
+    try {
+      const url = new URL(ref);
+      return url.hostname.replace(/^www\./, "");
+    } catch {
+      return ref.replace(/^https?:\/\//, "").replace(/^www\./, "").split("/")[0] || "-";
+    }
   };
 
   const getAvatarBg = (name: string, index: number) => {
@@ -738,7 +758,7 @@ export default function AdminUsersPage() {
                 <th className="py-3.5 px-3">User Name</th>
                 <th className="py-3.5 px-3">Email</th>
                 <th className="py-3.5 px-3 whitespace-nowrap">Mobile Number</th>
-                <th className="py-3.5 px-3 whitespace-nowrap">Source / Campaign</th>
+                <th className="py-3.5 px-3 whitespace-nowrap">Source / Referral</th>
                 <th className="py-3.5 px-3 whitespace-nowrap">Total Spent</th>
                 {/* <th className="py-3.5 px-4">Status</th> */}
                 <th className="py-3.5 px-3 whitespace-nowrap">
@@ -781,11 +801,12 @@ export default function AdminUsersPage() {
                   return (
                     <tr
                       key={u._id}
-                      className={`hover:bg-gray-50/80 transition-colors duration-150 ${isChecked ? "bg-emerald-50/40" : ""
+                      onClick={() => router.push(`/admin/users/${u._id}`)}
+                      className={`hover:bg-emerald-50/40 transition-colors duration-150 cursor-pointer ${isChecked ? "bg-emerald-50/60" : ""
                         }`}
                     >
                       {/* Individual Checkbox */}
-                      <td className="py-4 pl-6 pr-2 text-center">
+                      <td className="py-4 pl-6 pr-2 text-center" onClick={(e) => e.stopPropagation()}>
                         <input
                           type="checkbox"
                           checked={isChecked}
@@ -816,12 +837,13 @@ export default function AdminUsersPage() {
                                 {u.name || "Devotee"}
                               </span>
                               {u.isLoggedIn ? (
-                                <span className="inline-flex items-center gap-1 text-[9px] font-extrabold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.2 rounded-full shrink-0" title="Active login session (within 7 days)">
+                                <span className="inline-flex items-center gap-1 text-[9px] font-extrabold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded-full shrink-0" title="User is currently active (logged in)">
                                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                                  Online
+                                  Active
                                 </span>
                               ) : (
-                                <span className="text-[9px] font-semibold text-gray-400 bg-gray-100 px-1.5 py-0.2 rounded-full shrink-0" title="Logged out / Inactive session">
+                                <span className="inline-flex items-center gap-1 text-[9px] font-bold text-gray-500 bg-gray-100 border border-gray-200 px-1.5 py-0.5 rounded-full shrink-0" title="User is offline (logged out)">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-gray-400" />
                                   Offline
                                 </span>
                               )}
@@ -865,25 +887,59 @@ export default function AdminUsersPage() {
                         })()}
                       </td>
 
-                      {/* Source / Campaign */}
+                      {/* Source / Referral / Landing Page */}
                       <td className="py-4 px-3 whitespace-nowrap">
                         {(() => {
-                          const src = u.utmSource || "Direct";
-                          const lower = src.toLowerCase();
+                          const src = u.utmSource && u.utmSource !== "-" ? u.utmSource : "";
+                          const refDomain = formatReferrerDomain(u.referrer);
+                          const landing = u.landingPage && u.landingPage !== "-" ? u.landingPage : "";
+
                           let badgeStyle = "bg-gray-100 text-gray-700 border-gray-200";
-                          if (lower.includes("google")) badgeStyle = "bg-blue-50 text-blue-700 border-blue-200";
-                          else if (lower.includes("facebook") || lower.includes("fb")) badgeStyle = "bg-indigo-50 text-indigo-700 border-indigo-200";
-                          else if (lower.includes("instagram")) badgeStyle = "bg-pink-50 text-pink-700 border-pink-200";
-                          else if (lower.includes("whatsapp")) badgeStyle = "bg-emerald-50 text-emerald-700 border-emerald-200";
-                          else if (lower.includes("youtube")) badgeStyle = "bg-red-50 text-red-700 border-red-200";
+                          if (src) {
+                            const lower = src.toLowerCase();
+                            if (lower.includes("google")) badgeStyle = "bg-blue-50 text-blue-700 border-blue-200";
+                            else if (lower.includes("facebook") || lower.includes("fb")) badgeStyle = "bg-indigo-50 text-indigo-700 border-indigo-200";
+                            else if (lower.includes("instagram")) badgeStyle = "bg-pink-50 text-pink-700 border-pink-200";
+                            else if (lower.includes("whatsapp")) badgeStyle = "bg-emerald-50 text-emerald-700 border-emerald-200";
+                            else if (lower.includes("youtube")) badgeStyle = "bg-red-50 text-red-700 border-red-200";
+                          }
 
                           return (
-                            <div className="space-y-0.5">
-                              <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10.5px] font-bold border ${badgeStyle}`}>
-                                {src}
-                              </span>
+                            <div className="space-y-1 max-w-[200px]">
+                              {/* Source */}
+                              <div className="flex items-center gap-1.5">
+                                {src ? (
+                                  <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10.5px] font-bold border ${badgeStyle}`}>
+                                    {src}
+                                  </span>
+                                ) : (
+                                  <span className="text-gray-400 font-bold text-xs">-</span>
+                                )}
+                              </div>
+
+                              {/* Referral Source */}
+                              <div className="flex items-center gap-1 text-[10.5px] text-gray-500" title={u.referrer && u.referrer !== "-" ? u.referrer : "No referrer"}>
+                                <span className="text-gray-400 font-medium">Ref:</span>
+                                {refDomain !== "-" ? (
+                                  <span className="font-semibold text-gray-700 truncate max-w-[140px]">{refDomain}</span>
+                                ) : (
+                                  <span className="text-gray-400">-</span>
+                                )}
+                              </div>
+
+                              {/* Landing Page */}
+                              <div className="flex items-start gap-1 text-[10px] text-gray-500 font-mono" title={landing || "No landing page recorded"}>
+                                <span className="text-gray-400 font-medium font-sans shrink-0">Page:</span>
+                                {landing ? (
+                                  <span className="break-all text-gray-700 leading-tight">{landing}</span>
+                                ) : (
+                                  <span className="text-gray-400">-</span>
+                                )}
+                              </div>
+
+                              {/* UTM Campaign */}
                               {u.utmCampaign && (
-                                <div className="text-[10px] font-semibold text-gray-600 max-w-[120px] truncate" title={u.utmCampaign}>
+                                <div className="text-[10px] font-semibold text-gray-600 max-w-[150px] truncate" title={u.utmCampaign}>
                                   {u.utmCampaign}
                                 </div>
                               )}
@@ -919,7 +975,7 @@ export default function AdminUsersPage() {
                       </td>
 
                       {/* Actions */}
-                      <td className="py-4 pr-6 pl-3 text-center">
+                      <td className="py-4 pr-6 pl-3 text-center" onClick={(e) => e.stopPropagation()}>
                         {activeTab === "active" ? (
                           <div className="inline-flex items-center gap-2">
                             {/* Edit Button */}
