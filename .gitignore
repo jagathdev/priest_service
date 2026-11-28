@@ -37,6 +37,6 @@ yarn-error.log*
 .DS_Store
 Thumbs.db
 
-# Permanent root assets: Ignore uploaded media files, keep directory structure via .gitkeep
-/assets/*
-!/assets/.gitkeep
+# Assets
+assets/
+/assets/
