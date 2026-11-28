@@ -19,7 +19,8 @@ import {
   ArrowDownTrayIcon,
   EnvelopeIcon,
   GlobeAltIcon,
-  ArrowTopRightOnSquareIcon
+  ArrowTopRightOnSquareIcon,
+  ChartBarIcon
 } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -33,12 +34,12 @@ const menuItems = [
   { name: "Homas", href: "/admin/homas", icon: FireIcon },
   { name: "Orders & Bookings", href: "/admin/orders", icon: ShoppingBagIcon },
   { name: "Pre-Orders / Interest", href: "/admin/pre-orders", icon: UserPlusIcon },
+  { name: "Visitor Analytics", href: "/admin/visitors", icon: ChartBarIcon },
   { name: "Promo Codes", href: "/admin/promo-codes", icon: TagIcon },
   { name: "Service Dispatch", href: "/admin/service-dispatch", icon: ArrowDownTrayIcon },
   { name: "Email Alerts", href: "/admin/notifications", icon: EnvelopeIcon },
   { name: "Customer Queries", href: "/admin/customer-queries", icon: ChatBubbleBottomCenterTextIcon },
   { name: "Feedbacks", href: "/admin/feedback", icon: ChatBubbleBottomCenterTextIcon },
-  // { name: "Visitor Analytics", href: "/admin/visitors", icon: ChartBarIcon },
 ];
 
 export default function Sidebar() {

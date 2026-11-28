@@ -1,61 +1,144 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import {
   GlobeAltIcon,
   SparklesIcon,
-  CalendarDaysIcon,
   ArrowPathIcon,
   MagnifyingGlassIcon,
-  ChartBarIcon,
-  ArrowTrendingUpIcon,
+  FunnelIcon,
+  ShareIcon,
+  TagIcon,
+  ArrowUpRightIcon,
+  CheckCircleIcon,
+  EyeIcon,
 } from "@heroicons/react/24/outline";
 import CustomDateRangePicker from "@/components/admin/CustomDateRangePicker";
+import MetricGraphCard from "@/features/dashboard/MetricGraphCard";
+import { fetchDashboardMetrics } from "@/features/dashboard/dashboardApi";
+import { DashboardStatsResponse } from "@/features/dashboard/types";
 
-interface VisitorSource {
-  source: string;
-  count: number;
-}
-
-interface VisitorCampaign {
-  source: string;
-  campaign: string;
-  count: number;
-}
-
-interface DailyTrendItem {
-  date: string;
-  count: number;
-}
-
-interface VisitorStats {
-  totalVisitors: number;
-  todayVisitors: number;
-  filteredVisitors?: number;
-  dailyTrend?: DailyTrendItem[];
-  sourceBreakdown: VisitorSource[];
-  campaignBreakdown: VisitorCampaign[];
-}
+// Helper for authentic brand styling & icons for traffic channels
+const getChannelMeta = (sourceName: string) => {
+  const norm = sourceName.toLowerCase().trim();
+  if (norm.includes("direct")) {
+    return {
+      label: "Direct Traffic",
+      tag: "Direct",
+      bgClass: "bg-emerald-50 hover:bg-emerald-100/60",
+      borderClass: "border-emerald-200/80",
+      accentBg: "bg-emerald-600",
+      badgeClass: "bg-emerald-100 text-emerald-800 border-emerald-200",
+      barColor: "bg-emerald-500",
+      hexColor: "#10b981",
+      iconSvg: (
+        <svg className="w-5 h-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+        </svg>
+      ),
+    };
+  }
+  if (norm.includes("instagram")) {
+    return {
+      label: "Instagram",
+      tag: "Social",
+      bgClass: "bg-pink-50/60 hover:bg-pink-100/60",
+      borderClass: "border-pink-200/80",
+      accentBg: "bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600",
+      badgeClass: "bg-pink-100 text-pink-800 border-pink-200",
+      barColor: "bg-pink-500",
+      hexColor: "#e1306c",
+      iconSvg: (
+        <svg className="w-5 h-5 text-pink-600" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+        </svg>
+      ),
+    };
+  }
+  if (norm.includes("facebook")) {
+    return {
+      label: "Facebook / Meta",
+      tag: "Social",
+      bgClass: "bg-blue-50/60 hover:bg-blue-100/60",
+      borderClass: "border-blue-200/80",
+      accentBg: "bg-[#1877f2]",
+      badgeClass: "bg-blue-100 text-blue-800 border-blue-200",
+      barColor: "bg-blue-600",
+      hexColor: "#1877f2",
+      iconSvg: (
+        <svg className="w-5 h-5 text-[#1877f2]" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+        </svg>
+      ),
+    };
+  }
+  if (norm.includes("google")) {
+    return {
+      label: "Google Search / Ads",
+      tag: "Search",
+      bgClass: "bg-amber-50/60 hover:bg-amber-100/60",
+      borderClass: "border-amber-200/80",
+      accentBg: "bg-amber-500",
+      badgeClass: "bg-amber-100 text-amber-800 border-amber-200",
+      barColor: "bg-amber-500",
+      hexColor: "#ea4335",
+      iconSvg: (
+        <svg className="w-5 h-5 text-amber-600" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"/>
+        </svg>
+      ),
+    };
+  }
+  if (norm.includes("whatsapp")) {
+    return {
+      label: "WhatsApp Share",
+      tag: "Messenger",
+      bgClass: "bg-emerald-50/60 hover:bg-emerald-100/60",
+      borderClass: "border-emerald-200/80",
+      accentBg: "bg-[#25d366]",
+      badgeClass: "bg-emerald-100 text-emerald-800 border-emerald-200",
+      barColor: "bg-emerald-500",
+      hexColor: "#25d366",
+      iconSvg: (
+        <svg className="w-5 h-5 text-[#25d366]" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12.031 0C5.396 0 .029 5.367.029 11.987c0 2.079.529 4.117 1.544 5.934L0 24l6.235-1.574c1.77 1.011 3.779 1.544 5.796 1.544 6.635 0 12.002-5.367 12.002-11.987C24.033 5.367 18.666 0 12.031 0zm0 21.944c-1.815 0-3.58-.485-5.115-1.401l-.367-.218-3.799.96 1.01-3.693-.238-.38a9.88 9.88 0 01-1.517-5.225c0-5.467 4.453-9.92 9.926-9.92 2.651 0 5.143 1.033 7.016 2.907a9.873 9.873 0 012.91 7.013c0 5.467-4.453 9.92-9.926 9.92z"/>
+        </svg>
+      ),
+    };
+  }
+  return {
+    label: sourceName,
+    tag: "Referral",
+    bgClass: "bg-gray-50/70 hover:bg-gray-100/60",
+    borderClass: "border-gray-200",
+    accentBg: "bg-gray-700",
+    badgeClass: "bg-gray-100 text-gray-700 border-gray-200",
+    barColor: "bg-indigo-500",
+    hexColor: "#6366f1",
+    iconSvg: <GlobeAltIcon className="w-5 h-5 text-gray-500" />,
+  };
+};
 
 export default function VisitorAnalyticsPage() {
-  const [stats, setStats] = useState<VisitorStats>({
-    totalVisitors: 0,
-    todayVisitors: 0,
-    dailyTrend: [],
-    sourceBreakdown: [],
-    campaignBreakdown: [],
-  });
+  const [data, setData] = useState<DashboardStatsResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [searchFilter, setSearchFilter] = useState("");
-  const [selectedSource, setSelectedSource] = useState<string>("all");
 
   // Date Filter States
-  const [dateRangePreset, setDateRangePreset] = useState<"all" | "today" | "7days" | "30days" | "custom">("all");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  const [dateRangePreset, setDateRangePreset] = useState<"today" | "7days" | "30days" | "custom" | "all">("7days");
+  const [startDate, setStartDate] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() - 6);
+    return d.toISOString().slice(0, 10);
+  });
+  const [endDate, setEndDate] = useState(() => new Date().toISOString().slice(0, 10));
 
-  const handlePresetChange = (preset: "all" | "today" | "7days" | "30days" | "custom") => {
+  // Attribution table search/filter states
+  const [searchFilter, setSearchFilter] = useState("");
+  const [selectedSource, setSelectedSource] = useState<string>("all");
+  const [copiedCampaign, setCopiedCampaign] = useState<string | null>(null);
+
+  const handlePresetChange = (preset: "today" | "7days" | "30days" | "custom" | "all") => {
     setDateRangePreset(preset);
     const today = new Date();
     const todayStr = today.toISOString().slice(0, 10);
@@ -79,433 +162,500 @@ export default function VisitorAnalyticsPage() {
     }
   };
 
-  const getAdminToken = () => {
-    try {
-      const match = document.cookie.match(/(?:^|;\s*)adminToken=([^;]*)/);
-      if (match) return match[1];
-      return "";
-    } catch {
-      return "";
-    }
+  const handleCustomDateChange = (start: string, end: string) => {
+    setDateRangePreset("custom");
+    setStartDate(start);
+    setEndDate(end);
   };
 
-  const fetchStats = useCallback(async () => {
+  const loadMetrics = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://priestservices.astroved.com";
-      const token = getAdminToken();
-      const headers: Record<string, string> = {};
-      if (token) headers["Authorization"] = `Bearer ${token}`;
-
-      const queryParams = new URLSearchParams();
-      if (startDate) queryParams.set("startDate", startDate);
-      if (endDate) queryParams.set("endDate", endDate);
-
-      const queryStr = queryParams.toString() ? `?${queryParams.toString()}` : "";
-      const res = await fetch(`${baseUrl}/api/analytics/visitor-stats${queryStr}`, {
-        headers,
-        credentials: "include",
+      const res = await fetchDashboardMetrics({
+        startDate: startDate || undefined,
+        endDate: endDate || undefined,
       });
-      const data = await res.json();
-      if (data && data.success && data.data) {
-        setStats(data.data);
-      } else {
-        throw new Error(data.message || "Unable to fetch visitor statistics");
-      }
+      setData(res);
     } catch (err: any) {
-      console.error("Error loading analytics:", err);
-      setError(err.message || "Failed to load visitor analytics");
+      console.error("[VisitorAnalyticsPage] Error loading dashboard metrics:", err);
+      setError(err.message || "Failed to load dashboard metrics");
     } finally {
       setLoading(false);
     }
   }, [startDate, endDate]);
 
   useEffect(() => {
-    fetchStats();
-  }, [fetchStats]);
+    loadMetrics();
+  }, [loadMetrics]);
 
-  const topSource = stats.sourceBreakdown[0]?.source || "Direct";
-  const topSourceCount = stats.sourceBreakdown[0]?.count || 0;
-  const currentTotal = stats.filteredVisitors ?? stats.totalVisitors;
+  // Fallback default graphs if data is loading or empty
+  const defaultGraphs = {
+    websiteViews: {
+      title: "Website Views",
+      prefix: "01",
+      count: data?.totalVisitors || 0,
+      todayCount: data?.todayVisitors || 0,
+      subtitle: "Total visitors",
+      trend: [],
+      color: "blue" as const,
+    },
+    otpGenerated: {
+      title: "OTP Generated",
+      prefix: "02",
+      count: 0,
+      todayCount: 0,
+      subtitle: "OTP generation events",
+      trend: [],
+      color: "purple" as const,
+    },
+    purchaseInterest: {
+      title: "Purchase Interest",
+      prefix: "03",
+      count: 0,
+      todayCount: 0,
+      subtitle: "Preorder requests",
+      trend: [],
+      color: "orange" as const,
+    },
+    completedOrders: {
+      title: "Completed Orders",
+      prefix: "04",
+      count: 0,
+      todayCount: 0,
+      subtitle: "Successfully completed",
+      trend: [],
+      color: "green" as const,
+    },
+  };
 
-  // Filtered campaigns by selected source and search string
-  const filteredCampaigns = stats.campaignBreakdown.filter((item) => {
-    const matchesSource = selectedSource === "all" || item.source.toLowerCase() === selectedSource.toLowerCase();
-    const matchesSearch =
-      !searchFilter ||
-      item.campaign.toLowerCase().includes(searchFilter.toLowerCase()) ||
-      item.source.toLowerCase().includes(searchFilter.toLowerCase());
-    return matchesSource && matchesSearch;
-  });
+  const graphs = data?.graphs || defaultGraphs;
+
+  // Normalization for traffic sources to prevent duplicates (e.g. facebook & Facebook)
+  const normalizedSources = useMemo(() => {
+    if (!data?.sourceBreakdown) return [];
+    const map = new Map<string, number>();
+    for (const item of data.sourceBreakdown) {
+      const raw = item.source || "Direct";
+      // Capitalize first letter or title-case
+      const formatted = raw.toLowerCase() === "direct"
+        ? "Direct"
+        : raw.charAt(0).toUpperCase() + raw.slice(1);
+      map.set(formatted, (map.get(formatted) || 0) + item.count);
+    }
+    return Array.from(map.entries())
+      .map(([source, count]) => ({ source, count }))
+      .sort((a, b) => b.count - a.count);
+  }, [data?.sourceBreakdown]);
+
+  // Filtered campaigns for attribution table
+  const filteredCampaigns = useMemo(() => {
+    return (data?.campaignBreakdown || []).filter((item) => {
+      const matchesSource =
+        selectedSource === "all" ||
+        item.source.toLowerCase() === selectedSource.toLowerCase();
+      const matchesSearch =
+        !searchFilter ||
+        item.campaign.toLowerCase().includes(searchFilter.toLowerCase()) ||
+        item.source.toLowerCase().includes(searchFilter.toLowerCase());
+      return matchesSource && matchesSearch;
+    });
+  }, [data?.campaignBreakdown, selectedSource, searchFilter]);
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard?.writeText(text);
+    setCopiedCampaign(text);
+    setTimeout(() => setCopiedCampaign(null), 2000);
+  };
 
   return (
-    <div className="space-y-6">
-      {/* ── Modern Dashboard Header (Matching Orders Page) ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+    <div className="space-y-7 max-w-[1550px] mx-auto min-h-screen pb-16">
+      {/* ── Top Header Bar ── */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2.5">
-            <h1 className="text-xl sm:text-2xl font-black text-gray-900 tracking-tight">Website Visitor Analytics</h1>
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              Live Tracking
+            <h1 className="text-xl sm:text-2xl font-black text-gray-900 tracking-tight">
+              Visitor Analytics &amp; Conversion Dashboard
+            </h1>
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1.5 shrink-0">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              Live Real-Time
             </span>
           </div>
-          <p className="text-xs text-gray-500 mt-0.5">
-            Track user traffic, UTM campaign attribution, and visitor sessions across your website.
+          <p className="text-xs text-gray-500 mt-1">
+            Real-time performance across website visits, OTP generation, devotee purchase interest, and completed orders.
           </p>
         </div>
 
+        {/* Global Refresh Button */}
         <button
-          onClick={fetchStats}
+          onClick={loadMetrics}
           disabled={loading}
-          className="self-start sm:self-auto px-3.5 py-2 rounded-xl bg-white border border-gray-200 text-xs font-bold text-gray-700 hover:bg-gray-50 hover:border-gray-300 flex items-center gap-2 shadow-2xs transition cursor-pointer disabled:opacity-50"
+          className="self-start sm:self-auto px-4 py-2.5 rounded-xl bg-white border border-gray-200 text-xs font-bold text-gray-700 hover:bg-gray-50 hover:border-gray-300 flex items-center gap-2 shadow-2xs transition cursor-pointer disabled:opacity-50"
+          title="Refresh dashboard data"
         >
-          <ArrowPathIcon className={`w-3.5 h-3.5 ${loading ? "animate-spin text-emerald-600" : "text-gray-500"}`} />
+          <ArrowPathIcon className={`w-4 h-4 ${loading ? "animate-spin text-emerald-600" : "text-gray-500"}`} />
           <span>Refresh Data</span>
         </button>
+      </div>
+
+      {/* ── Global Date Filter Toolbar ── */}
+      <div className="bg-white rounded-2xl border border-gray-150 p-3 sm:p-4 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <span className="text-xs font-bold text-gray-400 uppercase tracking-wider mr-2 flex items-center gap-1">
+            <FunnelIcon className="w-3.5 h-3.5" />
+            Date Range:
+          </span>
+
+          <button
+            type="button"
+            onClick={() => handlePresetChange("today")}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
+              dateRangePreset === "today"
+                ? "bg-gray-900 text-white shadow-2xs"
+                : "bg-gray-100/80 text-gray-600 hover:bg-gray-200"
+            }`}
+          >
+            Today
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handlePresetChange("7days")}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
+              dateRangePreset === "7days"
+                ? "bg-gray-900 text-white shadow-2xs"
+                : "bg-gray-100/80 text-gray-600 hover:bg-gray-200"
+            }`}
+          >
+            Last 7 Days
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handlePresetChange("30days")}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
+              dateRangePreset === "30days"
+                ? "bg-gray-900 text-white shadow-2xs"
+                : "bg-gray-100/80 text-gray-600 hover:bg-gray-200"
+            }`}
+          >
+            Last 30 Days
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handlePresetChange("all")}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
+              dateRangePreset === "all"
+                ? "bg-gray-900 text-white shadow-2xs"
+                : "bg-gray-100/80 text-gray-600 hover:bg-gray-200"
+            }`}
+          >
+            All Time
+          </button>
+        </div>
+
+        {/* Custom Date Range Picker */}
+        <div className="flex items-center gap-2 self-start md:self-auto">
+          <CustomDateRangePicker
+            startDate={startDate}
+            endDate={endDate}
+            onChange={handleCustomDateChange}
+          />
+        </div>
       </div>
 
       {error && (
         <div className="p-4 bg-red-50 border border-red-200 text-red-600 rounded-2xl text-xs flex items-center justify-between shadow-2xs">
           <span>{error}</span>
-          <button onClick={fetchStats} className="underline font-bold ml-2">Try Again</button>
+          <button onClick={loadMetrics} className="underline font-bold ml-2 cursor-pointer">
+            Try Again
+          </button>
         </div>
       )}
 
-      {/* ── KPI Overview Metrics Cards (Matching Orders Page Style) ── */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {/* Total / Filtered Visitors */}
-        <div className="p-3.5 rounded-2xl border text-left flex flex-col justify-between bg-white border-gray-200 shadow-2xs hover:border-emerald-300 transition-all">
-          <div className="flex items-center justify-between text-gray-500 mb-1 w-full">
-            <span className="text-[11px] font-bold text-gray-700">
-              {startDate || endDate ? "Filtered Visitors" : "Total Visitors"}
-            </span>
-            <div className="w-7 h-7 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-              <GlobeAltIcon className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="flex items-baseline gap-1.5 mt-1">
-            <span className="text-xl sm:text-2xl font-black text-gray-900">{currentTotal}</span>
-            <span className="text-[9px] font-extrabold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-md">
-              {startDate || endDate ? "Filtered" : "All Time"}
-            </span>
-          </div>
-          <p className="text-[10px] text-gray-400 font-medium mt-1">Unique visitor sessions</p>
-        </div>
+      {/* ── 4-Card 2x2 Grid Dashboard (Big & Spacious) ── */}
+      {/* 2 by 2 rows on desktop & tablet (lg:grid-cols-2), 1 column on mobile */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
+        {/* Graph 1: Website Views (Blue) */}
+        <MetricGraphCard data={graphs.websiteViews} loading={loading} />
 
-        {/* Visitors Today */}
-        <div className="p-3.5 rounded-2xl border text-left flex flex-col justify-between bg-white border-gray-200 shadow-2xs hover:border-blue-300 transition-all">
-          <div className="flex items-center justify-between text-gray-500 mb-1 w-full">
-            <span className="text-[11px] font-bold text-gray-700">Visitors Today</span>
-            <div className="w-7 h-7 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
-              <ChartBarIcon className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="flex items-baseline gap-1.5 mt-1">
-            <span className="text-xl sm:text-2xl font-black text-blue-700">{stats.todayVisitors}</span>
-            <span className="text-[9px] font-extrabold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded-md">Today</span>
-          </div>
-          <p className="text-[10px] text-gray-400 font-medium mt-1">Logged since 12:00 AM</p>
-        </div>
+        {/* Graph 2: OTP Generated (Purple) */}
+        <MetricGraphCard data={graphs.otpGenerated} loading={loading} />
 
-        {/* Top UTM Source */}
-        <div className="p-3.5 rounded-2xl border text-left flex flex-col justify-between bg-white border-gray-200 shadow-2xs hover:border-purple-300 transition-all">
-          <div className="flex items-center justify-between text-gray-500 mb-1 w-full">
-            <span className="text-[11px] font-bold text-gray-700">Top UTM Source</span>
-            <div className="w-7 h-7 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
-              <SparklesIcon className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="flex items-baseline gap-1.5 mt-1">
-            <span className="text-lg sm:text-xl font-black text-purple-700 capitalize truncate max-w-[120px]">
-              {topSource}
-            </span>
-            <span className="text-[9px] font-extrabold text-purple-600 bg-purple-50 px-1.5 py-0.5 rounded-md">
-              {topSourceCount} hits
-            </span>
-          </div>
-          <p className="text-[10px] text-gray-400 font-medium mt-1">Leading traffic origin</p>
-        </div>
+        {/* Graph 3: Purchase Interest (Orange) */}
+        <MetricGraphCard data={graphs.purchaseInterest} loading={loading} />
 
-        {/* Active Campaigns */}
-        <div className="p-3.5 rounded-2xl border text-left flex flex-col justify-between bg-white border-gray-200 shadow-2xs hover:border-amber-300 transition-all">
-          <div className="flex items-center justify-between text-gray-500 mb-1 w-full">
-            <span className="text-[11px] font-bold text-gray-700">Campaigns</span>
-            <div className="w-7 h-7 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
-              <CalendarDaysIcon className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="flex items-baseline gap-1.5 mt-1">
-            <span className="text-xl sm:text-2xl font-black text-amber-700">{stats.campaignBreakdown.length}</span>
-            <span className="text-[9px] font-extrabold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-md">Campaigns</span>
-          </div>
-          <p className="text-[10px] text-gray-400 font-medium mt-1">In selected timeframe</p>
-        </div>
+        {/* Graph 4: Completed Orders (Green) */}
+        <MetricGraphCard data={graphs.completedOrders} loading={loading} />
       </div>
 
-      {/* ── Unified Filter & Date Range Toolbar (Matching Orders Page Style) ── */}
-      <div className="bg-white rounded-2xl border border-gray-200 p-3 shadow-2xs flex flex-col gap-3">
-        <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
-          {/* Preset Buttons */}
-          <div className="flex items-center gap-1.5 bg-gray-100/80 p-1 rounded-xl shrink-0 overflow-x-auto">
-            <button
-              type="button"
-              onClick={() => handlePresetChange("all")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-extrabold transition-all cursor-pointer ${dateRangePreset === "all" ? "bg-white text-gray-900 shadow-xs" : "text-gray-600 hover:text-gray-900"
-                }`}
-            >
-              All Time
-            </button>
-            <button
-              type="button"
-              onClick={() => handlePresetChange("today")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-extrabold transition-all cursor-pointer ${dateRangePreset === "today" ? "bg-white text-gray-900 shadow-xs" : "text-gray-600 hover:text-gray-900"
-                }`}
-            >
-              Today
-            </button>
-            <button
-              type="button"
-              onClick={() => handlePresetChange("7days")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-extrabold transition-all cursor-pointer ${dateRangePreset === "7days" ? "bg-white text-gray-900 shadow-xs" : "text-gray-600 hover:text-gray-900"
-                }`}
-            >
-              Last 7 Days
-            </button>
-            <button
-              type="button"
-              onClick={() => handlePresetChange("30days")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-extrabold transition-all cursor-pointer ${dateRangePreset === "30days" ? "bg-white text-gray-900 shadow-xs" : "text-gray-600 hover:text-gray-900"
-                }`}
-            >
-              Last 30 Days
-            </button>
-          </div>
-
-          {/* Right Controls: Custom Date Pickers & Search */}
-          <div className="flex flex-wrap items-center gap-2.5">
-            {/* Custom Date Range Picker */}
-            <CustomDateRangePicker
-              startDate={startDate}
-              endDate={endDate}
-              onChange={(start, end) => {
-                setStartDate(start);
-                setEndDate(end);
-                setDateRangePreset("custom");
-              }}
-            />
-
-            {/* Campaign Search Input */}
-            <div className="relative flex-1 sm:flex-initial">
-              <MagnifyingGlassIcon className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                placeholder="Search campaign..."
-                value={searchFilter}
-                onChange={(e) => setSearchFilter(e.target.value)}
-                className="w-full sm:w-52 pl-9 pr-3 py-1.5 bg-gray-50/70 border border-gray-200 rounded-xl text-xs font-medium text-gray-800 placeholder-gray-400 outline-none hover:border-gray-300 focus:border-emerald-600 focus:bg-white transition-all shadow-2xs"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* ── Daily Trend Flow (Modern Slim Bar Chart with Badges) ── */}
-      {Array.isArray(stats.dailyTrend) && stats.dailyTrend.length > 1 && (
-        <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-2xs">
-          <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                <ArrowTrendingUpIcon className="w-4 h-4" />
-              </div>
-              <div>
-                <h2 className="text-xs font-black text-gray-900 uppercase tracking-wider">Daily Visitor Flow</h2>
-                <p className="text-[10px] text-gray-400 font-medium">Unique visitors per day</p>
-              </div>
-            </div>
-            <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">
-              {stats.dailyTrend.length} Days Tracked
-            </span>
-          </div>
-
-          {/* Chart Area with subtle grid lines */}
-          <div className="relative pt-8 pb-3 px-3 h-52 flex flex-col justify-end">
-            {/* Subtle background horizontal reference lines */}
-            <div className="absolute inset-x-3 top-10 bottom-10 flex flex-col justify-between pointer-events-none opacity-30">
-              <div className="border-b border-dashed border-gray-200 w-full" />
-              <div className="border-b border-dashed border-gray-200 w-full" />
-              <div className="border-b border-gray-200 w-full" />
-            </div>
-
-            {/* Bars container */}
-            <div className="flex items-end justify-start sm:justify-center gap-8 sm:gap-14 overflow-x-auto relative z-10 w-full pt-4">
-              {(() => {
-                const maxCount = Math.max(...stats.dailyTrend.map((d) => d.count), 1);
-                return stats.dailyTrend.map((d, idx) => {
-                  const heightPct = Math.round((d.count / maxCount) * 100);
-                  const dateObj = new Date(d.date);
-                  const formattedDateLabel = !isNaN(dateObj.getTime())
-                    ? dateObj.toLocaleDateString("en-GB", { day: "2-digit", month: "short" })
-                    : d.date.slice(5);
-
-                  return (
-                    <div key={idx} className="w-16 shrink-0 flex flex-col items-center gap-2.5 group cursor-pointer">
-                      {/* Visitor Count Pill Badge - Fully visible and never clipped */}
-                      <span className="text-xs font-black text-gray-800 bg-white border border-gray-200 group-hover:border-emerald-500 group-hover:bg-emerald-50 group-hover:text-emerald-700 px-2.5 py-0.5 rounded-full shadow-xs transition-all">
-                        {d.count}
-                      </span>
-
-                      {/* Slim Pill Bar Track */}
-                      <div className="w-full flex justify-center items-end h-24">
-                        <div className="w-4 bg-gray-100/90 rounded-full h-full flex items-end p-0.5 overflow-hidden border border-gray-200/60 group-hover:border-emerald-200 transition-colors">
-                          <div
-                            className="w-full bg-gradient-to-t from-emerald-600 via-emerald-500 to-teal-400 group-hover:from-emerald-500 group-hover:to-teal-300 rounded-full transition-all duration-300 shadow-xs"
-                            style={{ height: `${Math.max(heightPct, 15)}%` }}
-                          />
-                        </div>
-                      </div>
-
-                      {/* Clean Date Label */}
-                      <span className="text-[11px] font-bold text-gray-600 group-hover:text-emerald-700 transition-colors whitespace-nowrap">
-                        {formattedDateLabel}
-                      </span>
-                    </div>
-                  );
-                });
-              })()}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── Two-Column Main Analytics Grid (UTM Sources + Campaigns Table) ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-        {/* Left Column: UTM Source Cards (1 Col) */}
-        <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-2xs space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+      {/* ── High-Design Traffic Channel & Campaign Attribution Section ── */}
+      {data && (
+        <div className="space-y-6 pt-2">
+          {/* Section Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-200/80 pb-4">
             <div>
-              <h2 className="text-sm font-black text-gray-900">Traffic by UTM Source</h2>
-              <p className="text-[10px] text-gray-400 font-medium">Click a source to filter campaigns</p>
-            </div>
-            <span className="text-[10px] font-extrabold text-gray-500 uppercase tracking-wider">Share</span>
-          </div>
-
-          <div className="space-y-2.5">
-            {stats.sourceBreakdown.length === 0 ? (
-              <p className="py-8 text-center text-xs text-gray-400">No visitors logged in this date range.</p>
-            ) : (
-              stats.sourceBreakdown.map((item, idx) => {
-                const pct = currentTotal > 0 ? Math.round((item.count / currentTotal) * 100) : 0;
-                const isSelected = selectedSource.toLowerCase() === item.source.toLowerCase();
-
-                return (
-                  <div
-                    key={idx}
-                    onClick={() => setSelectedSource(isSelected ? "all" : item.source)}
-                    className={`p-3 rounded-xl border transition-all cursor-pointer ${isSelected
-                      ? "bg-emerald-50/60 border-emerald-500 shadow-2xs ring-1 ring-emerald-500"
-                      : "bg-gray-50/60 border-gray-200 hover:bg-white hover:border-gray-300 hover:shadow-2xs"
-                      }`}
-                  >
-                    <div className="flex items-center justify-between text-xs mb-1.5">
-                      <span className="font-extrabold text-gray-800 capitalize flex items-center gap-1.5">
-                        <span className={`w-2 h-2 rounded-full ${isSelected ? "bg-emerald-600" : "bg-gray-400"}`} />
-                        {item.source}
-                      </span>
-                      <span className="font-black text-gray-900">
-                        {item.count}{" "}
-                        <span className="text-[10px] text-gray-400 font-medium">({pct}%)</span>
-                      </span>
-                    </div>
-                    <div className="w-full h-1.5 bg-gray-200/60 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-emerald-500 rounded-full transition-all duration-500"
-                        style={{ width: `${Math.min(pct, 100)}%` }}
-                      />
-                    </div>
-                  </div>
-                );
-              })
-            )}
-          </div>
-        </div>
-
-        {/* Right Column: Detailed Campaigns Table (2 Cols) */}
-        <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-200 p-5 shadow-2xs space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-gray-100">
-            <div>
-              <h2 className="text-sm font-black text-gray-900">Marketing Campaign Breakdown</h2>
-              <p className="text-[10px] text-gray-400 font-medium">
-                Showing visits tracked by specific campaign tags (?utm_campaign=...)
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100 shadow-2xs">
+                  <GlobeAltIcon className="w-4 h-4" />
+                </div>
+                <h2 className="text-lg font-black text-gray-900 tracking-tight">
+                  Traffic Sources &amp; Campaign Attribution
+                </h2>
+              </div>
+              <p className="text-xs text-gray-500 mt-1 pl-10">
+                Granular breakdown of visitor entry channels, direct vs campaign referrals, and UTM conversion sources.
               </p>
             </div>
 
-            {/* Filter Pills */}
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
-              <button
-                type="button"
-                onClick={() => setSelectedSource("all")}
-                className={`px-2.5 py-1 rounded-lg text-[11px] font-extrabold transition cursor-pointer ${selectedSource === "all" ? "bg-emerald-600 text-white shadow-2xs" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                  }`}
-              >
-                All
-              </button>
-              {stats.sourceBreakdown.map((s, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() => setSelectedSource(s.source)}
-                  className={`px-2.5 py-1 rounded-lg text-[11px] font-extrabold capitalize transition cursor-pointer ${selectedSource.toLowerCase() === s.source.toLowerCase()
-                    ? "bg-emerald-600 text-white shadow-2xs"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                    }`}
-                >
-                  {s.source}
-                </button>
-              ))}
+            <div className="flex items-center gap-2 text-xs font-bold text-gray-500 pl-10 sm:pl-0">
+              <span className="w-2 h-2 rounded-full bg-blue-500" />
+              <span>Total Tracked Visitors: </span>
+              <span className="font-extrabold text-gray-900">
+                {(data.filteredVisitors || data.totalVisitors || 0).toLocaleString("en-IN")}
+              </span>
             </div>
           </div>
 
-          {/* Table (Styling Matched to Admin Orders Table) */}
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs sm:text-sm">
-              <thead className="bg-gray-50 text-gray-400 uppercase text-[10px] font-black tracking-wider">
-                <tr>
-                  <th className="px-4 py-3 rounded-l-xl">Campaign Name</th>
-                  <th className="px-4 py-3">UTM Source</th>
-                  <th className="px-4 py-3 text-right rounded-r-xl">Visitors Count</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100 font-medium">
-                {filteredCampaigns.length === 0 ? (
-                  <tr>
-                    <td colSpan={3} className="px-4 py-8 text-center text-xs text-gray-400 font-medium">
-                      No matching campaigns found in this period.
-                    </td>
-                  </tr>
+          {/* 1. Visual Segmented Distribution Strip */}
+          {normalizedSources.length > 0 && (
+            <div className="bg-white rounded-2xl border border-gray-150 p-4 shadow-xs space-y-3">
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-bold text-gray-700 uppercase tracking-wider text-[11px]">
+                  Channel Share Distribution
+                </span>
+                <span className="text-[11px] text-gray-400 font-medium">
+                  {normalizedSources.length} Active Channels
+                </span>
+              </div>
+
+              {/* Multi-segment progress bar */}
+              <div className="h-3 w-full bg-gray-100 rounded-full overflow-hidden flex shadow-inner">
+                {normalizedSources.map((s) => {
+                  const total = data.filteredVisitors || 1;
+                  const pct = Math.max(1, Math.round((s.count / total) * 100));
+                  const meta = getChannelMeta(s.source);
+                  return (
+                    <div
+                      key={`strip-${s.source}`}
+                      className={`${meta.barColor} transition-all duration-500 relative group`}
+                      style={{ width: `${pct}%` }}
+                      title={`${meta.label}: ${s.count} (${pct}%)`}
+                    />
+                  );
+                })}
+              </div>
+
+              {/* Legend row */}
+              <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 pt-1 text-xs">
+                {normalizedSources.map((s) => {
+                  const total = data.filteredVisitors || 1;
+                  const pct = Math.round((s.count / total) * 100);
+                  const meta = getChannelMeta(s.source);
+                  return (
+                    <div key={`legend-${s.source}`} className="flex items-center gap-1.5 text-xs text-gray-600">
+                      <span className={`w-2.5 h-2.5 rounded-full ${meta.barColor}`} />
+                      <span className="font-bold text-gray-800">{meta.label}</span>
+                      <span className="text-gray-400 font-medium">({pct}%)</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* 2. Interactive Channels Grid & Campaign Attribution Cards */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            
+            {/* Left Column: Premium Channel Cards (5 Columns) */}
+            <div className="lg:col-span-5 space-y-3.5">
+              <div className="flex items-center justify-between px-1">
+                <h3 className="text-xs font-black text-gray-900 uppercase tracking-wider flex items-center gap-1.5">
+                  <ShareIcon className="w-4 h-4 text-emerald-600" />
+                  Traffic Channels
+                </h3>
+                <span className="text-[11px] font-bold text-gray-400">
+                  {normalizedSources.length} Channels
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 gap-3">
+                {normalizedSources.length > 0 ? (
+                  normalizedSources.map((item, idx) => {
+                    const totalV = data.filteredVisitors || 1;
+                    const pct = Math.round((item.count / totalV) * 100);
+                    const meta = getChannelMeta(item.source);
+
+                    return (
+                      <div
+                        key={item.source}
+                        className={`rounded-2xl p-4 border transition-all duration-200 bg-white shadow-xs hover:shadow-md ${meta.borderClass}`}
+                      >
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-3">
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center p-2 shadow-2xs ${meta.bgClass}`}>
+                              {meta.iconSvg}
+                            </div>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <h4 className="font-bold text-sm text-gray-900 tracking-tight">
+                                  {meta.label}
+                                </h4>
+                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${meta.badgeClass}`}>
+                                  {meta.tag}
+                                </span>
+                              </div>
+                              <p className="text-[11px] text-gray-400 mt-0.5">
+                                Rank #{idx + 1} Acquisition Source
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="text-right">
+                            <div className="text-base font-black text-gray-900">
+                              {item.count.toLocaleString("en-IN")}
+                            </div>
+                            <span className="text-[11px] font-bold text-gray-500 font-mono">
+                              {pct}% share
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Visual Progress Bar */}
+                        <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full rounded-full transition-all duration-500 ${meta.barColor}`}
+                            style={{ width: `${Math.max(4, pct)}%` }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })
                 ) : (
-                  filteredCampaigns.map((c, idx) => (
-                    <tr key={idx} className="hover:bg-gray-50/70 transition">
-                      <td className="px-4 py-3.5 font-bold text-gray-900 truncate max-w-xs">{c.campaign}</td>
-                      <td className="px-4 py-3.5 capitalize">
-                        <span className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 font-extrabold text-[11px] border border-slate-200">
-                          {c.source}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3.5 text-right">
-                        <span className="px-3 py-1 rounded-full text-xs font-black bg-emerald-50 text-emerald-800 border border-emerald-200">
-                          {c.count} visitors
-                        </span>
-                      </td>
-                    </tr>
-                  ))
+                  <div className="bg-white rounded-2xl border border-gray-150 p-8 text-center text-xs text-gray-400 italic">
+                    No traffic channels recorded for the chosen date range.
+                  </div>
                 )}
-              </tbody>
-            </table>
+              </div>
+            </div>
+
+            {/* Right Column: Modern Campaign Intelligence Deck (7 Columns) */}
+            <div className="lg:col-span-7 bg-white rounded-3xl border border-gray-150 p-5 sm:p-6 shadow-xs space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-4">
+                <div>
+                  <h3 className="text-xs font-black text-gray-900 uppercase tracking-wider flex items-center gap-2">
+                    <TagIcon className="w-4 h-4 text-emerald-600" />
+                    UTM Campaign Performance ({filteredCampaigns.length})
+                  </h3>
+                  <p className="text-[11px] text-gray-400 mt-0.5">
+                    Specific marketing promotions, ad links, and social post campaigns.
+                  </p>
+                </div>
+
+                {/* Search & Filter Controls */}
+                <div className="flex items-center gap-2 flex-wrap">
+                  <div className="relative">
+                    <MagnifyingGlassIcon className="w-3.5 h-3.5 text-gray-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="text"
+                      value={searchFilter}
+                      onChange={(e) => setSearchFilter(e.target.value)}
+                      placeholder="Filter campaign..."
+                      className="pl-8 pr-3 py-1.5 bg-gray-50/80 border border-gray-200 rounded-xl text-xs text-gray-800 placeholder-gray-400 focus:outline-none focus:border-emerald-500 w-36 sm:w-44 transition"
+                    />
+                  </div>
+
+                  <select
+                    value={selectedSource}
+                    onChange={(e) => setSelectedSource(e.target.value)}
+                    className="py-1.5 px-2.5 bg-gray-50/80 border border-gray-200 rounded-xl text-xs font-bold text-gray-700 focus:outline-none focus:border-emerald-500 cursor-pointer"
+                  >
+                    <option value="all">All Sources</option>
+                    {normalizedSources.map((s) => (
+                      <option key={s.source} value={s.source}>
+                        {s.source}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Campaign Cards List */}
+              {filteredCampaigns.length > 0 ? (
+                <div className="space-y-2.5 max-h-[460px] overflow-y-auto pr-1">
+                  {filteredCampaigns.map((c, i) => {
+                    const meta = getChannelMeta(c.source);
+                    const isCopied = copiedCampaign === c.campaign;
+
+                    return (
+                      <div
+                        key={`${c.source}-${c.campaign}-${i}`}
+                        className="group flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-2xl border border-gray-150 bg-gray-50/40 hover:bg-white hover:border-gray-200 hover:shadow-xs transition-all"
+                      >
+                        <div className="flex items-start sm:items-center gap-3 min-w-0">
+                          {/* Rank badge */}
+                          <div className="w-7 h-7 rounded-lg bg-gray-200/70 text-gray-600 font-extrabold text-[11px] flex items-center justify-center shrink-0">
+                            #{i + 1}
+                          </div>
+
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className={`px-2 py-0.5 rounded-md text-[10.5px] font-bold border ${meta.badgeClass}`}>
+                                {c.source}
+                              </span>
+                              <span className="font-extrabold text-xs text-gray-900 tracking-tight break-all font-mono">
+                                {c.campaign || "Unassigned Campaign"}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-3 text-[11px] text-gray-400 mt-1">
+                              <span>UTM Tagged Session</span>
+                              <button
+                                onClick={() => copyToClipboard(c.campaign)}
+                                className="text-emerald-600 hover:text-emerald-700 font-bold flex items-center gap-1 cursor-pointer transition"
+                                title="Copy campaign name"
+                              >
+                                {isCopied ? (
+                                  <>
+                                    <CheckCircleIcon className="w-3.5 h-3.5 text-emerald-600" />
+                                    <span>Copied!</span>
+                                  </>
+                                ) : (
+                                  <span>Copy tag</span>
+                                )}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Visitors count pill */}
+                        <div className="flex items-center gap-2 self-end sm:self-auto shrink-0 bg-white px-3.5 py-1.5 rounded-xl border border-gray-200/80 shadow-2xs">
+                          <EyeIcon className="w-3.5 h-3.5 text-gray-400" />
+                          <span className="text-xs font-black text-gray-900">
+                            {c.count.toLocaleString("en-IN")}
+                          </span>
+                          <span className="text-[10px] text-gray-400 font-semibold">visitors</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="text-center py-12 px-4 space-y-2">
+                  <div className="w-12 h-12 rounded-2xl bg-gray-50 text-gray-400 flex items-center justify-center mx-auto border border-gray-150">
+                    <TagIcon className="w-6 h-6 text-gray-300" />
+                  </div>
+                  <h4 className="text-xs font-bold text-gray-700">No matching campaigns found</h4>
+                  <p className="text-[11px] text-gray-400 max-w-sm mx-auto">
+                    Try adjusting your search query or selecting &quot;All Sources&quot; to see all campaign activity.
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
