@@ -34,7 +34,7 @@ const menuItems = [
   { name: "Homas", href: "/admin/homas", icon: FireIcon },
   { name: "Orders & Bookings", href: "/admin/orders", icon: ShoppingBagIcon },
   { name: "Pre-Orders / Interest", href: "/admin/pre-orders", icon: UserPlusIcon },
-  { name: "Visitor Analytics", href: "/admin/visitors", icon: ChartBarIcon },
+  // { name: "Visitor Analytics", href: "/admin/visitors", icon: ChartBarIcon },
   { name: "Promo Codes", href: "/admin/promo-codes", icon: TagIcon },
   { name: "Service Dispatch", href: "/admin/service-dispatch", icon: ArrowDownTrayIcon },
   { name: "Email Alerts", href: "/admin/notifications", icon: EnvelopeIcon },

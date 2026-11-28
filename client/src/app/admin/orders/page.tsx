@@ -1273,13 +1273,44 @@ export default function AdminOrdersPage() {
                         {(() => {
                           const norm = (ord.orderStatus || "created").toLowerCase();
                           const conf = STATUS_CONFIG[norm] || STATUS_CONFIG.created;
+
+                          // Format scheduled date if order is scheduled
+                          let scheduledDateFormatted = "";
+                          if (norm === "scheduled" && ord.scheduledDate) {
+                            try {
+                              const sd = new Date(ord.scheduledDate);
+                              if (!isNaN(sd.getTime())) {
+                                scheduledDateFormatted = sd.toLocaleDateString("en-IN", {
+                                  timeZone: "Asia/Kolkata",
+                                  day: "2-digit",
+                                  month: "short",
+                                  year: "numeric",
+                                });
+                              }
+                            } catch {
+                              scheduledDateFormatted = "";
+                            }
+                          }
+
                           return (
-                            <span
-                              className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${conf.bg} ${conf.text} ${conf.border}`}
-                            >
-                              <span className={`w-1.5 h-1.5 rounded-full ${conf.dot}`} />
-                              <span>{conf.label}</span>
-                            </span>
+                            <div className="space-y-1">
+                              <span
+                                className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${conf.bg} ${conf.text} ${conf.border}`}
+                              >
+                                <span className={`w-1.5 h-1.5 rounded-full ${conf.dot}`} />
+                                <span>{conf.label}</span>
+                              </span>
+
+                              {norm === "scheduled" && scheduledDateFormatted && (
+                                <div
+                                  className="flex items-center gap-1 text-[10.5px] font-bold text-amber-800 bg-amber-50/90 border border-amber-200/80 px-2 py-0.5 rounded-md whitespace-nowrap shadow-2xs w-fit"
+                                  title={`Scheduled Muhurat: ${scheduledDateFormatted}`}
+                                >
+                                  <CalendarDaysIcon className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                                  <span>{scheduledDateFormatted}</span>
+                                </div>
+                              )}
+                            </div>
                           );
                         })()}
                       </td>
